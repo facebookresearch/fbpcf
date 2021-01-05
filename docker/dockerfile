@@ -1,0 +1,37 @@
+# Copyright (c) Facebook, Inc. and its affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+FROM ubuntu:18.04
+WORKDIR /root
+RUN apt-get update && apt-get install -y \
+  m4 \
+  make \
+  git \
+  software-properties-common \
+  sudo \
+  wget
+
+ADD docker/install_dependencies.sh .
+RUN ["bash", "install_dependencies.sh"]
+
+ADD docker/install_emp.sh .
+RUN ["bash", "install_emp.sh"]
+
+ADD docker/install_awssdk.sh .
+RUN ["bash", "install_awssdk.sh"]
+
+ADD docker/install_folly.sh .
+RUN ["bash", "install_folly.sh"]
+
+ADD docker/CMakeLists.txt .
+ADD lift/ /root/lift
+ADD pcf/ /root/pcf
+
+ADD docker/install_private_lift.sh .
+RUN ["bash", "install_private_lift.sh"]
+
+CMD ["/bin/bash"]
+
+WORKDIR /root
