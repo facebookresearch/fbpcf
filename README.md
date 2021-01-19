@@ -1,6 +1,15 @@
 # FBPCF (Facebook Private Computation Framework)
 The Private Computation Framework (PCF) library builds a scalable, secure, and distributed private computation platform to run secure computations on a production level. PCF library supports running the computation on AWS Cloud and is able to integrate various private computation technologies. Specifically, it leverages EMP-toolkit to enable privacy-preserving computations.
 
+## Examples: Millionaire Game
+The [Millionaire](example/millionaire) game is an interesting example that implemented on top of the framework. You can run the game in two terminals representing two players. Each player will randomly return an integer from 0 to 1000000000 to represent the money they have. The game will compare the two integers and determine who is richer.
+
+Instructions on how to run the exmaple:
+* Build the code and get the executable. Suppose the executable is `millionaire`.
+* Open one terminal and run `./millonaire`.
+* Open the other temianl and run `./millionaire --role=2 --server_ip=127.0.0.1`.
+* Watch the results.
+
 ## Examples: Private Randomized Controlled Trials
 As an interesting example application on top of PCF, we implemented a library that allows developers to perform randomized controlled trials (RCT), without leaking information about who participated or what action an individual took. It uses secure multiparty computation to guarantee this privacy. It is suitable for conducting A/B testing, or measuring advertising lift and learning the aggregate statistics without sharing information on the individual level. See what is RCT [here](docs/PrivateRCT.md) and private lift games pseudocode [here](docs/PrivateLift.md).
 

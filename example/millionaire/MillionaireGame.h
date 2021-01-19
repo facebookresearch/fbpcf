@@ -7,7 +7,8 @@
 
 #include <memory>
 
-#include "../EmpGame.h"
+#include "folly/logging/xlog.h"
+#include "../../pcf/mpc/EmpGame.h"
 
 namespace pcf {
 // define the classic millionaire game
@@ -21,7 +22,15 @@ class MillionaireGame : public EmpGame<IOChannel, int, bool> {
     emp::Integer a{64, number, emp::ALICE};
     emp::Integer b{64, number, emp::BOB};
 
-    return (a > b).reveal<bool>();
+    XLOGF(INFO, "I have money:  {}", number);
+    auto result = (a > b).reveal<bool>();
+    if (result) {
+      XLOG(INFO) << "Alice is richer!";
+    } else {
+      XLOG(INFO) << "Bob is richer!";
+    }
+
+    return result;
   }
 };
 } // namespace pcf

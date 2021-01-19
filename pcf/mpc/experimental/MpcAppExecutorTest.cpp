@@ -12,7 +12,7 @@
 
 #include "folly/Random.h"
 
-#include "../test/MillionaireApp.h"
+#include "../../../example/millionaire/MillionaireApp.h"
 #include "./MpcAppExecutor.h"
 
 namespace pcf {

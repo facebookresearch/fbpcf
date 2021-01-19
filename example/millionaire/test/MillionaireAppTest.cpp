@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -12,7 +11,7 @@
 
 #include "folly/Random.h"
 
-#include "./MillionaireApp.h"
+#include "../MillionaireApp.h"
 
 namespace pcf {
 

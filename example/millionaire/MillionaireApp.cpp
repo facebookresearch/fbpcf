@@ -12,7 +12,7 @@
 namespace pcf {
 
 int MillionaireApp::getInputData() {
-  return folly::Random::rand32();
+  return folly::Random::rand32(0, 1000000000);
 }
 
 void MillionaireApp::putOutputData(const bool&) {}

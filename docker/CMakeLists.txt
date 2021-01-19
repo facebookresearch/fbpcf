@@ -130,3 +130,19 @@ target_link_libraries(
   stdc++fs
   libgflags.a
   libre2.a)
+
+add_executable(
+  millionaire
+  "example/millionaire/main.cpp"
+  "example/millionaire/MillionaireApp.h"
+  "example/millionaire/MillionaireApp.cpp"
+  "example/millionaire/MillionaireGame.h"
+  ${pcf_common_sources}
+  ${pcf_exception_sources}
+  ${pcf_mpc_sources}
+  ${pcf_system_sources})
+target_link_libraries(
+  millionaire
+  ${FOLLY_LIBRARIES}
+  ${EMP-OT_LIBRARIES}
+  libgflags.a)

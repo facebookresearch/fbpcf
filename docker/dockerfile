@@ -28,6 +28,7 @@ RUN ["bash", "install_folly.sh"]
 ADD docker/CMakeLists.txt .
 ADD lift/ /root/lift
 ADD pcf/ /root/pcf
+ADD example/ /root/example
 
 ADD docker/install_private_lift.sh .
 RUN ["bash", "install_private_lift.sh"]
