@@ -81,6 +81,10 @@ class OutputMetrics {
   // of groups* is revealed, but not the identities of those groups.
   void initNumGroups();
 
+  // Initialize whether or not value-based calculations should be entirely
+  // skipped. This happens if we're dealing with a valueless nonsales objective.
+  void initShouldSkipValues();
+
   // Initialize the number of bits that will be used to compute purchase values.
   // The partner shares the maximum number of bits that will be needed for a
   // private integer sum (worst case of assuming all conversions valid and in
@@ -152,6 +156,7 @@ class OutputMetrics {
   int64_t n_;
   bool isConversionLift_;
   bool useXorEncryption_;
+  bool shouldSkipValues_;
   int32_t numConversionsPerUser_;
   int64_t numGroups_;
   int64_t valueBits_;

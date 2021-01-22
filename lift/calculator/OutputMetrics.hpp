@@ -45,6 +45,7 @@ template <int MY_ROLE>
 std::string OutputMetrics<MY_ROLE>::playGame() {
   validateNumRows();
   initNumGroups();
+  initShouldSkipValues();
   initBitsForValues();
   calculateAll();
 
@@ -176,21 +177,33 @@ void OutputMetrics<MY_ROLE>::initNumGroups() {
 }
 
 template <int MY_ROLE>
+void OutputMetrics<MY_ROLE>::initShouldSkipValues() {
+  XLOG(INFO) << "Determine if value-based calculations should be skipped";
+  bool hasValues = inputData_.getPurchaseValueArrays().empty();
+  emp::Bit hasValuesBit{hasValues, PARTNER};
+  shouldSkipValues_ = hasValuesBit.reveal<bool>();
+  XLOG(INFO) << "shouldSkipValues = " << shouldSkipValues_;
+}
+
+template <int MY_ROLE>
 void OutputMetrics<MY_ROLE>::initBitsForValues() {
-  XLOG(INFO) << "Set up number of bits needed for purchase value sharing";
-  auto valueBits = static_cast<int64_t>(inputData_.getNumBitsForValue());
-  auto valueSquaredBits =
-      static_cast<int64_t>(inputData_.getNumBitsForValueSquared());
-  emp::Integer valueBitsInteger{INT_SIZE, valueBits, PARTNER};
-  emp::Integer valueSquaredBitsInteger{INT_SIZE, valueSquaredBits, PARTNER};
-  // TODO: Figure out why this isn't working when using values other than 32/64
-  valueBits_ =
-      valueBitsInteger.reveal<int64_t>() <= QUICK_BITS ? QUICK_BITS : FULL_BITS;
-  valueSquaredBits_ = valueSquaredBitsInteger.reveal<int64_t>() <= QUICK_BITS
-      ? QUICK_BITS
-      : FULL_BITS;
-  XLOG(INFO) << "Num bits for values: " << valueBits_;
-  XLOG(INFO) << "Num bits for values squared: " << valueSquaredBits_;
+  if (!shouldSkipValues_) {
+    XLOG(INFO) << "Set up number of bits needed for purchase value sharing";
+    auto valueBits = static_cast<int64_t>(inputData_.getNumBitsForValue());
+    auto valueSquaredBits =
+        static_cast<int64_t>(inputData_.getNumBitsForValueSquared());
+    emp::Integer valueBitsInteger{INT_SIZE, valueBits, PARTNER};
+    emp::Integer valueSquaredBitsInteger{INT_SIZE, valueSquaredBits, PARTNER};
+    // TODO: Figure out why this isn't working when using values other than
+    // 32/64
+    valueBits_ = valueBitsInteger.reveal<int64_t>() <= QUICK_BITS ? QUICK_BITS
+                                                                  : FULL_BITS;
+    valueSquaredBits_ = valueSquaredBitsInteger.reveal<int64_t>() <= QUICK_BITS
+        ? QUICK_BITS
+        : FULL_BITS;
+    XLOG(INFO) << "Num bits for values: " << valueBits_;
+    XLOG(INFO) << "Num bits for values squared: " << valueSquaredBits_;
+  }
 }
 
 template <int MY_ROLE>
