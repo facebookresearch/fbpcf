@@ -209,21 +209,26 @@ void OutputMetrics<MY_ROLE>::initBitsForValues() {
 template <int MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateAll() {
   XLOG(INFO) << "Start calculation of output metrics";
-  XLOG(INFO) << "Share purchase values";
-  std::vector<std::vector<emp::Integer>> purchaseValueArrays =
-      privatelyShareIntArraysFromPartner<MY_ROLE>(
-          inputData_.getPurchaseValueArrays(),
-          n_, /* numVals */
-          numConversionsPerUser_ /* arraySize */,
-          valueBits_ /* bitLen */);
+
+  std::vector<std::vector<emp::Integer>> purchaseValueArrays;
+  if (!shouldSkipValues_) {
+    XLOG(INFO) << "Share purchase values";
+    purchaseValueArrays = privatelyShareIntArraysFromPartner<MY_ROLE>(
+        inputData_.getPurchaseValueArrays(),
+        n_, /* numVals */
+        numConversionsPerUser_ /* arraySize */,
+        valueBits_ /* bitLen */);
+  }
 
   auto validPurchaseArrays = calculateValidPurchases();
 
   std::vector<std::vector<emp::Integer>> purchaseValueSquaredArrays;
 
-  // If this is conversion lift, we also need to share purchase values squared
-  if (inputData_.getLiftGranularityType() ==
-      InputData::LiftGranularityType::Conversion) {
+  // If this is (value-based) conversion lift, we also need to share purchase
+  // values squared
+  if (!shouldSkipValues_ &&
+      inputData_.getLiftGranularityType() ==
+          InputData::LiftGranularityType::Conversion) {
     purchaseValueSquaredArrays = privatelyShareIntArraysFromPartner<MY_ROLE>(
         inputData_.getPurchaseValueSquaredArrays(),
         n_, /* numVals */
@@ -257,9 +262,10 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
   }
   auto eventArrays = calculateEvents(groupType, bits, validPurchaseArrays);
 
-  // If this is conversion lift, calculate sales metrics now
-  if (inputData_.getLiftGranularityType() ==
-      InputData::LiftGranularityType::Conversion) {
+  // If this is (value-based) conversion lift, calculate sales metrics now
+  if (!shouldSkipValues_ &&
+      inputData_.getLiftGranularityType() ==
+          InputData::LiftGranularityType::Conversion) {
     calculateSales(groupType, purchaseValueArrays, eventArrays);
     calculateSalesSquared(groupType, purchaseValueSquaredArrays, eventArrays);
   }
