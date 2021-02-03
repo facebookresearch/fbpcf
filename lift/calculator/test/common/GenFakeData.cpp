@@ -58,7 +58,7 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
       oneLine.opportunity ? folly::Random::secureRand32(100) + epoch : 0;
   for (auto i = 0; i < numConversions; i++) {
     oneLine.event_timestamps.push_back(
-        oneLine.opportunity ? folly::Random::secureRand32(100) + epoch : 0);
+        hasPurchase ? folly::Random::secureRand32(100) + epoch : 0);
     oneLine.values.push_back(
         hasPurchase ? folly::Random::secureRand32(100) + 1 : 0);
   }
