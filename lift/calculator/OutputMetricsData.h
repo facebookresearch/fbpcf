@@ -17,7 +17,7 @@ struct OutputMetricsData {
   int64_t testPopulation;
   int64_t controlPopulation;
   // For conversion_lift, events == conversions
-  // For converter_lift, events == buyers
+  // For converter_lift, events == converters
   int64_t testEvents;
   int64_t controlEvents;
   int64_t testValue;
@@ -41,8 +41,8 @@ struct OutputMetricsData {
       os << "Test Conversions: " << out.testEvents << "\n";
       os << "Control Conversions: " << out.controlEvents << "\n";
     } else {
-      os << "Test Buyers: " << out.testEvents << "\n";
-      os << "Control Buyers: " << out.controlEvents << "\n";
+      os << "Test Converters: " << out.testEvents << "\n";
+      os << "Control Converters: " << out.controlEvents << "\n";
     }
     os << "Test Value: " << out.testValue << "\n";
     os << "Control Value: " << out.controlValue << "\n";
@@ -61,8 +61,8 @@ struct OutputMetricsData {
     LiftMetrics metrics{};
     metrics.testPopulation = testPopulation;
     metrics.controlPopulation = controlPopulation;
-    metrics.testBuyers = testEvents;
-    metrics.controlBuyers = controlEvents;
+    metrics.testConverters = testEvents;
+    metrics.controlConverters = controlEvents;
     metrics.testValue = testValue;
     metrics.controlValue = controlValue;
     metrics.testSquared = testSquared;

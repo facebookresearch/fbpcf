@@ -19,8 +19,8 @@ struct EncryptedLiftMetrics {
   emp::Integer idMatch;
   emp::Integer testPopulation;
   emp::Integer controlPopulation;
-  emp::Integer testBuyers;
-  emp::Integer controlBuyers;
+  emp::Integer testConverters;
+  emp::Integer controlConverters;
   emp::Integer testValue;
   emp::Integer controlValue;
   emp::Integer testSquared;
