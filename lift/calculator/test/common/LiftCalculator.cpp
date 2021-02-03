@@ -122,11 +122,16 @@ OutputMetricsData LiftCalculator::compute(
     eventTimestamps =
         parseArray(partsPartner.at(colNameToIndex.at("event_timestamps")));
 
-    values = parseArray(partsPartner.at(colNameToIndex.at("values")));
+    auto valuesIdx = colNameToIndex.find("values") != colNameToIndex.end()
+      ? colNameToIndex.at("values")
+      : -1;
+    if (valuesIdx != -1) {
+      values = parseArray(partsPartner.at(valuesIdx));
 
-    if (eventTimestamps.size() != values.size()) {
-      LOG(FATAL) << "Size of event_timestamps (" << eventTimestamps.size()
-                 << ") and values (" << values.size() << ") are inconsistent";
+      if (eventTimestamps.size() != values.size()) {
+        LOG(FATAL) << "Size of event_timestamps (" << eventTimestamps.size()
+                   << ") and values (" << values.size() << ") are inconsistent";
+      }
     }
     if (opportunity && opportunityTimestamp > 0) {
       uint64_t value_subsum = 0;
@@ -135,7 +140,10 @@ OutputMetricsData LiftCalculator::compute(
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
             ++out.testEvents;
-            value_subsum += values.at(i);
+            if (valuesIdx != -1) {
+              // Only add values if the values column exists (support nonsales)
+              value_subsum += values.at(i);
+            }
           }
         }
         out.testSales += value_subsum;
@@ -145,7 +153,10 @@ OutputMetricsData LiftCalculator::compute(
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
             ++out.controlEvents;
-            value_subsum += values.at(i);
+            if (valuesIdx != -1) {
+              // Only add values if the values column exists (support nonsales)
+              value_subsum += values.at(i);
+            }
           }
         }
         out.controlSales += value_subsum;

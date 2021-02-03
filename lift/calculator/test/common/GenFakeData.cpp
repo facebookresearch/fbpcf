@@ -107,11 +107,16 @@ void GenFakeData::genFakePartnerInputFile(
     double purchaseRate,
     double incrementalityRate,
     int32_t epoch,
-    int32_t numConversions) {
+    int32_t numConversions,
+    bool omitValuesColumn) {
   std::ofstream partnerFile{filename};
 
   // partner header: id_,event_timestamps,values
-  partnerFile << "id_,event_timestamps,values\n";
+  if (!omitValuesColumn) {
+    partnerFile << "id_,event_timestamps,values\n";
+  } else {
+    partnerFile << "id_,event_timestamps\n";
+  }
 
   for (auto i = 0; i < numRows; i++) {
     // generate one row of fake data
@@ -138,8 +143,13 @@ void GenFakeData::genFakePartnerInputFile(
         valuesString += "]";
       }
     }
-    partnerFile << oneLine.id << "," << eventTSString << "," << valuesString
+    if (!omitValuesColumn) {
+      partnerFile << oneLine.id << "," << eventTSString << "," << valuesString
                 << "\n";
+    } else {
+      // Again, skip "values" column if this is a nonsales objective
+      partnerFile << oneLine.id << "," << eventTSString << "\n";
+    }
   }
 }
 } // namespace private_lift

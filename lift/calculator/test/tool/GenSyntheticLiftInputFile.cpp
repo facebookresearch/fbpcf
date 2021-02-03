@@ -32,6 +32,10 @@ DEFINE_int32(
     num_conversions_per_user,
     4,
     "Cap and pad to this many conversions per user");
+DEFINE_bool(
+    omit_values_column,
+    false,
+    "Omit values column from partner's dataset");
 
 int main(int argc, char** argv) {
   // Parse input
@@ -80,7 +84,8 @@ int main(int argc, char** argv) {
           FLAGS_purchase_rate,
           FLAGS_incrementality_rate,
           FLAGS_epoch,
-          FLAGS_num_conversions_per_user);
+          FLAGS_num_conversions_per_user,
+          FLAGS_omit_values_column);
     }
   } else {
     throw std::invalid_argument(

@@ -30,7 +30,8 @@ class GenFakeData {
       double purchaseRate,
       double incrementalityRate,
       int32_t epoch,
-      int32_t numConversions);
+      int32_t numConversions,
+      bool omitValuesColumn);
 
  private:
   struct LiftInputColumns {
