@@ -72,8 +72,8 @@ OutputMetricsData LiftCalculator::compute(
   out.controlPopulation = 0;
   out.testEvents = 0;
   out.controlEvents = 0;
-  out.testSales = 0;
-  out.controlSales = 0;
+  out.testValue = 0;
+  out.controlValue = 0;
   out.testSquared = 0;
   out.controlSquared = 0;
 
@@ -141,12 +141,13 @@ OutputMetricsData LiftCalculator::compute(
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
             ++out.testEvents;
             if (valuesIdx != -1) {
-              // Only add values if the values column exists (support nonsales)
+              // Only add values if the values column exists
+              // (support valueless objectives)
               value_subsum += values.at(i);
             }
           }
         }
-        out.testSales += value_subsum;
+        out.testValue += value_subsum;
         out.testSquared += value_subsum * value_subsum;
       } else {
         ++out.controlPopulation;
@@ -154,12 +155,13 @@ OutputMetricsData LiftCalculator::compute(
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
             ++out.controlEvents;
             if (valuesIdx != -1) {
-              // Only add values if the values column exists (support nonsales)
+              // Only add values if the values column exists
+              // (support valueless objectives)
               value_subsum += values.at(i);
             }
           }
         }
-        out.controlSales += value_subsum;
+        out.controlValue += value_subsum;
         out.controlSquared += value_subsum * value_subsum;
       }
     }

@@ -21,8 +21,8 @@ struct EncryptedLiftMetrics {
   emp::Integer controlPopulation;
   emp::Integer testBuyers;
   emp::Integer controlBuyers;
-  emp::Integer testSales;
-  emp::Integer controlSales;
+  emp::Integer testValue;
+  emp::Integer controlValue;
   emp::Integer testSquared;
   emp::Integer controlSquared;
 

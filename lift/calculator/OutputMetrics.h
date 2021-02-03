@@ -82,7 +82,7 @@ class OutputMetrics {
   void initNumGroups();
 
   // Initialize whether or not value-based calculations should be entirely
-  // skipped. This happens if we're dealing with a valueless nonsales objective.
+  // skipped. This happens if we're dealing with a valueless objective.
   void initShouldSkipValues();
 
   // Initialize the number of bits that will be used to compute purchase values.
@@ -115,15 +115,15 @@ class OutputMetrics {
       const std::vector<emp::Bit>& populationBits,
       const std::vector<std::vector<emp::Bit>>& validPurchaseArrays);
 
-  // Test/Control sales: testPurchaser/controlPurchaser ? purchaseValue : 0
-  void calculateSales(
+  // Test/Control value: testPurchaser/controlPurchaser ? purchaseValue : 0
+  void calculateValue(
       const OutputMetrics::GroupType& groupType,
       const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
       const std::vector<std::vector<emp::Bit>>& testEventArrays);
 
-  // Test/Control sales squared:
+  // Test/Control value squared:
   // sum(testPurchaser/controlPurchaser ? purchaseValue : 0)^2
-  void calculateSalesSquared(
+  void calculateValueSquared(
       const OutputMetrics::GroupType& groupType,
       const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
       const std::vector<std::vector<emp::Bit>>& eventArrays);

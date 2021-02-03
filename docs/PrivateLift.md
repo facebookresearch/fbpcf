@@ -45,10 +45,10 @@ id_,event_timestamps,values,feature_foo,feature_bar
     controlPopulation, //# of all the people in the control group
     testConversions, //# of valid conversion made by the test population
     controlConversions, //# of valid conversion made by the control population
-    testSales, //sum of the sales value of valid conversions in the test group
-    controlSales, //sum of sales value of valid conversions in the control group
-    testSquared, //user-grain sum of the squares of the sales values of valid conversions in the test group
-    controlSquared, //user-grain sum of the squares of the sales values of valid conversions in the control group
+    testValue, //sum of the value of valid conversions in the test group
+    controlValue, //sum of value of valid conversions in the control group
+    testSquared, //user-grain sum of the squares of the values of valid conversions in the test group
+    controlSquared, //user-grain sum of the squares of the values of valid conversions in the control group
 
 ### Facebook and Advertiser jointly compute in 2 PC
 
@@ -59,15 +59,15 @@ for each row in lists:
         for each event_timestamp and value:
             if (opportunity_timestamp < event_timestamp + 10)
                 testConversions++
-                testSales += value
-                testSalesSquared += value * value
+                testValue += value
+                testValueSquared += value * value
     if (opportunity (if present) and not test_flag)
         controlPopulation++
         for each event_timestamp and value:
             if (opportunity_timestamp < event_timestamp + 10)
                 controlConversions++
-                controlSales += value
-                controlSalesSquared += value * value
+                controlValue += value
+                controlValueSquared += value * value
   ```
 
 We run the computation for the overall dataset and then again for each "cohort."
@@ -86,8 +86,8 @@ Output XOR share of the Output Statistics to each party.
         controlPopulation,
         testConversions,
         controlConversions,
-        testSales,
-        controlSales,
+        testValue,
+        controlValue,
         testSquared,
         controlSquared
     with X >= 1

@@ -132,7 +132,7 @@ TEST_F(CalculatorGameTest, TestRandomInputConversionLift) {
       std::move(configRandomConversionBob));
 }
 
-TEST_F(CalculatorGameTest, TestRandomInputConversionLiftNonsales) {
+TEST_F(CalculatorGameTest, TestRandomInputConversionLiftValueless) {
   // generate test input files with random data
   GenFakeData testDataGenerator;
   testDataGenerator.genFakePublisherInputFile(

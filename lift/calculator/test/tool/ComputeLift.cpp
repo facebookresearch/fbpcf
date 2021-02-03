@@ -71,13 +71,13 @@ int main(int argc, char** argv) {
              << out.testEvents;
   XLOG(INFO) << std::setw(20) << "control_event: " << std::setw(12)
              << out.controlEvents;
-  XLOG(INFO) << std::setw(20) << "test_sales: " << std::setw(12)
-             << out.testSales;
-  XLOG(INFO) << std::setw(20) << "control_sales: " << std::setw(12)
-             << out.controlSales;
-  XLOG(INFO) << std::setw(20) << "test_sales_sq: " << std::setw(12)
+  XLOG(INFO) << std::setw(20) << "test_value: " << std::setw(12)
+             << out.testValue;
+  XLOG(INFO) << std::setw(20) << "control_value: " << std::setw(12)
+             << out.controlValue;
+  XLOG(INFO) << std::setw(20) << "test_value_sq: " << std::setw(12)
              << out.testSquared;
-  XLOG(INFO) << std::setw(20) << "control_sales_sq: " << std::setw(12)
+  XLOG(INFO) << std::setw(20) << "control_value_sq: " << std::setw(12)
              << out.controlSquared;
 
   return 0;

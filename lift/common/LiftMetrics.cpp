@@ -21,7 +21,7 @@ bool LiftMetrics::operator==(const LiftMetrics& other) const noexcept {
   return testPopulation == other.testPopulation &&
       controlPopulation == other.controlPopulation &&
       testBuyers == other.testBuyers && controlBuyers == other.controlBuyers &&
-      testSales == other.testSales && controlSales == other.controlSales &&
+      testValue == other.testValue && controlValue == other.controlValue &&
       testSquared == other.testSquared &&
       controlSquared == other.controlSquared;
 }
@@ -31,8 +31,8 @@ LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
                      controlPopulation + other.controlPopulation,
                      testBuyers + other.testBuyers,
                      controlBuyers + other.controlBuyers,
-                     testSales + other.testSales,
-                     controlSales + other.controlSales,
+                     testValue + other.testValue,
+                     controlValue + other.controlValue,
                      testSquared + other.testSquared,
                      controlSquared + other.controlSquared};
 }
@@ -42,8 +42,8 @@ LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
                      controlPopulation ^ other.controlPopulation,
                      testBuyers ^ other.testBuyers,
                      controlBuyers ^ other.controlBuyers,
-                     testSales ^ other.testSales,
-                     controlSales ^ other.controlSales,
+                     testValue ^ other.testValue,
+                     controlValue ^ other.controlValue,
                      testSquared ^ other.testSquared,
                      controlSquared ^ other.controlSquared};
 }
@@ -61,8 +61,8 @@ LiftMetrics LiftMetrics::fromJson(const std::string& str) {
 folly::dynamic LiftMetrics::toDynamic() const {
   return folly::dynamic::object("testPopulation", testPopulation)(
       "controlPopulation", controlPopulation)("testBuyers", testBuyers)(
-      "controlBuyers", controlBuyers)("testSales", testSales)(
-      "controlSales", controlSales)("testSquared", testSquared)(
+      "controlBuyers", controlBuyers)("testValue", testValue)(
+      "controlValue", controlValue)("testSquared", testSquared)(
       "controlSquared", controlSquared);
 }
 
@@ -73,8 +73,8 @@ LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
   metrics.controlPopulation = obj["controlPopulation"].asInt();
   metrics.testBuyers = obj["testBuyers"].asInt();
   metrics.controlBuyers = obj["controlBuyers"].asInt();
-  metrics.testSales = obj["testSales"].asInt();
-  metrics.controlSales = obj["controlSales"].asInt();
+  metrics.testValue = obj["testValue"].asInt();
+  metrics.controlValue = obj["controlValue"].asInt();
   metrics.testSquared = obj["testSquared"].asInt();
   metrics.controlSquared = obj["controlSquared"].asInt();
 

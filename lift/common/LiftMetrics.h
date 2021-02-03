@@ -20,8 +20,8 @@ struct LiftMetrics {
   int64_t controlPopulation;
   int64_t testBuyers;
   int64_t controlBuyers;
-  int64_t testSales;
-  int64_t controlSales;
+  int64_t testValue;
+  int64_t controlValue;
   int64_t testSquared;
   int64_t controlSquared;
 

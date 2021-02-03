@@ -147,7 +147,7 @@ void GenFakeData::genFakePartnerInputFile(
       partnerFile << oneLine.id << "," << eventTSString << "," << valuesString
                 << "\n";
     } else {
-      // Again, skip "values" column if this is a nonsales objective
+      // Again, skip "values" column if this is a valueless objective
       partnerFile << oneLine.id << "," << eventTSString << "\n";
     }
   }

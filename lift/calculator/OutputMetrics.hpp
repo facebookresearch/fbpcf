@@ -85,11 +85,11 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
           << ",";
   outfile << metrics_.testEvents << ",";
   outfile << metrics_.controlEvents << ",";
-  // Sales metrics are only relevant for conversion lift
+  // Value metrics are only relevant for conversion lift
   if (inputData_.getLiftGranularityType() ==
       InputData::LiftGranularityType::Conversion) {
-    outfile << metrics_.testSales << ",";
-    outfile << metrics_.controlSales << ",";
+    outfile << metrics_.testValue << ",";
+    outfile << metrics_.controlValue << ",";
     outfile << metrics_.testSquared << ",";
     outfile << metrics_.controlSquared << ",";
   }
@@ -118,11 +118,11 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
 
     outfile << subOut.testEvents << ",";
     outfile << subOut.controlEvents << ",";
-    // Sales metrics are only relevant for conversion lift
+    // Value metrics are only relevant for conversion lift
     if (inputData_.getLiftGranularityType() ==
         InputData::LiftGranularityType::Conversion) {
-      outfile << subOut.testSales << ",";
-      outfile << subOut.controlSales << ",";
+      outfile << subOut.testValue << ",";
+      outfile << subOut.controlValue << ",";
       outfile << subOut.testSquared << ",";
       outfile << subOut.controlSquared << ",";
     }
@@ -255,19 +255,19 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
     const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
     const std::vector<std::vector<emp::Bit>>& validPurchaseArrays) {
   XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
-             << " events, sales, and sales squared";
+             << " events, value, and value squared";
   auto bits = calculatePopulation(groupType, inputData_.getControlPopulation());
   if (groupType == GroupType::TEST) {
     bits = calculatePopulation(groupType, inputData_.getTestPopulation());
   }
   auto eventArrays = calculateEvents(groupType, bits, validPurchaseArrays);
 
-  // If this is (value-based) conversion lift, calculate sales metrics now
+  // If this is (value-based) conversion lift, calculate value metrics now
   if (!shouldSkipValues_ &&
       inputData_.getLiftGranularityType() ==
           InputData::LiftGranularityType::Conversion) {
-    calculateSales(groupType, purchaseValueArrays, eventArrays);
-    calculateSalesSquared(groupType, purchaseValueSquaredArrays, eventArrays);
+    calculateValue(groupType, purchaseValueArrays, eventArrays);
+    calculateValueSquared(groupType, purchaseValueSquaredArrays, eventArrays);
   }
 }
 
@@ -374,12 +374,12 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
 }
 
 template <int MY_ROLE>
-void OutputMetrics<MY_ROLE>::calculateSales(
+void OutputMetrics<MY_ROLE>::calculateValue(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
     const std::vector<std::vector<emp::Bit>>& eventArrays) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " sales";
-  std::vector<std::vector<emp::Integer>> salesValueArrays =
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " value";
+  std::vector<std::vector<emp::Integer>> valueArrays =
       secret_sharing::zip_and_map<
           std::vector<emp::Bit>,
           std::vector<emp::Integer>,
@@ -404,30 +404,30 @@ void OutputMetrics<MY_ROLE>::calculateSales(
           });
 
   if (groupType == GroupType::TEST) {
-    metrics_.testSales = sum(salesValueArrays);
+    metrics_.testValue = sum(valueArrays);
   } else {
-    metrics_.controlSales = sum(salesValueArrays);
+    metrics_.controlValue = sum(valueArrays);
   }
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
-        secret_sharing::multiplyBitmask(salesValueArrays, groupBitmasks_.at(i));
+        secret_sharing::multiplyBitmask(valueArrays, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testSales = sum(groupInts);
+      subgroupMetrics_[i].testValue = sum(groupInts);
     } else {
-      subgroupMetrics_[i].controlSales = sum(groupInts);
+      subgroupMetrics_[i].controlValue = sum(groupInts);
     }
   }
 }
 
 template <int MY_ROLE>
-void OutputMetrics<MY_ROLE>::calculateSalesSquared(
+void OutputMetrics<MY_ROLE>::calculateValueSquared(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
     const std::vector<std::vector<emp::Bit>>& eventArrays) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " sales squared";
-  std::vector<emp::Integer> salesSquaredValues = secret_sharing::zip_and_map<
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " value squared";
+  std::vector<emp::Integer> squaredValues = secret_sharing::zip_and_map<
       std::vector<emp::Bit>,
       std::vector<emp::Integer>,
       emp::Integer>(
@@ -457,15 +457,15 @@ void OutputMetrics<MY_ROLE>::calculateSalesSquared(
       });
 
   if (groupType == GroupType::TEST) {
-    metrics_.testSquared = sum(salesSquaredValues);
+    metrics_.testSquared = sum(squaredValues);
   } else {
-    metrics_.controlSquared = sum(salesSquaredValues);
+    metrics_.controlSquared = sum(squaredValues);
   }
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts = secret_sharing::multiplyBitmask(
-        salesSquaredValues, groupBitmasks_.at(i));
+        squaredValues, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
       subgroupMetrics_[i].testSquared = sum(groupInts);
     } else {

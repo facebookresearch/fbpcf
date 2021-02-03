@@ -16,8 +16,8 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator+(const EncryptedLiftMetrics&
                      controlPopulation + other.controlPopulation,
                      testBuyers + other.testBuyers,
                      controlBuyers + other.controlBuyers,
-                     testSales + other.testSales,
-                     controlSales + other.controlSales,
+                     testValue + other.testValue,
+                     controlValue + other.controlValue,
                      testSquared + other.testSquared,
                      controlSquared + other.controlSquared};
 }
@@ -28,8 +28,8 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator^(const EncryptedLiftMetrics&
                      controlPopulation ^ other.controlPopulation,
                      testBuyers ^ other.testBuyers,
                      controlBuyers ^ other.controlBuyers,
-                     testSales ^ other.testSales,
-                     controlSales ^ other.controlSales,
+                     testValue ^ other.testValue,
+                     controlValue ^ other.controlValue,
                      testSquared ^ other.testSquared,
                      controlSquared ^ other.controlSquared};
 }
