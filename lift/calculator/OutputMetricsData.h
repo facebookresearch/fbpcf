@@ -14,16 +14,16 @@ namespace private_lift {
  * Simple struct representing the metrics in a Lift computation
  */
 struct OutputMetricsData {
-  int64_t testPopulation;
-  int64_t controlPopulation;
+  int64_t testPopulation = 0;
+  int64_t controlPopulation = 0;
   // For conversion_lift, events == conversions
   // For converter_lift, events == converters
-  int64_t testEvents;
-  int64_t controlEvents;
-  int64_t testValue;
-  int64_t controlValue;
-  int64_t testSquared;
-  int64_t controlSquared;
+  int64_t testEvents = 0;
+  int64_t controlEvents = 0;
+  int64_t testValue = 0;
+  int64_t controlValue = 0;
+  int64_t testSquared = 0;
+  int64_t controlSquared = 0;
 
   OutputMetricsData() = default;
 
