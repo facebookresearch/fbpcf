@@ -18,11 +18,6 @@
 #include "CalculatorGameConfig.h"
 #include "InputData.h"
 
-// so that these FLAGS set in main.cpp are visible here
-DECLARE_bool(is_conversion_lift);
-DECLARE_int32(num_conversions_per_user);
-DECLARE_int64(epoch);
-
 namespace private_lift {
 void CalculatorApp::run() {
   CalculatorGameConfig config = getInputData();
@@ -50,11 +45,12 @@ CalculatorGameConfig CalculatorApp::getInputData() {
       : InputData::LiftGranularityType::Converter;
 
   XLOG(INFO) << "Parsing input";
-  InputData inputData{inputPath_,
-                      InputData::LiftMPCType::Standard,
-                      liftGranularityType,
-                      FLAGS_epoch,
-                      numConversionsPerUser};
+  InputData inputData{
+      inputPath_,
+      InputData::LiftMPCType::Standard,
+      liftGranularityType,
+      FLAGS_epoch,
+      numConversionsPerUser};
   CalculatorGameConfig config = {
       inputData, FLAGS_is_conversion_lift, numConversionsPerUser};
   return config;

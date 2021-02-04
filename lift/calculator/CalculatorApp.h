@@ -19,6 +19,11 @@
 #include "InputData.h"
 #include "OutputMetrics.h"
 
+// so that these FLAGS set in main.cpp are visible here
+DECLARE_bool(is_conversion_lift);
+DECLARE_int32(num_conversions_per_user);
+DECLARE_int64(epoch);
+
 namespace private_lift {
 
 class CalculatorApp : public pcf::EmpApp<
@@ -56,5 +61,3 @@ class CalculatorApp : public pcf::EmpApp<
 };
 
 } // namespace private_lift
-
-#include "CalculatorApp.hpp"

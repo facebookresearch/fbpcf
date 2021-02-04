@@ -9,7 +9,8 @@
 
 namespace private_lift::emp_utils {
 
-const std::vector<emp::Bit> intsToBits(const std::vector<emp::Integer>& in) {
+inline const std::vector<emp::Bit> intsToBits(
+    const std::vector<emp::Integer>& in) {
   std::vector<emp::Bit> bits;
   bits.reserve(in.size());
   for (auto i = 0; i < in.size(); ++i) {
@@ -20,7 +21,8 @@ const std::vector<emp::Bit> intsToBits(const std::vector<emp::Integer>& in) {
   return bits;
 }
 
-const std::vector<emp::Integer> bitsToInts(const std::vector<emp::Bit>& in) {
+inline const std::vector<emp::Integer> bitsToInts(
+    const std::vector<emp::Bit>& in) {
   // auto bitLen = std::ceil(std::log2(in.size() + 1));
   // TODO: Braced initialization
   const emp::Integer zero(INT_SIZE, 0, emp::PUBLIC);
@@ -34,12 +36,12 @@ const std::vector<emp::Integer> bitsToInts(const std::vector<emp::Bit>& in) {
   return ints;
 }
 
-const emp::Integer getMin(emp::Integer value1, emp::Integer value2) {
+inline const emp::Integer getMin(emp::Integer value1, emp::Integer value2) {
   emp::Bit cmp = value1 > value2;
   return emp::If(cmp, value2, value1);
 }
 
-const emp::Integer getMin(const std::vector<emp::Integer>& values) {
+inline const emp::Integer getMin(const std::vector<emp::Integer>& values) {
   emp::Integer minValue(INT_SIZE, __INT_MAX__, emp::PUBLIC);
   for (auto i = 0; i < values.size(); i++) {
     minValue = getMin(minValue, values.at(i));

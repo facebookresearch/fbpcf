@@ -48,8 +48,8 @@ const std::vector<PrivateInt<MY_ROLE>> privatelyShareInts(
   // Convert to vectors
   std::vector<PrivateInt<MY_ROLE>> out;
   for (auto i = 0; i < numVals.value_or(in.size()); ++i) {
-    out.push_back(PrivateInt<MY_ROLE>{myBatcher.next<emp::Integer>(),
-                                      theirBatcher.next<emp::Integer>()});
+    out.push_back(PrivateInt<MY_ROLE>{
+        myBatcher.next<emp::Integer>(), theirBatcher.next<emp::Integer>()});
   }
 
   return out;
@@ -78,8 +78,8 @@ const std::vector<PrivateBit<MY_ROLE>> privatelyShareBits(
   // Convert to vectors
   std::vector<PrivateBit<MY_ROLE>> out;
   for (auto i = 0; i < numVals.value_or(in.size()); ++i) {
-    out.push_back(PrivateBit<MY_ROLE>{myBatcher.next<emp::Bit>(),
-                                      theirBatcher.next<emp::Bit>()});
+    out.push_back(PrivateBit<MY_ROLE>{
+        myBatcher.next<emp::Bit>(), theirBatcher.next<emp::Bit>()});
   }
 
   return out;
@@ -390,7 +390,7 @@ const std::vector<O> zip_and_map(
 
 // Partial template specialization for emp::Integer
 template <>
-const std::vector<emp::Integer> multiplyBitmask(
+inline const std::vector<emp::Integer> multiplyBitmask(
     const std::vector<emp::Integer>& vec,
     const std::vector<emp::Bit>& bitmask) {
   assert(vec.size() == bitmask.size());
@@ -409,7 +409,7 @@ const std::vector<emp::Integer> multiplyBitmask(
 
 // Partial template specialization for emp::Bit
 template <>
-const std::vector<emp::Bit> multiplyBitmask(
+inline const std::vector<emp::Bit> multiplyBitmask(
     const std::vector<emp::Bit>& vec,
     const std::vector<emp::Bit>& bitmask) {
   assert(vec.size() == bitmask.size());
@@ -424,7 +424,7 @@ const std::vector<emp::Bit> multiplyBitmask(
 
 // Partial template specialization for std::vector<emp::Integer>
 template <>
-const std::vector<std::vector<emp::Integer>> multiplyBitmask(
+inline const std::vector<std::vector<emp::Integer>> multiplyBitmask(
     const std::vector<std::vector<emp::Integer>>& vec,
     const std::vector<emp::Bit>& bitmask) {
   assert(vec.size() == bitmask.size());
@@ -443,7 +443,7 @@ const std::vector<std::vector<emp::Integer>> multiplyBitmask(
 
 // Partial template specialization for std::vector<emp::Bit>
 template <>
-const std::vector<std::vector<emp::Bit>> multiplyBitmask(
+inline const std::vector<std::vector<emp::Bit>> multiplyBitmask(
     const std::vector<std::vector<emp::Bit>>& vec,
     const std::vector<emp::Bit>& bitmask) {
   assert(vec.size() == bitmask.size());
