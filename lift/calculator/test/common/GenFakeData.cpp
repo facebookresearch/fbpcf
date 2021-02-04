@@ -56,13 +56,35 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
   bool hasPurchase = folly::Random::secureRandDouble01() < purchaseRate;
   oneLine.opportunity_timestamp =
       oneLine.opportunity ? folly::Random::secureRand32(100) + epoch : 0;
-  for (auto i = 0; i < numConversions; i++) {
-    oneLine.event_timestamps.push_back(
-        hasPurchase ? folly::Random::secureRand32(100) + epoch : 0);
-    oneLine.values.push_back(
-        hasPurchase ? folly::Random::secureRand32(100) + 1 : 0);
+
+  if (!hasPurchase) {
+    oneLine.event_timestamps.resize(numConversions, 0);
+    oneLine.values.resize(numConversions, 0);
+  } else {
+    uint32_t randomCount = numConversions - folly::Random::secureRand32(numConversions);
+    std::vector<std::pair<int32_t, int32_t>> tsValVec;
+    for (int32_t i = 0; i < numConversions; i++) {
+      if (randomCount > 0) {
+        int32_t timeStamp = folly::Random::secureRand32(100) + epoch;
+        int32_t value = folly::Random::secureRand32(100) + 1;
+        tsValVec.push_back(std::make_pair(timeStamp, value));
+        randomCount--;
+      } else {
+        tsValVec.push_back(std::make_pair(0, 0));
+      }
+    }
+
+    // sort by timestamp
+    std::sort(tsValVec.begin(), tsValVec.end(), [](auto &a, auto &b) {
+      return a.first < b.first;
+    });
+
+    for (auto [ts, value] : tsValVec) {
+      oneLine.event_timestamps.push_back(ts);
+      oneLine.values.push_back(value);
+    }
   }
-  std::sort(oneLine.event_timestamps.begin(), oneLine.event_timestamps.end());
+
   return oneLine;
 }
 
