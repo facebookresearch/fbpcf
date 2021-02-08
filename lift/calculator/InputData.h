@@ -143,7 +143,7 @@ class InputData {
    * valuesSquaredArrays = an array to which the squares of input data from str
    * append
    */
-  void setValuesAndValuesSquared(std::string& str);
+  void setValuesFields(std::string& str);
 
   // Helper to add a line from a CSV into the component column vectors
   void addFromCSV(
@@ -164,6 +164,7 @@ class InputData {
   std::vector<std::vector<int64_t>> purchaseTimestampArrays_;
   std::vector<std::vector<int64_t>> purchaseValueArrays_;
   std::vector<std::vector<int64_t>> purchaseValueSquaredArrays_;
+  std::vector<std::vector<uint64_t>> logValueArrays_;
 
   std::vector<std::string> featureHeader_;
   std::unordered_map<int64_t, std::vector<std::string>> groupIdToFeatures_;

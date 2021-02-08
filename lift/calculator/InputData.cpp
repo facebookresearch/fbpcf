@@ -78,8 +78,9 @@ void InputData::setTimestamps(
   }
 }
 
-void InputData::setValuesAndValuesSquared(std::string& str) {
+void InputData::setValuesFields(std::string& str) {
   purchaseValueArrays_.emplace_back();
+  logValueArrays_.emplace_back();
   if (liftMpcType_ == LiftMPCType::Standard) {
     purchaseValueSquaredArrays_.emplace_back();
   }
@@ -115,6 +116,8 @@ void InputData::setValuesAndValuesSquared(std::string& str) {
       acc += valuesArr.at(i);
       // 2. Set valuesSquared at this index as acc**2
       valuesSquaredArr.at(i) = acc * acc;
+      // 3. Compute and store the log of values seens so far
+      logValueArrays_.back().push_back(acc == 0 ? 0 : std::log(acc));
     }
     // Finally, update totalValueSquared with the *maximum possible* value,
     // which is what we just stored into the first value
@@ -195,7 +198,7 @@ void InputData::addFromCSV(
         purchaseValuesSquared_.push_back(parsed * parsed);
       }
     } else if (column == "values") {
-      setValuesAndValuesSquared(value);
+      setValuesFields(value);
     } else if (column == "value_squared") {
       // This column is only valid in secret_share lift
       // otherwise, we just use simple multiplication in the above condition
@@ -214,7 +217,7 @@ void InputData::addFromCSV(
       // input), parse it as arrays of size 1.
       if (liftMpcType_ == LiftMPCType::Standard) {
         value = "[" + value + "]";
-        setValuesAndValuesSquared(value);
+        setValuesFields(value);
       } else {
         totalValue_ += parsed;
         purchaseValues_.push_back(parsed);
