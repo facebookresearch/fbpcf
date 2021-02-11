@@ -7,6 +7,7 @@
 
 #include <glog/logging.h>
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -116,7 +117,7 @@ void InputData::setValuesFields(std::string& str) {
       acc += valuesArr.at(i);
       // 2. Set valuesSquared at this index as acc**2
       valuesSquaredArr.at(i) = acc * acc;
-      // 3. Compute and store the log of values seens so far
+      // 3. Compute and store the log of values seen so far
       logValueArrays_.back().push_back(acc == 0 ? 0 : std::log(acc));
     }
     // Finally, update totalValueSquared with the *maximum possible* value,

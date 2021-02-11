@@ -82,6 +82,11 @@ class InputData {
     return purchaseValueSquaredArrays_;
   }
 
+  const std::vector<std::vector<int64_t>>& getLogValueArrays()
+      const {
+    return logValueArrays_;
+  }
+
   const std::vector<int64_t>& getGroupIds() const {
     return groupIds_;
   }
@@ -164,7 +169,7 @@ class InputData {
   std::vector<std::vector<int64_t>> purchaseTimestampArrays_;
   std::vector<std::vector<int64_t>> purchaseValueArrays_;
   std::vector<std::vector<int64_t>> purchaseValueSquaredArrays_;
-  std::vector<std::vector<uint64_t>> logValueArrays_;
+  std::vector<std::vector<int64_t>> logValueArrays_;
 
   std::vector<std::string> featureHeader_;
   std::unordered_map<int64_t, std::vector<std::string>> groupIdToFeatures_;

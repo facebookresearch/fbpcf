@@ -211,6 +211,8 @@ void OutputMetrics<MY_ROLE>::calculateAll() {
   XLOG(INFO) << "Start calculation of output metrics";
 
   std::vector<std::vector<emp::Integer>> purchaseValueArrays;
+  std::vector<std::vector<emp::Integer>> logValueArrays;
+
   if (!shouldSkipValues_) {
     XLOG(INFO) << "Share purchase values";
     purchaseValueArrays = privatelyShareIntArraysFromPartner<MY_ROLE>(
@@ -218,6 +220,14 @@ void OutputMetrics<MY_ROLE>::calculateAll() {
         n_, /* numVals */
         numConversionsPerUser_ /* arraySize */,
         valueBits_ /* bitLen */);
+
+    XLOG(INFO) << "Share log values";
+    logValueArrays = privatelyShareIntArraysFromPartner<MY_ROLE>(
+        inputData_.getLogValueArrays(),
+        n_, /* numVals */
+        numConversionsPerUser_ /* arraySize */,
+        valueBits_ /* bitLen */);
+
   }
 
   auto validPurchaseArrays = calculateValidPurchases();
@@ -240,12 +250,14 @@ void OutputMetrics<MY_ROLE>::calculateAll() {
       GroupType::TEST,
       purchaseValueArrays,
       purchaseValueSquaredArrays,
-      validPurchaseArrays);
+      validPurchaseArrays,
+      logValueArrays);
   calculateStatistics(
       GroupType::CONTROL,
       purchaseValueArrays,
       purchaseValueSquaredArrays,
-      validPurchaseArrays);
+      validPurchaseArrays,
+      logValueArrays);
 }
 
 template <int MY_ROLE>
@@ -253,7 +265,8 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
     const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
-    const std::vector<std::vector<emp::Bit>>& validPurchaseArrays) {
+    const std::vector<std::vector<emp::Bit>>& validPurchaseArrays,
+    const std::vector<std::vector<emp::Integer>>& logValueArrays) {
   XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
              << " events, value, and value squared";
   auto bits = calculatePopulation(groupType, inputData_.getControlPopulation());
@@ -268,6 +281,7 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
           InputData::LiftGranularityType::Conversion) {
     calculateValue(groupType, purchaseValueArrays, eventArrays);
     calculateValueSquared(groupType, purchaseValueSquaredArrays, eventArrays);
+    calculateLogValueSum(groupType, logValueArrays, eventArrays);
   }
 }
 
@@ -470,6 +484,59 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
       subgroupMetrics_[i].testSquared = sum(groupInts);
     } else {
       subgroupMetrics_[i].controlSquared = sum(groupInts);
+    }
+  }
+}
+
+template <int MY_ROLE>
+void OutputMetrics<MY_ROLE>::calculateLogValueSum(
+    const OutputMetrics::GroupType& groupType,
+    const std::vector<std::vector<emp::Integer>>& logValueArrays,
+    const std::vector<std::vector<emp::Bit>>& eventArrays) {
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " sum of log values";
+  std::vector<emp::Integer> logValues = secret_sharing::zip_and_map<
+      std::vector<emp::Bit>,
+      std::vector<emp::Integer>,
+      emp::Integer>(
+      eventArrays,
+      logValueArrays,
+      [](std::vector<emp::Bit> events,
+         std::vector<emp::Integer> values) -> emp::Integer {
+        emp::Integer sumLogValue{
+            values.at(0).size(), 0, emp::PUBLIC};
+        if (events.size() != values.size()) {
+          XLOG(FATAL)
+              << "Numbers of event bits and log values are inconsistent.";
+        }
+        emp::Bit tookAccumulationAlready{false, emp::PUBLIC};
+        for (auto i = 0; i < events.size(); ++i) {
+          // If this event is valid and we haven't taken the accumulation yet,
+          // use this value as the sumLogValue accumulation.
+          // emp::If(condition, true_case, false_case)
+          sumLogValue = emp::If(
+              events.at(i) & !tookAccumulationAlready,
+              values.at(i),
+              sumLogValue);
+          // Always make sure we keep tookAccumulationAlready up-to-date
+          tookAccumulationAlready = tookAccumulationAlready | events.at(i);
+        }
+        return sumLogValue;
+      });
+
+  if (groupType == GroupType::TEST) {
+    metrics_.testLogValue = sum(logValues);
+  } else {
+    metrics_.controlLogValue = sum(logValues);
+  }
+
+  // And compute for subgroups
+  for (auto i = 0; i < numGroups_; ++i) {
+    auto groupInts = secret_sharing::multiplyBitmask(
+        logValues, groupBitmasks_.at(i));
+    if (groupType == GroupType::TEST) {
+      subgroupMetrics_[i].testLogValue = sum(groupInts);
+    } else {
+      subgroupMetrics_[i].controlLogValue = sum(groupInts);
     }
   }
 }
