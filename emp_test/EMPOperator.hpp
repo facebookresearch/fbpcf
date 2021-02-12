@@ -5,37 +5,47 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "folly/logging/xlog.h"
 #include "../pcf/mpc/EmpGame.h"
-#include "EMPOperatorTestConfig.hpp"
+#include "../pcf/mpc/QueueIO.h"
 
 namespace pcf {
 
-template <class IOChannel, class OutputDataType>
-class EMPOperator
-    : public EmpGame<IOChannel, EMPOperatorTestConfig, OutputDataType> {
+template <class DataType, class EmpDataType, typename InputConfig>
+class EMPOperator : public EmpGame<QueueIO, InputConfig, DataType> {
  public:
-  EMPOperator(std::unique_ptr<IOChannel> io, Party party)
-      : EmpGame<IOChannel, EMPOperatorTestConfig, OutputDataType>(
-            std::move(io),
-            party) {}
-  OutputDataType play(const EMPOperatorTestConfig& inputConfig) {
-    emp::Integer alice{64, inputConfig.inputData, emp::ALICE};
-    emp::Integer bob{64, inputConfig.inputData, emp::BOB};
+  EMPOperator(std::unique_ptr<QueueIO> io, Party party)
+      : EmpGame<QueueIO, InputConfig, DataType>(std::move(io), party) {}
 
-    OutputDataType result;
-    switch (inputConfig.operatorType) {
-      case EMPOperatorType::Addition:
-        result = (alice + bob).reveal<OutputDataType>();
-        break;
-    }
-
-    XLOGF(
-        INFO,
-        "{} result of Alice and Bob:  {}",
-        inputConfig.operatorType,
-        result);
+  DataType play(const InputConfig& input) {
+    EmpDataType emp_res =
+        operate<DataType, EmpDataType>(input.inputData, input.op);
+    DataType result = emp_res.template reveal<DataType>();
+    XLOGF(INFO, "result of Alice and Bob:  {}", result);
     return result;
+  }
+
+ private:
+  template <typename I, typename T>
+  T operate(const I& input, std::function<T(T, T)> f) {
+    return operate(input, f);
+  }
+
+  template <>
+  emp::Integer operate<int64_t, emp::Integer>(
+      const int64_t& input,
+      std::function<emp::Integer(emp::Integer, emp::Integer)> f) {
+    emp::Integer a{64, input, emp::ALICE};
+    emp::Integer b{64, input, emp::BOB};
+    return f(a, b);
+  }
+
+  template <>
+  emp::Bit operate<bool, emp::Bit>(
+      const bool& input,
+      std::function<emp::Bit(emp::Bit, emp::Bit)> f) {
+    emp::Bit a{input, emp::ALICE};
+    emp::Bit b{input, emp::BOB};
+    return f(a, b);
   }
 };
 } // namespace pcf

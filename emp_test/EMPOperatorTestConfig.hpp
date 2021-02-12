@@ -7,11 +7,13 @@
 
 #pragma once
 
-namespace pcf {
-enum EMPOperatorType { Addition };
+#include <functional>
 
+namespace pcf {
+
+template <typename DataType, typename EmpDataType>
 struct EMPOperatorTestConfig {
-  EMPOperatorType operatorType;
-  int64_t inputData;
+  std::function<EmpDataType(EmpDataType, EmpDataType)> op;
+  DataType inputData;
 };
 } // namespace pcf
