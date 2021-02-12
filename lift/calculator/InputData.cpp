@@ -112,7 +112,7 @@ void InputData::setValuesFields(std::string& str) {
     uint64_t acc = 0;
     // NOTE: Don't use `auto` here since it will give us std::size_t (which is
     // unsigned) and will underflow and cause an ASAN error.
-    for (int i = valuesArr.size() - 1; i >= 0; --i) {
+    for (int64_t i = valuesArr.size() - 1; i >= 0; --i) {
       // 1. Add accumulation of total value seen so far iterating backwards
       acc += valuesArr.at(i);
       // 2. Set valuesSquared at this index as acc**2
