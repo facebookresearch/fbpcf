@@ -12,13 +12,13 @@
 namespace pcf::perf {
 class TestClass {
  public:
-  int a(int x, int y) {
+  int32_t a(int32_t x, int32_t y) {
     return x + y;
   }
 
-  void b(int /* x */, int /* y */) {}
+  void b(int32_t /* x */, int32_t /* y */) {}
 
-  int c() {
+  int32_t c() {
     return 3;
   }
 
