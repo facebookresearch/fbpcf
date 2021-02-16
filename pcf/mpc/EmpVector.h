@@ -31,7 +31,7 @@ class EmpVector {
     if (!std::is_same<EmpType, emp::Integer>::value) {
       throw PcfException{"Type doesn't match"};
     }
-    const int numBits = sizeof(int64_t) * 8;
+    const int32_t numBits = sizeof(int64_t) * 8;
     EmpType a{numBits, item, emp::ALICE};
     EmpType b{numBits, item, emp::BOB};
     v_.push_back(std::pair(a, b));
@@ -54,7 +54,7 @@ class EmpVector {
     }
   }
 
-  int size() {
+  int64_t size() {
     return v_.size();
   }
 
