@@ -13,6 +13,8 @@ void addLiftMetricsToEmpVector(
     const LiftMetrics& metrics) {
   v.add(metrics.testPopulation);
   v.add(metrics.controlPopulation);
+  v.add(metrics.testConversions);
+  v.add(metrics.controlConversions);
   v.add(metrics.testConverters);
   v.add(metrics.controlConverters);
   v.add(metrics.testValue);
@@ -28,6 +30,8 @@ LiftMetrics genLiftMetricsFromVector(
 
   metrics.testPopulation = v[index++];
   metrics.controlPopulation = v[index++];
+  metrics.testConversions = v[index++];
+  metrics.controlConversions = v[index++];
   metrics.testConverters = v[index++];
   metrics.controlConverters = v[index++];
   metrics.testValue = v[index++];
@@ -45,6 +49,8 @@ EncryptedLiftMetrics genLiftMetricsFromVector(
 
   metrics.testPopulation = v[index++];
   metrics.controlPopulation = v[index++];
+  metrics.testConversions = v[index++];
+  metrics.controlConversions = v[index++];
   metrics.testConverters = v[index++];
   metrics.controlConverters = v[index++];
   metrics.testValue = v[index++];
@@ -60,6 +66,8 @@ void addLiftMetricsToEmpVector(
     const EncryptedLiftMetrics& metrics) {
   v.push_back(metrics.testPopulation);
   v.push_back(metrics.controlPopulation);
+  v.push_back(metrics.testConversions);
+  v.push_back(metrics.controlConversions);
   v.push_back(metrics.testConverters);
   v.push_back(metrics.controlConverters);
   v.push_back(metrics.testValue);

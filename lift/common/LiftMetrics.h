@@ -18,6 +18,8 @@ namespace private_lift {
 struct LiftMetrics {
   int64_t testPopulation;
   int64_t controlPopulation;
+  int64_t testConversions;
+  int64_t controlConversions;
   int64_t testConverters;
   int64_t controlConverters;
   int64_t testValue;

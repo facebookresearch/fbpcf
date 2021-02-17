@@ -53,6 +53,7 @@ std::vector<std::string> AggregatorApp::getInputPaths(
 std::vector<GroupedLiftMetrics> AggregatorApp::getInputData() {
   XLOG(INFO) << "getting input data ...";
   auto inputPaths = AggregatorApp::getInputPaths(inputPath_, numShards_);
+
   return pcf::functional::map<std::string, GroupedLiftMetrics>(
       inputPaths, [](const auto& inputPath) {
         return GroupedLiftMetrics::fromJson(pcf::io::read(inputPath));

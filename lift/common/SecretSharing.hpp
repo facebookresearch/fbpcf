@@ -370,6 +370,24 @@ const std::vector<O> zip_and_map(
   return out;
 }
 
+template <typename T, typename S, typename O, typename N>
+const std::pair<std::vector<O>, std::vector<N>> zip_and_map(
+    const std::vector<T>& vec1,
+    const std::vector<S>& vec2,
+    std::function<std::pair<O, N>(T, S)> map_fn) {
+  assert(vec1.size() == vec2.size());
+
+  // Apply the map function
+  std::pair<std::vector<O>, std::vector<N>> out;
+  for (int i = 0; i < vec1.size(); ++i) {
+    auto res = map_fn(vec1[i], vec2[i]);
+    out.first.push_back(res.first);
+    out.second.push_back(res.second);
+  }
+
+  return out;
+}
+
 template <typename T, typename S, typename R, typename O>
 const std::vector<O> zip_and_map(
     const std::vector<T>& vec1,

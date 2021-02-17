@@ -27,7 +27,7 @@ class LiftAggregationGameTest : public ::testing::Test {
  private:
   LiftMetrics fakeLiftMetrics() {
     auto r = []() { return folly::Random::rand32(); };
-    return LiftMetrics{r(), r(), r(), r(), r(), r(), r(), r()};
+    return LiftMetrics{r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
   }
 
   GroupedLiftMetrics fakeGroupedMetrics() {

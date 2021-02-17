@@ -118,6 +118,8 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
 
     outfile << subOut.testEvents << ",";
     outfile << subOut.controlEvents << ",";
+    outfile << subOut.testConverters << ",";
+    outfile << subOut.controlConverters << ",";
     // Value metrics are only relevant for conversion lift
     if (inputData_.getLiftGranularityType() ==
         InputData::LiftGranularityType::Conversion) {
@@ -356,33 +358,45 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     const OutputMetrics::GroupType& groupType,
     const std::vector<emp::Bit>& populationBits,
     const std::vector<std::vector<emp::Bit>>& validPurchaseArrays) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " events";
-  std::vector<std::vector<emp::Bit>> eventArrays = secret_sharing::
-      zip_and_map<emp::Bit, std::vector<emp::Bit>, std::vector<emp::Bit>>(
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " conversions & converters";
+  auto [eventArrays, converterArrays] = secret_sharing::
+      zip_and_map<emp::Bit, std::vector<emp::Bit>, std::vector<emp::Bit>, emp::Bit>(
           populationBits,
           validPurchaseArrays,
           [](emp::Bit isUser, std::vector<emp::Bit> validPurchaseArray)
-              -> std::vector<emp::Bit> {
+              -> std::pair<std::vector<emp::Bit>, emp::Bit> {
             std::vector<emp::Bit> vec;
+            emp::Bit anyValidPurchase{false, emp::PUBLIC};
             for (const auto& validPurchase : validPurchaseArray) {
               vec.push_back(isUser & validPurchase);
+              anyValidPurchase = (anyValidPurchase | validPurchase);
             }
-            return vec;
+            return std::make_pair(vec, isUser & anyValidPurchase);
           });
 
   if (groupType == GroupType::TEST) {
     metrics_.testEvents = sum(eventArrays);
+    metrics_.testConverters = sum(converterArrays);
   } else {
     metrics_.controlEvents = sum(eventArrays);
+    metrics_.controlConverters = sum(converterArrays);
   }
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
-    auto groupBits =
+    auto groupEventBits =
         secret_sharing::multiplyBitmask(eventArrays, groupBitmasks_.at(i));
-    groupType == GroupType::TEST
-        ? subgroupMetrics_[i].testEvents = sum(groupBits)
-        : subgroupMetrics_[i].controlEvents = sum(groupBits);
+    auto groupConverterBits =
+        secret_sharing::multiplyBitmask(converterArrays, groupBitmasks_.at(i));
+    auto groupEvents = sum(groupEventBits);
+    auto groupConverters = sum(groupConverterBits);
+    if (groupType == GroupType::TEST) {
+      subgroupMetrics_[i].testEvents = groupEvents;
+      subgroupMetrics_[i].testConverters = groupConverters;
+    } else {
+      subgroupMetrics_[i].controlEvents = groupEvents;
+      subgroupMetrics_[i].controlConverters = groupConverters;
+    }
   }
   return eventArrays;
 }

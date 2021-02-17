@@ -72,6 +72,8 @@ OutputMetricsData LiftCalculator::compute(
   out.controlPopulation = 0;
   out.testEvents = 0;
   out.controlEvents = 0;
+  out.testConverters = 0;
+  out.controlConverters = 0;
   out.testValue = 0;
   out.controlValue = 0;
   out.testSquared = 0;
@@ -135,11 +137,17 @@ OutputMetricsData LiftCalculator::compute(
     }
     if (opportunity && opportunityTimestamp > 0) {
       uint64_t value_subsum = 0;
+      bool converted = false;
       if (testFlag) {
         ++out.testPopulation;
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
+            // Only record the first time the user has a valid conversion
+            if (!converted) {
+              ++out.testConverters;
+            }
             ++out.testEvents;
+            converted = true;
             if (valuesIdx != -1) {
               // Only add values if the values column exists
               // (support valueless objectives)
@@ -153,7 +161,12 @@ OutputMetricsData LiftCalculator::compute(
         ++out.controlPopulation;
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
+            // Only record the first time the user has a valid conversion
+            if (!converted) {
+              ++out.controlConverters;
+            }
             ++out.controlEvents;
+            converted = true;
             if (valuesIdx != -1) {
               // Only add values if the values column exists
               // (support valueless objectives)

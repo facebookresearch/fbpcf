@@ -16,10 +16,10 @@ namespace private_lift {
 struct OutputMetricsData {
   int64_t testPopulation = 0;
   int64_t controlPopulation = 0;
-  // For conversion_lift, events == conversions
-  // For converter_lift, events == converters
   int64_t testEvents = 0;
   int64_t controlEvents = 0;
+  int64_t testConverters = 0;
+  int64_t controlConverters = 0;
   int64_t testValue = 0;
   int64_t controlValue = 0;
   int64_t testSquared = 0;
@@ -43,13 +43,10 @@ struct OutputMetricsData {
   friend std::ostream& operator<<(
       std::ostream& os,
       const OutputMetricsData& out) {
-    if (out.isConversionLift()) {
-      os << "Test Conversions: " << out.testEvents << "\n";
-      os << "Control Conversions: " << out.controlEvents << "\n";
-    } else {
-      os << "Test Converters: " << out.testEvents << "\n";
-      os << "Control Converters: " << out.controlEvents << "\n";
-    }
+    os << "Test Conversions: " << out.testEvents << "\n";
+    os << "Control Conversions: " << out.controlEvents << "\n";
+    os << "Test Converters: " << out.testConverters << "\n";
+    os << "Control Converters: " << out.controlConverters << "\n";
     os << "Test Value: " << out.testValue << "\n";
     os << "Control Value: " << out.controlValue << "\n";
     os << "Test Squared: " << out.testSquared << "\n";
@@ -74,8 +71,10 @@ struct OutputMetricsData {
     LiftMetrics metrics{};
     metrics.testPopulation = testPopulation;
     metrics.controlPopulation = controlPopulation;
-    metrics.testConverters = testEvents;
-    metrics.controlConverters = controlEvents;
+    metrics.testConversions = testEvents;
+    metrics.controlConversions = controlEvents;
+    metrics.testConverters = testConverters;
+    metrics.controlConverters = controlConverters;
     metrics.testValue = testValue;
     metrics.controlValue = controlValue;
     metrics.testSquared = testSquared;

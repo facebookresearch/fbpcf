@@ -274,6 +274,17 @@ const std::vector<O> zip_and_map(
     std::function<O(T, S)> map_fn);
 
 /*
+ * Execute map_fn on pairwise items from vec1 and vec2
+ * construct a vector of the return type of map_fn and return that to
+ * the caller.
+ */
+template <typename T, typename S, typename O, typename N>
+const std::pair<std::vector<O>, std::vector<N>> zip_and_map(
+    const std::vector<T>& vec1,
+    const std::vector<S>& vec2,
+    std::function<std::pair<O, N>(T, S)> map_fn);
+
+/*
  * Execute map_fn on pairwise items from vec1, vec2, and vec3
  * construct a vector of the return type of map_fn and return that to
  * the caller
