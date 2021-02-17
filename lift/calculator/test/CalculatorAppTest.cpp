@@ -83,7 +83,7 @@ class CalculatorAppTest : public ::testing::Test {
   }
 
  protected:
-  int port_;
+  uint16_t port_;
   std::string baseDir_;
   std::string inputPathAlice_;
   std::string inputPathBob_;
