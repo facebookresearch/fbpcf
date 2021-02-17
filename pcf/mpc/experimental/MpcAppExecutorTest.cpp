@@ -24,8 +24,8 @@ class MpcAppExecutorTest : public ::testing::Test {
 
   static void
   executeApps(Party party, const std::string& serverIp, uint16_t port) {
-    constexpr int kNumOfTask = 10;
-    constexpr int kConcurrency = 4;
+    constexpr int32_t kNumOfTask = 10;
+    constexpr int32_t kConcurrency = 4;
     std::vector<std::unique_ptr<MillionaireApp>> apps;
 
     for (auto i = 0; i < kNumOfTask; i++) {
