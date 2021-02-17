@@ -28,7 +28,7 @@ template <int MY_ROLE>
 const std::vector<PrivateInt<MY_ROLE>> privatelyShareInts(
     const std::vector<int64_t>& in,
     std::optional<int64_t> numVals,
-    int bitLen) {
+    int32_t bitLen) {
   // Batch transfer inputs
   emp::Batcher myBatcher;
   emp::Batcher theirBatcher;
