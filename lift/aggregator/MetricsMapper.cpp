@@ -23,7 +23,7 @@ void addLiftMetricsToEmpVector(
 
 LiftMetrics genLiftMetricsFromVector(
     const std::vector<int64_t>& v,
-    int& index) {
+    int64_t& index) {
   LiftMetrics metrics;
 
   metrics.testPopulation = v[index++];
@@ -40,7 +40,7 @@ LiftMetrics genLiftMetricsFromVector(
 
 EncryptedLiftMetrics genLiftMetricsFromVector(
     const std::vector<emp::Integer>& v,
-    int& index) {
+    int64_t& index) {
   EncryptedLiftMetrics metrics;
 
   metrics.testPopulation = v[index++];
@@ -96,7 +96,7 @@ GroupedLiftMetrics mapVectorToGroupedLiftMetrics(
     const std::vector<int64_t>& v) {
   GroupedLiftMetrics metrics;
 
-  int i = 0;
+  int64_t i = 0;
   metrics.metrics = genLiftMetricsFromVector(v, i);
 
   while (i < v.size()) {
@@ -110,7 +110,7 @@ GroupedEncryptedLiftMetrics mapVectorToGroupedLiftMetrics(
     const std::vector<emp::Integer>& v) {
   GroupedEncryptedLiftMetrics metrics;
 
-  int i = 0;
+  int64_t i = 0;
   metrics.metrics = genLiftMetricsFromVector(v, i);
 
   while (i < v.size()) {
