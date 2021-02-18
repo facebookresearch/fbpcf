@@ -27,7 +27,7 @@ std::vector<T> apply(
   std::vector<T> res;
   res.reserve(a.size());
 
-  for (int i = 0; i < a.size(); i++) {
+  for (int64_t i = 0; i < a.size(); i++) {
     res.push_back(f(a[i], b[i]));
   }
 
