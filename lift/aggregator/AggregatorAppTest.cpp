@@ -42,7 +42,7 @@ class AggregatorAppIntegrationTest : public ::testing::Test {
       const pcf::Party& party,
       const pcf::Visibility& visibility,
       const std::string& serverIp,
-      const int& port,
+      const uint16_t& port,
       const int& numShards,
       const std::string& inputPath,
       const std::string& outputPath) {
@@ -52,7 +52,7 @@ class AggregatorAppIntegrationTest : public ::testing::Test {
   }
 
  protected:
-  int port_;
+  uint16_t port_;
   std::string baseDir_;
   std::string outputPathAlice_;
   std::string outputPathBob_;
