@@ -26,7 +26,7 @@ class AggregatorApp : public pcf::EmpApp<
       pcf::Visibility visibility,
       const std::string& serverIp,
       uint16_t port,
-      int numShards,
+      int32_t numShards,
       const std::string& inputPath,
       const std::string& outputPath)
       : pcf::EmpApp<
@@ -48,10 +48,10 @@ class AggregatorApp : public pcf::EmpApp<
  private:
   static std::vector<std::string> getInputPaths(
       const std::string& inputPath,
-      int numShards);
+      int32_t numShards);
 
  private:
-  int numShards_;
+  int32_t numShards_;
   std::string inputPath_;
   std::string outputPath_;
   pcf::Visibility visibility_;
