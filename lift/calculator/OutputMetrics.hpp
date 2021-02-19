@@ -11,37 +11,37 @@
 
 namespace private_lift {
 
-constexpr int PUBLISHER = emp::ALICE;
-constexpr int PARTNER = emp::BOB;
-constexpr int QUICK_BITS = 32;
-constexpr int FULL_BITS = 64;
+constexpr int32_t PUBLISHER = emp::ALICE;
+constexpr int32_t PARTNER = emp::BOB;
+constexpr int32_t QUICK_BITS = 32;
+constexpr int32_t FULL_BITS = 64;
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 constexpr auto privatelyShareInt = secret_sharing::privatelyShareInt<MY_ROLE>;
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 constexpr auto privatelyShareIntsFromPublisher =
     secret_sharing::privatelyShareIntsFromAlice<MY_ROLE>;
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 constexpr auto privatelyShareIntsFromPartner =
     secret_sharing::privatelyShareIntsFromBob<MY_ROLE>;
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 constexpr auto privatelyShareBitsFromPublisher =
     secret_sharing::privatelyShareBitsFromAlice<MY_ROLE>;
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 constexpr auto privatelyShareBitsFromPartner =
     secret_sharing::privatelyShareBitsFromBob<MY_ROLE>;
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 constexpr auto privatelyShareIntArraysFromPartner =
     secret_sharing::privatelyShareIntArraysNoPaddingFromBob<MY_ROLE>;
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 template <class T>
 T OutputMetrics<MY_ROLE>::reveal(const emp::Integer& empInteger) const {
   return shouldUseXorEncryption() ? empInteger.reveal<T>(emp::XOR)
                                   : empInteger.reveal<T>();
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 std::string OutputMetrics<MY_ROLE>::playGame() {
   validateNumRows();
   initNumGroups();
@@ -78,7 +78,7 @@ std::string OutputMetrics<MY_ROLE>::playGame() {
   return toJson();
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
   // Start by outputting the overall results
   outfile << "Overall"
@@ -133,7 +133,7 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 std::string OutputMetrics<MY_ROLE>::toJson() const {
   GroupedLiftMetrics groupedLiftMetrics;
   groupedLiftMetrics.metrics = metrics_.toLiftMetrics();
@@ -145,7 +145,7 @@ std::string OutputMetrics<MY_ROLE>::toJson() const {
   return groupedLiftMetrics.toJson();
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::validateNumRows() {
   auto numRows = privatelyShareInt<MY_ROLE>(n_);
   auto publisherNumRows = numRows.publisherInt().template reveal<int64_t>();
@@ -161,7 +161,7 @@ void OutputMetrics<MY_ROLE>::validateNumRows() {
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::initNumGroups() {
   XLOG(INFO) << "Set up number of groups and groupId share";
   // emp::Integer operates on int64_t values, so we do a static cast here
@@ -178,7 +178,7 @@ void OutputMetrics<MY_ROLE>::initNumGroups() {
   XLOG(INFO) << "Will be computing metrics for " << numGroups_ << " subgroups";
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::initShouldSkipValues() {
   XLOG(INFO) << "Determine if value-based calculations should be skipped";
   bool hasValues = inputData_.getPurchaseValueArrays().empty();
@@ -187,7 +187,7 @@ void OutputMetrics<MY_ROLE>::initShouldSkipValues() {
   XLOG(INFO) << "shouldSkipValues = " << shouldSkipValues_;
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::initBitsForValues() {
   if (!shouldSkipValues_) {
     XLOG(INFO) << "Set up number of bits needed for purchase value sharing";
@@ -208,7 +208,7 @@ void OutputMetrics<MY_ROLE>::initBitsForValues() {
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateAll() {
   XLOG(INFO) << "Start calculation of output metrics";
 
@@ -262,7 +262,7 @@ void OutputMetrics<MY_ROLE>::calculateAll() {
       logValueArrays);
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateStatistics(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
@@ -287,7 +287,7 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 std::vector<emp::Bit> OutputMetrics<MY_ROLE>::calculatePopulation(
     const OutputMetrics::GroupType& groupType,
     const std::vector<int64_t> populationVec) {
@@ -318,7 +318,7 @@ std::vector<emp::Bit> OutputMetrics<MY_ROLE>::calculatePopulation(
   return populationBits;
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 std::vector<std::vector<emp::Bit>>
 OutputMetrics<MY_ROLE>::calculateValidPurchases() {
   // TODO: We're using 32 bits for timestamps along with an offset setting the
@@ -353,7 +353,7 @@ OutputMetrics<MY_ROLE>::calculateValidPurchases() {
       });
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     const OutputMetrics::GroupType& groupType,
     const std::vector<emp::Bit>& populationBits,
@@ -401,7 +401,7 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
   return eventArrays;
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateValue(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
@@ -449,7 +449,7 @@ void OutputMetrics<MY_ROLE>::calculateValue(
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateValueSquared(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
@@ -502,7 +502,7 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateLogValueSum(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& logValueArrays,
@@ -555,18 +555,18 @@ void OutputMetrics<MY_ROLE>::calculateLogValueSum(
   }
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 int64_t OutputMetrics<MY_ROLE>::sum(const std::vector<emp::Integer>& in) const {
   return shouldUseXorEncryption() ? emp_utils::sum<emp::XOR>(in)
                                   : emp_utils::sum<emp::PUBLIC>(in);
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 int64_t OutputMetrics<MY_ROLE>::sum(const std::vector<emp::Bit>& in) const {
   return sum(emp_utils::bitsToInts(in));
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 int64_t OutputMetrics<MY_ROLE>::sum(
     const std::vector<std::vector<emp::Bit>>& in) const {
   // flatten the 2D vector into 1D
@@ -579,7 +579,7 @@ int64_t OutputMetrics<MY_ROLE>::sum(
   return sum(accum);
 }
 
-template <int MY_ROLE>
+template <int32_t MY_ROLE>
 int64_t OutputMetrics<MY_ROLE>::sum(
     const std::vector<std::vector<emp::Integer>>& in) const {
   // flatten the 2D vector into 1D
