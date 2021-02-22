@@ -24,6 +24,8 @@ struct OutputMetricsData {
   int64_t controlValue = 0;
   int64_t testSquared = 0;
   int64_t controlSquared = 0;
+  int64_t testMatchCount = 0;
+  int64_t controlMatchCount = 0;
   int64_t testLogValue = 0;
   int64_t controlLogValue = 0;
   int64_t testStddevValue = 0;
@@ -53,6 +55,8 @@ struct OutputMetricsData {
     os << "Control Squared: " << out.controlSquared << "\n";
     os << "Test Population: " << out.testPopulation << "\n";
     os << "Control Population: " << out.controlPopulation << "\n";
+    os << "Test Match Count: " << out.testMatchCount << "\n";
+    os << "Control Match Count: " << out.controlMatchCount << "\n";
     os << "Test LogValue: " << out.testLogValue << "\n";
     os << "Control LogValue: " << out.controlLogValue << "\n";
     os << "Test StddevValue: " << out.testStddevValue << "\n";
@@ -79,6 +83,8 @@ struct OutputMetricsData {
     metrics.controlValue = controlValue;
     metrics.testSquared = testSquared;
     metrics.controlSquared = controlSquared;
+    metrics.testMatchCount = testMatchCount;
+    metrics.controlMatchCount = controlMatchCount;
     metrics.testLogValue = testLogValue;
     metrics.controlLogValue = controlLogValue;
     metrics.testStddevValue = testStddevValue;

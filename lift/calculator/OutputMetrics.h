@@ -116,6 +116,12 @@ class OutputMetrics {
       const std::vector<emp::Bit>& populationBits,
       const std::vector<std::vector<emp::Bit>>& validPurchaseArrays);
 
+  // Test/control match count: testPopulation/Control population &
+  void calculateMatchCount(
+      const OutputMetrics::GroupType& groupType,
+      const std::vector<emp::Bit>& populationBits,
+      const std::vector<std::vector<emp::Integer>>& purchaseValueArrays);
+
   // Test/Control value: testPurchaser/controlPurchaser ? purchaseValue : 0
   void calculateValue(
       const OutputMetrics::GroupType& groupType,

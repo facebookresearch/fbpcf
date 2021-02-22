@@ -95,6 +95,8 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
   }
   outfile << metrics_.testPopulation << ",";
   outfile << metrics_.controlPopulation << "\n";
+  outfile << metrics_.testMatchCount << ",";
+  outfile << metrics_.controlMatchCount << "\n";
 
   // Then output results for each group
   // Print each subgroup header. Note that the publisher won't know anything
@@ -229,7 +231,6 @@ void OutputMetrics<MY_ROLE>::calculateAll() {
         n_, /* numVals */
         numConversionsPerUser_ /* arraySize */,
         valueBits_ /* bitLen */);
-
   }
 
   auto validPurchaseArrays = calculateValidPurchases();
@@ -276,6 +277,7 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
     bits = calculatePopulation(groupType, inputData_.getTestPopulation());
   }
   auto eventArrays = calculateEvents(groupType, bits, validPurchaseArrays);
+  calculateMatchCount(groupType, bits, purchaseValueArrays);
 
   // If this is (value-based) conversion lift, calculate value metrics now
   if (!shouldSkipValues_ &&
@@ -358,21 +360,25 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     const OutputMetrics::GroupType& groupType,
     const std::vector<emp::Bit>& populationBits,
     const std::vector<std::vector<emp::Bit>>& validPurchaseArrays) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " conversions & converters";
-  auto [eventArrays, converterArrays] = secret_sharing::
-      zip_and_map<emp::Bit, std::vector<emp::Bit>, std::vector<emp::Bit>, emp::Bit>(
-          populationBits,
-          validPurchaseArrays,
-          [](emp::Bit isUser, std::vector<emp::Bit> validPurchaseArray)
-              -> std::pair<std::vector<emp::Bit>, emp::Bit> {
-            std::vector<emp::Bit> vec;
-            emp::Bit anyValidPurchase{false, emp::PUBLIC};
-            for (const auto& validPurchase : validPurchaseArray) {
-              vec.push_back(isUser & validPurchase);
-              anyValidPurchase = (anyValidPurchase | validPurchase);
-            }
-            return std::make_pair(vec, isUser & anyValidPurchase);
-          });
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
+             << " conversions & converters";
+  auto [eventArrays, converterArrays] = secret_sharing::zip_and_map<
+      emp::Bit,
+      std::vector<emp::Bit>,
+      std::vector<emp::Bit>,
+      emp::Bit>(
+      populationBits,
+      validPurchaseArrays,
+      [](emp::Bit isUser, std::vector<emp::Bit> validPurchaseArray)
+          -> std::pair<std::vector<emp::Bit>, emp::Bit> {
+        std::vector<emp::Bit> vec;
+        emp::Bit anyValidPurchase{false, emp::PUBLIC};
+        for (const auto& validPurchase : validPurchaseArray) {
+          vec.push_back(isUser & validPurchase);
+          anyValidPurchase = (anyValidPurchase | validPurchase);
+        }
+        return std::make_pair(vec, isUser & anyValidPurchase);
+      });
 
   if (groupType == GroupType::TEST) {
     metrics_.testEvents = sum(eventArrays);
@@ -402,34 +408,93 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
 }
 
 template <int32_t MY_ROLE>
+void OutputMetrics<MY_ROLE>::calculateMatchCount(
+    const OutputMetrics::GroupType& groupType,
+    const std::vector<emp::Bit>& populationBits,
+    const std::vector<std::vector<emp::Integer>>& purchaseValueArrays) {
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " MatchCount";
+  // a valid test/control match is when a person with an opportunity who made
+  // ANY nonzero conversion. Therefore we can just check first if an opportunity
+  // is valid, then bitwise AND this with the bitwise OR over all purchases (to
+  // check for purchases). This gets us a binary indication if a user is
+  // matched with any opportunity
+
+  XLOG(INFO) << "Share opportunity timestamps";
+  const std::vector<emp::Integer> opportunityTimestamps =
+      privatelyShareIntsFromPublisher<MY_ROLE>(
+          inputData_.getOpportunityTimestamps(), n_, QUICK_BITS);
+  XLOG(INFO) << "Share purchase timestamps";
+  const std::vector<std::vector<emp::Integer>> purchaseTimestampArrays =
+      privatelyShareIntArraysFromPartner<MY_ROLE>(
+          inputData_.getPurchaseTimestampArrays(),
+          n_, /* numVals */
+          numConversionsPerUser_ /* arraySize */,
+          QUICK_BITS /* bitLen */);
+  auto matchArrays = secret_sharing::
+      zip_and_map<emp::Bit, emp::Integer, std::vector<emp::Integer>, emp::Bit>(
+          populationBits,
+          opportunityTimestamps,
+          purchaseTimestampArrays,
+          [](emp::Bit isUser,
+             emp::Integer opportunityTimestamp,
+             std::vector<emp::Integer> purchaseTimestampArray) -> emp::Bit {
+            const emp::Integer zero =
+                emp::Integer{opportunityTimestamp.size(), 0, emp::PUBLIC};
+            emp::Bit validOpportunity =
+                (isUser &
+                 (opportunityTimestamp >
+                  zero)); // check if opportunity is valid
+            emp::Bit isUserMatched = emp::Bit{0, emp::PUBLIC};
+            for (const auto& purchaseTS : purchaseTimestampArray) {
+              // check for the existence of a valid purchase
+              isUserMatched = isUserMatched | (purchaseTS > zero);
+            }
+            return isUserMatched & validOpportunity;
+          });
+  if (groupType == GroupType::TEST) {
+    metrics_.testMatchCount = sum(matchArrays);
+  } else {
+    metrics_.controlMatchCount = sum(matchArrays);
+  }
+  for (auto i = 0; i < numGroups_; ++i) {
+    auto groupBits =
+        secret_sharing::multiplyBitmask(matchArrays, groupBitmasks_.at(i));
+    if (groupType == GroupType::TEST) {
+      subgroupMetrics_[i].testMatchCount = sum(groupBits);
+    } else {
+      subgroupMetrics_[i].controlMatchCount = sum(groupBits);
+    }
+  }
+}
+
+template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateValue(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
     const std::vector<std::vector<emp::Bit>>& eventArrays) {
   XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " value";
-  std::vector<std::vector<emp::Integer>> valueArrays =
-      secret_sharing::zip_and_map<
-          std::vector<emp::Bit>,
-          std::vector<emp::Integer>,
-          std::vector<emp::Integer>>(
-          eventArrays,
-          purchaseValueArrays,
-          [](std::vector<emp::Bit> testEvents,
-             std::vector<emp::Integer> purchaseValues)
-              -> std::vector<emp::Integer> {
-            std::vector<emp::Integer> vec;
-            if (testEvents.size() != purchaseValues.size()) {
-              XLOG(FATAL)
-                  << "Numbers of test event bits and/or purchase values are inconsistent.";
-            }
-            for (auto i = 0; i < testEvents.size(); ++i) {
-              const emp::Integer zero =
-                  emp::Integer{purchaseValues.at(i).size(), 0, emp::PUBLIC};
-              vec.emplace_back(
-                  emp::If(testEvents.at(i), purchaseValues.at(i), zero));
-            }
-            return vec;
-          });
+  std::vector<std::vector<emp::Integer>> valueArrays = secret_sharing::zip_and_map<
+      std::vector<emp::Bit>,
+      std::vector<emp::Integer>,
+      std::vector<emp::Integer>>(
+      eventArrays,
+      purchaseValueArrays,
+      [](std::vector<emp::Bit> testEvents,
+         std::vector<emp::Integer> purchaseValues)
+          -> std::vector<emp::Integer> {
+        std::vector<emp::Integer> vec;
+        if (testEvents.size() != purchaseValues.size()) {
+          XLOG(FATAL)
+              << "Numbers of test event bits and/or purchase values are inconsistent.";
+        }
+        for (auto i = 0; i < testEvents.size(); ++i) {
+          const emp::Integer zero =
+              emp::Integer{purchaseValues.at(i).size(), 0, emp::PUBLIC};
+          vec.emplace_back(
+              emp::If(testEvents.at(i), purchaseValues.at(i), zero));
+        }
+        return vec;
+      });
 
   if (groupType == GroupType::TEST) {
     metrics_.testValue = sum(valueArrays);
@@ -492,8 +557,8 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
-    auto groupInts = secret_sharing::multiplyBitmask(
-        squaredValues, groupBitmasks_.at(i));
+    auto groupInts =
+        secret_sharing::multiplyBitmask(squaredValues, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
       subgroupMetrics_[i].testSquared = sum(groupInts);
     } else {
@@ -507,7 +572,8 @@ void OutputMetrics<MY_ROLE>::calculateLogValueSum(
     const OutputMetrics::GroupType& groupType,
     const std::vector<std::vector<emp::Integer>>& logValueArrays,
     const std::vector<std::vector<emp::Bit>>& eventArrays) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " sum of log values";
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
+             << " sum of log values";
   std::vector<emp::Integer> logValues = secret_sharing::zip_and_map<
       std::vector<emp::Bit>,
       std::vector<emp::Integer>,
@@ -516,8 +582,7 @@ void OutputMetrics<MY_ROLE>::calculateLogValueSum(
       logValueArrays,
       [](std::vector<emp::Bit> events,
          std::vector<emp::Integer> values) -> emp::Integer {
-        emp::Integer sumLogValue{
-            values.at(0).size(), 0, emp::PUBLIC};
+        emp::Integer sumLogValue{values.at(0).size(), 0, emp::PUBLIC};
         if (events.size() != values.size()) {
           XLOG(FATAL)
               << "Numbers of event bits and log values are inconsistent.";
@@ -545,8 +610,8 @@ void OutputMetrics<MY_ROLE>::calculateLogValueSum(
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
-    auto groupInts = secret_sharing::multiplyBitmask(
-        logValues, groupBitmasks_.at(i));
+    auto groupInts =
+        secret_sharing::multiplyBitmask(logValues, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
       subgroupMetrics_[i].testLogValue = sum(groupInts);
     } else {

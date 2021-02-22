@@ -78,6 +78,8 @@ OutputMetricsData LiftCalculator::compute(
   out.controlValue = 0;
   out.testSquared = 0;
   out.controlSquared = 0;
+  out.testMatchCount = 0;
+  out.controlMatchCount = 0;
 
   // Read line by line, at the same time compute metrics
   while (getline(inFilePublisher, linePublisher) &&
@@ -125,8 +127,8 @@ OutputMetricsData LiftCalculator::compute(
         parseArray(partsPartner.at(colNameToIndex.at("event_timestamps")));
 
     auto valuesIdx = colNameToIndex.find("values") != colNameToIndex.end()
-      ? colNameToIndex.at("values")
-      : -1;
+        ? colNameToIndex.at("values")
+        : -1;
     if (valuesIdx != -1) {
       values = parseArray(partsPartner.at(valuesIdx));
 
@@ -138,9 +140,16 @@ OutputMetricsData LiftCalculator::compute(
     if (opportunity && opportunityTimestamp > 0) {
       uint64_t value_subsum = 0;
       bool converted = false;
+      bool countedMatchAlready = false;
       if (testFlag) {
         ++out.testPopulation;
+
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
+          if (opportunityTimestamp > 0 && eventTimestamps.at(i) > 0 &&
+              !countedMatchAlready) {
+            ++out.testMatchCount;
+            countedMatchAlready = true;
+          }
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
             // Only record the first time the user has a valid conversion
             if (!converted) {
@@ -160,6 +169,11 @@ OutputMetricsData LiftCalculator::compute(
       } else {
         ++out.controlPopulation;
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
+          if (opportunityTimestamp > 0 && eventTimestamps.at(i) > 0 &&
+              !countedMatchAlready) {
+            ++out.controlMatchCount;
+            countedMatchAlready = true;
+          }
           if (opportunityTimestamp < eventTimestamps.at(i) + tsOffset) {
             // Only record the first time the user has a valid conversion
             if (!converted) {

@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <filesystem>
 #include <string>
@@ -25,8 +25,7 @@ class AggregatorAppIntegrationTest : public ::testing::Test {
  protected:
   void SetUp() override {
     port_ = 5000 + folly::Random::rand32() % 1000;
-    baseDir_ =
-        "./measurement/private_measurement/oss/lift/aggregator/test/";
+    baseDir_ = "./measurement/private_measurement/oss/lift/aggregator/test/";
     outputPathAlice_ =
         folly::sformat("{}_res_alice_{}", baseDir_, folly::Random::rand32());
     outputPathBob_ =
@@ -116,8 +115,8 @@ TEST_F(AggregatorAppIntegrationTest, TestVisibilityBob) {
       pcf::io::read(baseDir_ + "aggregator_metrics"));
   auto resAlice = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathAlice_));
   auto resBob = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathBob_));
-  GroupedLiftMetrics zeroMetrics{LiftMetrics{},
-                                 std::vector<LiftMetrics>{2, LiftMetrics{}}};
+  GroupedLiftMetrics zeroMetrics{
+      LiftMetrics{}, std::vector<LiftMetrics>{2, LiftMetrics{}}};
   EXPECT_EQ(zeroMetrics, resAlice);
   EXPECT_EQ(resExpected, resBob);
 }
