@@ -26,6 +26,8 @@ struct LiftMetrics {
   int64_t controlValue;
   int64_t testSquared;
   int64_t controlSquared;
+  int64_t testMatchCount;
+  int64_t controlMatchCount;
   int64_t testLogValue;
   int64_t controlLogValue;
   int64_t testStddevValue;

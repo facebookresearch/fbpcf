@@ -20,37 +20,47 @@ namespace private_lift {
 bool LiftMetrics::operator==(const LiftMetrics& other) const noexcept {
   return testPopulation == other.testPopulation &&
       controlPopulation == other.controlPopulation &&
-      testConversions == other.testConversions && controlConversions == other.controlConversions &&
-      testConverters == other.testConverters && controlConverters == other.controlConverters &&
+      testConversions == other.testConversions &&
+      controlConversions == other.controlConversions &&
+      testConverters == other.testConverters &&
+      controlConverters == other.controlConverters &&
       testValue == other.testValue && controlValue == other.controlValue &&
       testSquared == other.testSquared &&
-      controlSquared == other.controlSquared;
+      controlSquared == other.controlSquared &&
+      testMatchCount == other.testMatchCount &&
+      controlMatchCount == other.controlMatchCount;
 }
 
 LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
-  return LiftMetrics{testPopulation + other.testPopulation,
-                     controlPopulation + other.controlPopulation,
-                     testConversions + other.testConversions,
-                     controlConversions + other.controlConversions,
-                     testConverters + other.testConverters,
-                     controlConverters + other.controlConverters,
-                     testValue + other.testValue,
-                     controlValue + other.controlValue,
-                     testSquared + other.testSquared,
-                     controlSquared + other.controlSquared};
+  return LiftMetrics{
+      testPopulation + other.testPopulation,
+      controlPopulation + other.controlPopulation,
+      testConversions + other.testConversions,
+      controlConversions + other.controlConversions,
+      testConverters + other.testConverters,
+      controlConverters + other.controlConverters,
+      testValue + other.testValue,
+      controlValue + other.controlValue,
+      testSquared + other.testSquared,
+      controlSquared + other.controlSquared,
+      testMatchCount + other.testMatchCount,
+      controlMatchCount + other.controlMatchCount};
 }
 
 LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
-  return LiftMetrics{testPopulation ^ other.testPopulation,
-                     controlPopulation ^ other.controlPopulation,
-                     testConversions ^ other.testConversions,
-                     controlConversions ^ other.controlConversions,
-                     testConverters ^ other.testConverters,
-                     controlConverters ^ other.controlConverters,
-                     testValue ^ other.testValue,
-                     controlValue ^ other.controlValue,
-                     testSquared ^ other.testSquared,
-                     controlSquared ^ other.controlSquared};
+  return LiftMetrics{
+      testPopulation ^ other.testPopulation,
+      controlPopulation ^ other.controlPopulation,
+      testConversions ^ other.testConversions,
+      controlConversions ^ other.controlConversions,
+      testConverters ^ other.testConverters,
+      controlConverters ^ other.controlConverters,
+      testValue ^ other.testValue,
+      controlValue ^ other.controlValue,
+      testSquared ^ other.testSquared,
+      controlSquared ^ other.controlSquared,
+      testMatchCount ^ other.testMatchCount,
+      controlMatchCount ^ other.controlMatchCount};
 }
 
 std::string LiftMetrics::toJson() const {
@@ -65,11 +75,13 @@ LiftMetrics LiftMetrics::fromJson(const std::string& str) {
 
 folly::dynamic LiftMetrics::toDynamic() const {
   return folly::dynamic::object("testPopulation", testPopulation)(
-      "controlPopulation", controlPopulation)("testConversions", testConversions)(
-      "controlConversions", controlConversions)("testConverters", testConverters)(
-      "controlConverters", controlConverters)("testValue", testValue)(
-      "controlValue", controlValue)("testSquared", testSquared)(
-      "controlSquared", controlSquared);
+      "controlPopulation", controlPopulation)(
+      "testConversions", testConversions)(
+      "controlConversions", controlConversions)(
+      "testConverters", testConverters)("controlConverters", controlConverters)(
+      "testValue", testValue)("controlValue", controlValue)(
+      "testSquared", testSquared)("controlSquared", controlSquared)(
+      "testMatchCount", testMatchCount)("controlMatchCount", controlMatchCount);
 }
 
 LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
@@ -85,6 +97,8 @@ LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
   metrics.controlValue = obj["controlValue"].asInt();
   metrics.testSquared = obj["testSquared"].asInt();
   metrics.controlSquared = obj["controlSquared"].asInt();
+  metrics.testMatchCount = obj["testMatchCount"].asInt();
+  metrics.controlMatchCount = obj["controlMatchCount"].asInt();
 
   return metrics;
 }
