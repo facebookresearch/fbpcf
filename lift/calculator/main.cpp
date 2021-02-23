@@ -5,10 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <cstdio>
 #include <cstdlib>
 
 #include <glog/logging.h>
 #include <filesystem>
+#include <sstream>
 #include <string>
 
 #include <gflags/gflags.h>
@@ -27,14 +29,20 @@ DEFINE_int32(
     5000,
     "Network port for establishing connection to other player");
 DEFINE_string(
-    data_directory,
+    input_directory,
     "",
     "Data directory where input files are located");
 DEFINE_string(
-    input_filename,
-    "in.csv",
-    "Name of the input file that should be parsed (should have a header)");
-DEFINE_string(output_path, "", "local or s3 path of output files");
+    input_filenames,
+    "in.csv_0[,in.csv_1,in.csv_2,...]",
+    "List of input file names that should be parsed (should have a header)");
+DEFINE_string(
+    output_directory,
+    "",
+    "Local or s3 path where output files are written to");
+DEFINE_string(output_filenames,
+    "out.csv_0[,out.csv_1,out.csv_2,...]",
+    "List of output file names that correspond to input filenames (positionally)");
 DEFINE_int64(
     epoch,
     1546300800,
@@ -55,7 +63,6 @@ DEFINE_int32(
     concurrency,
     1,
     "max number of game(s) that will run concurrently?");
-DEFINE_int32(num_shards, 1, "total number of games to run");
 
 using namespace private_lift;
 
@@ -63,17 +70,41 @@ int main(int argc, char** argv) {
   folly::init(&argc, &argv);
   pcf::AwsSdk::aquire();
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  std::filesystem::path baseDirectory{FLAGS_data_directory};
+  std::filesystem::path inputDirectory{FLAGS_input_directory};
+  std::filesystem::path outputDirectory{FLAGS_output_directory};
 
-  auto inputPath = baseDirectory / FLAGS_input_filename;
+  std::vector<std::string> inputFilenames;
+  folly::split(',', FLAGS_input_filenames, inputFilenames);
 
-  XLOG(INFO) << "Running conversion lift with settings:\n"
-             << "\trole: " << FLAGS_role << "\n"
-             << "\tserver_ip_address: " << FLAGS_server_ip << "\n"
-             << "\tport: " << FLAGS_port << "\n"
-             << "\tnum_shards: " << FLAGS_num_shards << "\n"
-             << "\tconcurrency: " << FLAGS_concurrency << "\n"
-             << "\tinputPath: " << inputPath << "\n";
+  std::vector<std::string> outputFilenames;
+  folly::split(",", FLAGS_output_filenames, outputFilenames);
+
+  // Make sure the number of input files equals output files
+  if(inputFilenames.size() != outputFilenames.size()) {
+    XLOGF(ERR, "Error: input_filenames items ({}) does not equal output_filenames items ({})", inputFilenames.size(), outputFilenames.size());
+    return 1;
+  }
+
+  {
+    // Build a quick list of input/output files to log
+    std::ostringstream inputFileLogList;
+    for (auto inputFilename : inputFilenames) {
+      inputFileLogList << "\t\t" << inputFilename << "\n";
+    }
+    std::ostringstream outputFileLogList;
+    for (auto outputFilename : outputFilenames) {
+      outputFileLogList << "\t\t" << outputFilename << "\n";
+    }
+    XLOG(INFO) << "Running conversion lift with settings:\n"
+               << "\trole: " << FLAGS_role << "\n"
+               << "\tserver_ip_address: " << FLAGS_server_ip << "\n"
+               << "\tport: " << FLAGS_port << "\n"
+               << "\tconcurrency: " << FLAGS_concurrency << "\n"
+               << "\tinput: " << inputDirectory << "\n"
+               << inputFileLogList.str()
+               << "\toutput: " << outputDirectory << "\n"
+               << outputFileLogList.str();
+  }
 
   auto role = static_cast<pcf::Party>(FLAGS_role);
 
@@ -84,15 +115,13 @@ int main(int argc, char** argv) {
   // construct calculatorApps according to  FLAGS_num_shards and
   // FLAGS_concurrency
   std::vector<std::unique_ptr<CalculatorApp>> calculatorApps;
-  for (auto i = 0; i < FLAGS_num_shards; i++) {
+  for (auto i = 0; i < inputFilenames.size(); i++) {
     calculatorApps.push_back(std::make_unique<CalculatorApp>(
         role,
         FLAGS_server_ip,
         FLAGS_port + i % concurrency,
-        // given input_path, the ith task takes file input_path_i
-        baseDirectory / (FLAGS_input_filename + "_" + std::to_string(i)),
-        // given output_path, the ith task outputs output file output_path_i
-        FLAGS_output_path + "_" + std::to_string(i),
+        inputDirectory / inputFilenames[i],
+        outputDirectory / outputFilenames[i],
         FLAGS_use_xor_encryption));
   }
 
