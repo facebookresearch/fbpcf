@@ -55,7 +55,7 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
       oneLine.test_flag, purchaseRate, incrementalityRate);
   bool hasPurchase = folly::Random::secureRandDouble01() < purchaseRate;
   oneLine.opportunity_timestamp =
-      oneLine.opportunity ? folly::Random::secureRand32(100) + epoch : 0;
+      oneLine.opportunity ? folly::Random::secureRand32(1, 100) + epoch : 0;
 
   if (!hasPurchase) {
     oneLine.event_timestamps.resize(numConversions, 0);
@@ -65,7 +65,7 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
     std::vector<std::pair<int32_t, int32_t>> tsValVec;
     for (int32_t i = 0; i < numConversions; i++) {
       if (randomCount > 0) {
-        int32_t timeStamp = folly::Random::secureRand32(100) + epoch;
+        int32_t timeStamp = folly::Random::secureRand32(1, 100) + epoch;
         int32_t value = folly::Random::secureRand32(100) + 1;
         tsValVec.push_back(std::make_pair(timeStamp, value));
         randomCount--;
