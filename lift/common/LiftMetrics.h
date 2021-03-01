@@ -30,10 +30,6 @@ struct LiftMetrics {
   int64_t controlMatchCount;
   int64_t testLogValue;
   int64_t controlLogValue;
-  int64_t testStddevValue;
-  int64_t controlStddevValue;
-  int64_t testStddevLogValue;
-  int64_t controlStddevLogValue;
 
   bool operator==(const LiftMetrics& other) const noexcept;
   LiftMetrics operator+(const LiftMetrics& other) const noexcept;

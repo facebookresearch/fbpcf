@@ -28,10 +28,6 @@ class LiftMetricsTest : public ::testing::Test {
         r(),
         r(),
         r(),
-        r(),
-        r(),
-        r(),
-        r(),
         r()};
   }
 

@@ -41,10 +41,6 @@ class LiftAggregationGameTest : public ::testing::Test {
         r(),
         r(),
         r(),
-        r(),
-        r(),
-        r(),
-        r(),
         r()};
   }
 

@@ -13,7 +13,6 @@ namespace private_lift {
 EncryptedLiftMetrics EncryptedLiftMetrics::operator+(
     const EncryptedLiftMetrics& other) const noexcept {
   return EncryptedLiftMetrics{
-      idMatch + other.idMatch,
       testPopulation + other.testPopulation,
       controlPopulation + other.controlPopulation,
       testConversions + other.testConversions,
@@ -25,13 +24,14 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator+(
       testSquared + other.testSquared,
       controlSquared + other.controlSquared,
       testMatchCount + other.testMatchCount,
-      controlMatchCount + other.controlMatchCount};
+      controlMatchCount + other.controlMatchCount,
+      testLogValue + other.testLogValue,
+      controlLogValue + other.controlLogValue};
 }
 
 EncryptedLiftMetrics EncryptedLiftMetrics::operator^(
     const EncryptedLiftMetrics& other) const noexcept {
   return EncryptedLiftMetrics{
-      idMatch ^ other.idMatch,
       testPopulation ^ other.testPopulation,
       controlPopulation ^ other.controlPopulation,
       testConversions ^ other.testConversions,
@@ -43,6 +43,8 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator^(
       testSquared ^ other.testSquared,
       controlSquared ^ other.controlSquared,
       testMatchCount ^ other.testMatchCount,
-      controlMatchCount ^ other.controlMatchCount};
+      controlMatchCount ^ other.controlMatchCount,
+      testLogValue ^ other.testLogValue,
+      controlLogValue ^ other.controlLogValue};
 }
 } // namespace private_lift

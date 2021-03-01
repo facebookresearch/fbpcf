@@ -28,10 +28,6 @@ struct OutputMetricsData {
   int64_t controlMatchCount = 0;
   int64_t testLogValue = 0;
   int64_t controlLogValue = 0;
-  int64_t testStddevValue = 0;
-  int64_t controlStddevValue = 0;
-  int64_t testStddevLogValue = 0;
-  int64_t controlStddevLogValue = 0;
 
   OutputMetricsData() = default;
 
@@ -59,10 +55,6 @@ struct OutputMetricsData {
     os << "Control Match Count: " << out.controlMatchCount << "\n";
     os << "Test LogValue: " << out.testLogValue << "\n";
     os << "Control LogValue: " << out.controlLogValue << "\n";
-    os << "Test StddevValue: " << out.testStddevValue << "\n";
-    os << "Control StddevValue: " << out.controlStddevValue << "\n";
-    os << "Test StddevLogValue: " << out.testStddevLogValue << "\n";
-    os << "Control StddevLogValue: " << out.controlStddevLogValue << "\n";
 
     return os;
   }
@@ -87,10 +79,6 @@ struct OutputMetricsData {
     metrics.controlMatchCount = controlMatchCount;
     metrics.testLogValue = testLogValue;
     metrics.controlLogValue = controlLogValue;
-    metrics.testStddevValue = testStddevValue;
-    metrics.controlStddevValue = controlStddevValue;
-    metrics.testStddevLogValue = testStddevLogValue;
-    metrics.controlStddevLogValue = controlStddevLogValue;
     return metrics;
   }
 
