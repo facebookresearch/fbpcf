@@ -38,6 +38,24 @@ class EMPOperatorTestFixture : public ::testing::Test {
   std::function<emp::Integer(emp::Integer, emp::Integer)> intXor =
       [](const emp::Integer& x, const emp::Integer& y) { return x ^ y; };
 
+  std::function<emp::Integer(emp::Integer, emp::Integer)> intCompare =
+      [](const emp::Integer& x, const emp::Integer& y) {
+        emp::Integer res{64, 0, emp::PUBLIC};
+        if ((x > y).reveal<bool>()) {
+          res = emp::Integer(64, 1, emp::PUBLIC);
+        }
+        return res;
+      };
+
+  std::function<emp::Integer(emp::Integer, emp::Integer)> intIsEqual =
+      [](const emp::Integer& x, const emp::Integer& y) {
+        emp::Integer res{64, 0, emp::PUBLIC};
+        if ((x == y).reveal<bool>()) {
+          res = emp::Integer(64, 1, emp::PUBLIC);
+        }
+        return res;
+      };
+
   std::function<emp::Bit(emp::Bit, emp::Bit)> bitAnd =
       [](const emp::Bit& x, const emp::Bit& y) { return x & y; };
 
@@ -117,6 +135,42 @@ TEST_F(EMPOperatorTestFixture, IntMultiplicationRandomNumbers) {
   int64_t ans_expected = a * b;
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intMultiply, a};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intMultiply, b};
+
+  auto [res1, res2] = pcf::mpc::test<
+      EMPOperator<
+          int64_t,
+          emp::Integer,
+          EMPOperatorTestConfig<int64_t, emp::Integer>>,
+      EMPOperatorTestConfig<int64_t, emp::Integer>,
+      int64_t>(aliceConfig, bobConfig);
+  EXPECT_EQ(ans_expected, res1);
+  EXPECT_EQ(ans_expected, res2);
+}
+
+TEST_F(EMPOperatorTestFixture, IntCompareRandomNumbers) {
+  int64_t a = folly::Random::rand32();
+  int64_t b = folly::Random::rand32();
+  int64_t ans_expected = a > b ? 1 : 0;
+  EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intCompare, a};
+  EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intCompare, b};
+
+  auto [res1, res2] = pcf::mpc::test<
+      EMPOperator<
+          int64_t,
+          emp::Integer,
+          EMPOperatorTestConfig<int64_t, emp::Integer>>,
+      EMPOperatorTestConfig<int64_t, emp::Integer>,
+      int64_t>(aliceConfig, bobConfig);
+  EXPECT_EQ(ans_expected, res1);
+  EXPECT_EQ(ans_expected, res2);
+}
+
+TEST_F(EMPOperatorTestFixture, IntIsEqualRandomNumbers) {
+  int64_t a = folly::Random::rand32();
+  int64_t b = folly::Random::rand32();
+  int64_t ans_expected = a == b ? 1 : 0;
+  EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intIsEqual, a};
+  EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intIsEqual, b};
 
   auto [res1, res2] = pcf::mpc::test<
       EMPOperator<
