@@ -212,9 +212,9 @@ make
    - `docker build -t docker_fbpcf -f docker/dockerfile .`
 3. now you have built docker image `docker_fbpcf`, you can test run the calculator/aggregator game as publisher or partner
    - open a terminal, play calculator game as the publisher
-      - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=1 --data_directory=/root/lift/calculator/sample_input --input_filename="publisher" --output_path="test_calculator_publisher_output" --use_xor_encryption=false --num_shards=1 --concurrency=1`
+      - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=1 --input_directory=/root/lift/calculator/sample_input --input_filenames="publisher_0"  --output_directory="/root/" --output_filenames=test_calculator_publisher_output  --use_xor_encryption=false --concurrency=1`
    - open another terminal, play calculator game as the partner
-      - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=2 --server_ip=127.0.0.1 --data_directory=/root/lift/calculator/sample_input --input_filename="partner_4_convs" --output_path="test_calculator_partner_output" --use_xor_encryption=false --num_shards=1 --concurrency=1`
+      - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=2 --server_ip=127.0.0.1 --input_directory=/root/lift/calculator/sample_input --input_filenames="partner_4_convs_0" --output_directory="/root/" --output_filenames="test_calculator_partner_output" --use_xor_encryption=false --concurrency=1`
 
 ## How PCF works
 Private Computation Framework enables cryptographic methods that help two parties, Alice and Bob, compute a function on each of their secret inputs and receive outputs without revealing information about the inputs to each other. Specifically, it lets the programmers implement a garbled circuit-based 2pc program.

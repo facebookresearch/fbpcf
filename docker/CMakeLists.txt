@@ -77,7 +77,7 @@ add_executable(
   "lift/common/LiftMetrics.h"
   "lift/common/LiftMetrics.cpp"
   "lift/calculator/CalculatorApp.h"
-  "lift/calculator/CalculatorApp.hpp"
+  "lift/calculator/CalculatorApp.cpp"
   "lift/calculator/CalculatorGame.h"
   "lift/calculator/OutputMetrics.h"
   "lift/calculator/InputData.cpp"
