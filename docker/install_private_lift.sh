@@ -6,9 +6,10 @@
 
 # install clang-12
 cd /root || exit
-wget https://apt.llvm.org/llvm.sh
-chmod +x llvm.sh
-sudo ./llvm.sh 12
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-12  main"
+apt-get update
+apt-get install -y clang-12 lldb-12 lld-12 clangd-12
 sudo ln -s /usr/bin/clang-12 /usr/bin/clang
 sudo ln -s /usr/bin/clang++-12 /usr/bin/clang++
 
