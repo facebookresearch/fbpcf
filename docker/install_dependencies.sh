@@ -39,3 +39,12 @@ make
 make test
 sudo make install
 sudo make testinstall
+
+# install clang-12 for building private lift executables
+cd /root || exit
+wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add -
+add-apt-repository "deb http://apt.llvm.org/bionic/   llvm-toolchain-bionic-12  main"
+apt-get update
+apt-get install -y clang-12 lldb-12 lld-12 clangd-12
+sudo ln -s /usr/bin/clang-12 /usr/bin/clang
+sudo ln -s /usr/bin/clang++-12 /usr/bin/clang++
