@@ -43,24 +43,17 @@ class CalculatorAppTest : public ::testing::Test {
         "{}_res_bob_{}", baseDir_, folly::Random::secureRand64());
 
     GenFakeData testDataGenerator;
-    testDataGenerator.genFakePublisherInputFile(
-        inputPathAlice_,
-        15 /* numRows*/,
-        0.5 /* opportunityRate */,
-        0.5 /* testRate */,
-        0.5 /* purchaseRate */,
-        0.0 /* incrementalityRate */,
-        1546300800 /* epoch */);
-    testDataGenerator.genFakePartnerInputFile(
-        inputPathBob_,
-        15,
-        0.5,
-        0.5,
-        0.5,
-        0.0,
-        1546300800,
-        4 /* numConversionsPerRow */,
-        false /* omitValuesColumn */);
+    LiftFakeDataParams params;
+
+    params.setNumRows(15)
+        .setOpportunityRate(0.5)
+        .setTestRate(0.5)
+        .setPurchaseRate(0.5)
+        .setIncrementalityRate(0.0)
+        .setEpoch(1546300800);
+    testDataGenerator.genFakePublisherInputFile(inputPathAlice_, params);
+    params.setNumConversions(4).setOmitValuesColumn(false);
+    testDataGenerator.genFakePartnerInputFile(inputPathBob_, params);
   }
 
   void TearDown() override {

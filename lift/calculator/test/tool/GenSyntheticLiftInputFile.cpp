@@ -60,14 +60,15 @@ int main(int argc, char** argv) {
       auto outputFile = FLAGS_output_path + "_" + std::to_string(i);
       XLOG(INFO) << "Generating " << std::to_string(i)
                  << "th file: " << outputFile;
-      fakeFileGenerator.genFakePublisherInputFile(
-          outputFile,
-          FLAGS_num_rows,
-          FLAGS_opportunity_rate,
-          FLAGS_test_rate,
-          FLAGS_purchase_rate,
-          FLAGS_incrementality_rate,
-          FLAGS_epoch);
+
+      private_lift::LiftFakeDataParams params;
+      params.setNumRows(FLAGS_num_rows)
+          .setOpportunityRate(FLAGS_opportunity_rate)
+          .setTestRate(FLAGS_test_rate)
+          .setPurchaseRate(FLAGS_purchase_rate)
+          .setIncrementalityRate(FLAGS_incrementality_rate)
+          .setEpoch(FLAGS_epoch);
+      fakeFileGenerator.genFakePublisherInputFile(outputFile, params);
     }
   } else if (FLAGS_role == 2) {
     XLOG(INFO) << "\tnum conversions per user: "
@@ -76,16 +77,17 @@ int main(int argc, char** argv) {
       auto outputFile = FLAGS_output_path + "_" + std::to_string(i);
       XLOG(INFO) << "Generating " << std::to_string(i)
                  << "th file: " << outputFile;
-      fakeFileGenerator.genFakePartnerInputFile(
-          outputFile,
-          FLAGS_num_rows,
-          FLAGS_opportunity_rate,
-          FLAGS_test_rate,
-          FLAGS_purchase_rate,
-          FLAGS_incrementality_rate,
-          FLAGS_epoch,
-          FLAGS_num_conversions_per_user,
-          FLAGS_omit_values_column);
+
+      private_lift::LiftFakeDataParams params;
+      params.setNumRows(FLAGS_num_rows)
+          .setOpportunityRate(FLAGS_opportunity_rate)
+          .setTestRate(FLAGS_test_rate)
+          .setPurchaseRate(FLAGS_purchase_rate)
+          .setIncrementalityRate(FLAGS_incrementality_rate)
+          .setEpoch(FLAGS_epoch)
+          .setNumConversions(FLAGS_num_conversions_per_user)
+          .setOmitValuesColumn(FLAGS_omit_values_column);
+      fakeFileGenerator.genFakePartnerInputFile(outputFile, params);
     }
   } else {
     throw std::invalid_argument(

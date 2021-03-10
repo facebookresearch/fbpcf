@@ -10,28 +10,17 @@
 #include <vector>
 
 #include "../../InputData.h"
+#include "LiftFakeDataParams.h"
 
 namespace private_lift {
 class GenFakeData {
  public:
   void genFakePublisherInputFile(
       std::string filename,
-      int32_t numRows,
-      double opportunityRate,
-      double testRate,
-      double purchaseRate,
-      double incrementalityRate,
-      int32_t epoch);
+      const LiftFakeDataParams& params);
   void genFakePartnerInputFile(
       std::string filename,
-      int32_t numRows,
-      double opportunityRate,
-      double testRate,
-      double purchaseRate,
-      double incrementalityRate,
-      int32_t epoch,
-      int32_t numConversions,
-      bool omitValuesColumn);
+      const LiftFakeDataParams& params);
 
  private:
   struct LiftInputColumns {

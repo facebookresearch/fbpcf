@@ -61,7 +61,8 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
     oneLine.event_timestamps.resize(numConversions, 0);
     oneLine.values.resize(numConversions, 0);
   } else {
-    uint32_t randomCount = numConversions - folly::Random::secureRand32(numConversions);
+    uint32_t randomCount =
+        numConversions - folly::Random::secureRand32(numConversions);
     std::vector<std::pair<int32_t, int32_t>> tsValVec;
     for (int32_t i = 0; i < numConversions; i++) {
       if (randomCount > 0) {
@@ -75,7 +76,7 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
     }
 
     // sort by timestamp
-    std::sort(tsValVec.begin(), tsValVec.end(), [](auto &a, auto &b) {
+    std::sort(tsValVec.begin(), tsValVec.end(), [](auto& a, auto& b) {
       return a.first < b.first;
     });
 
@@ -90,26 +91,21 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
 
 void GenFakeData::genFakePublisherInputFile(
     std::string filename,
-    int32_t numRows,
-    double opportunityRate,
-    double testRate,
-    double purchaseRate,
-    double incrementalityRate,
-    int32_t epoch) {
+    const LiftFakeDataParams& params) {
   std::ofstream publisherFile{filename};
 
   // publisher header: id_,opportunity,test_flag,opportunity_timestamp
   publisherFile << "id_,opportunity,test_flag,opportunity_timestamp\n";
 
-  for (auto i = 0; i < numRows; i++) {
+  for (auto i = 0; i < params.numRows_; i++) {
     // generate one row of fake data
     LiftInputColumns oneLine = genOneFakeLine(
         std::to_string(i),
-        opportunityRate,
-        testRate,
-        purchaseRate,
-        incrementalityRate,
-        epoch,
+        params.opportunityRate_,
+        params.testRate_,
+        params.purchaseRate_,
+        params.incrementalityRate_,
+        params.epoch_,
         1);
 
     // write one row to publisher fake data file
@@ -123,41 +119,34 @@ void GenFakeData::genFakePublisherInputFile(
 
 void GenFakeData::genFakePartnerInputFile(
     std::string filename,
-    int32_t numRows,
-    double opportunityRate,
-    double testRate,
-    double purchaseRate,
-    double incrementalityRate,
-    int32_t epoch,
-    int32_t numConversions,
-    bool omitValuesColumn) {
+    const LiftFakeDataParams& params) {
   std::ofstream partnerFile{filename};
 
   // partner header: id_,event_timestamps,values
-  if (!omitValuesColumn) {
+  if (!params.omitValuesColumn_) {
     partnerFile << "id_,event_timestamps,values\n";
   } else {
     partnerFile << "id_,event_timestamps\n";
   }
 
-  for (auto i = 0; i < numRows; i++) {
+  for (auto i = 0; i < params.numRows_; i++) {
     // generate one row of fake data
     LiftInputColumns oneLine = genOneFakeLine(
         std::to_string(i),
-        opportunityRate,
-        testRate,
-        purchaseRate,
-        incrementalityRate,
-        epoch,
-        numConversions);
+        params.opportunityRate_,
+        params.testRate_,
+        params.purchaseRate_,
+        params.incrementalityRate_,
+        params.epoch_,
+        params.numConversions_);
 
     // write one row to publisher fake data file
     std::string eventTSString = "[";
     std::string valuesString = "[";
-    for (auto j = 0; j < numConversions; j++) {
+    for (auto j = 0; j < params.numConversions_; j++) {
       eventTSString += std::to_string(oneLine.event_timestamps[j]);
       valuesString += std::to_string(oneLine.values[j]);
-      if (j < numConversions - 1) {
+      if (j < params.numConversions_ - 1) {
         eventTSString += ",";
         valuesString += ",";
       } else {
@@ -165,9 +154,9 @@ void GenFakeData::genFakePartnerInputFile(
         valuesString += "]";
       }
     }
-    if (!omitValuesColumn) {
+    if (!params.omitValuesColumn_) {
       partnerFile << oneLine.id << "," << eventTSString << "," << valuesString
-                << "\n";
+                  << "\n";
     } else {
       // Again, skip "values" column if this is a valueless objective
       partnerFile << oneLine.id << "," << eventTSString << "\n";
