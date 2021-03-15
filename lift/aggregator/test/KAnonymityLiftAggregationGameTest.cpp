@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "KAnonymityLiftAggregationGame.h"
-
 #include <memory>
 #include <thread>
 #include <vector>
@@ -16,11 +14,12 @@
 
 #include "folly/Random.h"
 
-#include "../common/GroupedLiftMetrics.h"
-#include "../../pcf/common/VectorUtil.h"
-#include "../../pcf/mpc/EmpGame.h"
-#include "../../pcf/mpc/EmpTestUtil.h"
-#include "../../pcf/mpc/QueueIO.h"
+#include "../../../pcf/common/VectorUtil.h"
+#include "../../../pcf/mpc/EmpGame.h"
+#include "../../../pcf/mpc/EmpTestUtil.h"
+#include "../../../pcf/mpc/QueueIO.h"
+#include "../../common/GroupedLiftMetrics.h"
+#include "../KAnonymityLiftAggregationGame.h"
 
 namespace private_lift {
 class KAnonymityLiftAggregationGameTest : public ::testing::Test {
@@ -32,20 +31,7 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
           std::numeric_limits<uint32_t>::max());
     };
     return LiftMetrics{
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r()};
+        r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
   }
 
   GroupedLiftMetrics fakeGroupedMetrics(bool allLowPop, bool subgroupLowPop) {

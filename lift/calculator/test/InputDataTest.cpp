@@ -12,7 +12,7 @@
 
 #include "folly/Random.h"
 
-#include "InputData.h"
+#include "../InputData.h"
 
 namespace private_lift {
 class InputDataTest : public ::testing::Test {
@@ -22,9 +22,11 @@ class InputDataTest : public ::testing::Test {
   std::string bobInputFilename_;
   void SetUp() override {
     std::string currentFilePath = __FILE__;
+    std::string currentFileDir =
+        currentFilePath.substr(0, currentFilePath.find_last_of("/"));
     std::string testFileDir =
-        currentFilePath.substr(0, currentFilePath.find_last_of("/") + 1) +
-        "sample_input/";
+        currentFileDir.substr(0, currentFileDir.find_last_of("/")) +
+        "/sample_input/";
     aliceInputFilename_ = testFileDir + "publisher_unittest.csv";
     bobInputFilename_ = testFileDir + "partner_4_convs_unittest.csv";
   }

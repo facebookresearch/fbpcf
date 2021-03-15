@@ -14,18 +14,19 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <gtest/gtest.h>
 
-#include "../../pcf/mpc/EmpGame.h"
-#include "../../pcf/mpc/EmpTestUtil.h"
-#include "../../pcf/mpc/QueueIO.h"
-#include "../common/Csv.h"
-#include "../common/GroupedLiftMetrics.h"
-#include "CalculatorGame.h"
-#include "CalculatorGameConfig.h"
-#include "InputData.h"
-#include "OutputMetrics.h"
 #include "folly/Random.h"
-#include "test/common/GenFakeData.h"
-#include "test/common/LiftCalculator.h"
+
+#include "../../../pcf/mpc/EmpGame.h"
+#include "../../../pcf/mpc/EmpTestUtil.h"
+#include "../../../pcf/mpc/QueueIO.h"
+#include "../../common/Csv.h"
+#include "../../common/GroupedLiftMetrics.h"
+#include "../CalculatorGame.h"
+#include "../CalculatorGameConfig.h"
+#include "../InputData.h"
+#include "../OutputMetrics.h"
+#include "common/GenFakeData.h"
+#include "common/LiftCalculator.h"
 
 namespace private_lift {
 class CalculatorGameTest : public ::testing::Test {

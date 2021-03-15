@@ -5,9 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "LiftMetrics.h"
 #include <gtest/gtest.h>
+
 #include "folly/Random.h"
+
+#include "../LiftMetrics.h"
 
 namespace private_lift {
 class LiftMetricsTest : public ::testing::Test {

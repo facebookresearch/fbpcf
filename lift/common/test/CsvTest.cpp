@@ -9,7 +9,7 @@
 
 #include "folly/Random.h"
 
-#include "Csv.h"
+#include "../Csv.h"
 
 namespace private_lift {
 class CsvTest : public ::testing::Test {

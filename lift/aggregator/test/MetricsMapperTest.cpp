@@ -8,13 +8,13 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <gtest/gtest.h>
 
-#include "../../pcf/common/FunctionalUtil.h"
-#include "../../pcf/mpc/EmpGame.h"
-#include "../../pcf/mpc/EmpTestUtil.h"
-#include "../../pcf/mpc/EmpVector.h"
-#include "../../pcf/mpc/QueueIO.h"
-#include "../common/GroupedLiftMetrics.h"
-#include "MetricsMapper.h"
+#include "../../../pcf/common/FunctionalUtil.h"
+#include "../../../pcf/mpc/EmpGame.h"
+#include "../../../pcf/mpc/EmpTestUtil.h"
+#include "../../../pcf/mpc/EmpVector.h"
+#include "../../../pcf/mpc/QueueIO.h"
+#include "../../common/GroupedLiftMetrics.h"
+#include "../MetricsMapper.h"
 
 namespace private_lift {
 class MetricsMapperTest
@@ -44,12 +44,14 @@ class MetricsMapperTest
 
 TEST(MetricsMapperTest, TestXorMetrics) {
   GroupedLiftMetrics expectedMetrics{
-      LiftMetrics{0, 0, 0, 0, 0, 0, 0, 0},
-      std::vector<LiftMetrics>{LiftMetrics{0, 0, 0, 0, 0, 0, 0, 0}}};
+      LiftMetrics{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+      std::vector<LiftMetrics>{
+          LiftMetrics{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}}};
 
   GroupedLiftMetrics inputMetrics{
-      LiftMetrics{1, 2, 3, 4, 5, 6, 7, 8},
-      std::vector<LiftMetrics>{LiftMetrics{1, 2, 3, 4, 5, 6, 7, 8}}};
+      LiftMetrics{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14},
+      std::vector<LiftMetrics>{
+          LiftMetrics{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}}};
 
   auto res =
       pcf::mpc::test<MetricsMapperTest, GroupedLiftMetrics, GroupedLiftMetrics>(

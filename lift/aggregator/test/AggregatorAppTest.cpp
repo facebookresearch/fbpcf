@@ -15,10 +15,10 @@
 #include "folly/Format.h"
 #include "folly/Random.h"
 
-#include "../../pcf/io/FileManagerUtil.h"
-#include "../../pcf/mpc/EmpGame.h"
-#include "../common/GroupedLiftMetrics.h"
-#include "AggregatorApp.h"
+#include "../../../pcf/io/FileManagerUtil.h"
+#include "../../../pcf/mpc/EmpGame.h"
+#include "../../common/GroupedLiftMetrics.h"
+#include "../AggregatorApp.h"
 
 namespace private_lift {
 class AggregatorAppIntegrationTest : public ::testing::Test {

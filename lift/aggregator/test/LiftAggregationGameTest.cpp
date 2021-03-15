@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "LiftAggregationGame.h"
-
 #include <memory>
 #include <thread>
 #include <vector>
@@ -16,11 +14,12 @@
 
 #include "folly/Random.h"
 
-#include "../../pcf/common/VectorUtil.h"
-#include "../../pcf/mpc/EmpGame.h"
-#include "../../pcf/mpc/EmpTestUtil.h"
-#include "../../pcf/mpc/QueueIO.h"
-#include "../common/GroupedLiftMetrics.h"
+#include "../../../pcf/common/VectorUtil.h"
+#include "../../../pcf/mpc/EmpGame.h"
+#include "../../../pcf/mpc/EmpTestUtil.h"
+#include "../../../pcf/mpc/QueueIO.h"
+#include "../../common/GroupedLiftMetrics.h"
+#include "../LiftAggregationGame.h"
 
 namespace private_lift {
 class LiftAggregationGameTest : public ::testing::Test {
@@ -28,20 +27,7 @@ class LiftAggregationGameTest : public ::testing::Test {
   LiftMetrics fakeLiftMetrics() {
     auto r = []() { return folly::Random::rand32(); };
     return LiftMetrics{
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r(),
-        r()};
+        r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
   }
 
   GroupedLiftMetrics fakeGroupedMetrics() {
