@@ -32,12 +32,14 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
   KAnonymityLiftAggregationGame(
       std::unique_ptr<IOChannel> ioChannel,
       pcf::Party party,
-      pcf::Visibility visibility = pcf::Visibility::Public)
+      pcf::Visibility visibility = pcf::Visibility::Public,
+      int64_t threshold = kAnonymityThreshold)
       : pcf::EmpGame<
             IOChannel,
             std::vector<GroupedLiftMetrics>,
             GroupedLiftMetrics>(std::move(ioChannel), party),
-        visibility_{visibility} {}
+        visibility_{visibility},
+        threshold_{threshold} {}
 
   static constexpr int64_t kHiddenMetricConstant = -1;
   static constexpr int64_t kAnonymityThreshold = 100;
@@ -76,6 +78,7 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
 
  private:
   pcf::Visibility visibility_;
+  int64_t threshold_;
 
   std::vector<emp::Integer> kAnonymizeGrouped(
       std::vector<emp::Integer> metrics) {
@@ -94,7 +97,7 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     const emp::Integer hiddenMetric{
         INT_SIZE, kHiddenMetricConstant, emp::PUBLIC};
     const emp::Integer kAnonymityLevel{
-        INT_SIZE, kAnonymityThreshold, emp::PUBLIC};
+        INT_SIZE, threshold_, emp::PUBLIC};
     auto condition =
         metrics.testConverters + metrics.controlConverters >= kAnonymityLevel;
 
