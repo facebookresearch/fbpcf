@@ -20,6 +20,8 @@ struct GroupedLiftMetrics {
   bool operator==(const GroupedLiftMetrics& other) const noexcept;
   GroupedLiftMetrics operator+(const GroupedLiftMetrics& other) const noexcept;
   GroupedLiftMetrics operator^(const GroupedLiftMetrics& other) const noexcept;
+  // required for gtest to output failing tests in a human-readable format
+  friend std::ostream& operator<<(std::ostream& os, const GroupedLiftMetrics& obj) noexcept;
 
   std::string toJson() const;
   static GroupedLiftMetrics fromJson(const std::string& str);

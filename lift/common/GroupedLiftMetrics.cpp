@@ -34,6 +34,10 @@ GroupedLiftMetrics GroupedLiftMetrics::operator^(
       pcf::vector::Xor(subGroupMetrics, other.subGroupMetrics)};
 }
 
+std::ostream& operator<<(std::ostream& os, const GroupedLiftMetrics& obj) noexcept {
+    return os << obj.toJson();
+}
+
 std::string GroupedLiftMetrics::toJson() const {
   auto container = folly::dynamic::array();
   std::transform(
