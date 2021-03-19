@@ -28,12 +28,12 @@ struct LiftMetrics {
   int64_t controlSquared;
   int64_t testMatchCount;
   int64_t controlMatchCount;
-  int64_t testLogValue;
-  int64_t controlLogValue;
 
   bool operator==(const LiftMetrics& other) const noexcept;
   LiftMetrics operator+(const LiftMetrics& other) const noexcept;
   LiftMetrics operator^(const LiftMetrics& other) const noexcept;
+  // required for gtest to output failing tests in a human-readable format
+  friend std::ostream& operator<<(std::ostream& os, const LiftMetrics& obj) noexcept;
 
   std::string toJson() const;
   static LiftMetrics fromJson(const std::string& str);

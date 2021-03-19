@@ -27,8 +27,6 @@ struct EncryptedLiftMetrics {
   emp::Integer controlSquared;
   emp::Integer testMatchCount;
   emp::Integer controlMatchCount;
-  emp::Integer testLogValue;
-  emp::Integer controlLogValue;
 
   EncryptedLiftMetrics operator+(
       const EncryptedLiftMetrics& other) const noexcept;

@@ -102,8 +102,7 @@ class OutputMetrics {
       const OutputMetrics::GroupType& groupType,
       const std::vector<std::vector<emp::Integer>>& purchaseValueArrays,
       const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
-      const std::vector<std::vector<emp::Bit>>& validPurchaseArrays,
-      const std::vector<std::vector<emp::Integer>>& logValueArrays);
+      const std::vector<std::vector<emp::Bit>>& validPurchaseArrays);
 
   // Test/Control population: oppFlag & testFlag/controlFlag
   std::vector<emp::Bit> calculatePopulation(
@@ -133,13 +132,6 @@ class OutputMetrics {
   void calculateValueSquared(
       const OutputMetrics::GroupType& groupType,
       const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
-      const std::vector<std::vector<emp::Bit>>& eventArrays);
-
-  // Test/Control log value:
-  // sum(testPurchaser/controlPurchaser ? logValue : 0)
-  void calculateLogValueSum(
-      const OutputMetrics::GroupType& groupType,
-      const std::vector<std::vector<emp::Integer>>& logValueArrays,
       const std::vector<std::vector<emp::Bit>>& eventArrays);
 
   /**

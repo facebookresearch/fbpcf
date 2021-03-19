@@ -42,6 +42,7 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
         threshold_{threshold} {}
 
   static constexpr int64_t kHiddenMetricConstant = -1;
+  static constexpr int64_t nullifyMetricConstant = -1;
   static constexpr int64_t kAnonymityThreshold = 100;
 
   GroupedLiftMetrics play(
@@ -61,16 +62,16 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     std::vector<emp::Integer> v =
         pcf::functional::reduce<std::vector<emp::Integer>>(
             vv, pcf::vector::Add<emp::Integer>);
-
-    XLOG(INFO) << "Applying k-anonymity...";
-    // Applies k-anonymity with k = 100
+    XLOGF(INFO,  "Applying k-anonymity threshold {}...", threshold_);
     auto anonymized = kAnonymizeGrouped(v);
+
+    auto metrics = nullifyNonExposedMetrics(anonymized);
 
     XLOG(INFO) << "Revealing metrics...";
     XLOGF(DBG, "Visibility: {}", this->visibility_);
     // Reveal aggregated metrics
     auto revealed = pcf::functional::map<emp::Integer, int64_t>(
-        anonymized, [this](const emp::Integer& i) {
+        metrics, [this](const emp::Integer& i) {
           return i.reveal<int64_t>(static_cast<int>(this->visibility_));
         });
     return mapVectorToGroupedLiftMetrics(revealed);
@@ -124,12 +125,25 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
         emp::If(condition, metrics.testMatchCount, hiddenMetric);
     anonymized.controlMatchCount =
         emp::If(condition, metrics.controlMatchCount, hiddenMetric);
-    anonymized.testLogValue =
-        emp::If(condition, metrics.testLogValue, hiddenMetric);
-    anonymized.controlLogValue =
-        emp::If(condition, metrics.controlLogValue, hiddenMetric);
 
     return anonymized;
   }
+
+ std::vector<emp::Integer> nullifyNonExposedMetrics(
+      std::vector<emp::Integer> metrics) {
+    auto groupedMetrics = mapVectorToGroupedLiftMetrics(metrics);
+    const emp::Integer nullifyMetric{
+        INT_SIZE, nullifyMetricConstant, emp::PUBLIC};
+
+    groupedMetrics.metrics.testSquared = nullifyMetric;
+    groupedMetrics.metrics.controlSquared = nullifyMetric;
+    for (auto& subGroup : groupedMetrics.subGroupMetrics) {
+        subGroup.testSquared = nullifyMetric;
+        subGroup.controlSquared = nullifyMetric;
+    }
+
+    return mapGroupedLiftMetricsToEmpVector(groupedMetrics);
+  }
+
 };
 } // namespace private_lift

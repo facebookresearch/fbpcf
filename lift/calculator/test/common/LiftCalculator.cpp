@@ -80,8 +80,6 @@ OutputMetricsData LiftCalculator::compute(
   out.controlSquared = 0;
   out.testMatchCount = 0;
   out.controlMatchCount = 0;
-  out.testLogValue = 0;
-  out.controlLogValue = 0;
 
   // Read line by line, at the same time compute metrics
   while (getline(inFilePublisher, linePublisher) &&
@@ -167,7 +165,6 @@ OutputMetricsData LiftCalculator::compute(
           }
         }
         out.testValue += value_subsum;
-        out.testLogValue += value_subsum > 0 ? log(value_subsum) : 0;
         out.testSquared += value_subsum * value_subsum;
       } else {
         ++out.controlPopulation;
@@ -192,7 +189,6 @@ OutputMetricsData LiftCalculator::compute(
           }
         }
         out.controlValue += value_subsum;
-        out.controlLogValue += value_subsum > 0 ? log(value_subsum) : 0;
         out.controlSquared += value_subsum * value_subsum;
       }
     }

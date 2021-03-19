@@ -22,6 +22,19 @@
 #include "../KAnonymityLiftAggregationGame.h"
 
 namespace private_lift {
+
+// nullifyNonExposedMetrics is a small helper function to nullify specific
+// metrics in a GroupLiftMetrics (used for generated test data)
+void nullifyNonExposedMetrics(GroupedLiftMetrics& groupMetrics) {
+  // Set the nullable metrics to -1
+  groupMetrics.metrics.controlSquared = -1;
+  groupMetrics.metrics.testSquared = -1;
+  for (auto& subGroup : groupMetrics.subGroupMetrics) {
+    subGroup.testSquared = -1;
+    subGroup.controlSquared = -1;
+  }
+}
+
 class KAnonymityLiftAggregationGameTest : public ::testing::Test {
  protected:
   LiftMetrics fakeLiftMetrics(bool lowPop) {
@@ -31,7 +44,7 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
           std::numeric_limits<uint32_t>::max());
     };
     return LiftMetrics{
-        r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
+        r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
   }
 
   GroupedLiftMetrics fakeGroupedMetrics(bool allLowPop, bool subgroupLowPop) {
@@ -67,10 +80,7 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
-        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
-        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
-        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
-    };
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant};
   }
 
   void SetUp() override {
@@ -79,6 +89,8 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
     metricsVector_Bob_ = pcf::vector::Xor(metricsVector_, metricsVector_Alice_);
     expectedAggregatedMetrics_ = pcf::functional::reduce<GroupedLiftMetrics>(
         metricsVector_, [](const auto& a, const auto& b) { return a + b; });
+    // Set the nullable metrics to -1 in the "expected" results
+    nullifyNonExposedMetrics(expectedAggregatedMetrics_);
   }
 
   std::vector<GroupedLiftMetrics> metricsVector_;
@@ -104,6 +116,7 @@ TEST_F(KAnonymityLiftAggregationGameTest, TestAllLowPopulationMetrics) {
   auto unfilteredAggregatedMetrics =
       pcf::functional::reduce<GroupedLiftMetrics>(
           metricsVector, [](const auto& a, const auto& b) { return a + b; });
+  nullifyNonExposedMetrics(unfilteredAggregatedMetrics);
 
   auto res = pcf::mpc::test<
       KAnonymityLiftAggregationGame<pcf::QueueIO>,
@@ -133,7 +146,7 @@ TEST_F(KAnonymityLiftAggregationGameTest, TestSubgroupLowPopulationMetrics) {
   auto unfilteredAggregatedMetrics =
       pcf::functional::reduce<GroupedLiftMetrics>(
           metricsVector, [](const auto& a, const auto& b) { return a + b; });
-
+  nullifyNonExposedMetrics(unfilteredAggregatedMetrics);
   auto res = pcf::mpc::test<
       KAnonymityLiftAggregationGame<pcf::QueueIO>,
       std::vector<GroupedLiftMetrics>,
@@ -152,4 +165,5 @@ TEST_F(KAnonymityLiftAggregationGameTest, TestSubgroupLowPopulationMetrics) {
   EXPECT_EQ(unfilteredAggregatedMetrics.metrics, res.first.metrics);
   EXPECT_EQ(unfilteredAggregatedMetrics.metrics, res.second.metrics);
 }
+
 } // namespace private_lift

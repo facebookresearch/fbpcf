@@ -81,7 +81,6 @@ void InputData::setTimestamps(
 
 void InputData::setValuesFields(std::string& str) {
   purchaseValueArrays_.emplace_back();
-  logValueArrays_.emplace_back();
   if (liftMpcType_ == LiftMPCType::Standard) {
     purchaseValueSquaredArrays_.emplace_back();
   }
@@ -101,7 +100,6 @@ void InputData::setValuesFields(std::string& str) {
     // If this is secret_share lift, we can't pre-compute squared values
     if (liftMpcType_ == LiftMPCType::Standard) {
       purchaseValueSquaredArrays_.back().push_back(parsed * parsed);
-      logValueArrays_.back().push_back(0);
     }
   }
 
@@ -110,7 +108,6 @@ void InputData::setValuesFields(std::string& str) {
   if (liftMpcType_ == LiftMPCType::Standard) {
     auto& valuesArr = purchaseValueArrays_.back();
     auto& valuesSquaredArr = purchaseValueSquaredArrays_.back();
-    auto& logValueArr = logValueArrays_.back();
     uint64_t acc = 0;
     // NOTE: Don't use `auto` here since it will give us std::size_t (which is
     // unsigned) and will underflow and cause an ASAN error.
@@ -119,8 +116,6 @@ void InputData::setValuesFields(std::string& str) {
       acc += valuesArr.at(i);
       // 2. Set valuesSquared at this index as acc**2
       valuesSquaredArr.at(i) = acc * acc;
-      // 3. Compute and store the log of values seen so far
-      logValueArr.at(i) = acc == 0 ? 0 : std::log(acc);
     }
     // Finally, update totalValueSquared with the *maximum possible* value,
     // which is what we just stored into the first value

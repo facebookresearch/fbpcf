@@ -47,7 +47,14 @@ class KAnonymityAggregatorAppIntegrationTest : public ::testing::Test {
       const std::string& inputPath,
       const std::string& outputPath) {
     KAnonymityAggregatorApp(
-        party, visibility, serverIp, port, numShards, threshold, inputPath, outputPath)
+        party,
+        visibility,
+        serverIp,
+        port,
+        numShards,
+        threshold,
+        inputPath,
+        outputPath)
         .run();
   }
 
@@ -84,7 +91,7 @@ TEST_F(KAnonymityAggregatorAppIntegrationTest, TestVisibilityPublic) {
   futureBob.wait();
 
   auto resExpected = GroupedLiftMetrics::fromJson(
-      pcf::io::read(baseDir_ + "aggregator_metrics"));
+      pcf::io::read(baseDir_ + "aggregator_metrics_kanon"));
   auto resAlice = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathAlice_));
   auto resBob = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathBob_));
   EXPECT_EQ(resExpected, resAlice);
@@ -117,11 +124,19 @@ TEST_F(KAnonymityAggregatorAppIntegrationTest, TestVisibilityBob) {
   futureBob.wait();
 
   auto resExpected = GroupedLiftMetrics::fromJson(
-      pcf::io::read(baseDir_ + "aggregator_metrics"));
+      pcf::io::read(baseDir_ + "aggregator_metrics_kanon"));
   auto resAlice = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathAlice_));
   auto resBob = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathBob_));
   GroupedLiftMetrics zeroMetrics{
       LiftMetrics{}, std::vector<LiftMetrics>{2, LiftMetrics{}}};
+  // Set the nullable metrics to -1 in the "zeroed metrics"
+  zeroMetrics.metrics.controlSquared = -1;
+  zeroMetrics.metrics.testSquared = -1;
+  for (auto& subGroup : zeroMetrics.subGroupMetrics) {
+    subGroup.testSquared = -1;
+    subGroup.controlSquared = -1;
+  }
+
   EXPECT_EQ(zeroMetrics, resAlice);
   EXPECT_EQ(resExpected, resBob);
 }
