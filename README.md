@@ -209,7 +209,7 @@ make
 ## How to build a docker image that containes game executables using the given docker related files
 1. cd to folder `/fbpcf/`
 2. build docker image `docker_fbpcf` by running
-   - `docker build -t docker_fbpcf -f docker/dockerfile .`
+   - `docker build -t docker_fbpcf -f docker/dockerfile . -m 8g`
 3. now you have built docker image `docker_fbpcf`, you can test run the calculator/aggregator game as publisher or partner
    - open a terminal, play calculator game as the publisher
       - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=1 --input_directory=/root/lift/calculator/sample_input --input_filenames="publisher_0"  --output_directory="/root/" --output_filenames=test_calculator_publisher_output  --use_xor_encryption=false --concurrency=1`
