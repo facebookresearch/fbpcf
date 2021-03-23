@@ -30,7 +30,8 @@ bool LiftMetrics::operator==(const LiftMetrics& other) const noexcept {
       testMatchCount == other.testMatchCount &&
       controlMatchCount == other.controlMatchCount &&
       testImpressions == other.testImpressions &&
-      controlImpressions == other.controlImpressions;
+      controlImpressions == other.controlImpressions &&
+      testClicks == other.testClicks && controlClicks == other.controlClicks;
 }
 
 LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
@@ -48,7 +49,9 @@ LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
       testMatchCount + other.testMatchCount,
       controlMatchCount + other.controlMatchCount,
       testImpressions + other.testImpressions,
-      controlImpressions + other.controlImpressions};
+      controlImpressions + other.controlImpressions,
+      testClicks + other.testClicks,
+      controlClicks + other.controlClicks};
 }
 
 LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
@@ -66,7 +69,9 @@ LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
       testMatchCount ^ other.testMatchCount,
       controlMatchCount ^ other.controlMatchCount,
       testImpressions ^ other.testImpressions,
-      controlImpressions ^ other.controlImpressions};
+      controlImpressions ^ other.controlImpressions,
+      testClicks ^ other.testClicks,
+      controlClicks ^ other.controlClicks};
 }
 
 std::ostream& operator<<(std::ostream& os, const LiftMetrics& obj) noexcept {
@@ -93,7 +98,8 @@ folly::dynamic LiftMetrics::toDynamic() const {
       "testSquared", testSquared)("controlSquared", controlSquared)(
       "testMatchCount", testMatchCount)("controlMatchCount", controlMatchCount)(
       "testImpressions", testImpressions)(
-      "controlImpressions", controlImpressions);
+      "controlImpressions", controlImpressions)("testClicks", testClicks)(
+      "controlClicks", controlClicks);
 }
 
 LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
@@ -113,6 +119,8 @@ LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
   metrics.controlMatchCount = obj["controlMatchCount"].asInt();
   metrics.testImpressions = obj["testImpressions"].asInt();
   metrics.controlImpressions = obj["controlImpressions"].asInt();
+  metrics.testClicks = obj["testClicks"].asInt();
+  metrics.controlClicks = obj["controlClicks"].asInt();
 
   return metrics;
 }

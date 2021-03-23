@@ -14,7 +14,9 @@
             "controlMatchCount": 0,
             "testMatchCount": 0,
             "testImpressions": 13512,
-            "controlImpressions": 21531
+            "controlImpressions": 21531,
+            "testClicks": 31832,
+            "controlClicks": 12313
         },
         {
             "testSquared": 3792338230,
@@ -30,7 +32,9 @@
             "controlMatchCount": 0,
             "testMatchCount": 0,
             "testImpressions": 13512,
-            "controlImpressions": 21531
+            "controlImpressions": 21531,
+            "testClicks": 31832,
+            "controlClicks": 12313
         }
     ],
     "metrics": {
@@ -47,6 +51,8 @@
         "controlMatchCount": 0,
         "testMatchCount": 0,
         "testImpressions": 13512,
-        "controlImpressions": 21531
+        "controlImpressions": 21531,
+        "testClicks": 31832,
+        "controlClicks": 12313
     }
 }

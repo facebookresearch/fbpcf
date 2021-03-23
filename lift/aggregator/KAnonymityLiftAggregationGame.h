@@ -128,6 +128,10 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
         emp::If(condition, metrics.testImpressions, hiddenMetric);
     anonymized.controlImpressions =
         emp::If(condition, metrics.controlImpressions, hiddenMetric);
+    anonymized.testClicks =
+        emp::If(condition, metrics.testClicks, hiddenMetric);
+    anonymized.controlClicks =
+        emp::If(condition, metrics.controlClicks, hiddenMetric);
 
     return anonymized;
   }

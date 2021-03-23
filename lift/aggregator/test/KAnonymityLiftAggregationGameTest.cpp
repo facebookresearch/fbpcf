@@ -44,7 +44,22 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
           std::numeric_limits<uint32_t>::max());
     };
     return LiftMetrics{
-        r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r(),
+        r()};
   }
 
   GroupedLiftMetrics fakeGroupedMetrics(bool allLowPop, bool subgroupLowPop) {
@@ -71,6 +86,8 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
     return LiftMetrics{
         metrics.testPopulation,
         metrics.controlPopulation,
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,

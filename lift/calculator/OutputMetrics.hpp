@@ -268,6 +268,7 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
   auto eventArrays = calculateEvents(groupType, bits, validPurchaseArrays);
   calculateMatchCount(groupType, bits, purchaseValueArrays);
   calculateImpressions(groupType, bits);
+  calculateClicks(groupType, bits);
 
   // If this is (value-based) conversion lift, calculate value metrics now
   if (!shouldSkipValues_ &&
@@ -488,6 +489,42 @@ void OutputMetrics<MY_ROLE>::calculateImpressions(
       subgroupMetrics_[i].testImpressions = sum(groupInts);
     } else {
       subgroupMetrics_[i].controlImpressions = sum(groupInts);
+    }
+  }
+}
+
+template <int32_t MY_ROLE>
+void OutputMetrics<MY_ROLE>::calculateClicks(
+    const OutputMetrics::GroupType& groupType,
+    const std::vector<emp::Bit>& populationBits) {
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " clicks";
+
+  const std::vector<emp::Integer> numClicks =
+      privatelyShareIntsFromPublisher<MY_ROLE>(
+          inputData_.getNumClicks(), n_, FULL_BITS);
+
+  std::vector<emp::Integer> ClicksArray =
+      secret_sharing::zip_and_map<emp::Bit, emp::Integer, emp::Integer>(
+          populationBits,
+          numClicks,
+          [](emp::Bit isUser, emp::Integer numClicks) -> emp::Integer {
+            const emp::Integer zero = emp::Integer{INT_SIZE, 0, emp::PUBLIC};
+            return emp::If(isUser, numClicks, zero);
+          });
+
+  if (groupType == GroupType::TEST) {
+    metrics_.testClicks = sum(ClicksArray);
+  } else {
+    metrics_.controlClicks = sum(ClicksArray);
+  }
+  // And compute for subgroups
+  for (auto i = 0; i < numGroups_; ++i) {
+    auto groupInts =
+        secret_sharing::multiplyBitmask(ClicksArray, groupBitmasks_.at(i));
+    if (groupType == GroupType::TEST) {
+      subgroupMetrics_[i].testClicks = sum(groupInts);
+    } else {
+      subgroupMetrics_[i].controlClicks = sum(groupInts);
     }
   }
 }

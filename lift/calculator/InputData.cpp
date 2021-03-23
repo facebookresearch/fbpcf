@@ -179,6 +179,8 @@ void InputData::addFromCSV(
       opportunityTimestamps_.push_back(parsed - epoch_);
     } else if (column == "num_impressions") {
       numImpressions_.push_back(parsed);
+    } else if (column == "num_clicks") {
+      numClicks_.push_back(parsed);
     } else if (column == "event_timestamp") {
       // When event_timestamp column presents (in standard Converter Lift
       // input), parse it as arrays of size 1.

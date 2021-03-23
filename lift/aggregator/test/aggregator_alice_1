@@ -18,7 +18,9 @@
             "testStddevLogValue": 12423,
             "controlStddevLogValue": 03452,
             "testImpressions": 12345,
-            "controlImpressions": 54321
+            "controlImpressions": 54321,
+            "testClicks": 13579,
+            "controlClicks": 97351
         },
         {
             "controlSquared": 236216478,
@@ -38,7 +40,9 @@
             "testStddevLogValue": 12423,
             "controlStddevLogValue": 03452,
             "testImpressions": 12345,
-            "controlImpressions": 54321
+            "controlImpressions": 54321,
+            "testClicks": 13579,
+            "controlClicks": 97351
         }
     ],
     "metrics": {
@@ -59,6 +63,8 @@
         "testStddevLogValue": 12423,
         "controlStddevLogValue": 03452,
         "testImpressions": 12345,
-        "controlImpressions": 54321
+        "controlImpressions": 54321,
+        "testClicks": 13579,
+        "controlClicks": 97351
     }
 }
