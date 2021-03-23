@@ -59,6 +59,7 @@ OutputMetricsData LiftCalculator::compute(
     int32_t tsOffset) const {
   OutputMetricsData out;
   uint64_t opportunity = 0;
+  uint64_t numImpressions = 0;
   uint64_t testFlag = 0;
   uint64_t opportunityTimestamp = 0;
   std::vector<uint64_t> eventTimestamps;
@@ -80,6 +81,8 @@ OutputMetricsData LiftCalculator::compute(
   out.controlSquared = 0;
   out.testMatchCount = 0;
   out.controlMatchCount = 0;
+  out.testImpressions = 0;
+  out.controlImpressions = 0;
 
   // Read line by line, at the same time compute metrics
   while (getline(inFilePublisher, linePublisher) &&
@@ -117,6 +120,14 @@ OutputMetricsData LiftCalculator::compute(
     issOpportunityTimestamp >> opportunityTimestamp;
     if (issOpportunityTimestamp.fail()) {
       LOG(FATAL) << "Failed to parse '" << issOpportunityTimestamp.str()
+                 << "' to uint64_t";
+    }
+
+    std::istringstream issNumImpressions{
+        partsPublisher.at(colNameToIndex.at("num_impressions"))};
+    issNumImpressions >> numImpressions;
+    if (issNumImpressions.fail()) {
+      LOG(FATAL) << "Failed to parse '" << issNumImpressions.str()
                  << "' to uint64_t";
     }
 
@@ -166,6 +177,7 @@ OutputMetricsData LiftCalculator::compute(
         }
         out.testValue += value_subsum;
         out.testSquared += value_subsum * value_subsum;
+        out.testImpressions += numImpressions;
       } else {
         ++out.controlPopulation;
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
@@ -190,6 +202,7 @@ OutputMetricsData LiftCalculator::compute(
         }
         out.controlValue += value_subsum;
         out.controlSquared += value_subsum * value_subsum;
+        out.controlImpressions += numImpressions;
       }
     }
   }

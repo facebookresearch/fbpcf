@@ -1,1 +1,64 @@
-{"subGroupMetrics":[{"controlSquared":3350441960,"controlValue":2175317047,"testSquared":2014985121,"testConverters":801594954,"testConversions":801594954,"testValue":2908667381,"controlConverters":1431427111,"controlConversions":1431427111,"controlPopulation":3988348066,"testPopulation":3253674405,"controlMatchCount":2,"testMatchCount":2, "testLogValue": 4532,"controlLogValue": 104345,"testStddevValue": 1432,"controlStddevValue": 0523,"testStddevLogValue": 12423,"controlStddevLogValue": 03452},{"controlSquared":236216478,"testSquared":3942206104,"controlValue":570110589,"controlConverters":3504991117,"controlConversions":3504991117,"testValue":2361916971,"controlPopulation":1374690878,"testConverters":21673949,"testConversions":21673949,"testPopulation":3652851334,"controlMatchCount":2,"testMatchCount":2, "testLogValue": 4532,"controlLogValue": 104345,"testStddevValue": 1432,"controlStddevValue": 0523,"testStddevLogValue": 12423,"controlStddevLogValue": 03452}],"metrics":{"controlValue":1108351725,"testSquared":4205949011,"controlSquared":3724585762,"testConverters":3027436879,"testConversions":3027436879,"controlPopulation":166738996,"testValue":362807006,"controlConverters":3482989586,"controlConversions":3482989586,"testPopulation":975586979,"controlMatchCount":2,"testMatchCount":2, "testLogValue": 4532,"controlLogValue": 104345,"testStddevValue": 1432,"controlStddevValue": 0523,"testStddevLogValue": 12423,"controlStddevLogValue": 03452}}
+{
+    "subGroupMetrics": [
+        {
+            "controlSquared": 3350441960,
+            "controlValue": 2175317047,
+            "testSquared": 2014985121,
+            "testConverters": 801594954,
+            "testConversions": 801594954,
+            "testValue": 2908667381,
+            "controlConverters": 1431427111,
+            "controlConversions": 1431427111,
+            "controlPopulation": 3988348066,
+            "testPopulation": 3253674405,
+            "controlMatchCount": 2,
+            "testMatchCount": 2,
+            "testStddevValue": 1432,
+            "controlStddevValue": 0523,
+            "testStddevLogValue": 12423,
+            "controlStddevLogValue": 03452,
+            "testImpressions": 12345,
+            "controlImpressions": 54321
+        },
+        {
+            "controlSquared": 236216478,
+            "testSquared": 3942206104,
+            "controlValue": 570110589,
+            "controlConverters": 3504991117,
+            "controlConversions": 3504991117,
+            "testValue": 2361916971,
+            "controlPopulation": 1374690878,
+            "testConverters": 21673949,
+            "testConversions": 21673949,
+            "testPopulation": 3652851334,
+            "controlMatchCount": 2,
+            "testMatchCount": 2,
+            "testStddevValue": 1432,
+            "controlStddevValue": 0523,
+            "testStddevLogValue": 12423,
+            "controlStddevLogValue": 03452,
+            "testImpressions": 12345,
+            "controlImpressions": 54321
+        }
+    ],
+    "metrics": {
+        "controlValue": 1108351725,
+        "testSquared": 4205949011,
+        "controlSquared": 3724585762,
+        "testConverters": 3027436879,
+        "testConversions": 3027436879,
+        "controlPopulation": 166738996,
+        "testValue": 362807006,
+        "controlConverters": 3482989586,
+        "controlConversions": 3482989586,
+        "testPopulation": 975586979,
+        "controlMatchCount": 2,
+        "testMatchCount": 2,
+        "testStddevValue": 1432,
+        "controlStddevValue": 0523,
+        "testStddevLogValue": 12423,
+        "controlStddevLogValue": 03452,
+        "testImpressions": 12345,
+        "controlImpressions": 54321
+    }
+}

@@ -24,7 +24,9 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator+(
       testSquared + other.testSquared,
       controlSquared + other.controlSquared,
       testMatchCount + other.testMatchCount,
-      controlMatchCount + other.controlMatchCount};
+      controlMatchCount + other.controlMatchCount,
+      testImpressions + other.testImpressions,
+      controlImpressions + other.controlImpressions};
 }
 
 EncryptedLiftMetrics EncryptedLiftMetrics::operator^(
@@ -41,6 +43,8 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator^(
       testSquared ^ other.testSquared,
       controlSquared ^ other.controlSquared,
       testMatchCount ^ other.testMatchCount,
-      controlMatchCount ^ other.controlMatchCount};
+      controlMatchCount ^ other.controlMatchCount,
+      testImpressions ^ other.testImpressions,
+      controlImpressions ^ other.controlImpressions};
 }
 } // namespace private_lift

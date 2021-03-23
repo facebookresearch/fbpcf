@@ -155,7 +155,8 @@ void InputData::addFromCSV(
     if (column == "opportunity") {
       if (sawTestFlag) {
         testPopulation_.push_back(parsed & storedTestFlag ? 1 : 0);
-        controlPopulation_.push_back((parsed & ((!storedTestFlag) ? 1 : 0)) ? 1 : 0);
+        controlPopulation_.push_back(
+            (parsed & ((!storedTestFlag) ? 1 : 0)) ? 1 : 0);
       } else {
         storedOpportunityFlag = parsed;
         sawOppFlag = true;
@@ -176,6 +177,8 @@ void InputData::addFromCSV(
                    << ", which is unexpected.";
       }
       opportunityTimestamps_.push_back(parsed - epoch_);
+    } else if (column == "num_impressions") {
+      numImpressions_.push_back(parsed);
     } else if (column == "event_timestamp") {
       // When event_timestamp column presents (in standard Converter Lift
       // input), parse it as arrays of size 1.

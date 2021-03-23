@@ -18,17 +18,19 @@
 
 namespace private_lift {
 bool LiftMetrics::operator==(const LiftMetrics& other) const noexcept {
-    return testPopulation == other.testPopulation &&
-    controlPopulation == other.controlPopulation &&
-    testConversions == other.testConversions &&
-    controlConversions == other.controlConversions &&
-    testConverters == other.testConverters &&
-    controlConverters == other.controlConverters &&
-    testValue == other.testValue && controlValue == other.controlValue &&
-    testSquared == other.testSquared &&
-    controlSquared == other.controlSquared &&
-    testMatchCount == other.testMatchCount &&
-    controlMatchCount == other.controlMatchCount;
+  return testPopulation == other.testPopulation &&
+      controlPopulation == other.controlPopulation &&
+      testConversions == other.testConversions &&
+      controlConversions == other.controlConversions &&
+      testConverters == other.testConverters &&
+      controlConverters == other.controlConverters &&
+      testValue == other.testValue && controlValue == other.controlValue &&
+      testSquared == other.testSquared &&
+      controlSquared == other.controlSquared &&
+      testMatchCount == other.testMatchCount &&
+      controlMatchCount == other.controlMatchCount &&
+      testImpressions == other.testImpressions &&
+      controlImpressions == other.controlImpressions;
 }
 
 LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
@@ -44,7 +46,9 @@ LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
       testSquared + other.testSquared,
       controlSquared + other.controlSquared,
       testMatchCount + other.testMatchCount,
-      controlMatchCount + other.controlMatchCount};
+      controlMatchCount + other.controlMatchCount,
+      testImpressions + other.testImpressions,
+      controlImpressions + other.controlImpressions};
 }
 
 LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
@@ -60,11 +64,13 @@ LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
       testSquared ^ other.testSquared,
       controlSquared ^ other.controlSquared,
       testMatchCount ^ other.testMatchCount,
-      controlMatchCount ^ other.controlMatchCount};
+      controlMatchCount ^ other.controlMatchCount,
+      testImpressions ^ other.testImpressions,
+      controlImpressions ^ other.controlImpressions};
 }
 
 std::ostream& operator<<(std::ostream& os, const LiftMetrics& obj) noexcept {
-    return os << obj.toJson();
+  return os << obj.toJson();
 }
 
 std::string LiftMetrics::toJson() const {
@@ -85,7 +91,9 @@ folly::dynamic LiftMetrics::toDynamic() const {
       "testConverters", testConverters)("controlConverters", controlConverters)(
       "testValue", testValue)("controlValue", controlValue)(
       "testSquared", testSquared)("controlSquared", controlSquared)(
-      "testMatchCount", testMatchCount)("controlMatchCount", controlMatchCount);
+      "testMatchCount", testMatchCount)("controlMatchCount", controlMatchCount)(
+      "testImpressions", testImpressions)(
+      "controlImpressions", controlImpressions);
 }
 
 LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
@@ -103,6 +111,8 @@ LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
   metrics.controlSquared = obj["controlSquared"].asInt();
   metrics.testMatchCount = obj["testMatchCount"].asInt();
   metrics.controlMatchCount = obj["controlMatchCount"].asInt();
+  metrics.testImpressions = obj["testImpressions"].asInt();
+  metrics.controlImpressions = obj["controlImpressions"].asInt();
 
   return metrics;
 }

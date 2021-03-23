@@ -115,6 +115,11 @@ class OutputMetrics {
       const std::vector<emp::Bit>& populationBits,
       const std::vector<std::vector<emp::Bit>>& validPurchaseArrays);
 
+  // Test/Control impressions: testImpressions/controlImpressions
+  void calculateImpressions(
+      const OutputMetrics::GroupType& groupType,
+      const std::vector<emp::Bit>& populationBits);
+
   // Test/control match count: testPopulation/Control population &
   void calculateMatchCount(
       const OutputMetrics::GroupType& groupType,

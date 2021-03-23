@@ -56,6 +56,7 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
   bool hasPurchase = folly::Random::secureRandDouble01() < purchaseRate;
   oneLine.opportunity_timestamp =
       oneLine.opportunity ? folly::Random::secureRand32(1, 100) + epoch : 0;
+  oneLine.num_impressions = folly::Random::secureRand64(0, 5);
 
   if (!hasPurchase) {
     oneLine.event_timestamps.resize(numConversions, 0);
@@ -94,8 +95,10 @@ void GenFakeData::genFakePublisherInputFile(
     const LiftFakeDataParams& params) {
   std::ofstream publisherFile{filename};
 
-  // publisher header: id_,opportunity,test_flag,opportunity_timestamp
-  publisherFile << "id_,opportunity,test_flag,opportunity_timestamp\n";
+  // publisher header: id_,opportunity,test_flag,opportunity_timestamp,
+  //   num_impressions
+  publisherFile
+      << "id_,opportunity,test_flag,opportunity_timestamp,num_impressions\n";
 
   for (auto i = 0; i < params.numRows_; i++) {
     // generate one row of fake data
@@ -112,7 +115,8 @@ void GenFakeData::genFakePublisherInputFile(
     std::string publisherRow = oneLine.id + "," +
         (oneLine.opportunity ? "1," : "0,") +
         (oneLine.test_flag ? "1," : "0,") +
-        std::to_string(oneLine.opportunity_timestamp);
+        std::to_string(oneLine.opportunity_timestamp) + "," +
+        std::to_string(oneLine.num_impressions);
     publisherFile << publisherRow << '\n';
   }
 }

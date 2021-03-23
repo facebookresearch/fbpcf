@@ -26,6 +26,8 @@ struct OutputMetricsData {
   int64_t controlSquared = 0;
   int64_t testMatchCount = 0;
   int64_t controlMatchCount = 0;
+  int64_t testImpressions = 0;
+  int64_t controlImpressions = 0;
 
   OutputMetricsData() = default;
 
@@ -51,6 +53,8 @@ struct OutputMetricsData {
     os << "Control Population: " << out.controlPopulation << "\n";
     os << "Test Match Count: " << out.testMatchCount << "\n";
     os << "Control Match Count: " << out.controlMatchCount << "\n";
+    os << "Test Impressions: " << out.testImpressions << "\n";
+    os << "Control Impressions: " << out.controlImpressions << "\n";
 
     return os;
   }
@@ -73,6 +77,8 @@ struct OutputMetricsData {
     metrics.controlSquared = controlSquared;
     metrics.testMatchCount = testMatchCount;
     metrics.controlMatchCount = controlMatchCount;
+    metrics.testImpressions = testImpressions;
+    metrics.controlImpressions = controlImpressions;
     return metrics;
   }
 

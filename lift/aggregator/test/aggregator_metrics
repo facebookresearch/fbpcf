@@ -1,1 +1,52 @@
-{"subGroupMetrics":[{"controlSquared":1498345844,"testSquared":8688508308,"controlValue":7536707491,"controlPopulation":4593228972,"testConversions":6439301660,"testConverters":6439301660,"testValue":1605304674,"controlConverters":2025880779,"controlConversions":2025880779,"testPopulation":5882780010,"controlMatchCount":9,"testMatchCount":9, "testLogValue": 0,"controlLogValue": 0},{"controlSquared":7273179529,"testSquared":6165631040,"controlValue":6535901481,"testValue":10662098835,"controlPopulation":7956679766,"controlConverters":7253029122,"testConverters":10252596306,"controlConversions":7253029122,"testConversions":10252596306,"testPopulation":6503256858,"controlMatchCount":9,"testMatchCount":9, "testLogValue": 0,"controlLogValue": 0}],"metrics":{"controlValue":11138262435,"testSquared":7289318455,"controlSquared":3950817466,"controlConverters":7603359106,"controlConversions":7603359106,"testValue":8993095223,"testConverters":9640897630,"testConversions":9640897630,"controlPopulation":6184461022,"testPopulation":5936863348,"controlMatchCount":9,"testMatchCount":9, "testLogValue": 0,"controlLogValue": 0}}
+{
+    "subGroupMetrics": [
+        {
+            "controlSquared": 1498345844,
+            "testSquared": 8688508308,
+            "controlValue": 7536707491,
+            "controlPopulation": 4593228972,
+            "testConversions": 6439301660,
+            "testConverters": 6439301660,
+            "testValue": 1605304674,
+            "controlConverters": 2025880779,
+            "controlConversions": 2025880779,
+            "testPopulation": 5882780010,
+            "controlMatchCount": 9,
+            "testMatchCount": 9,
+            "testImpressions": 3795,
+            "controlImpressions": 98430
+        },
+        {
+            "controlSquared": 7273179529,
+            "testSquared": 6165631040,
+            "controlValue": 6535901481,
+            "testValue": 10662098835,
+            "controlPopulation": 7956679766,
+            "controlConverters": 7253029122,
+            "testConverters": 10252596306,
+            "controlConversions": 7253029122,
+            "testConversions": 10252596306,
+            "testPopulation": 6503256858,
+            "controlMatchCount": 9,
+            "testMatchCount": 9,
+            "testImpressions": 3795,
+            "controlImpressions": 98430
+        }
+    ],
+    "metrics": {
+        "controlValue": 11138262435,
+        "testSquared": 7289318455,
+        "controlSquared": 3950817466,
+        "controlConverters": 7603359106,
+        "controlConversions": 7603359106,
+        "testValue": 8993095223,
+        "testConverters": 9640897630,
+        "testConversions": 9640897630,
+        "controlPopulation": 6184461022,
+        "testPopulation": 5936863348,
+        "controlMatchCount": 9,
+        "testMatchCount": 9,
+        "testImpressions": 3795,
+        "controlImpressions": 98430
+    }
+}

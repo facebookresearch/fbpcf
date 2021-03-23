@@ -12,12 +12,12 @@
 
 #include <folly/logging/xlog.h>
 
-#include "MetricsMapper.h"
-#include "../common/GroupedEncryptedLiftMetrics.h"
-#include "../common/GroupedLiftMetrics.h"
 #include "../../pcf/common/FunctionalUtil.h"
 #include "../../pcf/common/VectorUtil.h"
 #include "../../pcf/mpc/EmpGame.h"
+#include "../common/GroupedEncryptedLiftMetrics.h"
+#include "../common/GroupedLiftMetrics.h"
+#include "MetricsMapper.h"
 
 namespace private_lift {
 
@@ -62,7 +62,7 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     std::vector<emp::Integer> v =
         pcf::functional::reduce<std::vector<emp::Integer>>(
             vv, pcf::vector::Add<emp::Integer>);
-    XLOGF(INFO,  "Applying k-anonymity threshold {}...", threshold_);
+    XLOGF(INFO, "Applying k-anonymity threshold {}...", threshold_);
     auto anonymized = kAnonymizeGrouped(v);
 
     auto metrics = nullifyNonExposedMetrics(anonymized);
@@ -97,8 +97,7 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
   EncryptedLiftMetrics kAnonymizeMetrics(EncryptedLiftMetrics metrics) {
     const emp::Integer hiddenMetric{
         INT_SIZE, kHiddenMetricConstant, emp::PUBLIC};
-    const emp::Integer kAnonymityLevel{
-        INT_SIZE, threshold_, emp::PUBLIC};
+    const emp::Integer kAnonymityLevel{INT_SIZE, threshold_, emp::PUBLIC};
     auto condition =
         metrics.testConverters + metrics.controlConverters >= kAnonymityLevel;
 
@@ -125,11 +124,15 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
         emp::If(condition, metrics.testMatchCount, hiddenMetric);
     anonymized.controlMatchCount =
         emp::If(condition, metrics.controlMatchCount, hiddenMetric);
+    anonymized.testImpressions =
+        emp::If(condition, metrics.testImpressions, hiddenMetric);
+    anonymized.controlImpressions =
+        emp::If(condition, metrics.controlImpressions, hiddenMetric);
 
     return anonymized;
   }
 
- std::vector<emp::Integer> nullifyNonExposedMetrics(
+  std::vector<emp::Integer> nullifyNonExposedMetrics(
       std::vector<emp::Integer> metrics) {
     auto groupedMetrics = mapVectorToGroupedLiftMetrics(metrics);
     const emp::Integer nullifyMetric{
@@ -138,12 +141,11 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     groupedMetrics.metrics.testSquared = nullifyMetric;
     groupedMetrics.metrics.controlSquared = nullifyMetric;
     for (auto& subGroup : groupedMetrics.subGroupMetrics) {
-        subGroup.testSquared = nullifyMetric;
-        subGroup.controlSquared = nullifyMetric;
+      subGroup.testSquared = nullifyMetric;
+      subGroup.controlSquared = nullifyMetric;
     }
 
     return mapGroupedLiftMetricsToEmpVector(groupedMetrics);
   }
-
 };
 } // namespace private_lift
