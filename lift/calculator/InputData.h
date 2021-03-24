@@ -60,6 +60,10 @@ class InputData {
     return numClicks_;
   }
 
+  const std::vector<int64_t>& getTotalSpend() const {
+    return totalSpend_;
+  }
+
   const std::vector<std::vector<int64_t>>& getOpportunityTimestampArrays()
       const {
     return opportunityTimestampArrays_;
@@ -166,6 +170,7 @@ class InputData {
   std::vector<int64_t> opportunityTimestamps_;
   std::vector<int64_t> numImpressions_;
   std::vector<int64_t> numClicks_;
+  std::vector<int64_t> totalSpend_;
   std::vector<int64_t> purchaseTimestamps_;
   std::vector<int64_t> purchaseValues_;
   std::vector<int64_t> purchaseValuesSquared_;

@@ -30,6 +30,8 @@ struct OutputMetricsData {
   int64_t controlImpressions = 0;
   int64_t testClicks = 0;
   int64_t controlClicks = 0;
+  int64_t testSpend = 0;
+  int64_t controlSpend = 0;
 
   OutputMetricsData() = default;
 
@@ -59,6 +61,8 @@ struct OutputMetricsData {
     os << "Control Impressions: " << out.controlImpressions << "\n";
     os << "Test Clicks: " << out.testClicks << "\n";
     os << "Control Clicks: " << out.controlClicks << "\n";
+    os << "Test Spend: " << out.testSpend << "\n";
+    os << "Control Spend: " << out.controlSpend << "\n";
 
     return os;
   }
@@ -85,6 +89,8 @@ struct OutputMetricsData {
     metrics.controlImpressions = controlImpressions;
     metrics.testClicks = testClicks;
     metrics.controlClicks = controlClicks;
+    metrics.testSpend = testSpend;
+    metrics.controlSpend = controlSpend;
     return metrics;
   }
 

@@ -20,7 +20,9 @@
             "testImpressions": 13512,
             "controlImpressions": 21531,
             "testClicks": 31832,
-            "controlClicks": 12313
+            "controlClicks": 12313,
+            "testSpend": 12197,
+            "controlSpend": 12039
         },
         {
             "testSquared": 345616773,
@@ -42,7 +44,9 @@
             "testImpressions": 13512,
             "controlImpressions": 21531,
             "testClicks": 31832,
-            "controlClicks": 12313
+            "controlClicks": 12313,
+            "testSpend": 12197,
+            "controlSpend": 12039
         }
     ],
     "metrics": {
@@ -65,6 +69,8 @@
         "testImpressions": 13512,
         "controlImpressions": 21531,
         "testClicks": 31832,
-        "controlClicks": 12313
+        "controlClicks": 12313,
+        "testSpend": 12197,
+        "controlSpend": 12039
     }
 }

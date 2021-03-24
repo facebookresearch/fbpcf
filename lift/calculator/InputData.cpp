@@ -181,6 +181,8 @@ void InputData::addFromCSV(
       numImpressions_.push_back(parsed);
     } else if (column == "num_clicks") {
       numClicks_.push_back(parsed);
+    } else if (column == "total_spend") {
+      totalSpend_.push_back(parsed);
     } else if (column == "event_timestamp") {
       // When event_timestamp column presents (in standard Converter Lift
       // input), parse it as arrays of size 1.

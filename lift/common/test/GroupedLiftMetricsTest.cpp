@@ -32,6 +32,8 @@ class GroupedLiftMetricsTest : public ::testing::Test {
         r(),
         r(),
         r(),
+        r(),
+        r(),
         r()};
   }
 

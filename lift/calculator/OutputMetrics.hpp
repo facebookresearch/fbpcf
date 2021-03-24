@@ -269,6 +269,7 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
   calculateMatchCount(groupType, bits, purchaseValueArrays);
   calculateImpressions(groupType, bits);
   calculateClicks(groupType, bits);
+  calculateSpend(groupType, bits);
 
   // If this is (value-based) conversion lift, calculate value metrics now
   if (!shouldSkipValues_ &&
@@ -525,6 +526,42 @@ void OutputMetrics<MY_ROLE>::calculateClicks(
       subgroupMetrics_[i].testClicks = sum(groupInts);
     } else {
       subgroupMetrics_[i].controlClicks = sum(groupInts);
+    }
+  }
+}
+
+template <int32_t MY_ROLE>
+void OutputMetrics<MY_ROLE>::calculateSpend(
+    const OutputMetrics::GroupType& groupType,
+    const std::vector<emp::Bit>& populationBits) {
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " spend";
+
+  const std::vector<emp::Integer> totalSpend =
+      privatelyShareIntsFromPublisher<MY_ROLE>(
+          inputData_.getTotalSpend(), n_, FULL_BITS);
+
+  std::vector<emp::Integer> spendArray =
+      secret_sharing::zip_and_map<emp::Bit, emp::Integer, emp::Integer>(
+          populationBits,
+          totalSpend,
+          [](emp::Bit isUser, emp::Integer totalSpend) -> emp::Integer {
+            const emp::Integer zero = emp::Integer{INT_SIZE, 0, emp::PUBLIC};
+            return emp::If(isUser, totalSpend, zero);
+          });
+
+  if (groupType == GroupType::TEST) {
+    metrics_.testSpend = sum(spendArray);
+  } else {
+    metrics_.controlSpend = sum(spendArray);
+  }
+  // And compute for subgroups
+  for (auto i = 0; i < numGroups_; ++i) {
+    auto groupInts =
+        secret_sharing::multiplyBitmask(spendArray, groupBitmasks_.at(i));
+    if (groupType == GroupType::TEST) {
+      subgroupMetrics_[i].testSpend = sum(groupInts);
+    } else {
+      subgroupMetrics_[i].controlSpend = sum(groupInts);
     }
   }
 }

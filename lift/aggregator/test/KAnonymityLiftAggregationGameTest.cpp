@@ -59,6 +59,8 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
         r(),
         r(),
         r(),
+        r(),
+        r(),
         r()};
   }
 
@@ -86,6 +88,8 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
     return LiftMetrics{
         metrics.testPopulation,
         metrics.controlPopulation,
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,

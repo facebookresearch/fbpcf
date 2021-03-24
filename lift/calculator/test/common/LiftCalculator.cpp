@@ -61,6 +61,7 @@ OutputMetricsData LiftCalculator::compute(
   uint64_t opportunity = 0;
   uint64_t numImpressions = 0;
   uint64_t numClicks = 0;
+  uint64_t totalSpend = 0;
   uint64_t testFlag = 0;
   uint64_t opportunityTimestamp = 0;
   std::vector<uint64_t> eventTimestamps;
@@ -86,6 +87,8 @@ OutputMetricsData LiftCalculator::compute(
   out.controlImpressions = 0;
   out.testClicks = 0;
   out.controlClicks = 0;
+  out.testSpend = 0;
+  out.controlSpend = 0;
 
   // Read line by line, at the same time compute metrics
   while (getline(inFilePublisher, linePublisher) &&
@@ -142,6 +145,14 @@ OutputMetricsData LiftCalculator::compute(
                  << "' to uint64_t";
     }
 
+    std::istringstream issTotalSpend{
+        partsPublisher.at(colNameToIndex.at("total_spend"))};
+    issTotalSpend >> totalSpend;
+    if (issTotalSpend.fail()) {
+      LOG(FATAL) << "Failed to parse '" << issTotalSpend.str()
+                 << "' to uint64_t";
+    }
+
     if (partsPartner.empty()) {
       LOG(FATAL) << "Empty partner line";
     }
@@ -190,6 +201,7 @@ OutputMetricsData LiftCalculator::compute(
         out.testSquared += value_subsum * value_subsum;
         out.testImpressions += numImpressions;
         out.testClicks += numClicks;
+        out.testSpend += totalSpend;
       } else {
         ++out.controlPopulation;
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
@@ -216,6 +228,7 @@ OutputMetricsData LiftCalculator::compute(
         out.controlSquared += value_subsum * value_subsum;
         out.controlImpressions += numImpressions;
         out.controlClicks += numClicks;
+        out.controlSpend += totalSpend;
       }
     }
   }

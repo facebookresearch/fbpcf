@@ -32,6 +32,8 @@ struct LiftMetrics {
   int64_t controlImpressions;
   int64_t testClicks;
   int64_t controlClicks;
+  int64_t testSpend;
+  int64_t controlSpend;
 
   bool operator==(const LiftMetrics& other) const noexcept;
   LiftMetrics operator+(const LiftMetrics& other) const noexcept;
