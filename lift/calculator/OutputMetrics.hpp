@@ -462,34 +462,44 @@ template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateImpressions(
     const OutputMetrics::GroupType& groupType,
     const std::vector<emp::Bit>& populationBits) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " impressions";
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
+             << " impressions & reach";
 
   const std::vector<emp::Integer> numImpressions =
       privatelyShareIntsFromPublisher<MY_ROLE>(
           inputData_.getNumImpressions(), n_, FULL_BITS);
 
-  std::vector<emp::Integer> impressionsArray =
-      secret_sharing::zip_and_map<emp::Bit, emp::Integer, emp::Integer>(
+  auto [impressionsArray, reachArray] = secret_sharing::
+      zip_and_map<emp::Bit, emp::Integer, emp::Integer, emp::Bit>(
           populationBits,
           numImpressions,
-          [](emp::Bit isUser, emp::Integer numImpressions) -> emp::Integer {
+          [](emp::Bit isUser,
+             emp::Integer numImpressions) -> std::pair<emp::Integer, emp::Bit> {
             const emp::Integer zero = emp::Integer{INT_SIZE, 0, emp::PUBLIC};
-            return emp::If(isUser, numImpressions, zero);
+            return std::make_pair(
+                emp::If(isUser, numImpressions, zero),
+                isUser & (numImpressions > zero));
           });
 
   if (groupType == GroupType::TEST) {
     metrics_.testImpressions = sum(impressionsArray);
+    metrics_.testReach = sum(reachArray);
   } else {
     metrics_.controlImpressions = sum(impressionsArray);
+    metrics_.controlReach = sum(reachArray);
   }
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
         secret_sharing::multiplyBitmask(impressionsArray, groupBitmasks_.at(i));
+    auto groupBits =
+        secret_sharing::multiplyBitmask(reachArray, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
       subgroupMetrics_[i].testImpressions = sum(groupInts);
+      subgroupMetrics_[i].testReach = sum(groupBits);
     } else {
       subgroupMetrics_[i].controlImpressions = sum(groupInts);
+      subgroupMetrics_[i].controlReach = sum(groupBits);
     }
   }
 }

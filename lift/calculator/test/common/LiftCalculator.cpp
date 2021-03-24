@@ -89,6 +89,8 @@ OutputMetricsData LiftCalculator::compute(
   out.controlClicks = 0;
   out.testSpend = 0;
   out.controlSpend = 0;
+  out.testReach = 0;
+  out.controlReach = 0;
 
   // Read line by line, at the same time compute metrics
   while (getline(inFilePublisher, linePublisher) &&
@@ -202,6 +204,7 @@ OutputMetricsData LiftCalculator::compute(
         out.testImpressions += numImpressions;
         out.testClicks += numClicks;
         out.testSpend += totalSpend;
+        out.testReach += (numImpressions > 0 ? 1 : 0);
       } else {
         ++out.controlPopulation;
         for (auto i = 0; i < eventTimestamps.size(); ++i) {
@@ -229,6 +232,7 @@ OutputMetricsData LiftCalculator::compute(
         out.controlImpressions += numImpressions;
         out.controlClicks += numClicks;
         out.controlSpend += totalSpend;
+        out.controlReach += (numImpressions > 0 ? 1 : 0);
       }
     }
   }

@@ -135,6 +135,9 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     anonymized.testSpend = emp::If(condition, metrics.testSpend, hiddenMetric);
     anonymized.controlSpend =
         emp::If(condition, metrics.controlSpend, hiddenMetric);
+    anonymized.testReach = emp::If(condition, metrics.testReach, hiddenMetric);
+    anonymized.controlReach =
+        emp::If(condition, metrics.controlReach, hiddenMetric);
 
     return anonymized;
   }

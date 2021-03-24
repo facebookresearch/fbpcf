@@ -29,6 +29,8 @@ void addLiftMetricsToEmpVector(
   v.add(metrics.controlClicks);
   v.add(metrics.testSpend);
   v.add(metrics.controlSpend);
+  v.add(metrics.testReach);
+  v.add(metrics.controlReach);
 }
 
 LiftMetrics genLiftMetricsFromVector(
@@ -54,6 +56,8 @@ LiftMetrics genLiftMetricsFromVector(
   metrics.controlClicks = v[index++];
   metrics.testSpend = v[index++];
   metrics.controlSpend = v[index++];
+  metrics.testReach = v[index++];
+  metrics.controlReach = v[index++];
 
   return metrics;
 }
@@ -81,6 +85,8 @@ EncryptedLiftMetrics genLiftMetricsFromVector(
   metrics.controlClicks = v[index++];
   metrics.testSpend = v[index++];
   metrics.controlSpend = v[index++];
+  metrics.testReach = v[index++];
+  metrics.controlReach = v[index++];
 
   return metrics;
 }
@@ -106,6 +112,8 @@ void addLiftMetricsToEmpVector(
   v.push_back(metrics.controlClicks);
   v.push_back(metrics.testSpend);
   v.push_back(metrics.controlSpend);
+  v.push_back(metrics.testReach);
+  v.push_back(metrics.controlReach);
 }
 
 std::vector<emp::Integer> mapGroupedLiftMetricsToEmpVector(

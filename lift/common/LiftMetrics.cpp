@@ -32,7 +32,8 @@ bool LiftMetrics::operator==(const LiftMetrics& other) const noexcept {
       testImpressions == other.testImpressions &&
       controlImpressions == other.controlImpressions &&
       testClicks == other.testClicks && controlClicks == other.controlClicks &&
-      testSpend == other.testSpend && controlSpend == other.controlSpend;
+      testSpend == other.testSpend && controlSpend == other.controlSpend &&
+      testReach == other.testReach && controlReach == other.controlReach;
 }
 
 LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
@@ -54,7 +55,9 @@ LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
       testClicks + other.testClicks,
       controlClicks + other.controlClicks,
       testSpend + other.testSpend,
-      controlSpend + other.controlSpend};
+      controlSpend + other.controlSpend,
+      testReach + other.testReach,
+      controlReach + other.controlReach};
 }
 
 LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
@@ -76,7 +79,9 @@ LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
       testClicks ^ other.testClicks,
       controlClicks ^ other.controlClicks,
       testSpend ^ other.testSpend,
-      controlSpend ^ other.controlSpend};
+      controlSpend ^ other.controlSpend,
+      testReach ^ other.testReach,
+      controlReach ^ other.controlReach};
 }
 
 std::ostream& operator<<(std::ostream& os, const LiftMetrics& obj) noexcept {
@@ -105,7 +110,8 @@ folly::dynamic LiftMetrics::toDynamic() const {
       "testImpressions", testImpressions)(
       "controlImpressions", controlImpressions)("testClicks", testClicks)(
       "controlClicks", controlClicks)("testSpend", testSpend)(
-      "controlSpend", controlSpend);
+      "controlSpend", controlSpend)("testReach", testReach)(
+      "controlReach", controlReach);
 }
 
 LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
@@ -129,6 +135,8 @@ LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
   metrics.controlClicks = obj["controlClicks"].asInt();
   metrics.testSpend = obj["testSpend"].asInt();
   metrics.controlSpend = obj["controlSpend"].asInt();
+  metrics.testReach = obj["testReach"].asInt();
+  metrics.controlReach = obj["controlReach"].asInt();
 
   return metrics;
 }
