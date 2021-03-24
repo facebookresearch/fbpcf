@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <optional>
+#include <tuple>
 #include <vector>
 
 #include <emp-sh2pc/emp-sh2pc.h>
@@ -283,6 +284,12 @@ const std::pair<std::vector<O>, std::vector<N>> zip_and_map(
     const std::vector<T>& vec1,
     const std::vector<S>& vec2,
     std::function<std::pair<O, N>(T, S)> map_fn);
+
+template <typename T, typename S, typename O1, typename O2, typename O3>
+const std::tuple<std::vector<O1>, std::vector<O2>, std::vector<O3>> zip_and_map(
+    const std::vector<T>& vec1,
+    const std::vector<S>& vec2,
+    std::function<std::tuple<O1, O2, O3>(T, S)> map_fn);
 
 /*
  * Execute map_fn on pairwise items from vec1, vec2, and vec3

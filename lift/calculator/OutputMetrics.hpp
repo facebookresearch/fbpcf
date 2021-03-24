@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <tuple>
+
 #include "folly/logging/xlog.h"
 
 #include "../common/GroupedLiftMetrics.h"
@@ -90,8 +92,10 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
       InputData::LiftGranularityType::Conversion) {
     outfile << metrics_.testValue << ",";
     outfile << metrics_.controlValue << ",";
-    outfile << metrics_.testSquared << ",";
-    outfile << metrics_.controlSquared << ",";
+    outfile << metrics_.testValueSquared << ",";
+    outfile << metrics_.controlValueSquared << ",";
+    outfile << metrics_.testNumConvSquared << ",";
+    outfile << metrics_.controlNumConvSquared << ",";
   }
   outfile << metrics_.testPopulation << ",";
   outfile << metrics_.controlPopulation << "\n";
@@ -127,8 +131,10 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
         InputData::LiftGranularityType::Conversion) {
       outfile << subOut.testValue << ",";
       outfile << subOut.controlValue << ",";
-      outfile << subOut.testSquared << ",";
-      outfile << subOut.controlSquared << ",";
+      outfile << subOut.testValueSquared << ",";
+      outfile << subOut.controlValueSquared << ",";
+      outfile << subOut.testNumConvSquared << ",";
+      outfile << subOut.controlNumConvSquared << ",";
     }
     outfile << subOut.testPopulation << ",";
     outfile << subOut.controlPopulation << "\n";
@@ -353,38 +359,58 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     const std::vector<std::vector<emp::Bit>>& validPurchaseArrays) {
   XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
              << " conversions & converters";
-  auto [eventArrays, converterArrays] = secret_sharing::zip_and_map<
-      emp::Bit,
-      std::vector<emp::Bit>,
-      std::vector<emp::Bit>,
-      emp::Bit>(
-      populationBits,
-      validPurchaseArrays,
-      [](emp::Bit isUser, std::vector<emp::Bit> validPurchaseArray)
-          -> std::pair<std::vector<emp::Bit>, emp::Bit> {
-        std::vector<emp::Bit> vec;
-        emp::Bit anyValidPurchase{false, emp::PUBLIC};
-        for (const auto& validPurchase : validPurchaseArray) {
-          vec.push_back(isUser & validPurchase);
-          anyValidPurchase = (anyValidPurchase | validPurchase);
-        }
-        return std::make_pair(vec, isUser & anyValidPurchase);
-      });
+
+  auto [eventArrays, converterArrays, squaredNumConvs] =
+      secret_sharing::zip_and_map<
+          emp::Bit,
+          std::vector<emp::Bit>,
+          std::vector<emp::Bit>,
+          emp::Bit,
+          emp::Integer>(
+          populationBits,
+          validPurchaseArrays,
+          [](emp::Bit isUser, std::vector<emp::Bit> validPurchaseArray)
+              -> std::tuple<std::vector<emp::Bit>, emp::Bit, emp::Integer> {
+            std::vector<emp::Bit> vec;
+            emp::Integer numConvSquared{private_lift::INT_SIZE, 0, emp::PUBLIC};
+            emp::Bit anyValidPurchase{false, emp::PUBLIC};
+
+            for (auto i = 0; i < validPurchaseArray.size(); ++i) {
+              auto cond = isUser & validPurchaseArray.at(i);
+              vec.push_back(cond);
+              // If this event is valid and we haven't taken the accumulation
+              // yet, use this value as the sumSquared accumulation. The number
+              // of valid events if this event is valid is the remaining number
+              // of elements in the array
+              auto numConv = validPurchaseArray.size() - i;
+              auto convSquared = static_cast<int64_t>(numConv * numConv);
+              emp::Integer numConvSquaredIfValid{
+                  numConvSquared.size(), convSquared, emp::PUBLIC};
+              numConvSquared = emp::If(
+                  cond & !anyValidPurchase,
+                  numConvSquaredIfValid,
+                  numConvSquared);
+              anyValidPurchase = anyValidPurchase | cond;
+            }
+            return std::make_tuple(vec, anyValidPurchase, numConvSquared);
+          });
 
   if (groupType == GroupType::TEST) {
     metrics_.testEvents = sum(eventArrays);
     metrics_.testConverters = sum(converterArrays);
+    metrics_.testNumConvSquared = sum(squaredNumConvs);
   } else {
     metrics_.controlEvents = sum(eventArrays);
     metrics_.controlConverters = sum(converterArrays);
+    metrics_.controlNumConvSquared = sum(squaredNumConvs);
   }
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
-    auto groupEventBits =
-        secret_sharing::multiplyBitmask(eventArrays, groupBitmasks_.at(i));
+    const auto& mask = groupBitmasks_.at(i);
+    auto groupEventBits = secret_sharing::multiplyBitmask(eventArrays, mask);
     auto groupConverterBits =
-        secret_sharing::multiplyBitmask(converterArrays, groupBitmasks_.at(i));
+        secret_sharing::multiplyBitmask(converterArrays, mask);
     auto groupEvents = sum(groupEventBits);
     auto groupConverters = sum(groupConverterBits);
     if (groupType == GroupType::TEST) {
@@ -393,6 +419,14 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     } else {
       subgroupMetrics_[i].controlEvents = groupEvents;
       subgroupMetrics_[i].controlConverters = groupConverters;
+    }
+
+    // And also calculate per-group numConvSquared
+    auto groupInts = secret_sharing::multiplyBitmask(squaredNumConvs, mask);
+    if (groupType == GroupType::TEST) {
+      subgroupMetrics_[i].testNumConvSquared = sum(groupInts);
+    } else {
+      subgroupMetrics_[i].controlNumConvSquared = sum(groupInts);
     }
   }
   return eventArrays;
@@ -638,7 +672,7 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
     const std::vector<std::vector<emp::Integer>>& purchaseValueSquaredArrays,
     const std::vector<std::vector<emp::Bit>>& eventArrays) {
   XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " value squared";
-  std::vector<emp::Integer> squaredValues = secret_sharing::zip_and_map<
+  auto squaredValues = secret_sharing::zip_and_map<
       std::vector<emp::Bit>,
       std::vector<emp::Integer>,
       emp::Integer>(
@@ -657,10 +691,8 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
           // If this event is valid and we haven't taken the accumulation yet,
           // use this value as the sumSquared accumulation.
           // emp::If(condition, true_case, false_case)
-          sumSquared = emp::If(
-              events.at(i) & !tookAccumulationAlready,
-              purchaseValuesSquared.at(i),
-              sumSquared);
+          auto cond = events.at(i) & !tookAccumulationAlready;
+          sumSquared = emp::If(cond, purchaseValuesSquared.at(i), sumSquared);
           // Always make sure we keep tookAccumulationAlready up-to-date
           tookAccumulationAlready = tookAccumulationAlready | events.at(i);
         }
@@ -668,19 +700,19 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
       });
 
   if (groupType == GroupType::TEST) {
-    metrics_.testSquared = sum(squaredValues);
+    metrics_.testValueSquared = sum(squaredValues);
   } else {
-    metrics_.controlSquared = sum(squaredValues);
+    metrics_.controlValueSquared = sum(squaredValues);
   }
 
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
-    auto groupInts =
-        secret_sharing::multiplyBitmask(squaredValues, groupBitmasks_.at(i));
+    const auto& mask = groupBitmasks_.at(i);
+    auto groupInts = secret_sharing::multiplyBitmask(squaredValues, mask);
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testSquared = sum(groupInts);
+      subgroupMetrics_[i].testValueSquared = sum(groupInts);
     } else {
-      subgroupMetrics_[i].controlSquared = sum(groupInts);
+      subgroupMetrics_[i].controlValueSquared = sum(groupInts);
     }
   }
 }

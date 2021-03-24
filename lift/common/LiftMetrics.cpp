@@ -25,8 +25,10 @@ bool LiftMetrics::operator==(const LiftMetrics& other) const noexcept {
       testConverters == other.testConverters &&
       controlConverters == other.controlConverters &&
       testValue == other.testValue && controlValue == other.controlValue &&
-      testSquared == other.testSquared &&
-      controlSquared == other.controlSquared &&
+      testValueSquared == other.testValueSquared &&
+      controlValueSquared == other.controlValueSquared &&
+      testNumConvSquared == other.testNumConvSquared &&
+      controlNumConvSquared == other.controlNumConvSquared &&
       testMatchCount == other.testMatchCount &&
       controlMatchCount == other.controlMatchCount &&
       testImpressions == other.testImpressions &&
@@ -48,8 +50,10 @@ LiftMetrics LiftMetrics::operator+(const LiftMetrics& other) const noexcept {
       controlConverters + other.controlConverters,
       testValue + other.testValue,
       controlValue + other.controlValue,
-      testSquared + other.testSquared,
-      controlSquared + other.controlSquared,
+      testValueSquared + other.testValueSquared,
+      controlValueSquared + other.controlValueSquared,
+      testNumConvSquared + other.testNumConvSquared,
+      controlNumConvSquared + other.controlNumConvSquared,
       testMatchCount + other.testMatchCount,
       controlMatchCount + other.controlMatchCount,
       testImpressions + other.testImpressions,
@@ -74,8 +78,10 @@ LiftMetrics LiftMetrics::operator^(const LiftMetrics& other) const noexcept {
       controlConverters ^ other.controlConverters,
       testValue ^ other.testValue,
       controlValue ^ other.controlValue,
-      testSquared ^ other.testSquared,
-      controlSquared ^ other.controlSquared,
+      testValueSquared ^ other.testValueSquared,
+      controlValueSquared ^ other.controlValueSquared,
+      testNumConvSquared ^ other.testNumConvSquared,
+      controlNumConvSquared ^ other.controlNumConvSquared,
       testMatchCount ^ other.testMatchCount,
       controlMatchCount ^ other.controlMatchCount,
       testImpressions ^ other.testImpressions,
@@ -111,7 +117,10 @@ folly::dynamic LiftMetrics::toDynamic() const {
       "controlConversions", controlConversions)(
       "testConverters", testConverters)("controlConverters", controlConverters)(
       "testValue", testValue)("controlValue", controlValue)(
-      "testSquared", testSquared)("controlSquared", controlSquared)(
+      "testValueSquared", testValueSquared)(
+      "controlValueSquared", controlValueSquared)(
+      "testNumConvSquared", testNumConvSquared)(
+      "controlNumConvSquared", controlNumConvSquared)(
       "testMatchCount", testMatchCount)("controlMatchCount", controlMatchCount)(
       "testImpressions", testImpressions)(
       "controlImpressions", controlImpressions)("testClicks", testClicks)(
@@ -132,8 +141,10 @@ LiftMetrics LiftMetrics::fromDynamic(const folly::dynamic& obj) {
   metrics.controlConverters = obj["controlConverters"].asInt();
   metrics.testValue = obj["testValue"].asInt();
   metrics.controlValue = obj["controlValue"].asInt();
-  metrics.testSquared = obj["testSquared"].asInt();
-  metrics.controlSquared = obj["controlSquared"].asInt();
+  metrics.testValueSquared = obj["testValueSquared"].asInt();
+  metrics.controlValueSquared = obj["controlValueSquared"].asInt();
+  metrics.testNumConvSquared = obj["testNumConvSquared"].asInt();
+  metrics.controlNumConvSquared = obj["controlNumConvSquared"].asInt();
   metrics.testMatchCount = obj["testMatchCount"].asInt();
   metrics.controlMatchCount = obj["controlMatchCount"].asInt();
   metrics.testImpressions = obj["testImpressions"].asInt();

@@ -23,8 +23,10 @@ struct EncryptedLiftMetrics {
   emp::Integer controlConverters;
   emp::Integer testValue;
   emp::Integer controlValue;
-  emp::Integer testSquared;
-  emp::Integer controlSquared;
+  emp::Integer testValueSquared;
+  emp::Integer controlValueSquared;
+  emp::Integer testNumConvSquared;
+  emp::Integer controlNumConvSquared;
   emp::Integer testMatchCount;
   emp::Integer controlMatchCount;
   emp::Integer testImpressions;

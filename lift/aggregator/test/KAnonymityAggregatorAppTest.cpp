@@ -130,11 +130,15 @@ TEST_F(KAnonymityAggregatorAppIntegrationTest, TestVisibilityBob) {
   GroupedLiftMetrics zeroMetrics{
       LiftMetrics{}, std::vector<LiftMetrics>{2, LiftMetrics{}}};
   // Set the nullable metrics to -1 in the "zeroed metrics"
-  zeroMetrics.metrics.controlSquared = -1;
-  zeroMetrics.metrics.testSquared = -1;
+  zeroMetrics.metrics.controlValueSquared = -1;
+  zeroMetrics.metrics.testValueSquared = -1;
+  zeroMetrics.metrics.controlNumConvSquared = -1;
+  zeroMetrics.metrics.testNumConvSquared = -1;
   for (auto& subGroup : zeroMetrics.subGroupMetrics) {
-    subGroup.testSquared = -1;
-    subGroup.controlSquared = -1;
+    subGroup.testValueSquared = -1;
+    subGroup.controlValueSquared = -1;
+    subGroup.testNumConvSquared = -1;
+    subGroup.controlNumConvSquared = -1;
   }
 
   EXPECT_EQ(zeroMetrics, resAlice);

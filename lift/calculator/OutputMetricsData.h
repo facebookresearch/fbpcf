@@ -22,8 +22,10 @@ struct OutputMetricsData {
   int64_t controlConverters = 0;
   int64_t testValue = 0;
   int64_t controlValue = 0;
-  int64_t testSquared = 0;
-  int64_t controlSquared = 0;
+  int64_t testValueSquared = 0;
+  int64_t controlValueSquared = 0;
+  int64_t testNumConvSquared = 0;
+  int64_t controlNumConvSquared = 0;
   int64_t testMatchCount = 0;
   int64_t controlMatchCount = 0;
   int64_t testImpressions = 0;
@@ -55,8 +57,10 @@ struct OutputMetricsData {
     os << "Control Converters: " << out.controlConverters << "\n";
     os << "Test Value: " << out.testValue << "\n";
     os << "Control Value: " << out.controlValue << "\n";
-    os << "Test Squared: " << out.testSquared << "\n";
-    os << "Control Squared: " << out.controlSquared << "\n";
+    os << "Test Value Squared: " << out.testValueSquared << "\n";
+    os << "Control Value Squared: " << out.controlValueSquared << "\n";
+    os << "Test NumConv Squared: " << out.testNumConvSquared << "\n";
+    os << "Control NumConv Squared: " << out.controlNumConvSquared << "\n";
     os << "Test Population: " << out.testPopulation << "\n";
     os << "Control Population: " << out.controlPopulation << "\n";
     os << "Test Match Count: " << out.testMatchCount << "\n";
@@ -89,8 +93,10 @@ struct OutputMetricsData {
     metrics.controlConverters = controlConverters;
     metrics.testValue = testValue;
     metrics.controlValue = controlValue;
-    metrics.testSquared = testSquared;
-    metrics.controlSquared = controlSquared;
+    metrics.testValueSquared = testValueSquared;
+    metrics.controlValueSquared = controlValueSquared;
+    metrics.testNumConvSquared = testNumConvSquared;
+    metrics.controlNumConvSquared = controlNumConvSquared;
     metrics.testMatchCount = testMatchCount;
     metrics.controlMatchCount = controlMatchCount;
     metrics.testImpressions = testImpressions;

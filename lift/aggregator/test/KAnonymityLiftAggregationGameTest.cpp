@@ -27,11 +27,15 @@ namespace private_lift {
 // metrics in a GroupLiftMetrics (used for generated test data)
 void nullifyNonExposedMetrics(GroupedLiftMetrics& groupMetrics) {
   // Set the nullable metrics to -1
-  groupMetrics.metrics.controlSquared = -1;
-  groupMetrics.metrics.testSquared = -1;
+  groupMetrics.metrics.controlValueSquared = -1;
+  groupMetrics.metrics.testValueSquared = -1;
+  groupMetrics.metrics.controlNumConvSquared = -1;
+  groupMetrics.metrics.testNumConvSquared = -1;
   for (auto& subGroup : groupMetrics.subGroupMetrics) {
-    subGroup.testSquared = -1;
-    subGroup.controlSquared = -1;
+    subGroup.testValueSquared = -1;
+    subGroup.controlValueSquared = -1;
+    subGroup.testNumConvSquared = -1;
+    subGroup.controlNumConvSquared = -1;
   }
 }
 
@@ -43,8 +47,9 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
           KAnonymityLiftAggregationGame<pcf::QueueIO>::kAnonymityThreshold,
           std::numeric_limits<uint32_t>::max());
     };
-    return LiftMetrics{r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r(),
-                       r(), r(), r(), r(), r(), r(), r(), r(), r(), r(), r()};
+    return LiftMetrics{r(), r(), r(), r(), r(), r(), r(), r(),
+                       r(), r(), r(), r(), r(), r(), r(), r(),
+                       r(), r(), r(), r(), r(), r(), r(), r()};
   }
 
   GroupedLiftMetrics fakeGroupedMetrics(bool allLowPop, bool subgroupLowPop) {
@@ -71,6 +76,8 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
     return LiftMetrics{
         metrics.testPopulation,
         metrics.controlPopulation,
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
+        KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,
         KAnonymityLiftAggregationGame<pcf::QueueIO>::kHiddenMetricConstant,

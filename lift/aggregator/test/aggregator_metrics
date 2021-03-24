@@ -1,8 +1,10 @@
 {
     "subGroupMetrics": [
         {
-            "controlSquared": 1498345844,
-            "testSquared": 8688508308,
+            "controlValueSquared": 1498345844,
+            "testValueSquared": 8688508308,
+            "controlNumConvSquared": 1929258356,
+            "testNumConvSquared": 2002055060,
             "controlValue": 7536707491,
             "controlPopulation": 4593228972,
             "testConversions": 6439301660,
@@ -25,8 +27,10 @@
             "controlClickers": 111423
         },
         {
-            "controlSquared": 7273179529,
-            "testSquared": 6165631040,
+            "controlValueSquared": 7273179529,
+            "testValueSquared": 6165631040,
+            "controlNumConvSquared": 1539991433,
+            "testNumConvSquared": 1500580160,
             "controlValue": 6535901481,
             "testValue": 10662098835,
             "controlPopulation": 7956679766,
@@ -50,9 +54,11 @@
         }
     ],
     "metrics": {
+        "testValueSquared": 7289318455,
+        "controlValueSquared": 3950817466,
+        "testNumConvSquared": 1060095031,
+        "controlNumConvSquared": 1583077050,
         "controlValue": 11138262435,
-        "testSquared": 7289318455,
-        "controlSquared": 3950817466,
         "controlConverters": 7603359106,
         "controlConversions": 7603359106,
         "testValue": 8993095223,

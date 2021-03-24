@@ -76,9 +76,13 @@ int main(int argc, char** argv) {
   XLOG(INFO) << std::setw(20) << "control_value: " << std::setw(12)
              << out.controlValue;
   XLOG(INFO) << std::setw(20) << "test_value_sq: " << std::setw(12)
-             << out.testSquared;
+             << out.testValueSquared;
   XLOG(INFO) << std::setw(20) << "control_value_sq: " << std::setw(12)
-             << out.controlSquared;
+             << out.controlValueSquared;
+  XLOG(INFO) << std::setw(20) << "test_num_conv_sq: " << std::setw(12)
+             << out.testNumConvSquared;
+  XLOG(INFO) << std::setw(20) << "control_num_conv_sq: " << std::setw(12)
+             << out.controlNumConvSquared;
 
   return 0;
 }

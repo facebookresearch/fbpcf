@@ -79,8 +79,10 @@ OutputMetricsData LiftCalculator::compute(
   out.controlConverters = 0;
   out.testValue = 0;
   out.controlValue = 0;
-  out.testSquared = 0;
-  out.controlSquared = 0;
+  out.testValueSquared = 0;
+  out.controlValueSquared = 0;
+  out.testNumConvSquared = 0;
+  out.controlNumConvSquared = 0;
   out.testMatchCount = 0;
   out.controlMatchCount = 0;
   out.testImpressions = 0;
@@ -176,6 +178,7 @@ OutputMetricsData LiftCalculator::compute(
     }
     if (opportunity && opportunityTimestamp > 0) {
       uint64_t value_subsum = 0;
+      uint64_t convCount = 0;
       bool converted = false;
       bool countedMatchAlready = false;
       if (testFlag) {
@@ -193,6 +196,7 @@ OutputMetricsData LiftCalculator::compute(
               ++out.testConverters;
             }
             ++out.testEvents;
+            ++convCount;
             converted = true;
             if (valuesIdx != -1) {
               // Only add values if the values column exists
@@ -202,7 +206,8 @@ OutputMetricsData LiftCalculator::compute(
           }
         }
         out.testValue += value_subsum;
-        out.testSquared += value_subsum * value_subsum;
+        out.testValueSquared += value_subsum * value_subsum;
+        out.testNumConvSquared += convCount * convCount;
         out.testImpressions += numImpressions;
         out.testClicks += numClicks;
         out.testSpend += totalSpend;
@@ -222,6 +227,7 @@ OutputMetricsData LiftCalculator::compute(
               ++out.controlConverters;
             }
             ++out.controlEvents;
+            ++convCount;
             converted = true;
             if (valuesIdx != -1) {
               // Only add values if the values column exists
@@ -231,7 +237,8 @@ OutputMetricsData LiftCalculator::compute(
           }
         }
         out.controlValue += value_subsum;
-        out.controlSquared += value_subsum * value_subsum;
+        out.controlValueSquared += value_subsum * value_subsum;
+        out.controlNumConvSquared += convCount * convCount;
         out.controlImpressions += numImpressions;
         out.controlClicks += numClicks;
         out.controlSpend += totalSpend;

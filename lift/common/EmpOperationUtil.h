@@ -33,6 +33,10 @@ const int64_t sum(const std::vector<emp::Integer>& in);
 template <int TO = emp::PUBLIC>
 const int64_t sum(const std::vector<emp::Bit>& in);
 
+// Sum operations that do *not* call reveal at the end
+emp::Integer secretSum(const std::vector<emp::Integer>& in);
+emp::Integer secretSum(const std::vector<emp::Bit>& in);
+
 // Computes and returns the minimum between two emp::Integer values
 const emp::Integer getMin(emp::Integer value1, emp::Integer value2);
 

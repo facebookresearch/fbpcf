@@ -116,10 +116,14 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     anonymized.testValue = emp::If(condition, metrics.testValue, hiddenMetric);
     anonymized.controlValue =
         emp::If(condition, metrics.controlValue, hiddenMetric);
-    anonymized.testSquared =
-        emp::If(condition, metrics.testSquared, hiddenMetric);
-    anonymized.controlSquared =
-        emp::If(condition, metrics.controlSquared, hiddenMetric);
+    anonymized.testValueSquared =
+        emp::If(condition, metrics.testValueSquared, hiddenMetric);
+    anonymized.controlValueSquared =
+        emp::If(condition, metrics.controlValueSquared, hiddenMetric);
+    anonymized.testNumConvSquared =
+        emp::If(condition, metrics.testNumConvSquared, hiddenMetric);
+    anonymized.controlNumConvSquared =
+        emp::If(condition, metrics.controlNumConvSquared, hiddenMetric);
     anonymized.testMatchCount =
         emp::If(condition, metrics.testMatchCount, hiddenMetric);
     anonymized.controlMatchCount =
@@ -152,11 +156,15 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     const emp::Integer nullifyMetric{
         INT_SIZE, nullifyMetricConstant, emp::PUBLIC};
 
-    groupedMetrics.metrics.testSquared = nullifyMetric;
-    groupedMetrics.metrics.controlSquared = nullifyMetric;
+    groupedMetrics.metrics.testValueSquared = nullifyMetric;
+    groupedMetrics.metrics.controlValueSquared = nullifyMetric;
+    groupedMetrics.metrics.testNumConvSquared = nullifyMetric;
+    groupedMetrics.metrics.controlNumConvSquared = nullifyMetric;
     for (auto& subGroup : groupedMetrics.subGroupMetrics) {
-      subGroup.testSquared = nullifyMetric;
-      subGroup.controlSquared = nullifyMetric;
+      subGroup.testValueSquared = nullifyMetric;
+      subGroup.controlValueSquared = nullifyMetric;
+      subGroup.testNumConvSquared = nullifyMetric;
+      subGroup.controlNumConvSquared = nullifyMetric;
     }
 
     return mapGroupedLiftMetricsToEmpVector(groupedMetrics);

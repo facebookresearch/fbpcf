@@ -52,8 +52,7 @@ inline const emp::Integer getMin(const std::vector<emp::Integer>& values) {
 template <int TO>
 const int64_t sum(const std::vector<emp::Integer>& in) {
   // TODO: If `in` is empty for some reason, immediately return 0.
-  const emp::Integer zero{in.at(0).size(), 0, emp::PUBLIC};
-  const auto res = std::accumulate(in.begin(), in.end(), zero);
+  const auto res = secretSum(in);
 
   // Support 32 bit and 64 bit integers
   if (res.size() == 32) {
@@ -71,6 +70,17 @@ const int64_t sum(const std::vector<emp::Bit>& in) {
   // POTENTIAL OPTIMIZATION: this wastes memory since it stores an additional
   // vector<Integer> whereas we could instead calculate on the fly.
   return sum<TO>(bitsToInts(in));
+}
+
+inline emp::Integer secretSum(const std::vector<emp::Integer>& in) {
+  const emp::Integer zero{in.at(0).size(), 0, emp::PUBLIC};
+  return std::accumulate(in.begin(), in.end(), zero);
+}
+
+inline emp::Integer secretSum(const std::vector<emp::Bit>& in) {
+  // POTENTIAL OPTIMIZATION: this wastes memory since it stores an additional
+  // vector<Integer> whereas we could instead calculate on the fly.
+  return secretSum(bitsToInts(in));
 }
 
 } // namespace private_lift::emp_utils

@@ -10,6 +10,7 @@
 #include <numeric>
 #include <optional>
 #include <stdexcept>
+#include <tuple>
 #include <vector>
 
 #include "folly/logging/xlog.h"
@@ -383,6 +384,25 @@ const std::pair<std::vector<O>, std::vector<N>> zip_and_map(
     auto res = map_fn(vec1[i], vec2[i]);
     out.first.push_back(res.first);
     out.second.push_back(res.second);
+  }
+
+  return out;
+}
+
+template <typename T, typename S, typename O1, typename O2, typename O3>
+const std::tuple<std::vector<O1>, std::vector<O2>, std::vector<O3>> zip_and_map(
+    const std::vector<T>& vec1,
+    const std::vector<S>& vec2,
+    std::function<std::tuple<O1, O2, O3>(T, S)> map_fn) {
+  assert(vec1.size() == vec2.size());
+
+  // Apply the map function
+  std::tuple<std::vector<O1>, std::vector<O2>, std::vector<O3>> out;
+  for (int i = 0; i < vec1.size(); ++i) {
+    auto res = map_fn(vec1[i], vec2[i]);
+    std::get<0>(out).push_back(std::get<0>(res));
+    std::get<1>(out).push_back(std::get<1>(res));
+    std::get<2>(out).push_back(std::get<2>(res));
   }
 
   return out;
