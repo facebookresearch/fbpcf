@@ -42,8 +42,8 @@ class KAnonymityAggregatorAppIntegrationTest : public ::testing::Test {
       const pcf::Visibility& visibility,
       const std::string& serverIp,
       const uint16_t& port,
-      const int& numShards,
-      const int& threshold,
+      const uint32_t& numShards,
+      const int64_t& threshold,
       const std::string& inputPath,
       const std::string& outputPath) {
     KAnonymityAggregatorApp(
@@ -141,6 +141,37 @@ TEST_F(KAnonymityAggregatorAppIntegrationTest, TestVisibilityBob) {
   EXPECT_EQ(resExpected, resBob);
 }
 
-// TODO Add a KAnonymity Test (Need input files...)
+TEST_F(KAnonymityAggregatorAppIntegrationTest, TestVisibilityPublicAnonymous) {
+  auto futureAlice = std::async(
+      runGame,
+      pcf::Party::Alice,
+      pcf::Visibility::Public,
+      "",
+      port_,
+      3,
+      std::numeric_limits<int64_t>::max(),
+      baseDir_ + "aggregator_alice",
+      outputPathAlice_);
+  auto futureBob = std::async(
+      runGame,
+      pcf::Party::Bob,
+      pcf::Visibility::Public,
+      "127.0.0.1",
+      port_,
+      3,
+      std::numeric_limits<int64_t>::max(),
+      baseDir_ + "aggregator_bob",
+      outputPathBob_);
+
+  futureAlice.wait();
+  futureBob.wait();
+
+  auto resExpected = GroupedLiftMetrics::fromJson(
+      pcf::io::read(baseDir_ + "aggregator_metrics_kanon_anonymous"));
+  auto resAlice = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathAlice_));
+  auto resBob = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathBob_));
+  EXPECT_EQ(resExpected, resAlice);
+  EXPECT_EQ(resExpected, resBob);
+}
 
 } // namespace private_lift

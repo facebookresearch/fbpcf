@@ -1,0 +1,58 @@
+{
+    "subGroupMetrics": [
+        {
+            "controlClicks": -1,
+            "controlImpressions": -1,
+            "controlMatchCount": -1,
+            "testImpressions": -1,
+            "testMatchCount": -1,
+            "controlValue": -1,
+            "testValue": -1,
+            "controlSquared": -1,
+            "testConverters": -1,
+            "testConversions": -1,
+            "testPopulation": 5882780010,
+            "testClicks": -1,
+            "testSquared": -1,
+            "controlConverters": -1,
+            "controlConversions": -1,
+            "controlPopulation": 4593228972
+        },
+        {
+            "controlClicks": -1,
+            "controlSquared": -1,
+            "testMatchCount": -1,
+            "controlImpressions": -1,
+            "testValue": -1,
+            "controlValue": -1,
+            "testImpressions": -1,
+            "controlMatchCount": -1,
+            "testConverters": -1,
+            "testConversions": -1,
+            "testPopulation": 6503256858,
+            "testClicks": -1,
+            "testSquared": -1,
+            "controlConverters": -1,
+            "controlConversions": -1,
+            "controlPopulation": 7956679766
+        }
+    ],
+    "metrics": {
+        "controlClicks": -1,
+        "controlImpressions": -1,
+        "controlMatchCount": -1,
+        "testImpressions": -1,
+        "testMatchCount": -1,
+        "testValue": -1,
+        "controlSquared": -1,
+        "controlValue": -1,
+        "testConverters": -1,
+        "testConversions": -1,
+        "testPopulation": 5936863348,
+        "testClicks": -1,
+        "testSquared": -1,
+        "controlConverters": -1,
+        "controlConversions": -1,
+        "controlPopulation": 6184461022
+    }
+}

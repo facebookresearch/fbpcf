@@ -42,7 +42,7 @@ class AggregatorAppIntegrationTest : public ::testing::Test {
       const pcf::Visibility& visibility,
       const std::string& serverIp,
       const uint16_t& port,
-      const int& numShards,
+      const uint32_t& numShards,
       const std::string& inputPath,
       const std::string& outputPath) {
     AggregatorApp(
