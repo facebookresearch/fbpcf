@@ -42,7 +42,6 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
         threshold_{threshold} {}
 
   static constexpr int64_t kHiddenMetricConstant = -1;
-  static constexpr int64_t nullifyMetricConstant = -1;
   static constexpr int64_t kAnonymityThreshold = 100;
 
   GroupedLiftMetrics play(
@@ -65,13 +64,11 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     XLOGF(INFO, "Applying k-anonymity threshold {}...", threshold_);
     auto anonymized = kAnonymizeGrouped(v);
 
-    auto metrics = nullifyNonExposedMetrics(anonymized);
-
     XLOG(INFO) << "Revealing metrics...";
     XLOGF(DBG, "Visibility: {}", this->visibility_);
     // Reveal aggregated metrics
     auto revealed = pcf::functional::map<emp::Integer, int64_t>(
-        metrics, [this](const emp::Integer& i) {
+        anonymized, [this](const emp::Integer& i) {
           return i.reveal<int64_t>(static_cast<int>(this->visibility_));
         });
     return mapVectorToGroupedLiftMetrics(revealed);
@@ -148,26 +145,6 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
         emp::If(condition, metrics.controlClickers, hiddenMetric);
 
     return anonymized;
-  }
-
-  std::vector<emp::Integer> nullifyNonExposedMetrics(
-      std::vector<emp::Integer> metrics) {
-    auto groupedMetrics = mapVectorToGroupedLiftMetrics(metrics);
-    const emp::Integer nullifyMetric{
-        INT_SIZE, nullifyMetricConstant, emp::PUBLIC};
-
-    groupedMetrics.metrics.testValueSquared = nullifyMetric;
-    groupedMetrics.metrics.controlValueSquared = nullifyMetric;
-    groupedMetrics.metrics.testNumConvSquared = nullifyMetric;
-    groupedMetrics.metrics.controlNumConvSquared = nullifyMetric;
-    for (auto& subGroup : groupedMetrics.subGroupMetrics) {
-      subGroup.testValueSquared = nullifyMetric;
-      subGroup.controlValueSquared = nullifyMetric;
-      subGroup.testNumConvSquared = nullifyMetric;
-      subGroup.controlNumConvSquared = nullifyMetric;
-    }
-
-    return mapGroupedLiftMetricsToEmpVector(groupedMetrics);
   }
 };
 } // namespace private_lift

@@ -129,17 +129,6 @@ TEST_F(KAnonymityAggregatorAppIntegrationTest, TestVisibilityBob) {
   auto resBob = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathBob_));
   GroupedLiftMetrics zeroMetrics{
       LiftMetrics{}, std::vector<LiftMetrics>{2, LiftMetrics{}}};
-  // Set the nullable metrics to -1 in the "zeroed metrics"
-  zeroMetrics.metrics.controlValueSquared = -1;
-  zeroMetrics.metrics.testValueSquared = -1;
-  zeroMetrics.metrics.controlNumConvSquared = -1;
-  zeroMetrics.metrics.testNumConvSquared = -1;
-  for (auto& subGroup : zeroMetrics.subGroupMetrics) {
-    subGroup.testValueSquared = -1;
-    subGroup.controlValueSquared = -1;
-    subGroup.testNumConvSquared = -1;
-    subGroup.controlNumConvSquared = -1;
-  }
 
   EXPECT_EQ(zeroMetrics, resAlice);
   EXPECT_EQ(resExpected, resBob);
