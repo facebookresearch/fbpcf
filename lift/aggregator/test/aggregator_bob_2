@@ -24,7 +24,9 @@
             "testSpend": 12197,
             "controlSpend": 12039,
             "testReach": 41312,
-            "controlReach": 12415
+            "controlReach": 12415,
+            "testClickers": 14552,
+            "controlClickers": 12314
         },
         {
             "testSquared": 345616773,
@@ -50,7 +52,9 @@
             "testSpend": 12197,
             "controlSpend": 12039,
             "testReach": 41312,
-            "controlReach": 12415
+            "controlReach": 12415,
+            "testClickers": 14552,
+            "controlClickers": 12314
         }
     ],
     "metrics": {
@@ -77,6 +81,8 @@
         "testSpend": 12197,
         "controlSpend": 12039,
         "testReach": 41312,
-        "controlReach": 12415
+        "controlReach": 12415,
+        "testClickers": 14552,
+        "controlClickers": 12314
     }
 }

@@ -35,6 +35,8 @@ struct EncryptedLiftMetrics {
   emp::Integer controlSpend;
   emp::Integer testReach;
   emp::Integer controlReach;
+  emp::Integer testClickers;
+  emp::Integer controlClickers;
 
   EncryptedLiftMetrics operator+(
       const EncryptedLiftMetrics& other) const noexcept;

@@ -32,7 +32,9 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator+(
       testSpend + other.testSpend,
       controlSpend + other.controlSpend,
       testReach + other.testReach,
-      controlReach + other.controlReach};
+      controlReach + other.controlReach,
+      testClickers + other.testClickers,
+      controlClickers + other.controlClickers};
 }
 
 EncryptedLiftMetrics EncryptedLiftMetrics::operator^(
@@ -57,6 +59,8 @@ EncryptedLiftMetrics EncryptedLiftMetrics::operator^(
       testSpend ^ other.testSpend,
       controlSpend ^ other.controlSpend,
       testReach ^ other.testReach,
-      controlReach ^ other.controlReach};
+      controlReach ^ other.controlReach,
+      testClickers ^ other.testClickers,
+      controlClickers ^ other.controlClickers};
 }
 } // namespace private_lift

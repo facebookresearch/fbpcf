@@ -34,6 +34,8 @@ struct OutputMetricsData {
   int64_t controlSpend = 0;
   int64_t testReach = 0;
   int64_t controlReach = 0;
+  int64_t testClickers = 0;
+  int64_t controlClickers = 0;
 
   OutputMetricsData() = default;
 
@@ -67,6 +69,8 @@ struct OutputMetricsData {
     os << "Control Spend: " << out.controlSpend << "\n";
     os << "Test Reach: " << out.testReach << "\n";
     os << "Control Reach: " << out.controlReach << "\n";
+    os << "Test Clickers: " << out.testClickers << "\n";
+    os << "Control Clickers: " << out.controlClickers << "\n";
 
     return os;
   }
@@ -97,6 +101,8 @@ struct OutputMetricsData {
     metrics.controlSpend = controlSpend;
     metrics.testReach = testReach;
     metrics.controlReach = controlReach;
+    metrics.testClickers = testClickers;
+    metrics.controlClickers = controlClickers;
     return metrics;
   }
 

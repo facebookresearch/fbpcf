@@ -508,34 +508,43 @@ template <int32_t MY_ROLE>
 void OutputMetrics<MY_ROLE>::calculateClicks(
     const OutputMetrics::GroupType& groupType,
     const std::vector<emp::Bit>& populationBits) {
-  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType) << " clicks";
+  XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
+             << " clicks & clickers";
 
   const std::vector<emp::Integer> numClicks =
       privatelyShareIntsFromPublisher<MY_ROLE>(
           inputData_.getNumClicks(), n_, FULL_BITS);
 
-  std::vector<emp::Integer> ClicksArray =
-      secret_sharing::zip_and_map<emp::Bit, emp::Integer, emp::Integer>(
+  auto [clicksArray, clickersArray] = secret_sharing::
+      zip_and_map<emp::Bit, emp::Integer, emp::Integer, emp::Bit>(
           populationBits,
           numClicks,
-          [](emp::Bit isUser, emp::Integer numClicks) -> emp::Integer {
+          [](emp::Bit isUser,
+             emp::Integer numClicks) -> std::pair<emp::Integer, emp::Bit> {
             const emp::Integer zero = emp::Integer{INT_SIZE, 0, emp::PUBLIC};
-            return emp::If(isUser, numClicks, zero);
+            return std::make_pair(
+                emp::If(isUser, numClicks, zero), isUser & (numClicks > zero));
           });
 
   if (groupType == GroupType::TEST) {
-    metrics_.testClicks = sum(ClicksArray);
+    metrics_.testClicks = sum(clicksArray);
+    metrics_.testClickers = sum(clickersArray);
   } else {
-    metrics_.controlClicks = sum(ClicksArray);
+    metrics_.controlClicks = sum(clicksArray);
+    metrics_.controlClickers = sum(clickersArray);
   }
   // And compute for subgroups
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
-        secret_sharing::multiplyBitmask(ClicksArray, groupBitmasks_.at(i));
+        secret_sharing::multiplyBitmask(clicksArray, groupBitmasks_.at(i));
+    auto groupBits =
+        secret_sharing::multiplyBitmask(clickersArray, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
       subgroupMetrics_[i].testClicks = sum(groupInts);
+      subgroupMetrics_[i].testClickers = sum(groupBits);
     } else {
       subgroupMetrics_[i].controlClicks = sum(groupInts);
+      subgroupMetrics_[i].controlClickers = sum(groupBits);
     }
   }
 }
