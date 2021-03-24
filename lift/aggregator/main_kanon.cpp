@@ -22,9 +22,13 @@ DEFINE_string(server_ip, "", "Server's IP address");
 DEFINE_int32(port, 5000, "Server's port");
 DEFINE_string(input_path, "", "Input path where input files are located");
 DEFINE_int32(
+    first_shard_index,
+    0,
+    "index of first shard in input_path, first filename input_path_[first_shard_index]");
+DEFINE_int32(
     num_shards,
     1,
-    "Number of shards from input_path_[0] to input_path_[n-1]");
+    "Number of shards from input_path_[first_shard_index] to input_path_[first_shard_index+n-1]");
 DEFINE_string(output_path, "", "Output path where output file is located");
 DEFINE_int64(threshold, 100, "Threshold for K-anonymity");
 
@@ -52,6 +56,7 @@ int main(int argc, char* argv[]) {
         visibility,
         FLAGS_server_ip,
         FLAGS_port,
+        FLAGS_first_shard_index,
         FLAGS_num_shards,
         FLAGS_threshold,
         FLAGS_input_path,

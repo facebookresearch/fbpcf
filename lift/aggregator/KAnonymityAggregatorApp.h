@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #pragma once
 
@@ -17,15 +17,16 @@
 
 namespace private_lift {
 class KAnonymityAggregatorApp : public pcf::EmpApp<
-                          KAnonymityLiftAggregationGame<emp::NetIO>,
-                          std::vector<GroupedLiftMetrics>,
-                          GroupedLiftMetrics> {
+                                    KAnonymityLiftAggregationGame<emp::NetIO>,
+                                    std::vector<GroupedLiftMetrics>,
+                                    GroupedLiftMetrics> {
  public:
   KAnonymityAggregatorApp(
       pcf::Party party,
       pcf::Visibility visibility,
       const std::string& serverIp,
       uint16_t port,
+      int32_t firstShardIndex,
       int32_t numShards,
       int64_t threshold,
       const std::string& inputPath,
@@ -34,6 +35,7 @@ class KAnonymityAggregatorApp : public pcf::EmpApp<
             KAnonymityLiftAggregationGame<emp::NetIO>,
             std::vector<GroupedLiftMetrics>,
             GroupedLiftMetrics>{party, serverIp, port},
+        firstShardIndex_{firstShardIndex},
         numShards_{numShards},
         threshold_{threshold},
         inputPath_{inputPath},
@@ -50,9 +52,11 @@ class KAnonymityAggregatorApp : public pcf::EmpApp<
  private:
   static std::vector<std::string> getInputPaths(
       const std::string& inputPath,
+      int32_t firstShardInde,
       int32_t numShards);
 
  private:
+  int32_t firstShardIndex_;
   int32_t numShards_;
   int64_t threshold_;
   std::string inputPath_;

@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include "KAnonymityAggregatorApp.h"
 
@@ -32,7 +32,8 @@ void KAnonymityAggregatorApp::run() {
   XLOG(INFO) << "NetIO is connected.";
   auto inputData = getInputData();
 
-  KAnonymityLiftAggregationGame game{std::move(io), party_, visibility_, threshold_};
+  KAnonymityLiftAggregationGame game{
+      std::move(io), party_, visibility_, threshold_};
   auto output = game.perfPlay(inputData);
 
   putOutputData(output);
@@ -40,10 +41,11 @@ void KAnonymityAggregatorApp::run() {
 
 std::vector<std::string> KAnonymityAggregatorApp::getInputPaths(
     const std::string& inputPath,
+    const int firstShardIndex,
     const int numShards) {
   std::vector<std::string> v;
 
-  for (int i = 0; i < numShards; i++) {
+  for (int i = firstShardIndex; i < firstShardIndex + numShards; i++) {
     v.push_back(folly::sformat("{}_{}", inputPath, i));
   }
 
@@ -52,7 +54,8 @@ std::vector<std::string> KAnonymityAggregatorApp::getInputPaths(
 
 std::vector<GroupedLiftMetrics> KAnonymityAggregatorApp::getInputData() {
   XLOG(INFO) << "getting input data ...";
-  auto inputPaths = KAnonymityAggregatorApp::getInputPaths(inputPath_, numShards_);
+  auto inputPaths = KAnonymityAggregatorApp::getInputPaths(
+      inputPath_, firstShardIndex_, numShards_);
 
   return pcf::functional::map<std::string, GroupedLiftMetrics>(
       inputPaths, [](const auto& inputPath) {
