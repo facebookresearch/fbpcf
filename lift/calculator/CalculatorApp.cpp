@@ -20,19 +20,28 @@
 
 namespace private_lift {
 void CalculatorApp::run() {
-  CalculatorGameConfig config = getInputData();
-  int32_t numValues = static_cast<int32_t>(config.inputData.getNumRows());
-  XLOG(INFO) << "Have " << numValues << " values in inputData.";
+  try {
+    CalculatorGameConfig config = getInputData();
+    int32_t numValues = static_cast<int32_t>(config.inputData.getNumRows());
+    XLOG(INFO) << "Have " << numValues << " values in inputData.";
 
-  XLOG(INFO) << "connecting...";
-  std::unique_ptr<emp::NetIO> io = std::make_unique<emp::NetIO>(
-      party_ == pcf::Party::Alice ? nullptr : serverIp_.c_str(), port_);
+    XLOG(INFO) << "connecting...";
+    std::unique_ptr<emp::NetIO> io = std::make_unique<emp::NetIO>(
+        party_ == pcf::Party::Alice ? nullptr : serverIp_.c_str(), port_);
 
-  CalculatorGame game{std::move(io), party_, visibility_};
-  auto output = game.perfPlay(config);
-  XLOG(INFO) << "done calculating";
+    CalculatorGame game{std::move(io), party_, visibility_};
+    auto output = game.perfPlay(config);
+    XLOG(INFO) << "done calculating";
 
-  putOutputData(output);
+    putOutputData(output);
+  } catch (const std::exception& e) {
+    XLOGF(
+        ERR,
+        "Error: Exception caught in CalculatorApp run.\n \t error msg: {} \n \t input shard: {}.",
+        e.what(),
+        inputPath_.u8string());
+    std::exit(1);
+  }
 };
 
 CalculatorGameConfig CalculatorApp::getInputData() {
