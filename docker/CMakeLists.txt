@@ -66,8 +66,18 @@ file(GLOB pcf_system_sources pcf/system/**[!Test].cpp pcf/system/**.c
      pcf/system/**.hpp pcf/system/**.h)
 
 
+# build pcf as a library
+add_library(fbpcf STATIC ${pcf_io_sources}
+  ${pcf_aws_sources}
+  ${pcf_common_sources}
+  ${pcf_exception_sources}
+  ${pcf_mpc_sources}
+  ${pcf_system_sources})
+target_link_libraries(
+  fbpcf INTERFACE ${AWSSDK_LINK_LIBRARIES} ${FOLLY_LIBRARIES})
+
+
 # private lift executables
-# TODO: build pcf as a library
 add_executable(
   calculator
   "lift/calculator/main.cpp"
@@ -88,18 +98,12 @@ add_executable(
   "lift/common/SecretSharing.h"
   "lift/common/EmpOperationUtil.h"
   "lift/common/Csv.h"
-  "lift/common/Csv.cpp"
-  ${pcf_io_sources}
-  ${pcf_aws_sources}
-  ${pcf_common_sources}
-  ${pcf_exception_sources}
-  ${pcf_mpc_sources}
-  ${pcf_system_sources})
+  "lift/common/Csv.cpp")
 target_link_libraries(
   calculator
   ${FOLLY_LIBRARIES}
   ${EMP-OT_LIBRARIES}
-  ${AWSSDK_LINK_LIBRARIES}
+  fbpcf
   stdc++fs
   libgflags.a
   libre2.a)
@@ -115,18 +119,12 @@ add_executable(
   "lift/aggregator/AggregatorApp.cpp"
   "lift/aggregator/MetricsMapper.h"
   "lift/aggregator/MetricsMapper.cpp"
-  "lift/aggregator/LiftAggregationGame.h"
-  ${pcf_io_sources}
-  ${pcf_aws_sources}
-  ${pcf_common_sources}
-  ${pcf_exception_sources}
-  ${pcf_mpc_sources}
-  ${pcf_system_sources})
+  "lift/aggregator/LiftAggregationGame.h")
 target_link_libraries(
   aggregator
   ${FOLLY_LIBRARIES}
   ${EMP-OT_LIBRARIES}
-  ${AWSSDK_LINK_LIBRARIES}
+  fbpcf
   stdc++fs
   libgflags.a
   libre2.a)
@@ -136,13 +134,10 @@ add_executable(
   "example/millionaire/main.cpp"
   "example/millionaire/MillionaireApp.h"
   "example/millionaire/MillionaireApp.cpp"
-  "example/millionaire/MillionaireGame.h"
-  ${pcf_common_sources}
-  ${pcf_exception_sources}
-  ${pcf_mpc_sources}
-  ${pcf_system_sources})
+  "example/millionaire/MillionaireGame.h")
 target_link_libraries(
   millionaire
   ${FOLLY_LIBRARIES}
   ${EMP-OT_LIBRARIES}
+  fbpcf
   libgflags.a)
