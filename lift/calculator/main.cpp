@@ -19,7 +19,7 @@
 #include "folly/logging/xlog.h"
 
 #include "../../pcf/aws/AwsSdk.h"
-#include "../../pcf/mpc/experimental/MpcAppExecutor.h"
+#include "../../pcf/mpc/MpcAppExecutor.h"
 #include "CalculatorApp.h"
 
 DEFINE_int32(role, 1, "1 = publisher, 2 = partner");

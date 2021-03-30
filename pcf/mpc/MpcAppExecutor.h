@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #pragma once
 
@@ -42,14 +42,12 @@ class MpcAppExecutor {
 
   class MyObserver : public folly::CPUThreadPoolExecutor::Observer {
    public:
-    void threadStarted(
-        folly::CPUThreadPoolExecutor::ThreadHandle* threadHandle) override {
+    void threadStarted(folly::CPUThreadPoolExecutor::ThreadHandle*) override {
       numThread_++;
       XLOGF(INFO, "Thread started. Total threads: {}", numThread_);
     }
 
-    void threadStopped(
-        folly::CPUThreadPoolExecutor::ThreadHandle* threadHandle) override {
+    void threadStopped(folly::CPUThreadPoolExecutor::ThreadHandle*) override {
       numThread_--;
       XLOGF(INFO, "Thread ended. Total threads: {}", numThread_);
     }

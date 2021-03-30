@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <future>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "folly/Random.h"
 
 #include "../../../example/millionaire/MillionaireApp.h"
-#include "./MpcAppExecutor.h"
+#include "../MpcAppExecutor.h"
 
 namespace pcf {
 class MpcAppExecutorTest : public ::testing::Test {
