@@ -26,7 +26,7 @@ DEFINE_int32(role, 1, "1 = publisher, 2 = partner");
 DEFINE_string(server_ip, "127.0.0.1", "Server's IP Address");
 DEFINE_int32(
     port,
-    5000,
+    15200,
     "Network port for establishing connection to other player");
 DEFINE_string(
     input_directory,
@@ -40,7 +40,8 @@ DEFINE_string(
     output_directory,
     "",
     "Local or s3 path where output files are written to");
-DEFINE_string(output_filenames,
+DEFINE_string(
+    output_filenames,
     "out.csv_0[,out.csv_1,out.csv_2,...]",
     "List of output file names that correspond to input filenames (positionally)");
 DEFINE_int64(
@@ -80,8 +81,12 @@ int main(int argc, char** argv) {
   folly::split(",", FLAGS_output_filenames, outputFilenames);
 
   // Make sure the number of input files equals output files
-  if(inputFilenames.size() != outputFilenames.size()) {
-    XLOGF(ERR, "Error: input_filenames items ({}) does not equal output_filenames items ({})", inputFilenames.size(), outputFilenames.size());
+  if (inputFilenames.size() != outputFilenames.size()) {
+    XLOGF(
+        ERR,
+        "Error: input_filenames items ({}) does not equal output_filenames items ({})",
+        inputFilenames.size(),
+        outputFilenames.size());
     return 1;
   }
 
@@ -101,8 +106,8 @@ int main(int argc, char** argv) {
                << "\tport: " << FLAGS_port << "\n"
                << "\tconcurrency: " << FLAGS_concurrency << "\n"
                << "\tinput: " << inputDirectory << "\n"
-               << inputFileLogList.str()
-               << "\toutput: " << outputDirectory << "\n"
+               << inputFileLogList.str() << "\toutput: " << outputDirectory
+               << "\n"
                << outputFileLogList.str();
   }
 
