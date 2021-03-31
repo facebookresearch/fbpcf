@@ -56,8 +56,8 @@ class LiftAggregationGame : public pcf::EmpGame<
     XLOGF(DBG, "Visibility: {}", this->visibility_);
     // Reveal aggregated metrics
     auto revealed = pcf::functional::map<emp::Integer, int64_t>(
-        v, [this](const emp::Integer& i) {
-          return i.reveal<int64_t>(static_cast<int>(this->visibility_));
+        v, [visibility = visibility_](const emp::Integer& i) {
+          return i.reveal<int64_t>(static_cast<int>(visibility));
         });
     return mapVectorToGroupedLiftMetrics(revealed);
   }

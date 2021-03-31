@@ -68,8 +68,8 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     XLOGF(DBG, "Visibility: {}", this->visibility_);
     // Reveal aggregated metrics
     auto revealed = pcf::functional::map<emp::Integer, int64_t>(
-        anonymized, [this](const emp::Integer& i) {
-          return i.reveal<int64_t>(static_cast<int>(this->visibility_));
+        anonymized, [visibility = visibility_](const emp::Integer& i) {
+          return i.reveal<int64_t>(static_cast<int>(visibility));
         });
     return mapVectorToGroupedLiftMetrics(revealed);
   }
