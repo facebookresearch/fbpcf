@@ -110,16 +110,16 @@ target_link_libraries(
 
 add_executable(
   aggregator
-  "lift/aggregator/main.cpp"
+  "lift/aggregator/main_kanon.cpp"
   "lift/common/GroupedLiftMetrics.h"
   "lift/common/GroupedLiftMetrics.cpp"
   "lift/common/LiftMetrics.h"
   "lift/common/LiftMetrics.cpp"
-  "lift/aggregator/AggregatorApp.h"
-  "lift/aggregator/AggregatorApp.cpp"
+  "lift/aggregator/KAnonymityAggregatorApp.h"
+  "lift/aggregator/KAnonymityAggregatorApp.cpp"
   "lift/aggregator/MetricsMapper.h"
   "lift/aggregator/MetricsMapper.cpp"
-  "lift/aggregator/LiftAggregationGame.h")
+  "lift/aggregator/KAnonymityLiftAggregationGame.h")
 target_link_libraries(
   aggregator
   ${FOLLY_LIBRARIES}
