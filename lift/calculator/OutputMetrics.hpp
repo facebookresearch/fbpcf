@@ -60,16 +60,19 @@ std::string OutputMetrics<MY_ROLE>::playGame() {
   for (auto i = 0; i < subgroupMetrics_.size(); ++i) {
     XLOG(INFO) << "\nSubgroup [" << i << "] results:";
     if (MY_ROLE == PARTNER) {
-      auto features = inputData_.getGroupIdToFeatures().at(i);
-      std::stringstream headerSs;
-      for (auto j = 0; j < features.size(); ++j) {
-        auto featureHeader = inputData_.getFeatureHeader().at(j);
-        headerSs << featureHeader << "=" << features.at(j);
-        if (j + 1 < features.size()) {
-          headerSs << ", ";
+      // This section only applies if features were suppled instead of cohorts
+      if (inputData_.getGroupIdToFeatures().size() > 0) {
+        auto features = inputData_.getGroupIdToFeatures().at(i);
+        std::stringstream headerSs;
+        for (auto j = 0; j < features.size(); ++j) {
+          auto featureHeader = inputData_.getFeatureHeader().at(j);
+          headerSs << featureHeader << "=" << features.at(j);
+          if (j + 1 < features.size()) {
+            headerSs << ", ";
+          }
         }
+        XLOG(INFO) << headerSs.str();
       }
-      XLOG(INFO) << headerSs.str();
     } else {
       XLOG(INFO) << "(Feature header unknown to publisher)";
     }

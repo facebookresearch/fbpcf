@@ -157,6 +157,9 @@ class InputData {
    */
   void setValuesFields(std::string& str);
 
+  // Helper function to determine if a header contains any feature columns
+  bool anyFeatureColumns(const std::vector<std::string>& header);
+
   // Helper to add a line from a CSV into the component column vectors
   void addFromCSV(
       const std::vector<std::string>& header,
@@ -188,6 +191,7 @@ class InputData {
   int64_t numGroups_ = 0;
   int32_t numConversionsPerUser_;
 
+  bool firstLineParsedAlready_ = false;
   int64_t numRows_ = 0;
 };
 

@@ -37,13 +37,6 @@ InputData::InputData(
       numConversionsPerUser_{numConversionsPerUser} {
   auto readLine = [&](const std::vector<std::string>& header,
                       const std::vector<std::string>& parts) {
-    for (const auto& col : header) {
-      // If the column starts with the feature prefix, push it to
-      // featureHeader_
-      if (col.rfind(kFeaturePrefix, 0) != std::string::npos) {
-        featureHeader_.push_back(col);
-      }
-    }
     ++numRows_;
     addFromCSV(header, parts);
   };
@@ -123,10 +116,33 @@ void InputData::setValuesFields(std::string& str) {
   }
 }
 
+bool InputData::anyFeatureColumns(const std::vector<std::string>& header) {
+  for (const auto& column : header) {
+    if (column.rfind(kFeaturePrefix, 0) != std::string::npos) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void InputData::addFromCSV(
     const std::vector<std::string>& header,
     const std::vector<std::string>& parts) {
   std::vector<std::string> featureValues;
+
+  if (!firstLineParsedAlready_) {
+    for (const auto& col : header) {
+      // If the column starts with the feature prefix, push it to
+      // featureHeader_
+      if (col.rfind(kFeaturePrefix, 0) != std::string::npos) {
+        featureHeader_.push_back(col);
+      }
+    }
+    if (std::find(header.begin(), header.end(), "cohort_id") != header.end() && anyFeatureColumns(header)) {
+      LOG(FATAL) << "Supplying both cohort_id and feature columns is not supported";
+    }
+    firstLineParsedAlready_ = true;
+  }
 
   // These bools + int64_t allow us to create separate vectors for testPop and
   // controlPop without enforcing an ordering between oppFlag and testFlag.
@@ -183,6 +199,11 @@ void InputData::addFromCSV(
       numClicks_.push_back(parsed);
     } else if (column == "total_spend") {
       totalSpend_.push_back(parsed);
+    } else if (column == "cohort_id") {
+      // Work-in-progress: we currently support cohort_id *or* feature columns
+      groupIds_.push_back(parsed);
+      // We use parsed + 1 because cohorts are zero-indexed
+      numGroups_ = std::max(numGroups_, parsed + 1);
     } else if (column == "event_timestamp") {
       // When event_timestamp column presents (in standard Converter Lift
       // input), parse it as arrays of size 1.
