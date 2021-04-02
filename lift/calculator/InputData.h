@@ -20,7 +20,7 @@ namespace private_lift {
 /*
  * This class represents input data for a Private Lift computation.
  * It processes an input csv and generates the std::vectors for each column
- * It also has the ability to generate bitmasks for subgroup metrics.
+ * It also has the ability to generate bitmasks for cohort metrics.
  */
 class InputData {
  public:

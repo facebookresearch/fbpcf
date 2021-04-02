@@ -48,9 +48,9 @@ class OutputMetrics {
     return metrics_;
   }
 
-  const std::unordered_map<int64_t, OutputMetricsData>& getSubgroupMetrics()
+  const std::unordered_map<int64_t, OutputMetricsData>& getcohortMetrics()
       const {
-    return subgroupMetrics_;
+    return cohortMetrics_;
   }
 
   int64_t getNumGroups() const {
@@ -76,7 +76,7 @@ class OutputMetrics {
   // Make sure input files have the same size
   void validateNumRows();
 
-  // Initialize the number of groups that will be used for subgroup computations
+  // Initialize the number of groups that will be used for cohort computations
   // The partner shares the number of groups from its inputData and the *number
   // of groups* is revealed, but not the identities of those groups.
   void initNumGroups();
@@ -184,7 +184,7 @@ class OutputMetrics {
   int64_t valueSquaredBits_;
   OutputMetricsData metrics_{isConversionLift_};
   std::unordered_map<int64_t, std::vector<emp::Bit>> groupBitmasks_;
-  std::unordered_map<int64_t, OutputMetricsData> subgroupMetrics_;
+  std::unordered_map<int64_t, OutputMetricsData> cohortMetrics_;
 
   template <class T>
   T reveal(const emp::Integer& empInteger) const;

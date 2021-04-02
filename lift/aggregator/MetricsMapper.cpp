@@ -137,7 +137,7 @@ std::vector<emp::Integer> mapGroupedLiftMetricsToEmpVector(
   std::vector<emp::Integer> v;
 
   addLiftMetricsToEmpVector(v, metrics.metrics);
-  for (auto m : metrics.subGroupMetrics) {
+  for (auto m : metrics.cohortMetrics) {
     addLiftMetricsToEmpVector(v, m);
   }
 
@@ -149,7 +149,7 @@ pcf::EmpVector<emp::Integer> mapGroupedLiftMetricsToEmpVector(
   pcf::EmpVector<emp::Integer> v;
 
   addLiftMetricsToEmpVector(v, metrics.metrics);
-  for (auto m : metrics.subGroupMetrics) {
+  for (auto m : metrics.cohortMetrics) {
     addLiftMetricsToEmpVector(v, m);
   }
 
@@ -164,7 +164,7 @@ GroupedLiftMetrics mapVectorToGroupedLiftMetrics(
   metrics.metrics = genLiftMetricsFromVector(v, i);
 
   while (i < v.size()) {
-    metrics.subGroupMetrics.push_back(genLiftMetricsFromVector(v, i));
+    metrics.cohortMetrics.push_back(genLiftMetricsFromVector(v, i));
   }
 
   return metrics;
@@ -178,7 +178,7 @@ GroupedEncryptedLiftMetrics mapVectorToGroupedLiftMetrics(
   metrics.metrics = genLiftMetricsFromVector(v, i);
 
   while (i < v.size()) {
-    metrics.subGroupMetrics.push_back(genLiftMetricsFromVector(v, i));
+    metrics.cohortMetrics.push_back(genLiftMetricsFromVector(v, i));
   }
 
   return metrics;

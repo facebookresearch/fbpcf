@@ -36,10 +36,10 @@ class CalculatorGame
     std::string output = "";
     /*
      * Run the Conversion Lift circuit which will compute Lift metrics for the
-     * overall dataset plus all found subgroups. Output is printed to stdout for
+     * overall dataset plus all found cohorts. Output is printed to stdout for
      * verification. The overall metrics are returned.
-     * TODO: subgroupOut should also be returned or sent to a file.
-     * We currently have no way of returning subgroup metrics to the caller.
+     * TODO: cohortOut should also be returned or sent to a file.
+     * We currently have no way of returning cohort metrics to the caller.
      */
     if (party_ == pcf::Party::Alice) {
       OutputMetrics<PUBLISHER> outputMetrics{

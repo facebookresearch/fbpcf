@@ -84,8 +84,8 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     GroupedEncryptedLiftMetrics anonymizedMetrics;
 
     anonymizedMetrics.metrics = kAnonymizeMetrics(groupedMetrics.metrics);
-    for (auto group : groupedMetrics.subGroupMetrics) {
-      anonymizedMetrics.subGroupMetrics.push_back(kAnonymizeMetrics(group));
+    for (auto group : groupedMetrics.cohortMetrics) {
+      anonymizedMetrics.cohortMetrics.push_back(kAnonymizeMetrics(group));
     }
 
     return mapGroupedLiftMetricsToEmpVector(anonymizedMetrics);

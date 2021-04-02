@@ -36,20 +36,20 @@ class KAnonymityLiftAggregationGameTest : public ::testing::Test {
                        r(), r(), r(), r(), r(), r(), r(), r()};
   }
 
-  GroupedLiftMetrics fakeGroupedMetrics(bool allLowPop, bool subgroupLowPop) {
+  GroupedLiftMetrics fakeGroupedMetrics(bool allLowPop, bool cohortLowPop) {
     return GroupedLiftMetrics{
         fakeLiftMetrics(allLowPop),
-        {fakeLiftMetrics(allLowPop || subgroupLowPop),
-         fakeLiftMetrics(allLowPop || subgroupLowPop)}};
+        {fakeLiftMetrics(allLowPop || cohortLowPop),
+         fakeLiftMetrics(allLowPop || cohortLowPop)}};
   }
 
   std::vector<GroupedLiftMetrics> fakeMetricsVector(
       bool allLowPop = false,
-      bool subgroupLowPop = false) {
+      bool cohortLowPop = false) {
     return std::vector<GroupedLiftMetrics>{
-        fakeGroupedMetrics(allLowPop, subgroupLowPop),
-        fakeGroupedMetrics(allLowPop, subgroupLowPop),
-        fakeGroupedMetrics(allLowPop, subgroupLowPop)};
+        fakeGroupedMetrics(allLowPop, cohortLowPop),
+        fakeGroupedMetrics(allLowPop, cohortLowPop),
+        fakeGroupedMetrics(allLowPop, cohortLowPop)};
   }
 
   LiftMetrics filteredMetric(LiftMetrics metrics) {
@@ -121,15 +121,15 @@ TEST_F(KAnonymityLiftAggregationGameTest, TestAllLowPopulationMetrics) {
       std::vector<GroupedLiftMetrics>,
       GroupedLiftMetrics>(metricsVector_Alice, metricsVector_Bob);
 
-  // If the subgroups and the overall metrics are small, the metrics
-  // and subgroup metrics should all be negative.
-  for (int i = 0; i < unfilteredAggregatedMetrics.subGroupMetrics.size(); ++i) {
+  // If the cohorts and the overall metrics are small, the metrics
+  // and cohort metrics should all be negative.
+  for (int i = 0; i < unfilteredAggregatedMetrics.cohortMetrics.size(); ++i) {
     EXPECT_EQ(
-        filteredMetric(unfilteredAggregatedMetrics.subGroupMetrics[i]),
-        res.first.subGroupMetrics[i]);
+        filteredMetric(unfilteredAggregatedMetrics.cohortMetrics[i]),
+        res.first.cohortMetrics[i]);
     EXPECT_EQ(
-        filteredMetric(unfilteredAggregatedMetrics.subGroupMetrics[i]),
-        res.second.subGroupMetrics[i]);
+        filteredMetric(unfilteredAggregatedMetrics.cohortMetrics[i]),
+        res.second.cohortMetrics[i]);
   }
   EXPECT_EQ(
       filteredMetric(unfilteredAggregatedMetrics.metrics), res.first.metrics);
@@ -137,7 +137,7 @@ TEST_F(KAnonymityLiftAggregationGameTest, TestAllLowPopulationMetrics) {
       filteredMetric(unfilteredAggregatedMetrics.metrics), res.second.metrics);
 }
 
-TEST_F(KAnonymityLiftAggregationGameTest, TestSubgroupLowPopulationMetrics) {
+TEST_F(KAnonymityLiftAggregationGameTest, TestCohortLowPopulationMetrics) {
   auto metricsVector = fakeMetricsVector(false, true);
   auto metricsVector_Alice = fakeMetricsVector(false, true);
   auto metricsVector_Bob = pcf::vector::Xor(metricsVector, metricsVector_Alice);
@@ -149,15 +149,15 @@ TEST_F(KAnonymityLiftAggregationGameTest, TestSubgroupLowPopulationMetrics) {
       std::vector<GroupedLiftMetrics>,
       GroupedLiftMetrics>(metricsVector_Alice, metricsVector_Bob);
 
-  // If the subgroups are small but the overall metrics are not, the metrics
-  // should be unfiltered and the subgroups should be filtered.
-  for (int i = 0; i < unfilteredAggregatedMetrics.subGroupMetrics.size(); ++i) {
+  // If the cohorts are small but the overall metrics are not, the metrics
+  // should be unfiltered and the cohorts should be filtered.
+  for (int i = 0; i < unfilteredAggregatedMetrics.cohortMetrics.size(); ++i) {
     EXPECT_EQ(
-        filteredMetric(unfilteredAggregatedMetrics.subGroupMetrics[i]),
-        res.first.subGroupMetrics[i]);
+        filteredMetric(unfilteredAggregatedMetrics.cohortMetrics[i]),
+        res.first.cohortMetrics[i]);
     EXPECT_EQ(
-        filteredMetric(unfilteredAggregatedMetrics.subGroupMetrics[i]),
-        res.second.subGroupMetrics[i]);
+        filteredMetric(unfilteredAggregatedMetrics.cohortMetrics[i]),
+        res.second.cohortMetrics[i]);
   }
   EXPECT_EQ(unfilteredAggregatedMetrics.metrics, res.first.metrics);
   EXPECT_EQ(unfilteredAggregatedMetrics.metrics, res.second.metrics);

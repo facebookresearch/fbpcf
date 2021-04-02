@@ -1,5 +1,5 @@
 {
-    "subGroupMetrics": [
+    "cohortMetrics": [
         {
             "controlValueSquared": 1498345844,
             "testValueSquared": 8688508308,

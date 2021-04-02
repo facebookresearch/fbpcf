@@ -14,7 +14,7 @@
 namespace private_lift {
 struct GroupedEncryptedLiftMetrics {
   EncryptedLiftMetrics metrics;
-  std::vector<EncryptedLiftMetrics> subGroupMetrics;
+  std::vector<EncryptedLiftMetrics> cohortMetrics;
 
   GroupedEncryptedLiftMetrics operator+(const GroupedEncryptedLiftMetrics& other) const noexcept;
   GroupedEncryptedLiftMetrics operator^(const GroupedEncryptedLiftMetrics& other) const noexcept;

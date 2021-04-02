@@ -33,6 +33,6 @@ TEST_F(GroupedLiftMetricsTest, GroupedLiftMetrics) {
   auto json = groupedMetrics_.toJson();
   auto parsedMetrics = GroupedLiftMetrics::fromJson(json);
   EXPECT_EQ(groupedMetrics_.metrics, parsedMetrics.metrics);
-  EXPECT_EQ(groupedMetrics_.subGroupMetrics, parsedMetrics.subGroupMetrics);
+  EXPECT_EQ(groupedMetrics_.cohortMetrics, parsedMetrics.cohortMetrics);
 }
 } // namespace private_lift

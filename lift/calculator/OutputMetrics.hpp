@@ -54,11 +54,11 @@ std::string OutputMetrics<MY_ROLE>::playGame() {
   // Print the outputs
   XLOG(INFO) << "\nEMP Output (Role=" << MY_ROLE << "):\n" << metrics_;
 
-  // Print each subgroup header. Note that the publisher won't know anything
+  // Print each cohort header. Note that the publisher won't know anything
   // about the group header (only a generic index for which group we are
   // currently outputting.
-  for (auto i = 0; i < subgroupMetrics_.size(); ++i) {
-    XLOG(INFO) << "\nSubgroup [" << i << "] results:";
+  for (auto i = 0; i < cohortMetrics_.size(); ++i) {
+    XLOG(INFO) << "\ncohort [" << i << "] results:";
     if (MY_ROLE == PARTNER) {
       // This section only applies if features were suppled instead of cohorts
       if (inputData_.getGroupIdToFeatures().size() > 0) {
@@ -77,8 +77,8 @@ std::string OutputMetrics<MY_ROLE>::playGame() {
       XLOG(INFO) << "(Feature header unknown to publisher)";
     }
 
-    auto subgroupMetrics = subgroupMetrics_[i];
-    XLOG(INFO) << subgroupMetrics;
+    auto cohortMetrics = cohortMetrics_[i];
+    XLOG(INFO) << cohortMetrics;
   }
   return toJson();
 }
@@ -106,11 +106,11 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
   outfile << metrics_.controlMatchCount << "\n";
 
   // Then output results for each group
-  // Print each subgroup header. Note that the publisher won't know anything
+  // Print each cohort header. Note that the publisher won't know anything
   // about the group header (only a generic index for which group we are
   // currently outputting.
-  for (auto i = 0; i < subgroupMetrics_.size(); ++i) {
-    auto subOut = subgroupMetrics_.at(i);
+  for (auto i = 0; i < cohortMetrics_.size(); ++i) {
+    auto subOut = cohortMetrics_.at(i);
     if (MY_ROLE == PARTNER) {
       auto features = inputData_.getGroupIdToFeatures().at(i);
       for (auto j = 0; j < features.size(); ++j) {
@@ -122,7 +122,7 @@ void OutputMetrics<MY_ROLE>::writeOutputToFile(std::ostream& outfile) {
       }
       outfile << ",";
     } else {
-      outfile << "Subgroup " << i << ",";
+      outfile << "cohort " << i << ",";
     }
 
     outfile << subOut.testEvents << ",";
@@ -149,9 +149,9 @@ std::string OutputMetrics<MY_ROLE>::toJson() const {
   GroupedLiftMetrics groupedLiftMetrics;
   groupedLiftMetrics.metrics = metrics_.toLiftMetrics();
   std::transform(
-      subgroupMetrics_.begin(),
-      subgroupMetrics_.end(),
-      std::back_inserter(groupedLiftMetrics.subGroupMetrics),
+      cohortMetrics_.begin(),
+      cohortMetrics_.end(),
+      std::back_inserter(groupedLiftMetrics.cohortMetrics),
       [](auto const& p) { return p.second.toLiftMetrics(); });
   return groupedLiftMetrics.toJson();
 }
@@ -186,7 +186,7 @@ void OutputMetrics<MY_ROLE>::initNumGroups() {
     groupBitmasks_[i] =
         privatelyShareBitsFromPartner<MY_ROLE>(inputData_.bitmaskFor(i), n_);
   }
-  XLOG(INFO) << "Will be computing metrics for " << numGroups_ << " subgroups";
+  XLOG(INFO) << "Will be computing metrics for " << numGroups_ << " cohorts";
 }
 
 template <int32_t MY_ROLE>
@@ -299,7 +299,7 @@ std::vector<emp::Bit> OutputMetrics<MY_ROLE>::calculatePopulation(
   // Since testSum/controlSum is only dependent on publisher data, we compute on
   // the publisher side then just share the value over to the partner. Note
   // however that we still need to share emp::Bit for the population to compute
-  // the subgroup data since the publisher doesn't know group membership
+  // the cohort data since the publisher doesn't know group membership
   auto theSum = std::accumulate(populationVec.begin(), populationVec.end(), 0);
   emp::Integer sumInt{INT_SIZE, theSum, PUBLISHER};
   if (groupType == GroupType::TEST) {
@@ -307,14 +307,14 @@ std::vector<emp::Bit> OutputMetrics<MY_ROLE>::calculatePopulation(
   } else {
     metrics_.controlPopulation = reveal<int64_t>(sumInt);
   }
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupBits =
         secret_sharing::multiplyBitmask(populationBits, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testPopulation = sum(groupBits);
+      cohortMetrics_[i].testPopulation = sum(groupBits);
     } else {
-      subgroupMetrics_[i].controlPopulation = sum(groupBits);
+      cohortMetrics_[i].controlPopulation = sum(groupBits);
     }
   }
   return populationBits;
@@ -408,7 +408,7 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     metrics_.controlNumConvSquared = sum(squaredNumConvs);
   }
 
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     const auto& mask = groupBitmasks_.at(i);
     auto groupEventBits = secret_sharing::multiplyBitmask(eventArrays, mask);
@@ -417,19 +417,19 @@ std::vector<std::vector<emp::Bit>> OutputMetrics<MY_ROLE>::calculateEvents(
     auto groupEvents = sum(groupEventBits);
     auto groupConverters = sum(groupConverterBits);
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testEvents = groupEvents;
-      subgroupMetrics_[i].testConverters = groupConverters;
+      cohortMetrics_[i].testEvents = groupEvents;
+      cohortMetrics_[i].testConverters = groupConverters;
     } else {
-      subgroupMetrics_[i].controlEvents = groupEvents;
-      subgroupMetrics_[i].controlConverters = groupConverters;
+      cohortMetrics_[i].controlEvents = groupEvents;
+      cohortMetrics_[i].controlConverters = groupConverters;
     }
 
     // And also calculate per-group numConvSquared
     auto groupInts = secret_sharing::multiplyBitmask(squaredNumConvs, mask);
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testNumConvSquared = sum(groupInts);
+      cohortMetrics_[i].testNumConvSquared = sum(groupInts);
     } else {
-      subgroupMetrics_[i].controlNumConvSquared = sum(groupInts);
+      cohortMetrics_[i].controlNumConvSquared = sum(groupInts);
     }
   }
   return eventArrays;
@@ -488,9 +488,9 @@ void OutputMetrics<MY_ROLE>::calculateMatchCount(
     auto groupBits =
         secret_sharing::multiplyBitmask(matchArrays, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testMatchCount = sum(groupBits);
+      cohortMetrics_[i].testMatchCount = sum(groupBits);
     } else {
-      subgroupMetrics_[i].controlMatchCount = sum(groupBits);
+      cohortMetrics_[i].controlMatchCount = sum(groupBits);
     }
   }
 }
@@ -525,18 +525,18 @@ void OutputMetrics<MY_ROLE>::calculateImpressions(
     metrics_.controlImpressions = sum(impressionsArray);
     metrics_.controlReach = sum(reachArray);
   }
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
         secret_sharing::multiplyBitmask(impressionsArray, groupBitmasks_.at(i));
     auto groupBits =
         secret_sharing::multiplyBitmask(reachArray, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testImpressions = sum(groupInts);
-      subgroupMetrics_[i].testReach = sum(groupBits);
+      cohortMetrics_[i].testImpressions = sum(groupInts);
+      cohortMetrics_[i].testReach = sum(groupBits);
     } else {
-      subgroupMetrics_[i].controlImpressions = sum(groupInts);
-      subgroupMetrics_[i].controlReach = sum(groupBits);
+      cohortMetrics_[i].controlImpressions = sum(groupInts);
+      cohortMetrics_[i].controlReach = sum(groupBits);
     }
   }
 }
@@ -570,18 +570,18 @@ void OutputMetrics<MY_ROLE>::calculateClicks(
     metrics_.controlClicks = sum(clicksArray);
     metrics_.controlClickers = sum(clickersArray);
   }
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
         secret_sharing::multiplyBitmask(clicksArray, groupBitmasks_.at(i));
     auto groupBits =
         secret_sharing::multiplyBitmask(clickersArray, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testClicks = sum(groupInts);
-      subgroupMetrics_[i].testClickers = sum(groupBits);
+      cohortMetrics_[i].testClicks = sum(groupInts);
+      cohortMetrics_[i].testClickers = sum(groupBits);
     } else {
-      subgroupMetrics_[i].controlClicks = sum(groupInts);
-      subgroupMetrics_[i].controlClickers = sum(groupBits);
+      cohortMetrics_[i].controlClicks = sum(groupInts);
+      cohortMetrics_[i].controlClickers = sum(groupBits);
     }
   }
 }
@@ -610,14 +610,14 @@ void OutputMetrics<MY_ROLE>::calculateSpend(
   } else {
     metrics_.controlSpend = sum(spendArray);
   }
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
         secret_sharing::multiplyBitmask(spendArray, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testSpend = sum(groupInts);
+      cohortMetrics_[i].testSpend = sum(groupInts);
     } else {
-      subgroupMetrics_[i].controlSpend = sum(groupInts);
+      cohortMetrics_[i].controlSpend = sum(groupInts);
     }
   }
 }
@@ -657,14 +657,14 @@ void OutputMetrics<MY_ROLE>::calculateValue(
     metrics_.controlValue = sum(valueArrays);
   }
 
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     auto groupInts =
         secret_sharing::multiplyBitmask(valueArrays, groupBitmasks_.at(i));
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testValue = sum(groupInts);
+      cohortMetrics_[i].testValue = sum(groupInts);
     } else {
-      subgroupMetrics_[i].controlValue = sum(groupInts);
+      cohortMetrics_[i].controlValue = sum(groupInts);
     }
   }
 }
@@ -708,14 +708,14 @@ void OutputMetrics<MY_ROLE>::calculateValueSquared(
     metrics_.controlValueSquared = sum(squaredValues);
   }
 
-  // And compute for subgroups
+  // And compute for cohorts
   for (auto i = 0; i < numGroups_; ++i) {
     const auto& mask = groupBitmasks_.at(i);
     auto groupInts = secret_sharing::multiplyBitmask(squaredValues, mask);
     if (groupType == GroupType::TEST) {
-      subgroupMetrics_[i].testValueSquared = sum(groupInts);
+      cohortMetrics_[i].testValueSquared = sum(groupInts);
     } else {
-      subgroupMetrics_[i].controlValueSquared = sum(groupInts);
+      cohortMetrics_[i].controlValueSquared = sum(groupInts);
     }
   }
 }

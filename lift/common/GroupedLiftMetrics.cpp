@@ -17,21 +17,21 @@
 namespace private_lift {
 bool GroupedLiftMetrics::operator==(const GroupedLiftMetrics& other) const
     noexcept {
-  return metrics == other.metrics && subGroupMetrics == other.subGroupMetrics;
+  return metrics == other.metrics && cohortMetrics == other.cohortMetrics;
 }
 
 GroupedLiftMetrics GroupedLiftMetrics::operator+(
     const GroupedLiftMetrics& other) const noexcept {
   return GroupedLiftMetrics{
       metrics + other.metrics,
-      pcf::vector::Add(subGroupMetrics, other.subGroupMetrics)};
+      pcf::vector::Add(cohortMetrics, other.cohortMetrics)};
 }
 
 GroupedLiftMetrics GroupedLiftMetrics::operator^(
     const GroupedLiftMetrics& other) const noexcept {
   return GroupedLiftMetrics{
       metrics ^ other.metrics,
-      pcf::vector::Xor(subGroupMetrics, other.subGroupMetrics)};
+      pcf::vector::Xor(cohortMetrics, other.cohortMetrics)};
 }
 
 std::ostream& operator<<(std::ostream& os, const GroupedLiftMetrics& obj) noexcept {
@@ -41,12 +41,12 @@ std::ostream& operator<<(std::ostream& os, const GroupedLiftMetrics& obj) noexce
 std::string GroupedLiftMetrics::toJson() const {
   auto container = folly::dynamic::array();
   std::transform(
-      subGroupMetrics.begin(),
-      subGroupMetrics.end(),
+      cohortMetrics.begin(),
+      cohortMetrics.end(),
       std::back_inserter(container),
       [](auto m) { return m.toDynamic(); });
   folly::dynamic obj = folly::dynamic::object("metrics", metrics.toDynamic())(
-      "subGroupMetrics", container);
+      "cohortMetrics", container);
 
   return folly::toJson(obj);
 }
@@ -55,8 +55,8 @@ GroupedLiftMetrics GroupedLiftMetrics::fromJson(const std::string& str) {
   auto obj = folly::parseJson(str);
   std::vector<LiftMetrics> container;
   std::transform(
-      obj["subGroupMetrics"].begin(),
-      obj["subGroupMetrics"].end(),
+      obj["cohortMetrics"].begin(),
+      obj["cohortMetrics"].end(),
       std::back_inserter(container),
       [](auto m) { return LiftMetrics::fromDynamic(m); });
 

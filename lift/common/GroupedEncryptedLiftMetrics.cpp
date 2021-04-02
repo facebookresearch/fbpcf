@@ -18,13 +18,13 @@ GroupedEncryptedLiftMetrics GroupedEncryptedLiftMetrics::operator+(
     const GroupedEncryptedLiftMetrics& other) const noexcept {
   return GroupedEncryptedLiftMetrics{
       metrics + other.metrics,
-      pcf::vector::Add(subGroupMetrics, other.subGroupMetrics)};
+      pcf::vector::Add(cohortMetrics, other.cohortMetrics)};
 }
 
 GroupedEncryptedLiftMetrics GroupedEncryptedLiftMetrics::operator^(
     const GroupedEncryptedLiftMetrics& other) const noexcept {
   return GroupedEncryptedLiftMetrics{
       metrics ^ other.metrics,
-      pcf::vector::Xor(subGroupMetrics, other.subGroupMetrics)};
+      pcf::vector::Xor(cohortMetrics, other.cohortMetrics)};
 }
 } // namespace private_lift
