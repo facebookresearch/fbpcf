@@ -116,7 +116,7 @@ TEST_F(AggregatorAppIntegrationTest, TestVisibilityBob) {
   auto resAlice = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathAlice_));
   auto resBob = GroupedLiftMetrics::fromJson(pcf::io::read(outputPathBob_));
   GroupedLiftMetrics zeroMetrics{
-      LiftMetrics{}, std::vector<LiftMetrics>{2, LiftMetrics{}}};
+      LiftMetrics{}, std::vector<LiftMetrics>{3, LiftMetrics{}}};
   EXPECT_EQ(zeroMetrics, resAlice);
   EXPECT_EQ(resExpected, resBob);
 }

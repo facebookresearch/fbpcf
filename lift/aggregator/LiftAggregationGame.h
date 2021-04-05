@@ -16,6 +16,7 @@
 #include "../../pcf/common/VectorUtil.h"
 #include "../../pcf/mpc/EmpGame.h"
 #include "../common/GroupedLiftMetrics.h"
+#include "../common/PrivateData.h"
 #include "MetricsMapper.h"
 
 namespace private_lift {
@@ -46,6 +47,22 @@ class LiftAggregationGame : public pcf::EmpGame<
               return empVector.map(
                   [](const auto& x, const auto& y) { return x ^ y; });
             });
+
+    // We need to ensure all vectors are of equal length
+    auto maxSize = vv.at(0).size();
+    for (const auto &vec : vv) {
+      maxSize = std::max(maxSize, vec.size());
+    }
+    for (std::size_t i = 0; i < vv.size(); ++i) {
+      if (vv.at(i).size() != maxSize) {
+        XLOG(INFO) << "Padding next vector with zeroes to match length (vec["
+                   << i << "].size() = " << vv.at(i).size()
+                   << ", maxSize = " << maxSize << ")";
+        while (vv.at(i).size() != maxSize) {
+          vv.at(i).emplace_back(INT_SIZE, 0, emp::PUBLIC);
+        }
+      }
+    }
 
     XLOG(INFO) << "Aggregating metrics...";
     // Aggregate all metrics, returns std::vector<emp::Integer>

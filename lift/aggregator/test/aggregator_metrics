@@ -51,6 +51,32 @@
             "controlReach": 246,
             "testClickers": 9780,
             "controlClickers": 111423
+        },
+        {
+            "controlValueSquared": 473773988,
+            "testValueSquared": 879420933,
+            "controlNumConvSquared": 1482532,
+            "testNumConvSquared": 47336197,
+            "controlValue": 97941791,
+            "controlConverters": 526415291,
+            "controlConversions": 526415291,
+            "testValue": 797781245,
+            "controlPopulation": 794156121,
+            "testConverters": 537819380,
+            "testConversions": 537819380,
+            "testPopulation": 326553327,
+            "controlMatchCount": 3,
+            "testMatchCount": 3,
+            "testImpressions": 1169,
+            "controlImpressions": 5402,
+            "testClicks": 2771,
+            "controlClicks": 5566,
+            "testSpend": 8125,
+            "controlSpend": 9142,
+            "testReach": 3114,
+            "controlReach": 114,
+            "testClickers": 7324,
+            "controlClickers": 3525
         }
     ],
     "metrics": {

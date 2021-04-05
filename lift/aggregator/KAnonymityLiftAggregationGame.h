@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
@@ -17,44 +18,53 @@
 #include "../../pcf/mpc/EmpGame.h"
 #include "../common/GroupedEncryptedLiftMetrics.h"
 #include "../common/GroupedLiftMetrics.h"
+#include "../common/PrivateData.h"
 #include "MetricsMapper.h"
 
 namespace private_lift {
 
-constexpr int64_t INT_SIZE = 64;
-
 template <class IOChannel>
-class KAnonymityLiftAggregationGame : public pcf::EmpGame<
-                                          IOChannel,
-                                          std::vector<GroupedLiftMetrics>,
-                                          GroupedLiftMetrics> {
- public:
+class KAnonymityLiftAggregationGame
+    : public pcf::EmpGame<IOChannel, std::vector<GroupedLiftMetrics>,
+                          GroupedLiftMetrics> {
+public:
   KAnonymityLiftAggregationGame(
-      std::unique_ptr<IOChannel> ioChannel,
-      pcf::Party party,
+      std::unique_ptr<IOChannel> ioChannel, pcf::Party party,
       pcf::Visibility visibility = pcf::Visibility::Public,
       int64_t threshold = kAnonymityThreshold)
-      : pcf::EmpGame<
-            IOChannel,
-            std::vector<GroupedLiftMetrics>,
-            GroupedLiftMetrics>(std::move(ioChannel), party),
-        visibility_{visibility},
-        threshold_{threshold} {}
+      : pcf::EmpGame<IOChannel, std::vector<GroupedLiftMetrics>,
+                     GroupedLiftMetrics>(std::move(ioChannel), party),
+        visibility_{visibility}, threshold_{threshold} {}
 
   static constexpr int64_t kHiddenMetricConstant = -1;
   static constexpr int64_t kAnonymityThreshold = 100;
 
-  GroupedLiftMetrics play(
-      const std::vector<GroupedLiftMetrics>& inputData) override {
+  GroupedLiftMetrics
+  play(const std::vector<GroupedLiftMetrics> &inputData) override {
     XLOG(INFO) << "Decoding metrics...";
     // XOR all metrics, return std::vector<std::vector<emp::Integer>>
     auto vv =
         pcf::functional::map<GroupedLiftMetrics, std::vector<emp::Integer>>(
-            inputData, [](const auto& metrics) {
+            inputData, [](const auto &metrics) {
               auto empVector = mapGroupedLiftMetricsToEmpVector(metrics);
               return empVector.map(
-                  [](const auto& x, const auto& y) { return x ^ y; });
+                  [](const auto &x, const auto &y) { return x ^ y; });
             });
+    // We need to ensure all vectors are of equal length
+    auto maxSize = vv.at(0).size();
+    for (const auto &vec : vv) {
+      maxSize = std::max(maxSize, vec.size());
+    }
+    for (std::size_t i = 0; i < vv.size(); ++i) {
+      if (vv.at(i).size() != maxSize) {
+        XLOG(INFO) << "Padding next vector with zeroes to match length (vec["
+                   << i << "].size() = " << vv.at(i).size()
+                   << ", maxSize = " << maxSize << ")";
+        while (vv.at(i).size() != maxSize) {
+          vv.at(i).emplace_back(INT_SIZE, 0, emp::PUBLIC);
+        }
+      }
+    }
 
     XLOG(INFO) << "Aggregating metrics...";
     // Aggregate all metrics, returns std::vector<emp::Integer>
@@ -67,19 +77,20 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
     XLOG(INFO) << "Revealing metrics...";
     XLOGF(DBG, "Visibility: {}", this->visibility_);
     // Reveal aggregated metrics
+    // TODO: Aggregate even if vector lengths are not even
     auto revealed = pcf::functional::map<emp::Integer, int64_t>(
-        anonymized, [visibility = visibility_](const emp::Integer& i) {
+        anonymized, [visibility = visibility_](const emp::Integer &i) {
           return i.reveal<int64_t>(static_cast<int>(visibility));
         });
     return mapVectorToGroupedLiftMetrics(revealed);
   }
 
- private:
+private:
   pcf::Visibility visibility_;
   int64_t threshold_;
 
-  std::vector<emp::Integer> kAnonymizeGrouped(
-      std::vector<emp::Integer> metrics) {
+  std::vector<emp::Integer>
+  kAnonymizeGrouped(std::vector<emp::Integer> metrics) {
     auto groupedMetrics = mapVectorToGroupedLiftMetrics(metrics);
     GroupedEncryptedLiftMetrics anonymizedMetrics;
 
@@ -92,8 +103,8 @@ class KAnonymityLiftAggregationGame : public pcf::EmpGame<
   }
 
   EncryptedLiftMetrics kAnonymizeMetrics(EncryptedLiftMetrics metrics) {
-    const emp::Integer hiddenMetric{
-        INT_SIZE, kHiddenMetricConstant, emp::PUBLIC};
+    const emp::Integer hiddenMetric{INT_SIZE, kHiddenMetricConstant,
+                                    emp::PUBLIC};
     const emp::Integer kAnonymityLevel{INT_SIZE, threshold_, emp::PUBLIC};
     auto condition =
         metrics.testConverters + metrics.controlConverters >= kAnonymityLevel;

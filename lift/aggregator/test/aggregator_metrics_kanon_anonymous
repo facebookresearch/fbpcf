@@ -51,6 +51,32 @@
             "controlReach": -1,
             "testClickers": -1,
             "controlClickers": -1
+        },
+        {
+            "controlClicks": -1,
+            "testMatchCount": -1,
+            "controlImpressions": -1,
+            "testValue": -1,
+            "controlValue": -1,
+            "testImpressions": -1,
+            "controlMatchCount": -1,
+            "testConverters": -1,
+            "testConversions": -1,
+            "testPopulation": 326553327,
+            "testClicks": -1,
+            "testValueSquared": -1,
+            "controlValueSquared": -1,
+            "testNumConvSquared": -1,
+            "controlNumConvSquared": -1,
+            "controlConverters": -1,
+            "controlConversions": -1,
+            "controlPopulation": 794156121,
+            "testSpend": -1,
+            "controlSpend": -1,
+            "testReach": -1,
+            "controlReach": -1,
+            "testClickers": -1,
+            "controlClickers": -1
         }
     ],
     "metrics": {
