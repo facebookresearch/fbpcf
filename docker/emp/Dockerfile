@@ -1,0 +1,58 @@
+# Copyright (c) Facebook, Inc. and its affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
+ARG ubuntu_release="latest"
+FROM ubuntu:${ubuntu_release} AS dev-environment
+# Base development environment
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update
+RUN apt-get install --no-install-recommends -y \
+    build-essential \
+    ca-certificates \
+    cmake \
+    git \
+    libgmp-dev
+RUN mkdir /root/build
+WORKDIR /root/build
+
+# Build and install emp packages
+FROM dev-environment AS emp-builder
+ARG emp_release="0.1"
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y --no-install-recommends  \
+    libboost-dev \
+    libboost-system-dev \
+    libssl-dev
+
+# emp-tool build and install
+RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-tool.git
+WORKDIR /root/build/emp-tool
+RUN sed -i "s/SHARED/STATIC/" CMakeLists.txt
+RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
+RUN make
+RUN make install
+
+# emp-ot build and install
+WORKDIR /root/build
+RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-ot.git
+WORKDIR /root/build/emp-ot
+RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
+RUN make
+RUN make install
+
+# emp-sh2pc build and install
+WORKDIR /root/build
+RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-sh2pc.git
+WORKDIR /root/build/emp-sh2pc
+RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
+RUN make
+RUN make install
+
+FROM ubuntu:${ubuntu_release}
+RUN mkdir /usr/local/cmake
+COPY --from=emp-builder /usr/local/cmake/. /usr/local/cmake/.
+COPY --from=emp-builder /usr/local/include/. /usr/local/include/.
+COPY --from=emp-builder /usr/local/lib/. /usr/local/lib/.
+ENTRYPOINT [ "sh" ]

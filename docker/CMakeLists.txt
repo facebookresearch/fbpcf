@@ -9,7 +9,6 @@ set(NAME "private-lift")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++")
 
 find_path(CMAKE_FOLDER NAMES cmake/emp-tool-config.cmake)
 include(${CMAKE_FOLDER}/cmake/common.cmake)
@@ -105,7 +104,6 @@ target_link_libraries(
   ${EMP-OT_LIBRARIES}
   fbpcf
   stdc++fs
-  libgflags.a
   libre2.a)
 
 add_executable(
@@ -126,7 +124,6 @@ target_link_libraries(
   ${EMP-OT_LIBRARIES}
   fbpcf
   stdc++fs
-  libgflags.a
   libre2.a)
 
 add_executable(
@@ -139,5 +136,4 @@ target_link_libraries(
   millionaire
   ${FOLLY_LIBRARIES}
   ${EMP-OT_LIBRARIES}
-  fbpcf
-  libgflags.a)
+  fbpcf)

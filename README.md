@@ -207,14 +207,35 @@ make
 ```
 
 ## How to build a docker image that containes game executables using the given docker related files
-1. cd to folder `/fbpcf/`
-2. build docker image `docker_fbpcf` by running
-   - `docker build -t docker_fbpcf -f docker/dockerfile . -m 8g`
-3. now you have built docker image `docker_fbpcf`, you can test run the calculator/aggregator game as publisher or partner
-   - open a terminal, play calculator game as the publisher
-      - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=1 --input_directory=/root/lift/calculator/sample_input --input_filenames="publisher_0"  --output_directory="/root/" --output_filenames=test_calculator_publisher_output  --use_xor_encryption=false --concurrency=1`
-   - open another terminal, play calculator game as the partner
-      - `docker run -ti --network=host docker_fbpcf ./bin/calculator --role=2 --server_ip=127.0.0.1 --input_directory=/root/lift/calculator/sample_input --input_filenames="partner_4_convs_0" --output_directory="/root/" --output_filenames="test_calculator_partner_output" --use_xor_encryption=false --concurrency=1`
+To build the necessary docker dependencies and `fbpcf:latest` docker image run the following script
+- `./build-docker.sh`
+
+### Notes on `build-docker.sh`
+- In order to reduce space and time of subsequent docker builds, `fbpcf` will build three dependent docker images: aws-s3-core, emp, and folly.
+These are essentially treated as compiled static libraries and greatly reduces rebuilds when developing fbpcf as these libaries rarely change.
+- The default build of `fbpcf:latest` image creates a minified version of the container with only executables and required libraries, no source.
+  - If you would like to do development inside the docker container for `fbpcf`, simply target `dev` when building the image (`--target=dev`). Instructions
+  can be found at the bottom of build-docker.sh
+- The current dependency versions in this file are known good builds, however you may wish up update packages in the future (for development or testing)
+  - UBUNTU_RELEASE="20.04"
+    - Changing the Ubuntu Release will most likely require update to the apt-get packages
+  - EMP_RELEASE="0.1"
+    - This is the git release branch for EMP repos
+  - AWS_RELEASE="1.8.177"
+    - This is the git release tag for https://github.com/aws/aws-sdk-cpp
+  - FMT_RELEASE="7.1.3"
+    - This is the git release tag for https://github.com/fmtlib/fmt
+  - FOLLY_RELEASE="2021.03.29.00"
+    - This is the git release tag for https://github.com/facebook/folly.git
+
+### Running Games (calculator / aggregator)
+Now you have built the docker image `fbpcf:latest`, you may test run the calculator/aggregator game as publisher or partner.  To help faciltate this, two
+sample scripts have been provided to show the syntax and interaction.
+- Run run a sample calculator game
+  - `./run-calculator-sample.sh`
+- Run run a sample aggregator game
+  - `./run-aggregator-sample.sh`
+Note: Both these sample games will output to a directory called `sample` in the root of this project.
 
 ## How PCF works
 Private Computation Framework enables cryptographic methods that help two parties, Alice and Bob, compute a function on each of their secret inputs and receive outputs without revealing information about the inputs to each other. Specifically, it lets the programmers implement a garbled circuit-based 2pc program.

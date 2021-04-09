@@ -3,36 +3,68 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-FROM ubuntu:18.04
-WORKDIR /root
-RUN apt-get update && apt-get install -y \
-  m4 \
-  make \
-  git \
-  software-properties-common \
-  sudo \
-  wget
+ARG ubuntu_release="latest"
+FROM ubuntu:${ubuntu_release} as dev
 
-ADD docker/install_dependencies.sh .
-RUN ["bash", "install_dependencies.sh"]
+# Required Packages for pcf
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update
+RUN apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    cmake \
+    git \
+    libboost-dev \
+    libboost-context-dev \
+    libboost-filesystem-dev \
+    libboost-program-options-dev \
+    libboost-regex-dev \
+    libboost-system-dev \
+    libcurl4-openssl-dev \
+    libdouble-conversion-dev \
+    libevent-dev \
+    libgflags-dev \
+    libgmp-dev \
+    libgoogle-glog-dev \
+    libre2-dev \
+    libssl-dev \
+    zlib1g-dev
+RUN mkdir /root/build
+WORKDIR /root/build
 
-ADD docker/install_emp.sh .
-RUN ["bash", "install_emp.sh"]
+# Copy build dependencies from other docker images
+COPY --from=fbpcf/ubuntu-emp:0.1 /usr/local/. /usr/local/.
+COPY --from=fbpcf/ubuntu-aws-s3-core:1.8.177 /usr/local/. /usr/local/.
+COPY --from=fbpcf/ubuntu-folly:2021.03.29.00 /usr/local/. /usr/local/.
 
-ADD docker/install_awssdk.sh .
-RUN ["bash", "install_awssdk.sh"]
+# fbpcf build and install
+COPY docker/CMakeLists.txt .
+COPY lift/ ./lift
+COPY pcf/ ./pcf
+COPY example/ ./example
 
-ADD docker/install_folly.sh .
-RUN ["bash", "install_folly.sh"]
+RUN cmake . -DTHREADING=ON -DEMP_USE_RANDOM_DEVICE=ON
+RUN make
 
-ADD docker/CMakeLists.txt .
-ADD lift/ /root/lift
-ADD pcf/ /root/pcf
-ADD example/ /root/example
+# This section is only needed to make a dev image run properly...
+RUN cp /root/build/bin/* /usr/local/bin/.
+WORKDIR /usr/local/bin
+CMD ["/bin/sh"]
 
-ADD docker/install_private_lift.sh .
-RUN ["bash", "install_private_lift.sh"]
+# Create a minified prod build with only required libraries (no source)
+FROM ubuntu:${ubuntu_release} as prod
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update
+RUN apt-get install -y --no-install-recommends \
+    libboost-regex1.71.0 \
+    libcurl4 \
+    libdouble-conversion3 \
+    libgflags2.2 \
+    libgmp10 \
+    libgoogle-glog0v5 \
+    libssl1.1 \
+    zlib1g
 
-CMD ["/bin/bash"]
-
-WORKDIR /root
+COPY --from=dev /root/build/bin/. /usr/local/bin/.
+WORKDIR /usr/local/bin
+CMD ["/bin/sh"]
