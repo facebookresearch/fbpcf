@@ -270,15 +270,17 @@ void OutputMetrics<MY_ROLE>::calculateStatistics(
     const std::vector<std::vector<emp::Bit>>& validPurchaseArrays) {
   XLOG(INFO) << "Calculate " << getGroupTypeStr(groupType)
              << " events, value, and value squared";
-  auto bits = calculatePopulation(groupType, inputData_.getControlPopulation());
-  if (groupType == GroupType::TEST) {
-    bits = calculatePopulation(groupType, inputData_.getTestPopulation());
-  }
+  auto bits = calculatePopulation(
+      groupType,
+      groupType == GroupType::TEST ? inputData_.getTestPopulation()
+                                   : inputData_.getControlPopulation());
   auto eventArrays = calculateEvents(groupType, bits, validPurchaseArrays);
   calculateMatchCount(groupType, bits, purchaseValueArrays);
-  calculateImpressions(groupType, bits);
-  calculateClicks(groupType, bits);
-  calculateSpend(groupType, bits);
+  if (groupType == GroupType::TEST) {
+    calculateImpressions(groupType, bits);
+    calculateClicks(groupType, bits);
+    calculateSpend(groupType, bits);
+  }
 
   // If this is (value-based) conversion lift, calculate value metrics now
   if (!shouldSkipValues_ &&

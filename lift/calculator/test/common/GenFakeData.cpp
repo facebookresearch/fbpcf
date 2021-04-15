@@ -56,9 +56,16 @@ GenFakeData::LiftInputColumns GenFakeData::genOneFakeLine(
   bool hasPurchase = folly::Random::secureRandDouble01() < purchaseRate;
   oneLine.opportunity_timestamp =
       oneLine.opportunity ? folly::Random::secureRand32(1, 100) + epoch : 0;
-  oneLine.num_impressions = folly::Random::secureRand64(0, 5);
-  oneLine.num_clicks = folly::Random::secureRand64(0, 5);
-  oneLine.total_spend = folly::Random::secureRand64(0, 1000);
+  if (oneLine.test_flag) {
+    oneLine.num_impressions = folly::Random::secureRand64(0, 5);
+    oneLine.num_clicks = folly::Random::secureRand64(0, 5);
+    oneLine.total_spend = folly::Random::secureRand64(0, 1000);
+  } else {
+    // the control group doesn't have engagement data since they don't see ads
+    oneLine.num_impressions = 0;
+    oneLine.num_clicks = 0;
+    oneLine.total_spend = 0;
+  }
 
   if (!hasPurchase) {
     oneLine.event_timestamps.resize(numConversions, 0);
