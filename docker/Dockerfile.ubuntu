@@ -63,6 +63,7 @@ RUN apt-get install -y --no-install-recommends \
     libgmp10 \
     libgoogle-glog0v5 \
     libssl1.1 \
+    libre2-5 \
     zlib1g
 
 COPY --from=dev /root/build/bin/. /usr/local/bin/.

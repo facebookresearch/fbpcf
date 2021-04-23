@@ -39,11 +39,6 @@ RUN yum -y install \
     && yum config-manager --set-enabled powertools
  RUN yum -y install \
     boost-devel \
-    # libboost-context-dev \
-    # libboost-filesystem-dev \
-    # libboost-program-options-dev \
-    # libboost-regex-dev \
-    # libboost-system-dev \
     double-conversion-devel \
     gflags-devel \
     glog-devel \
@@ -61,6 +56,7 @@ RUN make
 RUN make install
 
 FROM centos:centos${os_release}
+COPY --from=builder /usr/local/lib64/. /usr/local/lib64/.
 COPY --from=builder /usr/local/include/. /usr/local/include/.
 COPY --from=builder /usr/local/lib/. /usr/local/lib/.
 ENTRYPOINT [ "sh" ]

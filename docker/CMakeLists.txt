@@ -104,7 +104,7 @@ target_link_libraries(
   ${EMP-OT_LIBRARIES}
   fbpcf
   stdc++fs
-  libre2.a)
+  libre2.so)
 
 add_executable(
   aggregator
@@ -124,7 +124,7 @@ target_link_libraries(
   ${EMP-OT_LIBRARIES}
   fbpcf
   stdc++fs
-  libre2.a)
+  libre2.so)
 
 add_executable(
   millionaire

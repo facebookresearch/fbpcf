@@ -18,7 +18,6 @@ RUN yum -y install \
     openssl-devel \
     zlib-devel \
     && yum clean all
-
 RUN mkdir /root/build
 WORKDIR /root/build
 
@@ -33,6 +32,7 @@ RUN make
 RUN make install
 
 FROM centos:centos${os_release}
+COPY --from=builder /usr/local/lib64/. /usr/local/lib64/.
 COPY --from=builder /usr/local/include/. /usr/local/include/.
 COPY --from=builder /usr/local/lib/. /usr/local/lib/.
 ENTRYPOINT [ "sh" ]
