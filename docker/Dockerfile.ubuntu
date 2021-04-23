@@ -4,6 +4,14 @@
 # LICENSE file in the root directory of this source tree.
 
 ARG os_release="latest"
+ARG emp_release="0.1"
+ARG aws_release="1.8.177"
+ARG folly_release="2021.03.29.00"
+
+FROM fbpcf/ubuntu-emp:${emp_release} as emp
+FROM fbpcf/ubuntu-aws-s3-core:${aws_release} as aws
+FROM fbpcf/ubuntu-folly:${folly_release} as folly
+
 FROM ubuntu:${os_release} as dev
 
 # Required Packages for pcf
@@ -32,10 +40,14 @@ RUN apt-get install -y --no-install-recommends \
 RUN mkdir /root/build
 WORKDIR /root/build
 
+ARG emp_release="0.1"
+ARG aws_release="1.8.177"
+ARG folly_release="2021.03.29.00"
+
 # Copy build dependencies from other docker images
-COPY --from=fbpcf/ubuntu-emp:0.1 /usr/local/. /usr/local/.
-COPY --from=fbpcf/ubuntu-aws-s3-core:1.8.177 /usr/local/. /usr/local/.
-COPY --from=fbpcf/ubuntu-folly:2021.03.29.00 /usr/local/. /usr/local/.
+COPY --from=emp /usr/local/. /usr/local/.
+COPY --from=aws /usr/local/. /usr/local/.
+COPY --from=folly /usr/local/. /usr/local/.
 
 # fbpcf build and install
 COPY docker/CMakeLists.txt .

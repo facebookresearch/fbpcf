@@ -16,22 +16,25 @@ FOLLY_RELEASE="2021.03.29.00"
 PROG_NAME=$0
 usage() {
   cat << EOF >&2
-Usage: $PROG_NAME [-u | --ubuntu]
+Usage: $PROG_NAME [-u | -c]
 
--c: builds the docker images aginsts centos (default)
--u: builds the docker images against ubuntu
+-c: builds the docker images aginsts centos
+-u: builds the docker images against ubuntu (default)
 EOF
   exit 1
 }
 
-IMAGE_PREFIX="centos"
-OS_RELEASE=${CENTOS_RELEASE}
-DOCKER_EXTENSION=""
-while getopts u o; do
+IMAGE_PREFIX="ubuntu"
+OS_RELEASE=${UBUNTU_RELEASE}
+DOCKER_EXTENSION=".ubuntu"
+while getopts u,c o; do
   case $o in
     (u) IMAGE_PREFIX="ubuntu"
         OS_RELEASE=${UBUNTU_RELEASE}
         DOCKER_EXTENSION=".ubuntu";;
+    (c) IMAGE_PREFIX="centos"
+        OS_RELEASE=${CENTOS_RELEASE}
+        DOCKER_EXTENSION=".centos";;
     (*) usage
   esac
 done
@@ -63,6 +66,9 @@ docker build  \
 printf "\nBuilding %s-fbpcf docker image...\n" ${IMAGE_PREFIX}
 docker build  \
     --build-arg os_release=${OS_RELEASE} \
+    --build-arg emp_release=${EMP_RELEASE} \
+    --build-arg aws_release=${AWS_RELEASE} \
+    --build-arg folly_release=${FOLLY_RELEASE} \
     --compress \
     -t fbpcf:latest -f docker/Dockerfile${DOCKER_EXTENSION} .
 # FYI: To create a "dev" build (with all source), comment out the docker build above

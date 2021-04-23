@@ -4,6 +4,14 @@
 # LICENSE file in the root directory of this source tree.
 
 ARG os_release="latest"
+ARG emp_release="0.1"
+ARG aws_release="1.8.177"
+ARG folly_release="2021.03.29.00"
+
+FROM fbpcf/centos-emp:${emp_release} as emp
+FROM fbpcf/centos-aws-s3-core:${aws_release} as aws
+FROM fbpcf/centos-folly:${folly_release} as folly
+
 FROM centos:centos${os_release} as dev
 
 # Required Packages for pcf
@@ -36,9 +44,9 @@ RUN mkdir /root/build
 WORKDIR /root/build
 
 # Copy build dependencies from other docker images
-COPY --from=fbpcf/centos-emp:0.1 /usr/local/. /usr/local/.
-COPY --from=fbpcf/centos-aws-s3-core:1.8.177 /usr/local/. /usr/local/.
-COPY --from=fbpcf/centos-folly:2021.03.29.00 /usr/local/. /usr/local/.
+COPY --from=emp /usr/local/. /usr/local/.
+COPY --from=aws /usr/local/. /usr/local/.
+COPY --from=folly /usr/local/. /usr/local/.
 
 # fbpcf build and install
 COPY docker/CMakeLists.txt .
