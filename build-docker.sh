@@ -41,26 +41,26 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Docker build must run from this script build dir, so all the relative paths work inside the Dockerfile's
 cd "$SCRIPT_DIR" || exit
 
-printf "\nBuilding emp %s docker image...\n" ${EMP_RELEASE}
+printf "\nBuilding %s-emp %s docker image...\n" ${IMAGE_PREFIX} ${EMP_RELEASE}
 docker build \
     --build-arg os_release=${OS_RELEASE} \
     --build-arg emp_release=${EMP_RELEASE} \
     -t fbpcf/${IMAGE_PREFIX}-emp:${EMP_RELEASE} -f docker/emp/Dockerfile${DOCKER_EXTENSION} .
 
-printf "\nBuilding aws(s3/core) %s docker image...\n" ${AWS_RELEASE}
+printf "\nBuilding %s-aws(s3/core) %s docker image...\n" ${IMAGE_PREFIX} ${AWS_RELEASE}
 docker build  \
     --build-arg os_release=${OS_RELEASE} \
     --build-arg aws_release=${AWS_RELEASE} \
     -t fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_RELEASE} -f docker/aws-s3-core/Dockerfile${DOCKER_EXTENSION} .
 
-printf "\nBuilding folly %s docker image...\n" ${FOLLY_RELEASE}
+printf "\nBuilding %s-folly %s docker image...\n" ${IMAGE_PREFIX} ${FOLLY_RELEASE}
 docker build  \
     --build-arg os_release=${OS_RELEASE} \
     --build-arg folly_release=${FOLLY_RELEASE} \
     --build-arg fmt_release=${FMT_RELEASE} \
     -t fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE} -f docker/folly/Dockerfile${DOCKER_EXTENSION} .
 
-printf "\nBuilding fbpcf docker image...\n"
+printf "\nBuilding %s-fbpcf docker image...\n" ${IMAGE_PREFIX}
 docker build  \
     --build-arg os_release=${OS_RELEASE} \
     --compress \
