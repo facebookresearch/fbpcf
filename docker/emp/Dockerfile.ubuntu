@@ -3,8 +3,8 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-ARG ubuntu_release="latest"
-FROM ubuntu:${ubuntu_release} AS dev-environment
+ARG os_release="latest"
+FROM ubuntu:${os_release} AS dev-environment
 # Base development environment
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update
@@ -50,7 +50,7 @@ RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
 RUN make
 RUN make install
 
-FROM ubuntu:${ubuntu_release}
+FROM ubuntu:${os_release}
 RUN mkdir /usr/local/cmake
 COPY --from=emp-builder /usr/local/cmake/. /usr/local/cmake/.
 COPY --from=emp-builder /usr/local/include/. /usr/local/include/.
