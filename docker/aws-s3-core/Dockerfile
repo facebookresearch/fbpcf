@@ -1,0 +1,38 @@
+# Copyright (c) Facebook, Inc. and its affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+ARG os_release="latest"
+FROM centos:centos${os_release} AS builder
+ARG aws_release="1.8.177"
+# Required Packages for AWS
+# Base development environment
+RUN yum -y install \
+    ca-certificates \
+    cmake \
+    gcc \
+    gcc-c++ \
+    git \
+    libcurl-devel \
+    make \
+    openssl-devel \
+    zlib-devel \
+    && yum clean all
+
+RUN mkdir /root/build
+WORKDIR /root/build
+
+# aws s3/core build and install
+RUN git clone https://github.com/aws/aws-sdk-cpp.git
+WORKDIR /root/build/aws-sdk-cpp
+RUN git checkout tags/${aws_release} -b ${aws_release}
+# -DCUSTOM_MEMORY_MANAGEMENT=0 is added to avoid Aws::String and std::string issue
+# -DENABLE_TESTING=OFF for a weird failing test HttpClientTest.TestRandomURLWithProxyAndOtherDeclaredAsNonProxyHost
+RUN cmake . -DBUILD_ONLY="s3;core" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCUSTOM_MEMORY_MANAGEMENT=0 -DENABLE_TESTING=OFF
+RUN make
+RUN make install
+
+FROM centos:centos${os_release}
+COPY --from=builder /usr/local/include/. /usr/local/include/.
+COPY --from=builder /usr/local/lib/. /usr/local/lib/.
+ENTRYPOINT [ "sh" ]
