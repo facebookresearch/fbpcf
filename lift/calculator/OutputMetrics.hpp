@@ -10,11 +10,12 @@
 #include "folly/logging/xlog.h"
 
 #include "../common/GroupedLiftMetrics.h"
+#include "../../pcf/mpc/EmpGame.h"
 
 namespace private_lift {
 
-constexpr int32_t PUBLISHER = emp::ALICE;
-constexpr int32_t PARTNER = emp::BOB;
+constexpr int32_t PUBLISHER = static_cast<int>(pcf::Party::Alice);
+constexpr int32_t PARTNER = static_cast<int>(pcf::Party::Bob);
 constexpr int32_t QUICK_BITS = 32;
 constexpr int32_t FULL_BITS = 64;
 

@@ -15,7 +15,7 @@
 #include "../../pcf/exception/ExceptionBase.h"
 #include "./MillionaireApp.h"
 
-DEFINE_int32(role, 1, "1 = Alice, 2 = Bot");
+DEFINE_int32(role, 1, "1 = Alice, 2 = Bob");
 DEFINE_string(server_ip, "", "Server's IP address");
 DEFINE_int32(port, 5000, "Server's port");
 
