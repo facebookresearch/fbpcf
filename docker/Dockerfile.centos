@@ -78,6 +78,7 @@ RUN yum -y install \
     boost-regex \
     boost-system \
     boost-thread \
+    ca-certificates \
     double-conversion \
     gflags \
     glog \

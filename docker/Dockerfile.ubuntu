@@ -66,6 +66,7 @@ CMD ["/bin/sh"]
 FROM ubuntu:${os_release} as prod
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     libboost-regex1.71.0 \
     libcurl4 \
     libdouble-conversion3 \
