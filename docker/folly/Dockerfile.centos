@@ -36,8 +36,8 @@ RUN echo "assumeyes=1" >> /etc/yum.conf
 RUN yum -y install \
     epel-release \
     dnf-plugins-core \
-    && yum config-manager --set-enabled powertools
- RUN yum -y install \
+    && yum config-manager --set-enabled powertools \
+    && yum -y install \
     boost-devel \
     double-conversion-devel \
     gflags-devel \
@@ -52,8 +52,7 @@ WORKDIR /root/build/folly
 RUN git checkout tags/v${folly_release} -b v${folly_release}
 
 RUN cmake DBUILD_SHARED_LIBS=OFF -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=native" .
-RUN make
-RUN make install
+RUN make && make install
 
 FROM centos:centos${os_release}
 COPY --from=builder /usr/local/lib64/. /usr/local/lib64/.

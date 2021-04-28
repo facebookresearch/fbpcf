@@ -7,8 +7,7 @@ FROM ubuntu:${os_release} AS builder
 ARG aws_release="1.8.177"
 # Required Packages for AWS
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update
-RUN apt-get install --no-install-recommends -y \
+RUN apt-get -y update && apt-get install --no-install-recommends -y \
     build-essential \
     ca-certificates \
     cmake \
@@ -26,8 +25,7 @@ RUN git checkout tags/${aws_release} -b ${aws_release}
 # -DCUSTOM_MEMORY_MANAGEMENT=0 is added to avoid Aws::String and std::string issue
 # -DENABLE_TESTING=OFF for a weird failing test HttpClientTest.TestRandomURLWithProxyAndOtherDeclaredAsNonProxyHost
 RUN cmake . -DBUILD_ONLY="s3;core" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCUSTOM_MEMORY_MANAGEMENT=0 -DENABLE_TESTING=OFF
-RUN make
-RUN make install
+RUN make && make install
 
 FROM ubuntu:${os_release}
 COPY --from=builder /usr/local/include/. /usr/local/include/.

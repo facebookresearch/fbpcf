@@ -28,8 +28,7 @@ RUN git checkout tags/${aws_release} -b ${aws_release}
 # -DCUSTOM_MEMORY_MANAGEMENT=0 is added to avoid Aws::String and std::string issue
 # -DENABLE_TESTING=OFF for a weird failing test HttpClientTest.TestRandomURLWithProxyAndOtherDeclaredAsNonProxyHost
 RUN cmake . -DBUILD_ONLY="s3;core" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCUSTOM_MEMORY_MANAGEMENT=0 -DENABLE_TESTING=OFF
-RUN make
-RUN make install
+RUN make && make install
 
 FROM centos:centos${os_release}
 COPY --from=builder /usr/local/lib64/. /usr/local/lib64/.

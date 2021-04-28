@@ -20,8 +20,8 @@ RUN echo "assumeyes=1" >> /etc/yum.conf
 RUN yum -y install \
     epel-release \
     dnf-plugins-core \
-    && yum config-manager --set-enabled powertools
- RUN yum -y install \
+    && yum config-manager --set-enabled powertools \
+    && yum -y install \
     boost-devel \
     ca-certificates \
     cmake \
@@ -67,8 +67,8 @@ FROM centos:centos${os_release} as prod
 RUN yum -y install \
     epel-release \
     dnf-plugins-core \
-    && yum config-manager --set-enabled powertools
-RUN yum -y install \
+    && yum config-manager --set-enabled powertools \
+    && yum -y install \
     boost-atomic \
     boost-context \
     boost-chrono \

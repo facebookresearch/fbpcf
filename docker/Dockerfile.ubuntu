@@ -16,8 +16,7 @@ FROM ubuntu:${os_release} as dev
 
 # Required Packages for pcf
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
     cmake \
@@ -66,8 +65,7 @@ CMD ["/bin/sh"]
 # Create a minified prod build with only required libraries (no source)
 FROM ubuntu:${os_release} as prod
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get -y update && apt-get install -y --no-install-recommends \
     libboost-regex1.71.0 \
     libcurl4 \
     libdouble-conversion3 \

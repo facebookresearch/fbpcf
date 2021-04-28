@@ -7,8 +7,7 @@ ARG os_release="latest"
 FROM ubuntu:${os_release} AS dev-environment
 # Base development environment
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get -y update
-RUN apt-get install --no-install-recommends -y \
+RUN apt-get -y update && apt-get install --no-install-recommends -y \
     build-essential \
     ca-certificates \
     cmake \
@@ -31,24 +30,21 @@ RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-tool.git
 WORKDIR /root/build/emp-tool
 RUN sed -i "s/SHARED/STATIC/" CMakeLists.txt
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
-RUN make
-RUN make install
+RUN make && make install
 
 # emp-ot build and install
 WORKDIR /root/build
 RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-ot.git
 WORKDIR /root/build/emp-ot
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
-RUN make
-RUN make install
+RUN make && make install
 
 # emp-sh2pc build and install
 WORKDIR /root/build
 RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-sh2pc.git
 WORKDIR /root/build/emp-sh2pc
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
-RUN make
-RUN make install
+RUN make && make install
 
 FROM ubuntu:${os_release}
 RUN mkdir /usr/local/cmake
