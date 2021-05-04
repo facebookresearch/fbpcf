@@ -3,10 +3,11 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include "S3Util.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
@@ -18,28 +19,65 @@
 #include <aws/core/http/Scheme.h>
 #include <aws/s3/S3Client.h>
 
+#include <boost/algorithm/string.hpp>
 #include <folly/Format.h>
 #include <folly/String.h>
 #include <folly/Uri.h>
+#include <re2/re2.h>
 
 #include "../exception/AwsException.h"
+#include "folly/Range.h"
 
 namespace pcf::aws {
-// format: https://bucket-name.s3.Region.amazonaws.com/key-name
+// Format:
+// 1. https://bucket-name.s3.Region.amazonaws.com/key-name
+// 2. https://bucket-name.s3-Region.amazonaws.com/key-name
+// 3. s3://bucket-name/key-name
 S3ObjectReference uriToObjectReference(std::string url) {
+  std::string bucket;
+  std::string region;
   auto uri = folly::Uri(url);
+  auto scheme = uri.scheme();
   auto host = uri.host();
   auto path = uri.path();
 
-  std::vector<std::string> vs;
-  folly::split('.', host, vs);
+  if (boost::iequals(scheme, "s3")) {
+    if (!std::getenv("AWS_DEFAULT_REGION")) {
+      throw AwsException{"AWS_DEFAULT_REGION not specified"};
+    }
+    region = std::getenv("AWS_DEFAULT_REGION");
+    bucket = host;
+  } else {
+    // A stricter version of:
+    // https://github.com/aws/aws-sdk-java/blob/c2c377058380cca07c0be9c8c6e0d7bf0b3777b8/aws-java-sdk-s3/src/main/java/com/amazonaws/services/s3/AmazonS3URI.java#L29
+    //
+    // Matches "bucket.s3.region.amazonaws.com" or
+    // "bucket.s3-region.amazonaws.com"
+    static const re2::RE2 endpoint_pattern(
+        "^(?i)(.+)\\.s3[.-]([a-z0-9-]+)\\.amazonaws.com");
 
-  if (vs.size() != 5 || path.length() <= 1) {
-    throw AwsException{folly::sformat("Incorrect S3 URI format: {}", url)};
+    // Sub-match 1: (bucket).s3.region.amazonaws.com
+    // Sub-match 2: bucket.s3.(region).amazonaws.com
+    if (!re2::RE2::FullMatch(host, endpoint_pattern, &bucket, &region)) {
+      throw AwsException{folly::sformat(
+          "Incorrect S3 URI format: {}"
+          "Supported formats:"
+          "1. https://bucket.s3.region.amazonaws.com/key"
+          "2. https://bucket.s3-region.amazonaws.com/key"
+          "3. s3://bucket/key",
+          url)};
+    }
+  }
+
+  if (path.length() <= 1) {
+    throw AwsException{folly::sformat(
+        "Incorrect S3 URI format: {}"
+        "key not specified",
+        url)};
   }
 
   // path.substr(1) to remove the first character '/'
-  return S3ObjectReference{vs[2], vs[0], path.substr(1)};
+  return S3ObjectReference{region, bucket, path.substr(1)};
 }
 
 std::unique_ptr<Aws::S3::S3Client> createS3Client(
