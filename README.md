@@ -248,7 +248,7 @@ The garbled circuit protocol happens between a Garbler and an Evaluator, and the
 
 We looked into multiple services that enable secure computation to decide on the best framework that meets the requirements of Private RCT. After comparing more than twenty secure computation services — across secret sharing, garbled circuits, and homomorphic encryption-based protocols, we chose EMP-toolkit as the best fit for our application.
 
-## Design Principal
+## Design Principles
 1. Simplicity. We hide details of C++ and MPC as much as possible. We hope every engineer is able to write an MPC game with minimal ramp-up effort.
 2. Efficiency. We provide many common utilities for engineers to write a game with ease. We embrace functional programming to speed up development.
 3. Test and quality. We believe testing is important given the complexity of MPC. We provide a test framework for engineers to write unit tests to validate their games. We developed a special QueueIO for two parties to communicate via an in-memory queue. This allows MPC games to be implemented as pure functions, which also makes testing easier than before.
