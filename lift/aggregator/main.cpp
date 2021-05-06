@@ -17,7 +17,7 @@
 #include "AggregatorApp.h"
 
 DEFINE_int32(role, 1, "1 = publisher, 2 = partner");
-DEFINE_int32(visibility, 2, "0 = public, 1 = publisher, 2 = partner");
+DEFINE_int32(visibility, 0, "0 = public, 1 = publisher, 2 = partner");
 DEFINE_string(server_ip, "", "Server's IP address");
 DEFINE_int32(port, 15200, "Server's port");
 DEFINE_string(input_path, "", "Input path where input files are located");
