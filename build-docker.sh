@@ -16,10 +16,11 @@ FOLLY_RELEASE="2021.03.29.00"
 PROG_NAME=$0
 usage() {
   cat << EOF >&2
-Usage: $PROG_NAME [-u | -c]
+Usage: $PROG_NAME [-u | -c] [-f]
 
 -c: builds the docker images aginsts centos
 -u: builds the docker images against ubuntu (default)
+-f: forces a rebuild of all docker image dependencies (even if they already exist)
 EOF
   exit 1
 }
@@ -27,7 +28,8 @@ EOF
 IMAGE_PREFIX="ubuntu"
 OS_RELEASE=${UBUNTU_RELEASE}
 DOCKER_EXTENSION=".ubuntu"
-while getopts u,c o; do
+FORCE_REBUILD=false
+while getopts u,c,f o; do
   case $o in
     (u) IMAGE_PREFIX="ubuntu"
         OS_RELEASE=${UBUNTU_RELEASE}
@@ -35,6 +37,7 @@ while getopts u,c o; do
     (c) IMAGE_PREFIX="centos"
         OS_RELEASE=${CENTOS_RELEASE}
         DOCKER_EXTENSION=".centos";;
+    (f) FORCE_REBUILD=true;;
     (*) usage
   esac
 done
@@ -44,35 +47,45 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 # Docker build must run from this script build dir, so all the relative paths work inside the Dockerfile's
 cd "$SCRIPT_DIR" || exit
 
-printf "\nBuilding %s-emp %s docker image...\n" ${IMAGE_PREFIX} ${EMP_RELEASE}
-docker build \
-    --build-arg os_release=${OS_RELEASE} \
-    --build-arg emp_release=${EMP_RELEASE} \
-    -t fbpcf/${IMAGE_PREFIX}-emp:${EMP_RELEASE} -f docker/emp/Dockerfile${DOCKER_EXTENSION} .
+EMP_IMAGE="fbpcf/${IMAGE_PREFIX}-emp:${EMP_RELEASE}"
+if [ $FORCE_REBUILD == false ] && docker image inspect ${EMP_IMAGE} > /dev/null 2>&1; then
+  printf "%s docker image already exists. To force a rebuild please use '-f' flag...\n" ${EMP_IMAGE}
+else
+  printf "\nBuilding %s docker image...\n" ${EMP_IMAGE}
+  docker build \
+      --build-arg os_release=${OS_RELEASE} \
+      --build-arg emp_release=${EMP_RELEASE} \
+      -t ${EMP_IMAGE} -f docker/emp/Dockerfile${DOCKER_EXTENSION} .
+fi
 
-printf "\nBuilding %s-aws(s3/core) %s docker image...\n" ${IMAGE_PREFIX} ${AWS_RELEASE}
-docker build  \
-    --build-arg os_release=${OS_RELEASE} \
-    --build-arg aws_release=${AWS_RELEASE} \
-    -t fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_RELEASE} -f docker/aws-s3-core/Dockerfile${DOCKER_EXTENSION} .
+AWS_IMAGE="fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_RELEASE}"
+if [ $FORCE_REBUILD == false ] && docker image inspect ${AWS_IMAGE} > /dev/null 2>&1; then
+  printf "%s docker image already exists. To force a rebuild please use '-f' flag...\n" ${AWS_IMAGE}
+else
+  printf "\nBuilding %s docker image...\n" ${AWS_IMAGE}
+  docker build  \
+      --build-arg os_release=${OS_RELEASE} \
+      --build-arg aws_release=${AWS_RELEASE} \
+      -t ${AWS_IMAGE} -f docker/aws-s3-core/Dockerfile${DOCKER_EXTENSION} .
+fi
 
-printf "\nBuilding %s-folly %s docker image...\n" ${IMAGE_PREFIX} ${FOLLY_RELEASE}
-docker build  \
-    --build-arg os_release=${OS_RELEASE} \
-    --build-arg folly_release=${FOLLY_RELEASE} \
-    --build-arg fmt_release=${FMT_RELEASE} \
-    -t fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE} -f docker/folly/Dockerfile${DOCKER_EXTENSION} .
+FOLLY_IMAGE="fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE}"
+if [ $FORCE_REBUILD == false ] && docker image inspect ${FOLLY_IMAGE} > /dev/null 2>&1; then
+  printf "%s docker image already exists. To force a rebuild please use '-f' flag...\n" ${FOLLY_IMAGE}
+else
+  printf "\nBuilding %s docker image...\n" ${FOLLY_IMAGE}
+  docker build  \
+      --build-arg os_release=${OS_RELEASE} \
+      --build-arg folly_release=${FOLLY_RELEASE} \
+      --build-arg fmt_release=${FMT_RELEASE} \
+      -t fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE} -f docker/folly/Dockerfile${DOCKER_EXTENSION} .
+fi
 
-printf "\nBuilding %s-fbpcf docker image...\n" ${IMAGE_PREFIX}
+printf "\nBuilding fbpcf/%s docker image...\n" ${IMAGE_PREFIX}
 docker build  \
     --build-arg os_release=${OS_RELEASE} \
     --build-arg emp_release=${EMP_RELEASE} \
     --build-arg aws_release=${AWS_RELEASE} \
     --build-arg folly_release=${FOLLY_RELEASE} \
     --compress \
-    -t fbpcf:latest -f docker/Dockerfile${DOCKER_EXTENSION} .
-# FYI: To create a "dev" build (with all source), comment out the docker build above
-#     and uncommment the lines below
-# docker build  \
-#     --build-arg ubuntu_release=${UBUNTU_RELEASE} \
-#     -t fbpcf:latest --target=dev -f docker/. .
+    -t fbpcf/${IMAGE_PREFIX}:latest -f docker/Dockerfile${DOCKER_EXTENSION} .

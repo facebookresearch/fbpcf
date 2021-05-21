@@ -207,7 +207,7 @@ make
 ```
 
 ## How to build a docker image that containes game executables using the given docker related files
-To build the necessary docker dependencies and `fbpcf:latest` docker image run the following script
+To build the necessary docker dependencies and `fbpcf/<distro>:latest` docker image run the following script
 - `./build-docker.sh`
   - build-docker has the ability to build for both Ubuntu (default if no option is specified) x-or CentOS
   - Optionally specify
@@ -217,9 +217,8 @@ To build the necessary docker dependencies and `fbpcf:latest` docker image run t
 ### Notes on `build-docker.sh`
 - In order to reduce space and time of subsequent docker builds, `fbpcf` will build three dependent docker images: aws-s3-core, emp, and folly.
 These are essentially treated as compiled static libraries and greatly reduces rebuilds when developing fbpcf as these libaries rarely change.
-- The default build of `fbpcf:latest` image creates a minified version of the container with only executables and required libraries, no source.
-  - If you would like to do development inside the docker container for `fbpcf`, simply target `dev` when building the image (`--target=dev`). Instructions
-  can be found at the bottom of build-docker.sh
+- The default build of `fbpcf/<distro>:latest` image creates a container with all the required toolchains, source and libraries to compile the fbpcf static library.  Use this image as a base image for fbpcf development.
+- This image also contains a example binary `millioniare`
 - The current dependency versions in this file are known good builds, however you may wish up update packages in the future (for development or testing)
   - UBUNTU_RELEASE="20.04"
     - Changing the Ubuntu Release will most likely require update to the apt-get packages
@@ -231,15 +230,6 @@ These are essentially treated as compiled static libraries and greatly reduces r
     - This is the git release tag for https://github.com/fmtlib/fmt
   - FOLLY_RELEASE="2021.03.29.00"
     - This is the git release tag for https://github.com/facebook/folly.git
-
-### Running Games (calculator / aggregator)
-Now you have built the docker image `fbpcf:latest`, you may test run the calculator/aggregator game as publisher or partner.  To help faciltate this, two
-sample scripts have been provided to show the syntax and interaction.
-- Run run a sample calculator game
-  - `./run-calculator-sample.sh`
-- Run run a sample aggregator game
-  - `./run-aggregator-sample.sh`
-Note: Both these sample games will output to a directory called `sample` in the root of this project.
 
 ## How PCF works
 Private Computation Framework enables cryptographic methods that help two parties, Alice and Bob, compute a function on each of their secret inputs and receive outputs without revealing information about the inputs to each other. Specifically, it lets the programmers implement a garbled circuit-based 2pc program.
