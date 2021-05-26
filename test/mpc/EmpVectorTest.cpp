@@ -3,19 +3,19 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <memory>
 
 #include <gtest/gtest.h>
 
-#include "../../common/FunctionalUtil.h"
-#include "../../exception/PcfException.h"
-#include "../../system/CpuUtil.h"
-#include "../EmpGame.h"
-#include "../EmpTestUtil.h"
-#include "../EmpVector.h"
-#include "../QueueIO.h"
+#include "../../pcf/common/FunctionalUtil.h"
+#include "../../pcf/exception/PcfException.h"
+#include "../../pcf/mpc/EmpGame.h"
+#include "../../pcf/mpc/EmpTestUtil.h"
+#include "../../pcf/mpc/EmpVector.h"
+#include "../../pcf/mpc/QueueIO.h"
+#include "../../pcf/system/CpuUtil.h"
 
 namespace pcf {
 class EmpVectorTest

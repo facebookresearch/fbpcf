@@ -7,8 +7,8 @@
 
 #include <gtest/gtest.h>
 
-#include "FileManagerUtil.h"
-#include "S3FileManager.h"
+#include "../../pcf/io/FileManagerUtil.h"
+#include "../../pcf/io/S3FileManager.h"
 
 namespace pcf::io {
 TEST(FileManagerUtilTest, TestGetS3FileType) {
