@@ -1,0 +1,36 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build fbpcf docker image
+      run: |
+        ./build-docker.sh -u
+
+    - name: Sanity check fbpcf library
+      run: |
+        ./run-millionaire-sample.sh -u
+
+  centos:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build fbpcf docker image
+      run: |
+        ./build-docker.sh -c
+
+    - name: Sanity check fbpcf library
+      run: |
+        ./run-millionaire-sample.sh -c
