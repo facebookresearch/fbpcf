@@ -1,4 +1,4 @@
-name: Build and Test 
+name: Build and Test
 
 on:
   push:
@@ -12,11 +12,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Build fbpcf docker image
       run: |
         ./build-docker.sh -u
-        
+
     - name: Sanity check fbpcf library
       run: |
         ./run-millionaire-sample.sh -u
@@ -26,7 +26,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    
+
     - name: Build fbpcf docker image
       run: |
         ./build-docker.sh -c
