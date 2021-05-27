@@ -12,7 +12,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../QueueIO.h"
+#include "../../pcf/mpc/QueueIO.h"
 
 namespace pcf {
 TEST(QueueIOTest, ReadAndWrite) {
