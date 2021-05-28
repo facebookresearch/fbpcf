@@ -18,6 +18,7 @@ jobs:
         ./build-docker.sh -u
 
     - name: Sanity check fbpcf library
+      timeout-minutes: 3
       run: |
         ./run-millionaire-sample.sh -u
 
@@ -32,5 +33,6 @@ jobs:
         ./build-docker.sh -c
 
     - name: Sanity check fbpcf library
+      timeout-minutes: 3
       run: |
         ./run-millionaire-sample.sh -c

@@ -30,9 +30,9 @@ shift "$((OPTIND - 1))"
 
 FBPCF_IMAGE=fbpcf/${IMAGE_PREFIX}:latest
 if docker image inspect ${FBPCF_IMAGE} > /dev/null 2>&1; then
-  printf "Found %s docker image..." ${FBPCF_IMAGE}
+  printf "Found %s docker image... \n" ${FBPCF_IMAGE}
 else
-  printf "\nERROR: Unable to find docker image %s. Please run build-docker.sh " ${FBPCF_IMAGE}
+  printf "ERROR: Unable to find docker image %s. Please run build-docker.sh \n" ${FBPCF_IMAGE}
   exit 1
 fi
 
@@ -48,7 +48,7 @@ if docker run --rm \
         millionaire \
         --role=2 \
         --port=5000 \
-        --server_ip=127.0.0.1 | grep -q "connected"; then
+        --server_ip=127.0.0.1; then
   printf "Millionaire ran successfully! "
 else
   printf "Something went wrong. You may want to check the logs above."
