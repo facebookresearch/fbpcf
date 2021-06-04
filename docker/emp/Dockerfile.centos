@@ -8,13 +8,18 @@ FROM centos:centos${os_release} AS dev-environment
 # Base development environment
 RUN yum -y install \
     ca-certificates \
-    cmake \
+    # cmake - Temporary Bug in 3.18.2-9.el8 (current centos cmake) - See Below
     gcc \
     gcc-c++ \
     git \
     gmp-devel \
     make \
     && yum clean all
+
+# Temporary workaround until Centos 8 upgrades to cmake 3.20.3
+COPY docker/centos-cmake-fix.sh .
+RUN ./centos-cmake-fix.sh
+
 RUN mkdir /root/build
 WORKDIR /root/build
 
