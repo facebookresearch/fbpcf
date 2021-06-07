@@ -1,0 +1,59 @@
+name: Publish Docker image
+
+on:
+  push:
+    branches: [ master ]
+  release:
+    types: [ published ]
+
+env:
+  DISTRO: ubuntu
+  REGISTRY: ghcr.io
+  LOCAL_IMAGE_NAME: ${{ github.event.repository.name }}/ubuntu
+  REGISTRY_IMAGE_NAME: ghcr.io/${{ github.repository }}/ubuntu
+
+jobs:
+  # Push image to GitHub Packages.
+  push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build fbpcf docker image
+        run: |
+          ./build-docker.sh -u
+
+      - name: Sanity check fbpcf library
+        timeout-minutes: 3
+        run: |
+          ./run-millionaire-sample.sh -u
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=ref::${GITHUB_REF##*/}
+
+      - name: Tag Docker image
+        run: |
+          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
+
+      - name: Tag as latest
+        # Tag as latest only for master branch
+        if: github.event_name == 'push'
+        run: |
+          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
+
+      - name: Push Docker image
+        run: |
+          docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
