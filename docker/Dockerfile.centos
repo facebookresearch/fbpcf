@@ -17,6 +17,11 @@ FROM centos:centos${os_release} as dev
 # Required Packages for pcf
 # install EPEL and PowerTools for CentOS (required for g* libs and doubleconv)
 RUN echo "assumeyes=1" >> /etc/yum.conf
+
+# Temporary workaround until Centos 8 upgrades to cmake 3.20.3
+COPY docker/centos-cmake-fix.sh .
+RUN ./centos-cmake-fix.sh
+
 RUN yum -y install \
     epel-release \
     dnf-plugins-core \
@@ -24,7 +29,7 @@ RUN yum -y install \
     && yum -y install \
     boost-devel \
     ca-certificates \
-    cmake \
+    # cmake - Temporary Bug in 3.18.2-9.el8 (current centos cmake) - See Above
     double-conversion-devel \
     gcc \
     gcc-c++ \
@@ -40,6 +45,9 @@ RUN yum -y install \
     re2-devel \
     zlib-devel \
     && yum clean all
+
+
+
 RUN mkdir -p /root/build/fbpcf
 WORKDIR /root/build/fbpcf
 
