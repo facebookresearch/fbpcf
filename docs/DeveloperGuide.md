@@ -35,7 +35,6 @@ As EmpApp is responsible for IO, we recommend writing integration tests instead 
 ## How to run E2E test on AWS?
 MPC service is able to schedule your MPC application on AWS. Before onboarding your app to MPC service, we recommend you run an E2E test to ensure your app is able to run on AWS without issues. We leverage our newly built One Docker test framework to perform E2E tests. There are two steps;
 1. Upload your binary to One Docker repository.
-```one_docker upload --package_name --package_dir```
+```onedocker-cli upload --package_name --package_dir```
 2. Launch one game for each party (two games in total). Wait for them to complete and check results.
-```one-docker test --package_name --cmd_args```
-
+```onedocker-cli test --package_name --cmd_args```
