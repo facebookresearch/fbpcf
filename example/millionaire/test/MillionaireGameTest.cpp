@@ -20,7 +20,7 @@ TEST(MillionaireGame, AliceIsRicher) {
     GTEST_SKIP();
   }
 
-  auto res = mpc::test<MillionaireGame<QueueIO>, int, bool>(2, 1);
+  auto res = mpc::testGame<MillionaireGame<QueueIO>, int, bool>(2, 1);
   EXPECT_EQ(true, res.first);
   EXPECT_EQ(true, res.second);
 }
@@ -30,7 +30,7 @@ TEST(MillionaireGame, BobIsRicher) {
     GTEST_SKIP();
   }
 
-  auto res = mpc::test<MillionaireGame<QueueIO>, int, bool>(1, 2);
+  auto res = mpc::testGame<MillionaireGame<QueueIO>, int, bool>(1, 2);
   EXPECT_EQ(false, res.first);
   EXPECT_EQ(false, res.second);
 }

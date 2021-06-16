@@ -53,7 +53,7 @@ TEST(EmpVectorTest, TestMap) {
   std::vector<int64_t> expectedRes{0, 0, 0};
 
   auto res =
-      pcf::mpc::test<EmpVectorTest, std::vector<int64_t>, std::vector<int64_t>>(
+      pcf::mpc::testGame<EmpVectorTest, std::vector<int64_t>, std::vector<int64_t>>(
           std::vector<int64_t>{1, 2, 3}, std::vector<int64_t>{1, 2, 3});
 
   EXPECT_EQ(expectedRes, res.first);

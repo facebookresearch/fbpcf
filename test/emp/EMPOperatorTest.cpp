@@ -67,7 +67,7 @@ TEST_F(EMPOperatorTestFixture, IntAdditionTwoPositives) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intAdd, 20};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intAdd, 2000};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -82,7 +82,7 @@ TEST_F(EMPOperatorTestFixture, IntAdditionHybrid) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intAdd, 20};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intAdd, -2000};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -100,7 +100,7 @@ TEST_F(EMPOperatorTestFixture, IntAdditionRandomNumbers) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intAdd, a};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intAdd, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -118,7 +118,7 @@ TEST_F(EMPOperatorTestFixture, IntXorRandomNumbers) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intXor, a};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intXor, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -136,7 +136,7 @@ TEST_F(EMPOperatorTestFixture, IntMultiplicationRandomNumbers) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intMultiply, a};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intMultiply, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -154,7 +154,7 @@ TEST_F(EMPOperatorTestFixture, IntCompareRandomNumbers) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intCompare, a};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intCompare, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -172,7 +172,7 @@ TEST_F(EMPOperatorTestFixture, IntIsEqualRandomNumbers) {
   EMPOperatorTestConfig<int64_t, emp::Integer> aliceConfig{intIsEqual, a};
   EMPOperatorTestConfig<int64_t, emp::Integer> bobConfig{intIsEqual, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<
           int64_t,
           emp::Integer,
@@ -190,7 +190,7 @@ TEST_F(EMPOperatorTestFixture, BitAnd) {
   EMPOperatorTestConfig<bool, emp::Bit> aliceConfig{bitAnd, a};
   EMPOperatorTestConfig<bool, emp::Bit> bobConfig{bitAnd, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<bool, emp::Bit, EMPOperatorTestConfig<bool, emp::Bit>>,
       EMPOperatorTestConfig<bool, emp::Bit>,
       bool>(aliceConfig, bobConfig);
@@ -205,7 +205,7 @@ TEST_F(EMPOperatorTestFixture, BitXor) {
   EMPOperatorTestConfig<bool, emp::Bit> aliceConfig{bitXor, a};
   EMPOperatorTestConfig<bool, emp::Bit> bobConfig{bitXor, b};
 
-  auto [res1, res2] = pcf::mpc::test<
+  auto [res1, res2] = pcf::mpc::testGame<
       EMPOperator<bool, emp::Bit, EMPOperatorTestConfig<bool, emp::Bit>>,
       EMPOperatorTestConfig<bool, emp::Bit>,
       bool>(aliceConfig, bobConfig);
