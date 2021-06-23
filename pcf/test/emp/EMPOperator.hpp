@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "../../pcf/mpc/EmpGame.h"
-#include "../../pcf/mpc/QueueIO.h"
+#include "../../mpc/EmpGame.h"
+#include "../../mpc/QueueIO.h"
 
 namespace pcf {
 

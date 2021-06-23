@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../../pcf/common/VectorUtil.h"
+#include "../VectorUtil.h"
 
 namespace pcf::vector {
 TEST(FunctionalUtilTest, TestVectorAdd) {

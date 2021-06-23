@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../../pcf/perf/PerfUtil.h"
+#include "../PerfUtil.h"
 
 namespace pcf::perf {
 class TestClass {

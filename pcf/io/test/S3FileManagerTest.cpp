@@ -11,11 +11,11 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "../../pcf/aws/AwsSdk.h"
-#include "../../pcf/aws/MockS3Client.h"
-#include "../../pcf/exception/AwsException.h"
-#include "../../pcf/io/MockFileManager.h"
-#include "../../pcf/io/S3FileManager.h"
+#include "../../aws/AwsSdk.h"
+#include "../../aws/MockS3Client.h"
+#include "../../exception/AwsException.h"
+#include "../MockFileManager.h"
+#include "../S3FileManager.h"
 
 using ::testing::_;
 

@@ -13,13 +13,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(cmake/fbpcf.cmake)
 install(DIRECTORY cmake/ DESTINATION cmake/)
 
-# build pcf static library
+# Build pcf static library
 file(GLOB_RECURSE pcf_src
   pcf/**.c
   pcf/**.cpp
   pcf/**.h
   pcf/**.hpp)
-list(FILTER pcf_src EXCLUDE REGEX ".*Test.*")
+list(FILTER pcf_src EXCLUDE REGEX ".*\/test\/.*") # Exclude test files
+
 add_library(${NAME} STATIC
   ${pcf_src})
 target_link_libraries(

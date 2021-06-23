@@ -5,14 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "../../pcf/aws/S3Util.h"
+#include "../S3Util.h"
 
 #include <stdexcept>
 #include <string>
 
 #include <gtest/gtest.h>
 
-#include "../../pcf/exception/AwsException.h"
+#include "../../exception/AwsException.h"
 
 namespace pcf {
 TEST(S3Util, uriToObjectReference) {

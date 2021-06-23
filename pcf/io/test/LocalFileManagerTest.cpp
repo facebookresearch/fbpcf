@@ -14,8 +14,8 @@
 #include "folly/Format.h"
 #include "folly/Random.h"
 
-#include "../../pcf/exception/PcfException.h"
-#include "../../pcf/io/LocalFileManager.h"
+#include "../../exception/PcfException.h"
+#include "../LocalFileManager.h"
 
 namespace pcf {
 class LocalFileManagerTest : public ::testing::Test {
