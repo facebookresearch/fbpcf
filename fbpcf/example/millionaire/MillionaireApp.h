@@ -9,7 +9,7 @@
 
 #include <emp-sh2pc/emp-sh2pc.h>
 
-#include "../../fbpcf/mpc/EmpApp.h"
+#include "../../mpc/EmpApp.h"
 #include "./MillionaireGame.h"
 
 namespace fbpcf {
