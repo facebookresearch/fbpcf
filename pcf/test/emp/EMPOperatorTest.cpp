@@ -14,8 +14,8 @@
 
 #include "folly/logging/xlog.h"
 
-#include "../../pcf/mpc/EmpTestUtil.h"
-#include "../../pcf/system/CpuUtil.h"
+#include "../../mpc/EmpTestUtil.h"
+#include "../../system/CpuUtil.h"
 #include "EMPOperator.hpp"
 #include "EMPOperatorTestConfig.hpp"
 

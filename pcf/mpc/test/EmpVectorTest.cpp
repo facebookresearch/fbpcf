@@ -9,13 +9,13 @@
 
 #include <gtest/gtest.h>
 
-#include "../../pcf/common/FunctionalUtil.h"
-#include "../../pcf/exception/PcfException.h"
-#include "../../pcf/mpc/EmpGame.h"
-#include "../../pcf/mpc/EmpTestUtil.h"
-#include "../../pcf/mpc/EmpVector.h"
-#include "../../pcf/mpc/QueueIO.h"
-#include "../../pcf/system/CpuUtil.h"
+#include "../../common/FunctionalUtil.h"
+#include "../../exception/PcfException.h"
+#include "../EmpGame.h"
+#include "../EmpTestUtil.h"
+#include "../EmpVector.h"
+#include "../QueueIO.h"
+#include "../../system/CpuUtil.h"
 
 namespace pcf {
 class EmpVectorTest

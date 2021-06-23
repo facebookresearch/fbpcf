@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-#include "../../pcf/aws/AwsSdk.h"
+#include "../AwsSdk.h"
 
 #include <aws/s3/S3Client.h>
 #include <gtest/gtest.h>
