@@ -14,7 +14,7 @@ FROM fbpcf/centos-folly:${folly_release} as folly
 
 FROM centos:centos${os_release} as dev
 
-# Required Packages for pcf
+# Required Packages for fbpcf
 # install EPEL and PowerTools for CentOS (required for g* libs and doubleconv)
 RUN echo "assumeyes=1" >> /etc/yum.conf
 
@@ -59,7 +59,7 @@ COPY --from=folly /usr/local/. /usr/local/.
 # fbpcf build and install
 COPY docker/CMakeLists.txt .
 COPY docker/cmake/ ./cmake
-COPY pcf/ ./pcf
+COPY fbpcf/ ./fbpcf
 COPY example/ ./example
 
 RUN cmake . -DTHREADING=ON -DEMP_USE_RANDOM_DEVICE=ON

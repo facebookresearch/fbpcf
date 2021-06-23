@@ -3,17 +3,17 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
-#include "folly/Random.h"
+#pragma once
 
-#include "./MillionaireApp.h"
+#include <functional>
 
 namespace fbpcf {
 
-int MillionaireApp::getInputData() {
-  return folly::Random::rand32(0, 1000000000);
-}
-
-void MillionaireApp::putOutputData(const bool&) {}
+template <typename DataType, typename EmpDataType>
+struct EMPOperatorTestConfig {
+  std::function<EmpDataType(EmpDataType, EmpDataType)> op;
+  DataType inputData;
+};
 } // namespace fbpcf

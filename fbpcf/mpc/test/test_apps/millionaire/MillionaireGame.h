@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "folly/logging/xlog.h"
-#include "../../fbpcf/mpc/EmpGame.h"
+#include "../../../EmpGame.h"
 
 namespace fbpcf {
 // define the classic millionaire game

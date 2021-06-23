@@ -5,15 +5,15 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-#include "folly/Random.h"
+#pragma once
 
-#include "./MillionaireApp.h"
+#include <istream>
 
 namespace fbpcf {
+class IInputStream {
+ public:
+  virtual ~IInputStream() {}
 
-int MillionaireApp::getInputData() {
-  return folly::Random::rand32(0, 1000000000);
-}
-
-void MillionaireApp::putOutputData(const bool&) {}
+  virtual std::istream& get() = 0;
+};
 } // namespace fbpcf

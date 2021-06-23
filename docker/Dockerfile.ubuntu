@@ -14,7 +14,7 @@ FROM fbpcf/ubuntu-folly:${folly_release} as folly
 
 FROM ubuntu:${os_release} as dev
 
-# Required Packages for pcf
+# Required Packages for fbpcf
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -47,7 +47,7 @@ COPY --from=folly /usr/local/. /usr/local/.
 # fbpcf build and install
 COPY docker/CMakeLists.txt .
 COPY docker/cmake/ ./cmake
-COPY pcf/ ./pcf
+COPY fbpcf/ ./fbpcf
 COPY example/ ./example
 
 RUN cmake . -DTHREADING=ON -DEMP_USE_RANDOM_DEVICE=ON

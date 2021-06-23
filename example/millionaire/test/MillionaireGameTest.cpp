@@ -10,11 +10,11 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <gtest/gtest.h>
 
-#include "../../../pcf/system/CpuUtil.h"
-#include "../../../pcf/mpc/EmpTestUtil.h"
+#include "../../../fbpcf/system/CpuUtil.h"
+#include "../../../fbpcf/mpc/EmpTestUtil.h"
 #include "../MillionaireGame.h"
 
-namespace pcf {
+namespace fbpcf {
 TEST(MillionaireGame, AliceIsRicher) {
   if (!mpc::isTestable()) {
     GTEST_SKIP();
@@ -34,4 +34,4 @@ TEST(MillionaireGame, BobIsRicher) {
   EXPECT_EQ(false, res.first);
   EXPECT_EQ(false, res.second);
 }
-} // namespace pcf
+} // namespace fbpcf

@@ -252,7 +252,7 @@ PCF" width="30%" height="30%">
 ### main
 main is the main function in C++. It is responsible for dealing with command line arguments.
 
-Note: AWS Sdk requires applications that use it to initialize it first ([Learn more](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/basic-use.html)). PCF provides a singleton that makes sure this is only performed once. It can be invoked by calling `pcf::AwsSdk::aquire()` in the main() function.
+Note: AWS Sdk requires applications that use it to initialize it first ([Learn more](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/basic-use.html)). PCF provides a singleton that makes sure this is only performed once. It can be invoked by calling `fbpcf::AwsSdk::aquire()` in the main() function.
 
 ### EMPApp
 We defined a unified interface. As you can read the code below, it’s responsible for dealing with input data and output data. It’s also responsible for launching a game.

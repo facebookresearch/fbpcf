@@ -5,15 +5,10 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-#include "folly/Random.h"
-
-#include "./MillionaireApp.h"
+#include "ExceptionBase.h"
 
 namespace fbpcf {
-
-int MillionaireApp::getInputData() {
-  return folly::Random::rand32(0, 1000000000);
+const char* ExceptionBase::what() const noexcept {
+  return error_.c_str();
 }
-
-void MillionaireApp::putOutputData(const bool&) {}
 } // namespace fbpcf
