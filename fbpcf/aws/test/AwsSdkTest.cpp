@@ -5,15 +5,14 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-#include "folly/Random.h"
+#include "../AwsSdk.h"
 
-#include "./MillionaireApp.h"
+#include <aws/s3/S3Client.h>
+#include <gtest/gtest.h>
 
 namespace fbpcf {
-
-int MillionaireApp::getInputData() {
-  return folly::Random::rand32(0, 1000000000);
+TEST(AwsSdk, aquire) {
+  AwsSdk::aquire();
+  Aws::S3::S3Client s3Client; // Expectation: no crash
 }
-
-void MillionaireApp::putOutputData(const bool&) {}
 } // namespace fbpcf

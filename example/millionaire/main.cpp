@@ -12,7 +12,7 @@
 #include "folly/init/Init.h"
 #include "folly/logging/xlog.h"
 
-#include "../../pcf/exception/ExceptionBase.h"
+#include "../../fbpcf/exception/ExceptionBase.h"
 #include "./MillionaireApp.h"
 
 DEFINE_int32(role, 1, "1 = Alice, 2 = Bob");
@@ -29,15 +29,15 @@ int main(int argc, char* argv[]) {
 
   XLOG(INFO) << "Start Millionaire Game...";
 
-  auto role = static_cast<pcf::Party>(FLAGS_role);
+  auto role = static_cast<fbpcf::Party>(FLAGS_role);
 
   try {
-    pcf::MillionaireApp(
+    fbpcf::MillionaireApp(
         role,
         FLAGS_server_ip,
         FLAGS_port)
         .run();
-  } catch (const pcf::ExceptionBase& e) {
+  } catch (const fbpcf::ExceptionBase& e) {
     XLOGF(ERR, "Some error occured: {}", e.what());
     return 1;
   } catch (const std::exception& e) {

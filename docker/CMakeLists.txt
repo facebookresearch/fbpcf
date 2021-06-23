@@ -13,16 +13,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(cmake/fbpcf.cmake)
 install(DIRECTORY cmake/ DESTINATION cmake/)
 
-# Build pcf static library
-file(GLOB_RECURSE pcf_src
-  pcf/**.c
-  pcf/**.cpp
-  pcf/**.h
-  pcf/**.hpp)
-list(FILTER pcf_src EXCLUDE REGEX ".*\/test\/.*") # Exclude test files
+# Build fbpcf static library
+file(GLOB_RECURSE fbpcf_src
+  fbpcf/**.c
+  fbpcf/**.cpp
+  fbpcf/**.h
+  fbpcf/**.hpp)
+list(FILTER fbpcf_src EXCLUDE REGEX ".*\/test\/.*") # Exclude test files
 
 add_library(${NAME} STATIC
-  ${pcf_src})
+  ${fbpcf_src})
 target_link_libraries(
   fbpcf
   INTERFACE
@@ -31,7 +31,7 @@ target_link_libraries(
   Folly::folly
   re2)
 
-install(DIRECTORY pcf/ DESTINATION include/fbpcf/)
+install(DIRECTORY fbpcf/ DESTINATION include/fbpcf/)
 install(TARGETS ${NAME} DESTINATION lib)
 
 add_executable(

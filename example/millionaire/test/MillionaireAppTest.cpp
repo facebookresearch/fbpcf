@@ -13,7 +13,7 @@
 
 #include "../MillionaireApp.h"
 
-namespace pcf {
+namespace fbpcf {
 
 class MillionaireAppTest : public ::testing::Test {
  protected:
@@ -38,4 +38,4 @@ TEST_F(MillionaireAppTest, TestNoException) {
   futureAlice.wait();
   futureBob.wait();
 }
-} // namespace pcf
+} // namespace fbpcf
