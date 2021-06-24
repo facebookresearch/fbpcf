@@ -12,7 +12,7 @@
 #include "folly/init/Init.h"
 #include "folly/logging/xlog.h"
 
-#include "../../fbpcf/exception/ExceptionBase.h"
+#include "../../exception/ExceptionBase.h"
 #include "./MillionaireApp.h"
 
 DEFINE_int32(role, 1, "1 = Alice, 2 = Bob");

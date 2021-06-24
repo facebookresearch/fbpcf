@@ -10,8 +10,8 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <gtest/gtest.h>
 
-#include "../../../fbpcf/system/CpuUtil.h"
-#include "../../../fbpcf/mpc/EmpTestUtil.h"
+#include "../../../system/CpuUtil.h"
+#include "../../../mpc/EmpTestUtil.h"
 #include "../MillionaireGame.h"
 
 namespace fbpcf {
