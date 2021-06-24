@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <cstdio>
 #include <stdexcept>
@@ -14,8 +14,8 @@
 #include "folly/Format.h"
 #include "folly/Random.h"
 
-#include "../../exception/PcfException.h"
-#include "../LocalFileManager.h"
+#include "fbpcf/exception/PcfException.h"
+#include "fbpcf/io/LocalFileManager.h"
 
 namespace fbpcf {
 class LocalFileManagerTest : public ::testing::Test {

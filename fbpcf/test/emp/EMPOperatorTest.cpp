@@ -14,10 +14,10 @@
 
 #include "folly/logging/xlog.h"
 
-#include "../../mpc/EmpTestUtil.h"
-#include "../../system/CpuUtil.h"
 #include "EMPOperator.hpp"
 #include "EMPOperatorTestConfig.hpp"
+#include "fbpcf/mpc/EmpTestUtil.h"
+#include "fbpcf/system/CpuUtil.h"
 
 namespace fbpcf {
 

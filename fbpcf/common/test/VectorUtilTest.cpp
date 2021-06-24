@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <stdexcept>
 #include <string>
@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-#include "../VectorUtil.h"
+#include "fbpcf/common/VectorUtil.h"
 
 namespace fbpcf::vector {
 TEST(FunctionalUtilTest, TestVectorAdd) {

@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "../MockS3Client.h"
-#include "../AwsSdk.h"
+#include "fbpcf/aws/MockS3Client.h"
+#include "fbpcf/aws/AwsSdk.h"
 
 #include <aws/s3/S3Client.h>
 #include <gmock/gmock.h>

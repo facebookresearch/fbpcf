@@ -3,12 +3,12 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <memory>
 
+#include "fbpcf/mpc/EmpGame.h"
 #include "folly/logging/xlog.h"
-#include "../../mpc/EmpGame.h"
 
 namespace fbpcf {
 // define the classic millionaire game

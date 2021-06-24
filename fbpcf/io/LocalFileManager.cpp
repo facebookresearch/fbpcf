@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include "LocalFileManager.h"
 
@@ -14,8 +14,8 @@
 
 #include "folly/Format.h"
 
-#include "../exception/PcfException.h"
 #include "LocalInputStream.h"
+#include "fbpcf/exception/PcfException.h"
 
 namespace fbpcf {
 std::unique_ptr<IInputStream> LocalFileManager::getInputStream(

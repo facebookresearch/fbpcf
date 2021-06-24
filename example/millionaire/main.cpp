@@ -12,8 +12,8 @@
 #include "folly/init/Init.h"
 #include "folly/logging/xlog.h"
 
-#include "../../exception/ExceptionBase.h"
 #include "./MillionaireApp.h"
+#include "fbpcf/exception/ExceptionBase.h"
 
 DEFINE_int32(role, 1, "1 = Alice, 2 = Bob");
 DEFINE_string(server_ip, "", "Server's IP address");
@@ -32,11 +32,7 @@ int main(int argc, char* argv[]) {
   auto role = static_cast<fbpcf::Party>(FLAGS_role);
 
   try {
-    fbpcf::MillionaireApp(
-        role,
-        FLAGS_server_ip,
-        FLAGS_port)
-        .run();
+    fbpcf::MillionaireApp(role, FLAGS_server_ip, FLAGS_port).run();
   } catch (const fbpcf::ExceptionBase& e) {
     XLOGF(ERR, "Some error occured: {}", e.what());
     return 1;

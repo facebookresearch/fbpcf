@@ -20,7 +20,6 @@ file(GLOB_RECURSE fbpcf_src
   fbpcf/**.h
   fbpcf/**.hpp)
 list(FILTER fbpcf_src EXCLUDE REGEX ".*\/test\/.*") # Exclude test files
-list(FILTER fbpcf_src EXCLUDE REGEX ".*\/example\/.*") # Exclude example files
 
 add_library(${NAME} STATIC
   ${fbpcf_src})

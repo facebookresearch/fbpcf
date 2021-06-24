@@ -3,12 +3,12 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <gtest/gtest.h>
 
-#include "../FileManagerUtil.h"
-#include "../S3FileManager.h"
+#include "fbpcf/io/FileManagerUtil.h"
+#include "fbpcf/io/S3FileManager.h"
 
 namespace fbpcf::io {
 TEST(FileManagerUtilTest, TestGetS3FileType) {

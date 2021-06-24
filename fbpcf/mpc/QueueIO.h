@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #pragma once
 
@@ -18,10 +18,8 @@ namespace fbpcf {
 class QueueIO : public emp::IOChannel<QueueIO> {
  public:
   QueueIO(
-      const std::shared_ptr<folly::Synchronized<std::queue<char>>>
-          inQueue,
-      const std::shared_ptr<folly::Synchronized<std::queue<char>>>
-          outQueue)
+      const std::shared_ptr<folly::Synchronized<std::queue<char>>> inQueue,
+      const std::shared_ptr<folly::Synchronized<std::queue<char>>> outQueue)
       : inQueue_{inQueue}, outQueue_{outQueue} {}
 
   void send_data(const void* data, int64_t len);

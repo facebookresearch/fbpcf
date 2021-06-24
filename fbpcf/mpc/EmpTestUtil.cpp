@@ -3,11 +3,11 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include "EmpTestUtil.h"
 
-#include "../system/CpuUtil.h"
+#include "fbpcf/system/CpuUtil.h"
 
 namespace fbpcf::mpc {
 bool isTestable() {
