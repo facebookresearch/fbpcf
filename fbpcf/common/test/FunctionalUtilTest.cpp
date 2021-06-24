@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "../FunctionalUtil.h"
+#include "fbpcf/common/FunctionalUtil.h"
 
 #include <stdexcept>
 #include <string>

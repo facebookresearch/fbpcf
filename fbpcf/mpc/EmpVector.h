@@ -14,8 +14,8 @@
 
 #include <emp-sh2pc/emp-sh2pc.h>
 
-#include "../common/FunctionalUtil.h"
-#include "../exception/PcfException.h"
+#include "fbpcf/common/FunctionalUtil.h"
+#include "fbpcf/exception/PcfException.h"
 
 namespace fbpcf {
 template <typename EmpType>

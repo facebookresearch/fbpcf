@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #pragma once
 
@@ -40,7 +40,7 @@ std::vector<T> Add(const std::vector<T>& a, const std::vector<T>& b) {
 }
 
 template <typename T>
-    std::vector<T> Xor(const std::vector<T>& a, const std::vector<T>& b) {
-      return apply<T>(a, b, [](const T& x, const T& y) { return x ^ y; });
-    }
+std::vector<T> Xor(const std::vector<T>& a, const std::vector<T>& b) {
+  return apply<T>(a, b, [](const T& x, const T& y) { return x ^ y; });
+}
 } // namespace fbpcf::vector

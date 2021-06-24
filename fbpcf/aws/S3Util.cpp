@@ -25,7 +25,7 @@
 #include <folly/Uri.h>
 #include <re2/re2.h>
 
-#include "../exception/AwsException.h"
+#include "fbpcf/exception/AwsException.h"
 #include "folly/Range.h"
 
 namespace fbpcf::aws {

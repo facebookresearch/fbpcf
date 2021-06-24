@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "../../mpc/EmpGame.h"
-#include "../../mpc/QueueIO.h"
+#include "fbpcf/mpc/EmpGame.h"
+#include "fbpcf/mpc/QueueIO.h"
 
 namespace fbpcf {
 

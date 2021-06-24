@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include "S3FileManager.h"
 
@@ -13,9 +13,9 @@
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/PutObjectRequest.h>
 
-#include "../aws/S3Util.h"
-#include "../exception/AwsException.h"
 #include "S3InputStream.h"
+#include "fbpcf/aws/S3Util.h"
+#include "fbpcf/exception/AwsException.h"
 
 namespace fbpcf {
 

@@ -18,9 +18,9 @@
 
 #include "folly/Synchronized.h"
 
-#include "../system/CpuUtil.h"
 #include "EmpGame.h"
 #include "QueueIO.h"
+#include "fbpcf/system/CpuUtil.h"
 
 namespace fbpcf::mpc {
 template <class EmpGameClass, class InputDataType, class OutputDataType>

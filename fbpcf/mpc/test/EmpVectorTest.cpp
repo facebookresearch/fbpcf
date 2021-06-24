@@ -9,13 +9,13 @@
 
 #include <gtest/gtest.h>
 
-#include "../../common/FunctionalUtil.h"
-#include "../../exception/PcfException.h"
-#include "../EmpGame.h"
-#include "../EmpTestUtil.h"
-#include "../EmpVector.h"
-#include "../QueueIO.h"
-#include "../../system/CpuUtil.h"
+#include "fbpcf/common/FunctionalUtil.h"
+#include "fbpcf/exception/PcfException.h"
+#include "fbpcf/mpc/EmpGame.h"
+#include "fbpcf/mpc/EmpTestUtil.h"
+#include "fbpcf/mpc/EmpVector.h"
+#include "fbpcf/mpc/QueueIO.h"
+#include "fbpcf/system/CpuUtil.h"
 
 namespace fbpcf {
 class EmpVectorTest
@@ -52,8 +52,8 @@ TEST(EmpVectorTest, TestMap) {
 
   std::vector<int64_t> expectedRes{0, 0, 0};
 
-  auto res =
-      fbpcf::mpc::test<EmpVectorTest, std::vector<int64_t>, std::vector<int64_t>>(
+  auto res = fbpcf::mpc::
+      test<EmpVectorTest, std::vector<int64_t>, std::vector<int64_t>>(
           std::vector<int64_t>{1, 2, 3}, std::vector<int64_t>{1, 2, 3});
 
   EXPECT_EQ(expectedRes, res.first);

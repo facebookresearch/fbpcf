@@ -3,16 +3,16 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <memory>
 
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <gtest/gtest.h>
 
-#include "../../../system/CpuUtil.h"
-#include "../../../mpc/EmpTestUtil.h"
 #include "../MillionaireGame.h"
+#include "fbpcf/mpc/EmpTestUtil.h"
+#include "fbpcf/system/CpuUtil.h"
 
 namespace fbpcf {
 TEST(MillionaireGame, AliceIsRicher) {

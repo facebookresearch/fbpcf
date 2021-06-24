@@ -12,8 +12,8 @@
 
 #include "folly/Random.h"
 
+#include "fbpcf/mpc/MpcAppExecutor.h"
 #include "test_apps/millionaire/MillionaireApp.h"
-#include "../MpcAppExecutor.h"
 
 namespace fbpcf {
 class MpcAppExecutorTest : public ::testing::Test {

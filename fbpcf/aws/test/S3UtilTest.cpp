@@ -5,14 +5,14 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "../S3Util.h"
+#include "fbpcf/aws/S3Util.h"
 
 #include <stdexcept>
 #include <string>
 
 #include <gtest/gtest.h>
 
-#include "../../exception/AwsException.h"
+#include "fbpcf/exception/AwsException.h"
 
 namespace fbpcf {
 TEST(S3Util, uriToObjectReference) {
