@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include "LocalFileManager.h"
 
@@ -41,6 +41,10 @@ void LocalFileManager::write(
     const std::string& fileName,
     const std::string& data) {
   std::ofstream os{fileName};
+  if (!os.is_open()) {
+    throw PcfException{folly::sformat("Failed to open file {}", fileName)};
+  }
+
   os << data;
 }
 } // namespace fbpcf

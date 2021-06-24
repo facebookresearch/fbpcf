@@ -3,7 +3,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
-*/
+ */
 
 #include <cstdio>
 #include <stdexcept>
@@ -39,5 +39,11 @@ TEST_F(LocalFileManagerTest, testReadWrite) {
 TEST_F(LocalFileManagerTest, testReadException) {
   LocalFileManager fileManager;
   EXPECT_THROW(fileManager.read("./fakedfile"), PcfException);
+}
+
+TEST_F(LocalFileManagerTest, testWriteException) {
+  LocalFileManager fileManager;
+  EXPECT_THROW(
+      fileManager.write("./fakedfolder/fakedfile", testData_), PcfException);
 }
 } // namespace fbpcf
