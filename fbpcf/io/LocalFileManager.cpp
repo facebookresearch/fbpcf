@@ -41,6 +41,10 @@ void LocalFileManager::write(
     const std::string& fileName,
     const std::string& data) {
   std::ofstream os{fileName};
+  if (!os.is_open()) {
+    throw PcfException{folly::sformat("Failed to open file {}", fileName)};
+  }
+
   os << data;
 }
 } // namespace fbpcf

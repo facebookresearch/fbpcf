@@ -40,4 +40,10 @@ TEST_F(LocalFileManagerTest, testReadException) {
   LocalFileManager fileManager;
   EXPECT_THROW(fileManager.read("./fakedfile"), PcfException);
 }
+
+TEST_F(LocalFileManagerTest, testWriteException) {
+  LocalFileManager fileManager;
+  EXPECT_THROW(
+      fileManager.write("./fakedfolder/fakedfile", testData_), PcfException);
+}
 } // namespace fbpcf
