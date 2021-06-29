@@ -196,6 +196,16 @@ make
 make install
 ```
 
+## Building Aggregator and Lift Game
+```
+# compile standard lift and aggregator
+cd /root || exit
+cp /root/CMakeLists.txt /root/emp_games/
+cd emp_games || exit
+cmake .
+make
+```
+
 ## How to build a docker image that containes game executables using the given docker related files
 To build the necessary docker dependencies and `fbpcf/<distro>:latest` docker image run the following script
 - `./build-docker.sh`
