@@ -140,7 +140,7 @@ sudo apt-get install -y libcurl4-openssl-dev libssl-dev uuid-dev zlib1g-dev libp
 # TODO: add version control
 git clone https://github.com/aws/aws-sdk-cpp.git
 cd aws-sdk-cpp || exit
-mkdir builds
+mkdir build
 cd build || exit
 # -DCUSTOM_MEMORY_MANAGEMENT=0 is added to avoid Aws::String and std::string issue
 # ref: https://github.com/aws/aws-sdk-cpp/issues/416
