@@ -4,13 +4,13 @@
 # LICENSE file in the root directory of this source tree.
 
 ARG os_release="latest"
-ARG emp_release="0.1"
-ARG aws_release="1.8.177"
-ARG folly_release="2021.03.29.00"
+ARG emp_image="fbpcf/ubuntu-emp:0.1"
+ARG aws_image="fbpcf/ubuntu-aws:1.8.177"
+ARG folly_image="fbpcf/ubuntu-folly:2021.03.29.00"
 
-FROM fbpcf/ubuntu-emp:${emp_release} as emp
-FROM fbpcf/ubuntu-aws-s3-core:${aws_release} as aws
-FROM fbpcf/ubuntu-folly:${folly_release} as folly
+FROM ${emp_image} as emp
+FROM ${aws_image} as aws
+FROM ${folly_image} as folly
 
 FROM ubuntu:${os_release} as dev
 
