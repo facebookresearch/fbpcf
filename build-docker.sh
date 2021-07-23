@@ -17,11 +17,12 @@ GITHUB_PACKAGES="ghcr.io/facebookresearch"
 PROG_NAME=$0
 usage() {
   cat <<EOF >&2
-Usage: $PROG_NAME [-u | -c] [-f]
+Usage: $PROG_NAME [-u | -c] [-f] [-t TAG]
 
 -c: builds the docker images aginsts centos
 -u: builds the docker images against ubuntu (default)
 -f: forces a rebuild of all docker image dependencies (even if they already exist)
+-t TAG: Use the specified tag for the built image (default: latest)
 EOF
   exit 1
 }
@@ -30,7 +31,8 @@ IMAGE_PREFIX="ubuntu"
 OS_RELEASE="${UBUNTU_RELEASE}"
 DOCKER_EXTENSION=".ubuntu"
 FORCE_REBUILD=false
-while getopts u,c,f o; do
+TAG="latest"
+while getopts "u,c,f,t:" o; do
   case $o in
   u)
     IMAGE_PREFIX="ubuntu"
@@ -43,6 +45,7 @@ while getopts u,c,f o; do
     DOCKER_EXTENSION=".centos"
     ;;
   f) FORCE_REBUILD=true ;;
+  t) TAG=$OPTARG;;
   *) usage ;;
   esac
 done
@@ -95,4 +98,4 @@ docker build \
   --build-arg aws_image="${AWS_IMAGE}" \
   --build-arg folly_image="${FOLLY_IMAGE}" \
   --compress \
-  -t "fbpcf/${IMAGE_PREFIX}:latest" -f "docker/Dockerfile${DOCKER_EXTENSION}" .
+  -t "fbpcf/${IMAGE_PREFIX}:${TAG}" -f "docker/Dockerfile${DOCKER_EXTENSION}" .
