@@ -6,7 +6,6 @@
 # LICENSE file in the root directory of this source tree.
 set -e
 
-CENTOS_RELEASE="8.3.2011"
 UBUNTU_RELEASE="20.04"
 EMP_RELEASE="0.1"
 AWS_RELEASE="1.8.177"
@@ -17,9 +16,8 @@ GITHUB_PACKAGES="ghcr.io/facebookresearch"
 PROG_NAME=$0
 usage() {
   cat <<EOF >&2
-Usage: $PROG_NAME [-u | -c] [-f] [-t TAG]
+Usage: $PROG_NAME [-u] [-f] [-t TAG]
 
--c: builds the docker images aginsts centos
 -u: builds the docker images against ubuntu (default)
 -f: forces a rebuild of all docker image dependencies (even if they already exist)
 -t TAG: Use the specified tag for the built image (default: latest)
@@ -32,17 +30,12 @@ OS_RELEASE="${UBUNTU_RELEASE}"
 DOCKER_EXTENSION=".ubuntu"
 FORCE_REBUILD=false
 TAG="latest"
-while getopts "u,c,f,t:" o; do
+while getopts "u,f,t:" o; do
   case $o in
   u)
     IMAGE_PREFIX="ubuntu"
     OS_RELEASE="${UBUNTU_RELEASE}"
     DOCKER_EXTENSION=".ubuntu"
-    ;;
-  c)
-    IMAGE_PREFIX="centos"
-    OS_RELEASE="${CENTOS_RELEASE}"
-    DOCKER_EXTENSION=".centos"
     ;;
   f) FORCE_REBUILD=true ;;
   t) TAG=$OPTARG;;

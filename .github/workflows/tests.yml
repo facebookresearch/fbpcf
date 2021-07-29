@@ -21,18 +21,3 @@ jobs:
       timeout-minutes: 3
       run: |
         ./run-millionaire-sample.sh -u
-
-  centos:
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Build fbpcf docker image
-      run: |
-        ./build-docker.sh -c
-
-    - name: Sanity check fbpcf library
-      timeout-minutes: 3
-      run: |
-        ./run-millionaire-sample.sh -c
