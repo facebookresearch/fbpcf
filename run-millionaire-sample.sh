@@ -10,19 +10,17 @@ set -e
 PROG_NAME=$0
 usage() {
   cat << EOF >&2
-Usage: $PROG_NAME [-u | -c]
+Usage: $PROG_NAME [-u]
 
--c: runs the millionaire sample using the centos docker image
 -u: runs the millionaire sample using the ubuntu docker image (default)
 EOF
   exit 1
 }
 
 IMAGE_PREFIX="ubuntu"
-while getopts u,c o; do
+while getopts u o; do
   case $o in
     (u) IMAGE_PREFIX="ubuntu";;
-    (c) IMAGE_PREFIX="centos";;
     (*) usage
   esac
 done

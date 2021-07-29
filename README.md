@@ -209,10 +209,7 @@ make
 ## How to build a docker image that containes game executables using the given docker related files
 To build the necessary docker dependencies and `fbpcf/<distro>:latest` docker image run the following script
 - `./build-docker.sh`
-  - build-docker has the ability to build for both Ubuntu (default if no option is specified) x-or CentOS
-  - Optionally specify
-    - `-c` for a CentOS fbpcf docker image (and dependent docker images)
-    - `-u` (default) for an Ubuntu fbpcf docker image (and dependent docker images)
+  - build-docker currently only supports Ubuntu but we might support Alpine in the future
 
 ### Notes on `build-docker.sh`
 - In order to reduce space and time of subsequent docker builds, `fbpcf` will build three dependent docker images: aws-s3-core, emp, and folly.
