@@ -36,9 +36,10 @@ std::unique_ptr<fbpcf::IFileManager> getFileManager(
     const std::string& fileName) {
   auto type = getFileType(fileName);
   if (type == FileType ::S3) {
+    const auto& ref = fbpcf::aws::uriToObjectReference(fileName);
+    // Other options have to be set via environment variables
     return std::make_unique<S3FileManager>(
-        // options have to be set via environment variables
-        fbpcf::aws::createS3Client(fbpcf::aws::S3ClientOption{}));
+        fbpcf::aws::createS3Client(fbpcf::aws::S3ClientOption{.region = ref.region}));
   } else {
     return std::make_unique<LocalFileManager>();
   }
