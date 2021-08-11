@@ -2,7 +2,7 @@ name: Publish Docker image
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   release:
     types: [ published ]
 
@@ -49,7 +49,7 @@ jobs:
           docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
 
       - name: Tag as latest
-        # Tag as latest only for master branch
+        # Tag as latest only for main branch
         if: github.event_name == 'push'
         run: |
           docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
