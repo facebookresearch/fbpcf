@@ -54,7 +54,7 @@ std::pair<OutputDataType, OutputDataType> test(
 }
 
 template <class TestCase>
-void wrapTest(TestCase testCase) {
+void wrapTestWithParty(TestCase testCase) {
   auto queueA = std::make_shared<folly::Synchronized<std::queue<char>>>();
   auto queueB = std::make_shared<folly::Synchronized<std::queue<char>>>();
 
@@ -65,7 +65,7 @@ void wrapTest(TestCase testCase) {
     emp::setup_semi_honest(io.get(), static_cast<int>(party));
 
     try {
-      testCase();
+      testCase(party);
     } catch (const std::exception& e) {
       std::cout << "Exception occured. " << e.what() << endl;
       exit(EXIT_FAILURE);
@@ -77,6 +77,12 @@ void wrapTest(TestCase testCase) {
 
   futureAlice.wait();
   futureBob.wait();
+}
+
+template <class TestCase>
+void wrapTest(TestCase testCase) {
+  return wrapTestWithParty<std::function<void(Party party)>>(
+      [&testCase](Party party) { return testCase(); });
 }
 
 bool isTestable();
