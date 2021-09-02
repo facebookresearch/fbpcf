@@ -15,7 +15,7 @@ env:
 jobs:
   # Push image to GitHub Packages.
   push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     permissions:
       contents: read
       packages: write
