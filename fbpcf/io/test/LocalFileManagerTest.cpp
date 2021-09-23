@@ -46,4 +46,27 @@ TEST_F(LocalFileManagerTest, testWriteException) {
   EXPECT_THROW(
       fileManager.write("./fakedfolder/fakedfile", testData_), PcfException);
 }
+
+TEST_F(LocalFileManagerTest, testWriteReadBytes) {
+  LocalFileManager fileManager;
+  fileManager.write(filePath_, testData_);
+  auto resp1 = fileManager.readBytes(filePath_, 0, 5);
+  EXPECT_EQ(resp1, "this ");
+
+  auto resp2 = fileManager.readBytes(filePath_, 10, 15);
+  EXPECT_EQ(resp2, "st da");
+
+  auto resp3 = fileManager.readBytes(filePath_, 1, 1);
+  EXPECT_EQ(resp3, "");
+
+  auto resp4 = fileManager.readBytes(filePath_, 15, 20);
+  EXPECT_EQ(resp4, "ta");
+}
+
+TEST_F(LocalFileManagerTest, testByteReadException) {
+  LocalFileManager fileManager;
+  fileManager.write(filePath_, testData_);
+  EXPECT_THROW(fileManager.readBytes(filePath_, 100, 101), PcfException);
+  EXPECT_THROW(fileManager.readBytes(filePath_, 5, 1), PcfException);
+}
 } // namespace fbpcf
