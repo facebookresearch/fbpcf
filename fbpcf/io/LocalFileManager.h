@@ -20,5 +20,8 @@ class LocalFileManager : public IFileManager {
   std::string read(const std::string& fileName) override;
 
   void write(const std::string& fileName, const std::string& data) override;
+
+  std::string
+  readBytes(const std::string& fileName, std::size_t start, std::size_t end);
 };
 } // namespace fbpcf

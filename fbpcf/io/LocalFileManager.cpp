@@ -47,4 +47,43 @@ void LocalFileManager::write(
 
   os << data;
 }
+
+std::string LocalFileManager::readBytes(
+    const std::string& fileName,
+    std::size_t start,
+    std::size_t end) {
+  if (start > end) {
+    throw PcfException{folly::sformat(
+        "Start byte: <{}> is larger than the end: <{}>", start, end)};
+  }
+  auto stream = getInputStream(fileName);
+  std::istream& is = stream->get();
+
+  // get length of file
+  is.seekg(0, std::ios::end);
+  size_t length = is.tellg();
+  if (start > length) {
+    throw PcfException{folly::sformat(
+        "Start byte: <{}> is larger than the length: <{}>", start, length)};
+  }
+  is.seekg(start, std::ios::beg);
+
+  auto validatedEnd = std::min(length, end);
+  size_t bufferLength = validatedEnd - start;
+
+  char buffer[bufferLength + 1];
+
+  // read data as a block:
+  if (is.readsome(buffer, bufferLength) != bufferLength) {
+    throw PcfException{
+        folly::sformat(
+            "Hit exception when trying to read bytes from {}", fileName),
+    };
+  }
+
+  buffer[bufferLength] = '\0';
+
+  std::string s{buffer};
+  return s;
+}
 } // namespace fbpcf
