@@ -34,6 +34,35 @@ std::unique_ptr<IInputStream> S3FileManager::getInputStream(
   return std::make_unique<S3InputStream>(outcome.GetResultWithOwnership());
 }
 
+std::string S3FileManager::readBytes(
+    const std::string& fileName,
+    std::size_t start,
+    std::size_t end) {
+  const auto& ref = fbpcf::aws::uriToObjectReference(fileName);
+  Aws::S3::Model::GetObjectRequest request;
+  std::stringstream ss;
+  // NOTE: The AWS API uses a closed interval [a, b] to request a range while
+  // C++ string (and most "normal" programming APIs) use a half-open interval
+  // [a, b). Therefore, we subtract one here to make this usage consistent with
+  // other APIs. If the user passes in readBytes(path, 0, 4), we would expect
+  // to generate the range "bytes=0-3"
+  ss << "bytes=" << start << '-' << (end - 1);
+  request.SetBucket(ref.bucket);
+  request.SetKey(ref.key);
+  request.SetRange(ss.str());
+
+  auto outcome = s3Client_->GetObject(request);
+  if (!outcome.IsSuccess()) {
+    throw AwsException{outcome.GetError().GetMessage()};
+  }
+
+  auto stream =
+      std::make_unique<S3InputStream>(outcome.GetResultWithOwnership());
+  std::stringstream ss2;
+  ss2 << stream->get().rdbuf();
+  return ss2.str();
+}
+
 std::string S3FileManager::read(const std::string& fileName) {
   auto stream = getInputStream(fileName);
   std::stringstream ss;
