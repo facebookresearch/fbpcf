@@ -24,5 +24,10 @@ class IFileManager {
   virtual std::string read(const std::string& fileName) = 0;
 
   virtual void write(const std::string& fileName, const std::string& data) = 0;
+
+  virtual std::string readBytes(
+      const std::string& fileName,
+      std::size_t start,
+      std::size_t end) = 0;
 };
 } // namespace fbpcf
