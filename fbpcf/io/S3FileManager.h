@@ -22,7 +22,8 @@ class S3FileManager : public IFileManager {
   std::unique_ptr<IInputStream> getInputStream(
       const std::string& fileName) override;
 
-  std::string readBytes(const std::string& fileName, std::size_t start, std::size_t end);
+  std::string
+  readBytes(const std::string& fileName, std::size_t start, std::size_t end);
   std::string read(const std::string& fileName) override;
 
   void write(const std::string& fileName, const std::string& data) override;
