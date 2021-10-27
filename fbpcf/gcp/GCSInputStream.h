@@ -10,7 +10,7 @@
 #include <google/cloud/storage/object_read_stream.h>
 #include <istream>
 
-#include "IInputStream.h"
+#include "fbpcf/io/IInputStream.h"
 namespace gcs = ::google::cloud::storage;
 namespace fbpcf {
 class GCSInputStream : public IInputStream {
