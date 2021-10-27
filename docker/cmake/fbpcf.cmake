@@ -30,6 +30,8 @@ endif()
 
 find_package(AWSSDK REQUIRED COMPONENTS s3)
 
+find_package(google_cloud_cpp_storage REQUIRED)
+
 find_library(re2 libre2.so)
 
 # since emp-tool is compiled with cc++11 and our games needs c++17 overwrite the

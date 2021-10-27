@@ -9,6 +9,7 @@ set -e
 UBUNTU_RELEASE="20.04"
 EMP_RELEASE="0.1"
 AWS_RELEASE="1.8.177"
+GCP_RELEASE="1.32.1"
 FMT_RELEASE="7.1.3"
 FOLLY_RELEASE="2021.06.28.00"
 GITHUB_PACKAGES="ghcr.io/facebookresearch"
@@ -80,6 +81,10 @@ AWS_IMAGE="fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_RELEASE}"
 build_dep_image "${AWS_IMAGE}" "aws-s3-core" "--build-arg os_release=${OS_RELEASE} --build-arg aws_release=${AWS_RELEASE}"
 AWS_IMAGE="${RETURN}"
 
+GCP_IMAGE="fbpcf/${IMAGE_PREFIX}-google-cloud-cpp:${GCP_RELEASE}"
+build_dep_image "${GCP_IMAGE}" "google-cloud-cpp" "--build-arg os_release=${OS_RELEASE} --build-arg gcp_cpp_release=v${GCP_RELEASE}"
+GCP_IMAGE="${RETURN}"
+
 FOLLY_IMAGE="fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE}"
 build_dep_image "${FOLLY_IMAGE}" "folly" "--build-arg os_release=${OS_RELEASE} --build-arg folly_release=${FOLLY_RELEASE} --build-arg fmt_release=${FMT_RELEASE}"
 FOLLY_IMAGE="${RETURN}"
@@ -90,5 +95,6 @@ docker build \
   --build-arg emp_image="${EMP_IMAGE}" \
   --build-arg aws_image="${AWS_IMAGE}" \
   --build-arg folly_image="${FOLLY_IMAGE}" \
+  --build-arg gcp_image="${GCP_IMAGE}" \
   --compress \
   -t "fbpcf/${IMAGE_PREFIX}:${TAG}" -f "docker/Dockerfile${DOCKER_EXTENSION}" .

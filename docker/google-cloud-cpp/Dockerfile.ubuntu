@@ -1,0 +1,137 @@
+# Copyright (c) Facebook, Inc. and its affiliates.
+#
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+ARG os_release="latest"
+FROM ubuntu:${os_release} AS builder
+ARG gcp_cpp_release="1.8.177"
+# Required Packages for google-cloud-cpp 
+# Instructions modified from https://github.com/googleapis/google-cloud-cpp/blob/main/doc/packaging.md
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get -y update && apt-get install --no-install-recommends -y \
+    apt-transport-https \
+    apt-utils \
+    automake \
+    build-essential \
+    ccache \
+    cmake \
+    ca-certificates \
+    curl \
+    git \
+    gcc \
+    g++ \
+    libc-ares-dev \
+    libc-ares2 \
+    libcurl4-openssl-dev \
+    libre2-dev \
+    libssl-dev \
+    m4 \
+    make \
+    pkg-config \
+    tar \
+    wget \
+    zlib1g-dev
+
+ARG HOME="/root"
+# Download google-cloud-cpp
+RUN mkdir -p ${HOME}/google-cloud-cpp
+RUN wget -q https://github.com/googleapis/google-cloud-cpp/archive/${gcp_cpp_release}.tar.gz && \
+    tar -xf ${gcp_cpp_release}.tar.gz -C ${HOME}/google-cloud-cpp --strip=1
+
+# Install Abseil
+RUN mkdir -p ${HOME}/Downloads/abseil-cpp 
+WORKDIR ${HOME}/Downloads/abseil-cpp
+RUN curl -sSL https://github.com/abseil/abseil-cpp/archive/20210324.2.tar.gz | \
+    tar -xzf - --strip-components=1 && \
+    sed -i 's/^#define ABSL_OPTION_USE_\(.*\) 2/#define ABSL_OPTION_USE_\1 0/' "absl/base/options.h" && \
+    cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_TESTING=OFF \
+      -DBUILD_SHARED_LIBS=yes \
+      -DCMAKE_CXX_STANDARD=11 \
+      -H. -Bcmake-out && \
+    cmake --build cmake-out -- -j "$(nproc)" && \
+    cmake --build cmake-out --target install -- -j "$(nproc)" && \
+    ldconfig
+
+# Install Protobuf
+RUN mkdir -p ${HOME}/Downloads/protobuf 
+WORKDIR ${HOME}/Downloads/protobuf
+RUN curl -sSL https://github.com/protocolbuffers/protobuf/archive/v3.19.0.tar.gz | \
+    tar -xzf - --strip-components=1 && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=yes \
+        -Dprotobuf_BUILD_TESTS=OFF \
+        -Hcmake -Bcmake-out && \
+    cmake --build cmake-out -- -j "$(nproc)" && \
+    cmake --build cmake-out --target install -- -j "$(nproc)" && \
+    ldconfig
+
+# Install gRPC
+RUN mkdir -p ${HOME}/Downloads/grpc 
+WORKDIR ${HOME}/Downloads/grpc
+RUN curl -sSL https://github.com/grpc/grpc/archive/v1.41.1.tar.gz | \
+    tar -xzf - --strip-components=1 && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DgRPC_INSTALL=ON \
+        -DgRPC_BUILD_TESTS=OFF \
+        -DgRPC_ABSL_PROVIDER=package \
+        -DgRPC_CARES_PROVIDER=package \
+        -DgRPC_PROTOBUF_PROVIDER=package \
+        -DgRPC_RE2_PROVIDER=package \
+        -DgRPC_SSL_PROVIDER=package \
+        -DgRPC_ZLIB_PROVIDER=package \
+        -H. -Bcmake-out && \
+    cmake --build cmake-out -- -j "$(nproc)" && \
+    cmake --build cmake-out --target install -- -j "$(nproc)" && \
+    ldconfig
+
+# Install crc32c
+RUN mkdir -p ${HOME}/Downloads/crc32c 
+WORKDIR ${HOME}/Downloads/crc32c
+RUN curl -sSL https://github.com/google/crc32c/archive/1.1.2.tar.gz | \
+    tar -xzf - --strip-components=1 && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=yes \
+        -DCRC32C_BUILD_TESTS=OFF \
+        -DCRC32C_BUILD_BENCHMARKS=OFF \
+        -DCRC32C_USE_GLOG=OFF \
+        -H. -Bcmake-out && \
+    cmake --build cmake-out -- -j "$(nproc)" && \
+    cmake --build cmake-out --target install -- -j "$(nproc)" && \
+    ldconfig
+
+# Install nlohmann_json
+RUN mkdir -p ${HOME}/Downloads/json 
+WORKDIR ${HOME}/Downloads/json
+RUN curl -sSL https://github.com/nlohmann/json/archive/v3.10.4.tar.gz | \
+    tar -xzf - --strip-components=1 && \
+    cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_SHARED_LIBS=yes \
+      -DBUILD_TESTING=OFF \
+      -H. -Bcmake-out/nlohmann/json && \
+    cmake --build cmake-out/nlohmann/json --target install -- -j "$(nproc)" && \
+    ldconfig
+
+# Build google-cloud-cpp
+WORKDIR ${HOME}/google-cloud-cpp
+RUN cmake \ 
+        -DBUILD_TESTING=OFF \
+        -DGOOGLE_CLOUD_CPP_ENABLE_BIGTABLE=OFF \
+        -DGOOGLE_CLOUD_CPP_ENABLE_BIGQUERY=OFF \
+        -DGOOGLE_CLOUD_CPP_ENABLE_SPANNER=OFF \
+        -DGOOGLE_CLOUD_CPP_ENABLE_PUBSUB=OFF \
+        -DGOOGLE_CLOUD_CPP_ENABLE_IAM=OFF \
+        -DGOOGLE_CLOUD_CPP_ENABLE_EXAMPLES=OFF \
+        -H. -Bcmake-out && \
+cmake --build cmake-out -- -j "$(nproc)" && \
+cmake --build cmake-out --target install
+
+FROM ubuntu:${os_release}
+COPY --from=builder /usr/local/include/. /usr/local/include/.
+COPY --from=builder /usr/local/lib/. /usr/local/lib/.
+ENTRYPOINT [ "/bin/bash" ]
