@@ -44,8 +44,8 @@ std::pair<OutputDataType, OutputDataType> test(
     }
   };
 
-  auto futureAlice = std::async(lambda, Party::Alice, aliceInput);
-  auto futureBob = std::async(lambda, Party::Bob, bobInput);
+  auto futureAlice = std::async(lambda, Party::Alice, std::move(aliceInput));
+  auto futureBob = std::async(lambda, Party::Bob, std::move(bobInput));
 
   auto resAlice = futureAlice.get();
   auto resBob = futureBob.get();
