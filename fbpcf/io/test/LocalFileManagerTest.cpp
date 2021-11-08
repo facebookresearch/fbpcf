@@ -22,11 +22,13 @@ class LocalFileManagerTest : public ::testing::Test {
  protected:
   void TearDown() override {
     std::remove(filePath_.c_str());
+    std::remove(nonExistentFolderPath_.c_str());
   }
 
   const std::string testData_ = "this is test data";
   const std::string filePath_ =
       folly::sformat("./testfile_{}", folly::Random::rand32());
+  const std::string nonExistentFolderPath_ = "./fakedfolder/fakedfile";
 };
 
 TEST_F(LocalFileManagerTest, testReadWrite) {
@@ -41,10 +43,11 @@ TEST_F(LocalFileManagerTest, testReadException) {
   EXPECT_THROW(fileManager.read("./fakedfile"), PcfException);
 }
 
-TEST_F(LocalFileManagerTest, testWriteException) {
+TEST_F(LocalFileManagerTest, testWriteNonExistentFolder) {
   LocalFileManager fileManager;
-  EXPECT_THROW(
-      fileManager.write("./fakedfolder/fakedfile", testData_), PcfException);
+  fileManager.write(nonExistentFolderPath_, testData_);
+  auto resp = fileManager.read(nonExistentFolderPath_);
+  EXPECT_EQ(testData_, resp);
 }
 
 TEST_F(LocalFileManagerTest, testWriteReadBytes) {
