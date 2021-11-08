@@ -7,6 +7,7 @@
 
 #include "LocalFileManager.h"
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -40,6 +41,8 @@ std::string LocalFileManager::read(const std::string& fileName) {
 void LocalFileManager::write(
     const std::string& fileName,
     const std::string& data) {
+  std::filesystem::path filePath{fileName};
+  std::filesystem::create_directories(filePath.parent_path());
   std::ofstream os{fileName};
   if (!os.is_open()) {
     throw PcfException{folly::sformat("Failed to open file {}", fileName)};
