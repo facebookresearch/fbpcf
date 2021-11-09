@@ -28,7 +28,8 @@ class LocalFileManagerTest : public ::testing::Test {
   const std::string testData_ = "this is test data";
   const std::string filePath_ =
       folly::sformat("./testfile_{}", folly::Random::rand32());
-  const std::string nonExistentFolderPath_ = "./fakedfolder/fakedfile";
+  const std::string nonExistentFolderPath_ =
+      folly::sformat("fakedfolder/testfile_{}", folly::Random::rand32());
 };
 
 TEST_F(LocalFileManagerTest, testReadWrite) {
