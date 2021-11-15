@@ -58,4 +58,4 @@ COPY example/ ./example
 RUN cmake . -DTHREADING=ON -DEMP_USE_RANDOM_DEVICE=ON
 RUN make && make install
 
-CMD ["/bin/sh"]
+CMD ["/bin/bash"]

@@ -10,12 +10,12 @@
 #include <google/cloud/storage/object_read_stream.h>
 #include <istream>
 
-#include "IInputStream.h"
+#include "fbpcf/io/IInputStream.h"
 namespace gcs = ::google::cloud::storage;
 namespace fbpcf {
 class GCSInputStream : public IInputStream {
  public:
-  explicit GCSInputStream(gcs::ObjectReadStream s) : s_{std::move(s)} {}
+  explicit GCSInputStream(gcs::ObjectReadStream&& s) : s_{std::move(s)} {}
 
   std::istream& get() override;
 

@@ -11,7 +11,7 @@
 
 #include <google/cloud/storage/client.h>
 
-#include "IFileManager.h"
+#include "fbpcf/io/IFileManager.h"
 
 namespace gcs = ::google::cloud::storage;
 
