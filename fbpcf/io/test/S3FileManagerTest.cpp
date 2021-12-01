@@ -14,7 +14,6 @@
 #include "fbpcf/aws/AwsSdk.h"
 #include "fbpcf/aws/MockS3Client.h"
 #include "fbpcf/exception/AwsException.h"
-#include "fbpcf/io/MockFileManager.h"
 #include "fbpcf/io/S3FileManager.h"
 
 using ::testing::_;

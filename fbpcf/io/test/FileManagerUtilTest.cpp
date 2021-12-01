@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 
 #include "fbpcf/io/FileManagerUtil.h"
-#include "fbpcf/io/S3FileManager.h"
 
 namespace fbpcf::io {
 TEST(FileManagerUtilTest, TestGetS3FileType) {

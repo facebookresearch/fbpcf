@@ -7,8 +7,6 @@
 
 #include "EmpTestUtil.h"
 
-#include "fbpcf/system/CpuUtil.h"
-
 namespace fbpcf::mpc {
 bool isTestable() {
 #ifndef ENABLE_RDSEED

@@ -15,7 +15,6 @@
 #include "fbpcf/mpc/EmpTestUtil.h"
 #include "fbpcf/mpc/EmpVector.h"
 #include "fbpcf/mpc/QueueIO.h"
-#include "fbpcf/system/CpuUtil.h"
 
 namespace fbpcf {
 class EmpVectorTest
