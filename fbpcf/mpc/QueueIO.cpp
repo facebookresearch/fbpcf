@@ -8,7 +8,7 @@
 #include "QueueIO.h"
 
 namespace fbpcf {
-void QueueIO::send_data(const void* data, int64_t len) {
+void QueueIO::send_data_internal(const void* data, int64_t len) {
   outQueue_->withWLock([&data, len](auto& locked) {
     for (auto i = 0; i < len; i++) {
       locked.push(*((char*)data + i));
@@ -16,7 +16,7 @@ void QueueIO::send_data(const void* data, int64_t len) {
   });
 }
 
-void QueueIO::recv_data(void* data, int64_t len) {
+void QueueIO::recv_data_internal(void* data, int64_t len) {
   for (auto i = 0; i < len; i++) {
     while (inQueue_->rlock()->empty()) {
     }
