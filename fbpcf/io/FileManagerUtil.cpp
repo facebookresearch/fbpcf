@@ -29,7 +29,13 @@ void write(const std::string& fileName, const std::string& data) {
 
 FileType getFileType(const std::string& fileName) {
   // S3 file format: https://bucket-name.s3.Region.amazonaws.com/key-name
-  return fileName.find("https://", 0) == 0 ? FileType::S3 : FileType::Local;
+  // GCS file format: https://storage.cloud.google.com/bucket-name/key-name
+  if (fileName.find("https://", 0) != 0) {
+    return FileType::Local;
+  }
+  bool isGCSPath =
+      fileName.find("storage.cloud.google.com") != std::string::npos;
+  return isGCSPath ? FileType::GCS : FileType::S3;
 }
 
 std::unique_ptr<fbpcf::IFileManager> getFileManager(

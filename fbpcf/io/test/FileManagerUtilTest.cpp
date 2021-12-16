@@ -16,6 +16,12 @@ TEST(FileManagerUtilTest, TestGetS3FileType) {
   EXPECT_EQ(FileType::S3, type);
 }
 
+TEST(FileManagerUtilTest, TestGetGCSFileType) {
+  auto type =
+      getFileType("https://storage.cloud.google.com/bucket-name/key-name");
+  EXPECT_EQ(FileType::GCS, type);
+}
+
 TEST(FileManagerUtilTest, TestGetLocalFileType) {
   auto type = getFileType("/root/local");
   EXPECT_EQ(FileType::Local, type);
