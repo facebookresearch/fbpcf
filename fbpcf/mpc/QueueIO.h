@@ -22,8 +22,8 @@ class QueueIO : public emp::IOChannel<QueueIO> {
       const std::shared_ptr<folly::Synchronized<std::queue<char>>> outQueue)
       : inQueue_{inQueue}, outQueue_{outQueue} {}
 
-  void send_data(const void* data, int64_t len);
-  void recv_data(void* data, int64_t len);
+  void send_data_internal(const void* data, int64_t len);
+  void recv_data_internal(void* data, int64_t len);
 
   /* This is a design issue in EMP. flush() is not part of IOChannel interface,
    * but it's coupled in implementation. EMP should either defines it in
