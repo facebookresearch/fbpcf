@@ -41,4 +41,18 @@ TEST(GCSUtil, uriToObjectReferenceException_missing_bucket_and_path) {
   EXPECT_THROW(fbpcf::gcp::uriToObjectReference(uri), GcpException);
 }
 
+TEST(GCSUtil, uriToObjectReference_gsScheme) {
+  auto uri = "gs://bucket/key";
+  auto ref = fbpcf::gcp::uriToObjectReference(uri);
+
+  EXPECT_EQ("bucket", ref.bucket);
+  EXPECT_EQ("key", ref.key);
+}
+
+TEST(GCSUtil, uriToObjectReference_gsScheme_nokey) {
+  auto uri = "gs://bucket";
+
+  EXPECT_THROW(fbpcf::gcp::uriToObjectReference(uri), GcpException);
+}
+
 } // namespace fbpcf
