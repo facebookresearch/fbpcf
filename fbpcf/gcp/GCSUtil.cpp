@@ -12,26 +12,44 @@
 #include <folly/Format.h>
 #include <folly/Uri.h>
 
+#include <boost/algorithm/string.hpp>
 #include "fbpcf/exception/GcpException.h"
 
 namespace fbpcf::gcp {
 // Format:
 // 1. https://storage.cloud.google.com/bucket-name/key-name
+// 2. gs://bucket-name/key-name
 GCSObjectReference uriToObjectReference(std::string url) {
   std::string bucket;
+  std::string key;
+  int pos = 0;
   auto uri = folly::Uri(url);
+  auto scheme = uri.scheme();
   auto host = uri.host();
-  auto path = uri.path().substr(1);
-  // Remove first "/" in path
-  auto pos = path.find("/");
-  if (pos == std::string::npos || path.substr(pos + 1).length() == 0) {
+  auto path = uri.path();
+
+  if (path.length() <= 1) {
     throw GcpException{folly::sformat(
         "Incorrect GCS URI format: {}"
-        "bucket/key not specified",
+        "key not specified",
         url)};
   }
 
-  bucket = path.substr(0, pos);
+  if (boost::iequals(scheme, "gs")) {
+    bucket = host;
+  } else {
+    // Remove the first character '/' in path
+    path = path.substr(1);
+    pos = path.find("/");
+    if (pos == std::string::npos || path.substr(pos + 1).length() == 0) {
+      throw GcpException{folly::sformat(
+          "Incorrect GCS URI format: {}"
+          "bucket/key not specified",
+          url)};
+    }
+    bucket = path.substr(0, pos);
+  }
+
   // path.substr(pos+1) to remove the first character '/'
   return GCSObjectReference{bucket, path.substr(pos + 1)};
 }
