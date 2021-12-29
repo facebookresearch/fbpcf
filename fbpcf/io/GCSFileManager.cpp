@@ -5,33 +5,35 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "GCSFileManager.h"
+#include "fbpcf/io/GCSFileManager.h"
 
 #include <google/cloud/storage/download_options.h>
 #include <memory>
 #include <sstream>
 
-#include "GCSInputStream.h"
 #include "fbpcf/exception/GcpException.h"
 #include "fbpcf/gcp/GCSUtil.h"
+#include "fbpcf/io/GCSInputStream.h"
 
 namespace gcs = ::google::cloud::storage;
 
 namespace fbpcf {
 
-std::unique_ptr<IInputStream> GCSFileManager::getInputStream(
+template <class ClientCls>
+std::unique_ptr<IInputStream> GCSFileManager<ClientCls>::getInputStream(
     const std::string& fileName) {
   const auto& ref = fbpcf::gcp::uriToObjectReference(fileName);
 
-  auto outcome = GCSClient_->ReadObject(ref.bucket, ref.key);
-  if (!outcome) {
+  auto outcome = GCSClient_->ReadObject(ref.bucket, ref.key, gcs::ReadRange());
+  if (!outcome.status().ok()) {
     throw GcpException{outcome.status().message()};
   }
 
   return std::make_unique<GCSInputStream>(std::move(outcome));
 }
 
-std::string GCSFileManager::readBytes(
+template <class ClientCls>
+std::string GCSFileManager<ClientCls>::readBytes(
     const std::string& fileName,
     std::size_t start,
     std::size_t end) {
@@ -39,7 +41,7 @@ std::string GCSFileManager::readBytes(
 
   auto outcome =
       GCSClient_->ReadObject(ref.bucket, ref.key, gcs::ReadRange(start, end));
-  if (!outcome) {
+  if (!outcome.status().ok()) {
     throw GcpException{outcome.status().message()};
   }
   std::stringstream ss;
@@ -47,14 +49,16 @@ std::string GCSFileManager::readBytes(
   return ss.str();
 }
 
-std::string GCSFileManager::read(const std::string& fileName) {
+template <class ClientCls>
+std::string GCSFileManager<ClientCls>::read(const std::string& fileName) {
   auto stream = getInputStream(fileName);
   std::stringstream ss;
   ss << stream->get().rdbuf();
   return ss.str();
 }
 
-void GCSFileManager::write(
+template <class ClientCls>
+void GCSFileManager<ClientCls>::write(
     const std::string& fileName,
     const std::string& data) {
   const auto& ref = fbpcf::gcp::uriToObjectReference(fileName);

@@ -16,21 +16,24 @@
 namespace gcs = ::google::cloud::storage;
 
 namespace fbpcf {
+template <class ClientCls>
 class GCSFileManager : public IFileManager {
  public:
-  explicit GCSFileManager(std::unique_ptr<gcs::Client> client)
+  explicit GCSFileManager(std::shared_ptr<ClientCls> client)
       : GCSClient_{std::move(client)} {}
 
   std::unique_ptr<IInputStream> getInputStream(
       const std::string& fileName) override;
 
-  std::string
-  readBytes(const std::string& fileName, std::size_t start, std::size_t end);
+  std::string readBytes(
+      const std::string& fileName,
+      std::size_t start,
+      std::size_t end) override;
   std::string read(const std::string& fileName) override;
 
   void write(const std::string& fileName, const std::string& data) override;
 
  private:
-  std::unique_ptr<gcs::Client> GCSClient_;
+  std::shared_ptr<ClientCls> GCSClient_;
 };
 } // namespace fbpcf
