@@ -168,7 +168,7 @@ sed -i "s/FB_POLYN:STRING=283/FB_POLYN:STRING=251/" ~/relic/CMakeCache.txt
 # get and install emp-tool
 git clone https://github.com/emp-toolkit/emp-tool.git
 cd emp-tool || exit
-git checkout 9551a53befef2b07e41097bca7fcb3b4aee36262
+git checkout 0.2.3
 cd /root/emp-tool || exit
 cmake .
 make
@@ -178,7 +178,7 @@ make install
 cd /root || exit
 git clone https://github.com/emp-toolkit/emp-ot.git
 cd emp-ot || exit
-git checkout a4738c5dc05169400ff68f4eb4e5d51a66263268
+git checkout 0.2.2
 cmake .
 make
 make install
@@ -187,7 +187,7 @@ make install
 cd /root || exit
 git clone https://github.com/emp-toolkit/emp-sh2pc.git
 cd emp-sh2pc || exit
-git checkout 07271059d99312cfc0c6589f43fc2d9ddfe6788b
+git checkout 0.2.2
 cd /root/emp-sh2pc || exit
 mkdir build
 cd build || exit
@@ -219,8 +219,10 @@ These are essentially treated as compiled static libraries and greatly reduces r
 - The current dependency versions in this file are known good builds, however you may wish up update packages in the future (for development or testing)
   - UBUNTU_RELEASE="20.04"
     - Changing the Ubuntu Release will most likely require update to the apt-get packages
-  - EMP_RELEASE="0.1"
-    - This is the git release branch for EMP repos
+  - EMP_TOOL_RELEASE="0.2.3"
+    - This is the git release branch for emp-tool
+  - EMP_RELEASE="0.2.2"
+    - This is the git release branch for emp-ot and emp-sh2pc
   - AWS_RELEASE="1.8.177"
     - This is the git release tag for https://github.com/aws/aws-sdk-cpp
   - FMT_RELEASE="7.1.3"

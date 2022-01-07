@@ -4,9 +4,9 @@
 # LICENSE file in the root directory of this source tree.
 
 find_path(CMAKE_FOLDER NAMES cmake/emp-tool-config.cmake)
-include(${CMAKE_FOLDER}/cmake/common.cmake)
-include(${CMAKE_FOLDER}/cmake/source_of_randomness.cmake)
-include(${CMAKE_FOLDER}/cmake/threading.cmake)
+include(${CMAKE_FOLDER}/cmake/emp-base.cmake)
+include(${CMAKE_FOLDER}/cmake/enable_rdseed.cmake)
+include(${CMAKE_FOLDER}/cmake/enable_threading.cmake)
 
 find_package(gflags REQUIRED)
 
