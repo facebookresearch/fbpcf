@@ -12,13 +12,15 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
     ca-certificates \
     cmake \
     git \
-    libgmp-dev
+    libgmp-dev \
+    xxd
 RUN mkdir /root/build
 WORKDIR /root/build
 
 # Build and install emp packages
 FROM dev-environment AS emp-builder
-ARG emp_release="0.1"
+ARG emp_tool_release="0.2.3"
+ARG emp_release="0.2.2"
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y --no-install-recommends  \
     libboost-dev \
@@ -26,7 +28,7 @@ RUN apt-get install -y --no-install-recommends  \
     libssl-dev
 
 # emp-tool build and install
-RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-tool.git
+RUN git clone -b${emp_tool_release} https://github.com/emp-toolkit/emp-tool.git
 WORKDIR /root/build/emp-tool
 RUN sed -i "s/SHARED/STATIC/" CMakeLists.txt
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
@@ -34,14 +36,14 @@ RUN make && make install
 
 # emp-ot build and install
 WORKDIR /root/build
-RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-ot.git
+RUN git clone -b${emp_release} https://github.com/emp-toolkit/emp-ot.git
 WORKDIR /root/build/emp-ot
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
 RUN make && make install
 
 # emp-sh2pc build and install
 WORKDIR /root/build
-RUN git clone -bv${emp_release} https://github.com/emp-toolkit/emp-sh2pc.git
+RUN git clone -b${emp_release} https://github.com/emp-toolkit/emp-sh2pc.git
 WORKDIR /root/build/emp-sh2pc
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
 RUN make && make install

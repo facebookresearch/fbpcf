@@ -4,7 +4,7 @@
 # LICENSE file in the root directory of this source tree.
 
 ARG os_release="latest"
-ARG emp_image="fbpcf/ubuntu-emp:0.1"
+ARG emp_image="fbpcf/ubuntu-emp:0.2.3"
 ARG aws_image="fbpcf/ubuntu-aws-s3-core:1.8.177"
 ARG folly_image="fbpcf/ubuntu-folly:2021.03.29.00"
 ARG gcp_image="fbpcf/ubuntu-gcp-cloud-cpp:1.32.1"

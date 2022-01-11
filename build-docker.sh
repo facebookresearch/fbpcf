@@ -7,7 +7,8 @@
 set -e
 
 UBUNTU_RELEASE="20.04"
-EMP_RELEASE="0.1"
+EMP_TOOL_RELEASE="0.2.3"
+EMP_RELEASE="0.2.2"
 AWS_RELEASE="1.8.177"
 GCP_RELEASE="1.32.1"
 FMT_RELEASE="7.1.3"
@@ -73,8 +74,8 @@ build_dep_image() {
   RETURN="${IMAGE}"
 }
 
-EMP_IMAGE="fbpcf/${IMAGE_PREFIX}-emp:${EMP_RELEASE}"
-build_dep_image "${EMP_IMAGE}" "emp" "--build-arg os_release=${OS_RELEASE} --build-arg emp_release=${EMP_RELEASE}"
+EMP_IMAGE="fbpcf/${IMAGE_PREFIX}-emp:${EMP_TOOL_RELEASE}"
+build_dep_image "${EMP_IMAGE}" "emp" "--build-arg os_release=${OS_RELEASE} --build-arg emp_tool_release=${EMP_TOOL_RELEASE} --build-arg emp_release=${EMP_RELEASE}"
 EMP_IMAGE="${RETURN}"
 
 AWS_IMAGE="fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_RELEASE}"
