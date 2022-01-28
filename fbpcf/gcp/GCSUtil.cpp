@@ -54,4 +54,9 @@ GCSObjectReference uriToObjectReference(std::string url) {
   return GCSObjectReference{bucket, path.substr(pos + 1)};
 }
 
+std::unique_ptr<google::cloud::storage::Client> createGCSClient() {
+  // TODO set options based on env variables
+  return std::make_unique<google::cloud::storage::Client>();
+}
+
 } // namespace fbpcf::gcp
