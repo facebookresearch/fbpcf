@@ -5,9 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <type_traits>
+#include <utility>
+
 #include <gtest/gtest.h>
 
 #include "fbpcf/io/FileManagerUtil.h"
+#include "fbpcf/io/GCSFileManager.h"
 
 namespace fbpcf::io {
 TEST(FileManagerUtilTest, TestGetS3FileType) {
@@ -19,5 +23,20 @@ TEST(FileManagerUtilTest, TestGetS3FileType) {
 TEST(FileManagerUtilTest, TestGetLocalFileType) {
   auto type = getFileType("/root/local");
   EXPECT_EQ(FileType::Local, type);
+}
+
+TEST(FileManagerUtilTest, TestGetGCSFileType) {
+  auto type =
+      getFileType("https://storage.cloud.google.com/bucket-name/key-name");
+  EXPECT_EQ(FileType::GCS, type);
+}
+
+TEST(FileManagerUtilTest, TestGetGCSFileManager) {
+  auto fileManager =
+      getFileManager("https://storage.cloud.google.com/bucket-name/key-name");
+  auto& fileManagerRef = *fileManager;
+  EXPECT_EQ(
+      typeid(fileManagerRef),
+      typeid(fbpcf::GCSFileManager<google::cloud::storage::Client>));
 }
 } // namespace fbpcf::io

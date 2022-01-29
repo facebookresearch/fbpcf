@@ -14,7 +14,7 @@
 #include "IInputStream.h"
 
 namespace fbpcf::io {
-enum class FileType { Local, S3 };
+enum class FileType { Local, GCS, S3 };
 
 std::unique_ptr<IInputStream> getInputStream(const std::string& fileName);
 
