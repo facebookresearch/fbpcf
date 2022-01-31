@@ -7,11 +7,9 @@
 
 #include "FileManagerUtil.h"
 
-#include <fbpcf/gcp/GCSUtil.h>
 #include "LocalFileManager.h"
 #include "S3FileManager.h"
 #include "fbpcf/aws/S3Util.h"
-#include "fbpcf/io/GCSFileManager.h"
 
 namespace fbpcf::io {
 std::unique_ptr<IInputStream> getInputStream(const std::string& fileName) {
@@ -31,13 +29,7 @@ void write(const std::string& fileName, const std::string& data) {
 
 FileType getFileType(const std::string& fileName) {
   // S3 file format: https://bucket-name.s3.Region.amazonaws.com/key-name
-  if (fileName.find("https://", 0) != 0) {
-    return FileType::Local;
-  } else if (fileName.find("https://storage.cloud.google.com") == 0) {
-    return FileType::GCS;
-  } else {
-    return FileType::S3;
-  }
+  return fileName.find("https://", 0) == 0 ? FileType::S3 : FileType::Local;
 }
 
 std::unique_ptr<fbpcf::IFileManager> getFileManager(
@@ -48,9 +40,6 @@ std::unique_ptr<fbpcf::IFileManager> getFileManager(
     // Other options have to be set via environment variables
     return std::make_unique<S3FileManager>(fbpcf::aws::createS3Client(
         fbpcf::aws::S3ClientOption{.region = ref.region}));
-  } else if (type == FileType ::GCS) {
-    return std::make_unique<GCSFileManager<google::cloud::storage::Client>>(
-        fbpcf::gcp::createGCSClient());
   } else {
     return std::make_unique<LocalFileManager>();
   }
