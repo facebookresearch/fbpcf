@@ -28,7 +28,7 @@ target_link_libraries(
   INTERFACE
   ${AWSSDK_LINK_LIBRARIES}
   ${EMP-OT_LIBRARIES}
-  google_cloud_cpp_storage
+  google-cloud-cpp::storage
   Folly::folly
   re2)
 

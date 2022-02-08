@@ -54,6 +54,8 @@ COPY docker/CMakeLists.txt .
 COPY docker/cmake/ ./cmake
 COPY fbpcf/ ./fbpcf
 COPY example/ ./example
+# Link all libraries post-install
+RUN ldconfig
 
 RUN cmake . -DTHREADING=ON -DEMP_USE_RANDOM_DEVICE=ON
 RUN make && make install
