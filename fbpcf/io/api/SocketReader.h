@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include <openssl/ssl.h>
+
 #include "fbpcf/io/api/ICloser.h"
 #include "fbpcf/io/api/IReader.h"
 
@@ -17,6 +19,18 @@ socket. It is constructed with a socket file descriptor.
 */
 class SocketReader : public IReader, public ICloser {
  public:
+  /*
+   * Creates a SocketReader to read from the given
+   * file descriptor.
+   */
+  SocketReader(FILE* socket);
+
+  /*
+   * Creates a SocketReader to read from
+   * the provided SSL/TLS connection object.
+   */
+  SocketReader(SSL* ssl);
+
   int close() override;
   int read(char buf[]) override;
   ~SocketReader() override;
