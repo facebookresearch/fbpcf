@@ -6,6 +6,9 @@
  */
 
 #pragma once
+
+#include <openssl/ssl.h>
+
 #include "fbpcf/io/api/ICloser.h"
 #include "fbpcf/io/api/IWriter.h"
 
@@ -17,6 +20,18 @@ socket. It is constructed with a socket file descriptor.
 */
 class SocketWriter : public IWriter, public ICloser {
  public:
+  /*
+   * Creates a SocketWriter to write to the given
+   * file descriptor.
+   */
+  SocketWriter(FILE* socket);
+
+  /*
+   * Creates a SocketReader to write to
+   * the provided SSL/TLS connection object.
+   */
+  SocketWriter(SSL* ssl);
+
   int close() override;
   int write(char buf[]) override;
   ~SocketWriter() override;
