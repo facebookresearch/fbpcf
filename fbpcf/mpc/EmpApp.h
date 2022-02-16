@@ -20,8 +20,17 @@ namespace fbpcf {
 template <class GameType, class InputDataType, class OutputDataType>
 class EmpApp {
  public:
-  EmpApp(Party party, const std::string& serverIp, uint16_t port)
-      : party_{party}, serverIp_{serverIp}, port_{port} {}
+  EmpApp(
+      Party party,
+      const std::string& serverIp,
+      uint16_t port,
+      bool useTls = false,
+      const std::string& tlsDir = "")
+      : party_{party},
+        serverIp_{serverIp},
+        port_{port},
+        useTls_{useTls},
+        tlsDir_{tlsDir} {}
 
   virtual ~EmpApp(){};
 
@@ -42,8 +51,11 @@ class EmpApp {
   virtual void putOutputData(const OutputDataType& output) = 0;
 
  protected:
-  Party party_;
-  std::string serverIp_;
-  uint16_t port_;
+  Party party_; // Alice or Bob (Publisher or Partner)
+  std::string serverIp_; // Ip address of the publisher
+  uint16_t port_; // Port to bind to, or port to connect to (for publisher or
+                  // partner respectively)
+  bool useTls_; // whether to use TLS for communication
+  const std::string& tlsDir_; // directory that holds the TLS certificates/keys
 };
 } // namespace fbpcf
