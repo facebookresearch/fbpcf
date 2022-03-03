@@ -11,6 +11,10 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "fbpcf/io/LocalFileManager.h"
+#include "folly/Format.h"
+#include "folly/Random.h"
+
 #include "fbpcf/exception/GcpException.h"
 #include "fbpcf/gcp/MockGCSClient.h"
 #include "fbpcf/io/GCSFileManager.h"
@@ -18,11 +22,24 @@
 
 using ::testing::_;
 
-const std::string GCSUrl = "https://storage.cloud.google.com/bucket/key";
-
 namespace fbpcf {
-TEST(GCSFileManager, testReadWithException) {
-  auto GCSClient = std::make_shared<MockGCSClient>();
+class GCSFileManagerTest : public ::testing::Test {
+ protected:
+  void TearDown() override {
+    std::remove(filePath_.c_str());
+  }
+
+  void SetUp() override {
+    GCSClient = std::make_shared<MockGCSClient>();
+  }
+
+  std::shared_ptr<MockGCSClient> GCSClient;
+  const std::string testData_ = "this is test data";
+  const std::string filePath_ =
+      folly::sformat("./testfile_{}", folly::Random::rand32());
+  const std::string GCSUrl = "https://storage.cloud.google.com/bucket/key";
+};
+TEST_F(GCSFileManagerTest, testReadWithException) {
   EXPECT_CALL(*GCSClient, ReadObject(_, _, _)).Times(1);
   GCSFileManager<MockGCSClient> fileManager{std::move(GCSClient)};
 
@@ -31,13 +48,23 @@ TEST(GCSFileManager, testReadWithException) {
   EXPECT_THROW(fileManager.read(GCSUrl), GcpException);
 }
 
-TEST(GCSFileManager, testWriteWithException) {
-  auto GCSClient = std::make_shared<MockGCSClient>();
+TEST_F(GCSFileManagerTest, testWriteWithException) {
   EXPECT_CALL(*GCSClient, WriteObject(_, _)).Times(1);
   GCSFileManager<MockGCSClient> fileManager{std::move(GCSClient)};
 
   // this call is failing because the mocked response for default
   // ObjectWriteStream will have status.ok() = false
-  EXPECT_THROW(fileManager.write(GCSUrl, "ABC"), GcpException);
+  EXPECT_THROW(fileManager.write(GCSUrl, testData_), GcpException);
+}
+
+TEST_F(GCSFileManagerTest, testCopyWithException) {
+  auto localFileManager = LocalFileManager{};
+  localFileManager.write(filePath_, testData_);
+  EXPECT_CALL(*GCSClient, UploadFile(_, _, _)).Times(1);
+  GCSFileManager<MockGCSClient> fileManager{std::move(GCSClient)};
+
+  // this call is failing because the mocked response for default
+  // ObjectWriteStream will have status.ok() = false
+  EXPECT_THROW(fileManager.copy(filePath_, GCSUrl), GcpException);
 }
 } // namespace fbpcf

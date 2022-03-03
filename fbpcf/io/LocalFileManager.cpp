@@ -51,6 +51,13 @@ void LocalFileManager::write(
   os << data;
 }
 
+void LocalFileManager::copy(
+    const std::string& sourceFile,
+    const std::string& destination) {
+  auto fileData = read(sourceFile);
+  write(destination, fileData);
+}
+
 std::string LocalFileManager::readBytes(
     const std::string& fileName,
     std::size_t start,

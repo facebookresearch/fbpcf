@@ -27,5 +27,10 @@ class MockGCSClient : public gcs::Client {
       gcs::ObjectWriteStream,
       WriteObject,
       (const std::string, const std::string));
+
+  MOCK_METHOD(
+      google::cloud::StatusOr<gcs::ObjectMetadata>,
+      UploadFile,
+      (const std::string, const std::string, const std::string));
 };
 } // namespace fbpcf

@@ -25,6 +25,10 @@ class IFileManager {
 
   virtual void write(const std::string& fileName, const std::string& data) = 0;
 
+  virtual void copy(
+      const std::string& sourceFile,
+      const std::string& destination) = 0;
+
   virtual std::string readBytes(
       const std::string& fileName,
       std::size_t start,

@@ -7,12 +7,16 @@
 
 #include "S3FileManager.h"
 
+#include <fstream>
+#include <istream>
 #include <memory>
 #include <sstream>
 
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/PutObjectRequest.h>
+#include <string>
 
+#include "LocalFileManager.h"
 #include "S3InputStream.h"
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/AwsException.h"
@@ -73,13 +77,27 @@ std::string S3FileManager::read(const std::string& fileName) {
 void S3FileManager::write(
     const std::string& fileName,
     const std::string& data) {
+  auto ss = std::make_shared<std::stringstream>(data);
+  writeDataStream(fileName, ss);
+}
+
+void S3FileManager::copy(
+    const std::string& sourceFile,
+    const std::string& destination) {
+  std::shared_ptr<std::iostream> sourceData = std::make_shared<std::fstream>(
+      sourceFile.c_str(), std::ios_base::in | std::ios_base::binary);
+  writeDataStream(destination, sourceData);
+}
+
+void S3FileManager::writeDataStream(
+    const std::string& fileName,
+    std::shared_ptr<std::basic_iostream<char, std::char_traits<char>>>
+        dataStream) {
   const auto& ref = fbpcf::aws::uriToObjectReference(fileName);
   Aws::S3::Model::PutObjectRequest request;
   request.SetBucket(ref.bucket);
   request.SetKey(ref.key);
-
-  auto ss = std::make_shared<std::stringstream>(data);
-  request.SetBody(ss);
+  request.SetBody(dataStream);
   auto outcome = s3Client_->PutObject(request);
 
   if (!outcome.IsSuccess()) {

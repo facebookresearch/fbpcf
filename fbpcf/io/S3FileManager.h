@@ -10,8 +10,10 @@
 #include <memory>
 
 #include <aws/s3/S3Client.h>
+#include <sstream>
 
 #include "IFileManager.h"
+#include "IInputStream.h"
 
 namespace fbpcf {
 class S3FileManager : public IFileManager {
@@ -27,6 +29,14 @@ class S3FileManager : public IFileManager {
   std::string read(const std::string& fileName) override;
 
   void write(const std::string& fileName, const std::string& data) override;
+
+  void copy(const std::string& sourceFile, const std::string& destination)
+      override;
+
+  void writeDataStream(
+      const std::string& fileName,
+      std::shared_ptr<std::basic_iostream<char, std::char_traits<char>>>
+          dataStream);
 
  private:
   std::unique_ptr<Aws::S3::S3Client> s3Client_;
