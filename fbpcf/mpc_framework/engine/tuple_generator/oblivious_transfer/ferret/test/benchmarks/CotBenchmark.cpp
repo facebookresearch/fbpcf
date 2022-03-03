@@ -50,7 +50,7 @@ std::tuple<std::vector<__m128i>, std::vector<__m128i>, __m128i> getBaseOT(
   return {baseOTSend, baseOTReceive, delta};
 }
 
-BENCHMARK_COUNTERS(SinglePointCot, counters, n) {
+BENCHMARK_COUNTERS(SinglePointCot, counters) {
   BenchmarkSuspender braces;
   auto [agent0, agent1] = util::getSocketAgents();
 
@@ -63,38 +63,35 @@ BENCHMARK_COUNTERS(SinglePointCot, counters, n) {
 
   braces.dismiss();
 
-  auto count = n;
-  while (n--) {
-    auto senderTask = std::async(
-        [](std::unique_ptr<ferret::ISinglePointCot> spcot,
-           std::vector<__m128i>&& baseCot,
-           __m128i delta) {
-          spcot->senderInit(delta);
-          return spcot->senderExtend(std::move(baseCot));
-        },
-        std::move(sender),
-        std::move(baseOTSend),
-        delta);
-    auto receiverTask = std::async(
-        [](std::unique_ptr<ferret::ISinglePointCot> spcot,
-           std::vector<__m128i>&& baseCot) {
-          spcot->receiverInit();
-          return spcot->receiverExtend(std::move(baseCot));
-        },
-        std::move(receiver),
-        std::move(baseOTReceive));
+  auto senderTask = std::async(
+      [](std::unique_ptr<ferret::ISinglePointCot> spcot,
+         std::vector<__m128i>&& baseCot,
+         __m128i delta) {
+        spcot->senderInit(delta);
+        return spcot->senderExtend(std::move(baseCot));
+      },
+      std::move(sender),
+      std::move(baseOTSend),
+      delta);
+  auto receiverTask = std::async(
+      [](std::unique_ptr<ferret::ISinglePointCot> spcot,
+         std::vector<__m128i>&& baseCot) {
+        spcot->receiverInit();
+        return spcot->receiverExtend(std::move(baseCot));
+      },
+      std::move(receiver),
+      std::move(baseOTReceive));
 
-    senderTask.get();
-    receiverTask.get();
-  }
+  senderTask.get();
+  receiverTask.get();
 
   BENCHMARK_SUSPEND {
     auto [senderSent, senderReceived] = agent0->getTrafficStatistics();
-    counters["transmitted_bytes"] = (senderSent + senderReceived) / count;
+    counters["transmitted_bytes"] = senderSent + senderReceived;
   }
 }
 
-BENCHMARK_COUNTERS(MultiPointCot, counters, n) {
+BENCHMARK_COUNTERS(MultiPointCot, counters) {
   BenchmarkSuspender braces;
   auto [agent0, agent1] = util::getSocketAgents();
 
@@ -110,38 +107,35 @@ BENCHMARK_COUNTERS(MultiPointCot, counters, n) {
 
   braces.dismiss();
 
-  auto count = n;
-  while (n--) {
-    auto senderTask = std::async(
-        [](std::unique_ptr<ferret::IMultiPointCot> mpcot,
-           std::vector<__m128i>&& baseCot,
-           __m128i delta) {
-          mpcot->senderInit(delta, ferret::kExtendedSize, ferret::kWeight);
-          return mpcot->senderExtend(std::move(baseCot));
-        },
-        std::move(sender),
-        std::move(baseOTSend),
-        delta);
-    auto receiverTask = std::async(
-        [](std::unique_ptr<ferret::IMultiPointCot> mpcot,
-           std::vector<__m128i>&& baseCot) {
-          mpcot->receiverInit(ferret::kExtendedSize, ferret::kWeight);
-          return mpcot->receiverExtend(std::move(baseCot));
-        },
-        std::move(receiver),
-        std::move(baseOTReceive));
+  auto senderTask = std::async(
+      [](std::unique_ptr<ferret::IMultiPointCot> mpcot,
+         std::vector<__m128i>&& baseCot,
+         __m128i delta) {
+        mpcot->senderInit(delta, ferret::kExtendedSize, ferret::kWeight);
+        return mpcot->senderExtend(std::move(baseCot));
+      },
+      std::move(sender),
+      std::move(baseOTSend),
+      delta);
+  auto receiverTask = std::async(
+      [](std::unique_ptr<ferret::IMultiPointCot> mpcot,
+         std::vector<__m128i>&& baseCot) {
+        mpcot->receiverInit(ferret::kExtendedSize, ferret::kWeight);
+        return mpcot->receiverExtend(std::move(baseCot));
+      },
+      std::move(receiver),
+      std::move(baseOTReceive));
 
-    senderTask.get();
-    receiverTask.get();
-  }
+  senderTask.get();
+  receiverTask.get();
 
   BENCHMARK_SUSPEND {
     auto [senderSent, senderReceived] = agent0->getTrafficStatistics();
-    counters["transmitted_bytes"] = (senderSent + senderReceived) / count;
+    counters["transmitted_bytes"] = senderSent + senderReceived;
   }
 }
 
-BENCHMARK_COUNTERS(RcotExtender, counters, n) {
+BENCHMARK_COUNTERS(RcotExtender, counters) {
   BenchmarkSuspender braces;
   auto [agent0, agent1] = util::getSocketAgents();
 
@@ -162,37 +156,34 @@ BENCHMARK_COUNTERS(RcotExtender, counters, n) {
 
   braces.dismiss();
 
-  auto count = n;
-  while (n--) {
-    auto senderTask = std::async(
-        [](std::unique_ptr<ferret::IRcotExtender> rcotExtender,
-           std::vector<__m128i>&& baseCot,
-           __m128i delta) {
-          rcotExtender->senderInit(
-              delta, ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
-          rcotExtender->senderExtendRcot(std::move(baseCot));
-          return rcotExtender;
-        },
-        std::move(extender0),
-        std::move(baseOTSend),
-        delta);
-    auto receiverTask = std::async(
-        [](std::unique_ptr<ferret::IRcotExtender> rcotExtender,
-           std::vector<__m128i>&& baseCot) {
-          rcotExtender->receiverInit(
-              ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
-          rcotExtender->receiverExtendRcot(std::move(baseCot));
-        },
-        std::move(extender1),
-        std::move(baseOTReceive));
+  auto senderTask = std::async(
+      [](std::unique_ptr<ferret::IRcotExtender> rcotExtender,
+         std::vector<__m128i>&& baseCot,
+         __m128i delta) {
+        rcotExtender->senderInit(
+            delta, ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
+        rcotExtender->senderExtendRcot(std::move(baseCot));
+        return rcotExtender;
+      },
+      std::move(extender0),
+      std::move(baseOTSend),
+      delta);
+  auto receiverTask = std::async(
+      [](std::unique_ptr<ferret::IRcotExtender> rcotExtender,
+         std::vector<__m128i>&& baseCot) {
+        rcotExtender->receiverInit(
+            ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
+        rcotExtender->receiverExtendRcot(std::move(baseCot));
+      },
+      std::move(extender1),
+      std::move(baseOTReceive));
 
-    extender0 = senderTask.get();
-    receiverTask.get();
-  }
+  extender0 = senderTask.get();
+  receiverTask.get();
 
   BENCHMARK_SUSPEND {
     auto [senderSent, senderReceived] = extender0->getTrafficStatistics();
-    counters["transmitted_bytes"] = (senderSent + senderReceived) / count;
+    counters["transmitted_bytes"] = senderSent + senderReceived;
   }
 }
 
