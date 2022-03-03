@@ -22,12 +22,15 @@ class LocalFileManagerTest : public ::testing::Test {
  protected:
   void TearDown() override {
     std::remove(filePath_.c_str());
+    std::remove(copiedFilePath_.c_str());
     std::remove(nonExistentFolderPath_.c_str());
   }
 
   const std::string testData_ = "this is test data";
   const std::string filePath_ =
       folly::sformat("./testfile_{}", folly::Random::rand32());
+  const std::string copiedFilePath_ =
+      folly::sformat("./copy_testfile_{}", folly::Random::rand32());
   const std::string nonExistentFolderPath_ =
       folly::sformat("fakedfolder/testfile_{}", folly::Random::rand32());
 };
@@ -72,5 +75,13 @@ TEST_F(LocalFileManagerTest, testByteReadException) {
   fileManager.write(filePath_, testData_);
   EXPECT_THROW(fileManager.readBytes(filePath_, 100, 101), PcfException);
   EXPECT_THROW(fileManager.readBytes(filePath_, 5, 1), PcfException);
+}
+
+TEST_F(LocalFileManagerTest, testCopy) {
+  LocalFileManager fileManager;
+  fileManager.write(filePath_, testData_);
+  fileManager.copy(filePath_, copiedFilePath_);
+  auto copiedData = fileManager.read(copiedFilePath_);
+  EXPECT_EQ(testData_, copiedData);
 }
 } // namespace fbpcf

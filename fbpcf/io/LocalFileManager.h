@@ -21,6 +21,9 @@ class LocalFileManager : public IFileManager {
 
   void write(const std::string& fileName, const std::string& data) override;
 
+  void copy(const std::string& sourceFile, const std::string& destination)
+      override;
+
   std::string
   readBytes(const std::string& fileName, std::size_t start, std::size_t end);
 };

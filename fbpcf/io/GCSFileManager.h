@@ -9,6 +9,9 @@
 
 #include <google/cloud/storage/client.h>
 
+#include <fbpcf/exception/GcpException.h>
+#include <fbpcf/gcp/GCSUtil.h>
+#include "IInputStream.h"
 #include "fbpcf/io/IFileManager.h"
 
 #include <google/cloud/storage/download_options.h>
@@ -35,9 +38,13 @@ class GCSFileManager : public IFileManager {
       const std::string& fileName,
       std::size_t start,
       std::size_t end) override;
+
   std::string read(const std::string& fileName) override;
 
   void write(const std::string& fileName, const std::string& data) override;
+
+  void copy(const std::string& sourceFile, const std::string& destination)
+      override;
 
  private:
   std::shared_ptr<ClientCls> GCSClient_;
@@ -96,4 +103,14 @@ void GCSFileManager<ClientCls>::write(
   }
 }
 
+template <class ClientCls>
+void GCSFileManager<ClientCls>::copy(
+    const std::string& sourceFile,
+    const std::string& destination) {
+  const auto& ref = fbpcf::gcp::uriToObjectReference(destination);
+  auto uploader = GCSClient_->UploadFile(sourceFile, ref.bucket, ref.key);
+  if (!uploader) {
+    throw GcpException{uploader.status().message()};
+  }
+}
 } // namespace fbpcf
