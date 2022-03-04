@@ -10,6 +10,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_framework/scheduler/EagerScheduler.h"
+#include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/LazyScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/NetworkPlaintextScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/PlaintextScheduler.h"
@@ -20,13 +21,13 @@
 namespace fbpcf::mpc_framework::scheduler {
 
 const bool unsafe = false;
+const int numberOfParties = 2;
 
 void runWithScheduler(
     SchedulerType schedulerType,
     std::function<void(std::unique_ptr<IScheduler> scheduler, int8_t myID)>
         testBody) {
   auto schedulerCreator = getSchedulerCreator<unsafe>(schedulerType);
-  auto numberOfParties = 2;
   auto agentFactories =
       engine::communication::getInMemoryAgentFactory(numberOfParties);
 
@@ -485,4 +486,223 @@ void testReferenceCountBatch(
 TEST_P(SchedulerTestFixture, testReferenceCountBatch) {
   runWithScheduler(GetParam(), testReferenceCountBatch);
 }
+
+class CompositeSchedulerTestFixture
+    : public ::testing::TestWithParam<std::tuple<SchedulerType, size_t>> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    SchedulerTest,
+    CompositeSchedulerTestFixture,
+    ::testing::Combine(
+        ::testing::Values(
+            SchedulerType::Plaintext,
+            SchedulerType::NetworkPlaintext),
+        ::testing::Values(16, 256, 1024)),
+    [](const testing::TestParamInfo<CompositeSchedulerTestFixture::ParamType>&
+           info) {
+      return getSchedulerName(std::get<0>(info.param)) + "_" +
+          std::to_string(std::get<1>(info.param));
+    });
+
+void testCompositeAND(
+    std::unique_ptr<IScheduler> scheduler,
+    int8_t myID,
+    size_t compositeSize) {
+  for (auto sharedBit : {true, false}) {
+    // set-up values
+    std::vector<bool> rightBits(compositeSize, false);
+    for (int i = 0; i * i < rightBits.size(); ++i) {
+      rightBits[i * i] = true;
+    }
+    for (int i = 0; i * i * i < rightBits.size(); ++i) {
+      rightBits[i * i * i] = true;
+    }
+
+    // set-up input wires
+    auto publicSharedWire = scheduler->publicBooleanInput(sharedBit);
+    auto privateSharedWire = scheduler->privateBooleanInput(sharedBit, 0);
+
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> publicRightWires(
+        compositeSize);
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> privateRightWires(
+        compositeSize);
+    for (int i = 0; i < compositeSize; ++i) {
+      publicRightWires[i] = scheduler->publicBooleanInput(rightBits[i]);
+      privateRightWires[i] =
+          scheduler->privateBooleanInput(rightBits[i], i % numberOfParties);
+    }
+
+    // Private and private
+    {
+      auto resultWires = scheduler->privateAndPrivateComposite(
+          privateSharedWire, privateRightWires);
+      EXPECT_EQ(resultWires.size(), compositeSize);
+      for (int i = 0; i < compositeSize; ++i) {
+        auto val = scheduler->getBooleanValue(
+            scheduler->openBooleanValueToParty(resultWires[i], 0));
+        if (myID == 0) {
+          EXPECT_EQ(val, sharedBit & rightBits[i])
+              << "Result different in index " + std::to_string(i);
+        }
+      }
+    }
+
+    // Public And Private
+    {
+      auto resultWires1 = scheduler->privateAndPublicComposite(
+          privateSharedWire, publicRightWires);
+      auto resultWires2 = scheduler->privateAndPublicComposite(
+          publicSharedWire, privateRightWires);
+      EXPECT_EQ(resultWires1.size(), compositeSize);
+      EXPECT_EQ(resultWires2.size(), compositeSize);
+      for (int i = 0; i < compositeSize; ++i) {
+        auto val1 = scheduler->getBooleanValue(
+            scheduler->openBooleanValueToParty(resultWires1[i], 0));
+        auto val2 = scheduler->getBooleanValue(
+            scheduler->openBooleanValueToParty(resultWires2[i], 1));
+        if (myID == 0) {
+          EXPECT_EQ(val1, sharedBit & rightBits[i])
+              << "Result different in index " + std::to_string(i);
+        } else if (myID == 1) {
+          EXPECT_EQ(val2, sharedBit & rightBits[i])
+              << "Result different in index " + std::to_string(i);
+        }
+      }
+    }
+
+    // Public and Public
+    {
+      auto resultWires = scheduler->publicAndPublicComposite(
+          publicSharedWire, publicRightWires);
+      EXPECT_EQ(resultWires.size(), compositeSize);
+      for (int i = 0; i < compositeSize; ++i) {
+        EXPECT_EQ(
+            scheduler->getBooleanValue(resultWires[i]),
+            sharedBit & rightBits[i]);
+      }
+    }
+  }
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 8 * compositeSize);
+  EXPECT_EQ(gateCount.second, 4 + 10 * compositeSize);
+}
+
+TEST_P(CompositeSchedulerTestFixture, testCompositeAND) {
+  auto schedulerType = std::get<0>(GetParam());
+  auto andSize = std::get<1>(GetParam());
+  runWithScheduler(
+      schedulerType,
+      [andSize](std::unique_ptr<IScheduler> scheduler, int8_t myID) {
+        testCompositeAND(std::move(scheduler), myID, andSize);
+      });
+}
+
+void testCompositeANDBatch(
+    std::unique_ptr<IScheduler> scheduler,
+    int8_t myID,
+    size_t compositeSize) {
+  for (auto sharedBit : {true, false}) {
+    // set-up values
+    std::vector<bool> leftBits = {sharedBit, !sharedBit, sharedBit};
+    std::vector<std::vector<bool>> rightBits;
+    for (int i = 0; i < compositeSize; i++) {
+      rightBits.push_back({false, true, false});
+    }
+    for (int i = 0; i * i < rightBits.size(); ++i) {
+      rightBits[i * i] = {true, true, false};
+    }
+    for (int i = 0; i * i * i < rightBits.size(); ++i) {
+      rightBits[i * i * i] = {false, false, true};
+    }
+
+    // set-up input wires
+    auto publicSharedWire = scheduler->publicBooleanInputBatch(leftBits);
+    auto privateSharedWire = scheduler->privateBooleanInputBatch(leftBits, 0);
+
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> publicRightWires(
+        compositeSize);
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> privateRightWires(
+        compositeSize);
+    for (int i = 0; i < compositeSize; ++i) {
+      publicRightWires[i] = scheduler->publicBooleanInputBatch(rightBits[i]);
+      privateRightWires[i] = scheduler->privateBooleanInputBatch(
+          rightBits[i], i % numberOfParties);
+    }
+
+    // Private and private
+    {
+      auto resultWires = scheduler->privateAndPrivateCompositeBatch(
+          privateSharedWire, privateRightWires);
+      EXPECT_EQ(resultWires.size(), compositeSize);
+      for (int i = 0; i < compositeSize; ++i) {
+        auto val = scheduler->getBooleanValueBatch(
+            scheduler->openBooleanValueToPartyBatch(resultWires[i], 0));
+        if (myID == 0) {
+          testVectorEq(
+              val,
+              {leftBits[0] && rightBits[i][0],
+               leftBits[1] && rightBits[i][1],
+               leftBits[2] && rightBits[i][2]});
+        }
+      }
+    }
+
+    // Public And Private
+    {
+      auto resultWires1 = scheduler->privateAndPublicCompositeBatch(
+          privateSharedWire, publicRightWires);
+      auto resultWires2 = scheduler->privateAndPublicCompositeBatch(
+          publicSharedWire, privateRightWires);
+      EXPECT_EQ(resultWires1.size(), compositeSize);
+      EXPECT_EQ(resultWires2.size(), compositeSize);
+      for (int i = 0; i < compositeSize; ++i) {
+        auto val1 = scheduler->getBooleanValueBatch(
+            scheduler->openBooleanValueToPartyBatch(resultWires1[i], 0));
+        auto val2 = scheduler->getBooleanValueBatch(
+            scheduler->openBooleanValueToPartyBatch(resultWires2[i], 1));
+        if (myID == 0) {
+          testVectorEq(
+              val1,
+              {leftBits[0] && rightBits[i][0],
+               leftBits[1] && rightBits[i][1],
+               leftBits[2] && rightBits[i][2]});
+        } else if (myID == 1) {
+          testVectorEq(
+              val2,
+              {leftBits[0] && rightBits[i][0],
+               leftBits[1] && rightBits[i][1],
+               leftBits[2] && rightBits[i][2]});
+        }
+      }
+    }
+
+    // Public and Public
+    {
+      auto resultWires = scheduler->publicAndPublicCompositeBatch(
+          publicSharedWire, publicRightWires);
+      EXPECT_EQ(resultWires.size(), compositeSize);
+      for (int i = 0; i < compositeSize; ++i) {
+        testVectorEq(
+            scheduler->getBooleanValueBatch(resultWires[i]),
+            {leftBits[0] && rightBits[i][0],
+             leftBits[1] && rightBits[i][1],
+             leftBits[2] && rightBits[i][2]});
+      }
+    }
+  }
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 24 * compositeSize);
+  EXPECT_EQ(gateCount.second, 12 + 30 * compositeSize);
+}
+
+TEST_P(CompositeSchedulerTestFixture, testCompositeANDBatch) {
+  auto schedulerType = std::get<0>(GetParam());
+  auto andSize = std::get<1>(GetParam());
+  runWithScheduler(
+      schedulerType,
+      [andSize](std::unique_ptr<IScheduler> scheduler, int8_t myID) {
+        testCompositeANDBatch(std::move(scheduler), myID, andSize);
+      });
+}
+
 } // namespace fbpcf::mpc_framework::scheduler

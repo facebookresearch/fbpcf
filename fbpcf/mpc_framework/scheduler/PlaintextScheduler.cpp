@@ -157,42 +157,42 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::privateAndPrivateComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return computeCompositeAND(left, rights, nonFreeGates_);
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::privateAndPrivateCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return validateAndComputeBatchCompositeAND(left, rights, nonFreeGates_);
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::privateAndPublicComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return computeCompositeAND(left, rights, freeGates_);
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::privateAndPublicCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return validateAndComputeBatchCompositeAND(left, rights, freeGates_);
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::publicAndPublicComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return computeCompositeAND(left, rights, freeGates_);
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::publicAndPublicCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return validateAndComputeBatchCompositeAND(left, rights, freeGates_);
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateXorPrivate(
@@ -291,5 +291,43 @@ void PlaintextScheduler::decreaseReferenceCount(
 void PlaintextScheduler::decreaseReferenceCountBatch(
     WireId<IScheduler::Boolean> id) {
   wireKeeper_->decreaseBatchReferenceCount(id);
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::computeCompositeAND(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights,
+    uint64_t& gateCounter) {
+  gateCounter += rights.size();
+  bool leftValue = wireKeeper_->getBooleanValue(left);
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> rst;
+  for (auto rightWire : rights) {
+    rst.push_back(wireKeeper_->allocateBooleanValue(
+        leftValue & wireKeeper_->getBooleanValue(rightWire)));
+  }
+
+  return rst;
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::validateAndComputeBatchCompositeAND(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights,
+    uint64_t& gateCounter) {
+  auto& leftValue = wireKeeper_->getBatchBooleanValue(left);
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> returnWires;
+  for (auto rightWire : rights) {
+    auto& rightValue = wireKeeper_->getBatchBooleanValue(rightWire);
+    if (leftValue.size() != rightValue.size()) {
+      throw std::invalid_argument("Batch inputs have differing sizes");
+    }
+    std::vector<bool> rst;
+    for (int i = 0; i < leftValue.size(); i++) {
+      rst.push_back(leftValue[i] & rightValue[i]);
+    }
+    returnWires.push_back(wireKeeper_->allocateBatchBooleanValue(rst));
+  }
+  gateCounter += leftValue.size() * rights.size();
+  return returnWires;
 }
 } // namespace fbpcf::mpc_framework::scheduler

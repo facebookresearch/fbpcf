@@ -301,6 +301,18 @@ class PlaintextScheduler : public IScheduler {
 
  protected:
   std::unique_ptr<IWireKeeper> wireKeeper_;
+
+ private:
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> computeCompositeAND(
+      IScheduler::WireId<IScheduler::Boolean> left,
+      std::vector<IScheduler::WireId<IScheduler::Boolean>> rights,
+      uint64_t& gateCounter);
+
+  std::vector<IScheduler::WireId<IScheduler::Boolean>>
+  validateAndComputeBatchCompositeAND(
+      IScheduler::WireId<IScheduler::Boolean> left,
+      std::vector<IScheduler::WireId<IScheduler::Boolean>> rights,
+      uint64_t& gateCounter);
 };
 
 } // namespace fbpcf::mpc_framework::scheduler

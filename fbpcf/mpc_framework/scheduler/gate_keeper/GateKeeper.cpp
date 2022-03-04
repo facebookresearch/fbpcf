@@ -167,13 +167,13 @@ uint32_t GateKeeper::getFirstAvailableLevelForNewWire(
     GateType<isCompositeWire> gateType,
     IScheduler::WireId<IScheduler::Boolean> left,
     RightWireType<isCompositeWire> right) const {
-  uint32_t leftMaxLevelLevel = 0;
+  uint32_t leftMaxLevel = 0;
   if (left.isEmpty()) {
-    leftMaxLevelLevel = 0;
+    leftMaxLevel = 0;
   } else if constexpr (usingBatch) {
-    leftMaxLevelLevel = wireKeeper_->getBatchFirstAvailableLevel(left);
+    leftMaxLevel = wireKeeper_->getBatchFirstAvailableLevel(left);
   } else {
-    leftMaxLevelLevel = wireKeeper_->getFirstAvailableLevel(left);
+    leftMaxLevel = wireKeeper_->getFirstAvailableLevel(left);
   }
 
   uint32_t rightMaxLevel = 0;
@@ -202,9 +202,9 @@ uint32_t GateKeeper::getFirstAvailableLevelForNewWire(
 
   auto isFreeGate = GateClass<isCompositeWire>::isFree(gateType);
 
-  auto minAvailableLeft = leftMaxLevelLevel +
-      (IGateKeeper::isLevelFree(leftMaxLevelLevel) ? (isFreeGate ? 0 : 1)
-                                                   : (isFreeGate ? 1 : 2));
+  auto minAvailableLeft = leftMaxLevel +
+      (IGateKeeper::isLevelFree(leftMaxLevel) ? (isFreeGate ? 0 : 1)
+                                              : (isFreeGate ? 1 : 2));
   auto minAvailableRight = rightMaxLevel +
       (IGateKeeper::isLevelFree(rightMaxLevel) ? (isFreeGate ? 0 : 1)
                                                : (isFreeGate ? 1 : 2));
