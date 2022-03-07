@@ -11,12 +11,15 @@
 
 #include "common/init/Init.h"
 
+#include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IMultiPointCot.h"
+#include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/ISinglePointCot.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RcotExtenderFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCot.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCotFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/SinglePointCotFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
 #include "fbpcf/mpc_framework/engine/util/test/benchmarks/BenchmarkHelper.h"
+#include "fbpcf/mpc_framework/engine/util/test/benchmarks/NetworkedBenchmark.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
 using namespace folly;
@@ -50,141 +53,159 @@ std::tuple<std::vector<__m128i>, std::vector<__m128i>, __m128i> getBaseOT(
   return {baseOTSend, baseOTReceive, delta};
 }
 
-BENCHMARK_COUNTERS(SinglePointCot, counters) {
-  BenchmarkSuspender braces;
-  auto [agent0, agent1] = util::getSocketAgents();
+class SinglePointCotBenchmark final : public util::NetworkedBenchmark {
+ public:
+  void setup() override {
+    auto [agent0, agent1] = util::getSocketAgents();
+    agent0_ = std::move(agent0);
+    agent1_ = std::move(agent1);
 
-  ferret::SinglePointCotFactory factory;
-  auto sender = factory.create(agent0);
-  auto receiver = factory.create(agent1);
+    ferret::SinglePointCotFactory factory;
+    sender_ = factory.create(agent0_);
+    receiver_ = factory.create(agent1_);
 
-  auto baseOtSize = std::log2(ferret::kExtendedSize / ferret::kWeight);
-  auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
+    auto baseOtSize = std::log2(ferret::kExtendedSize / ferret::kWeight);
+    auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
+    baseOTSend_ = std::move(baseOTSend);
+    baseOTReceive_ = std::move(baseOTReceive);
 
-  braces.dismiss();
-
-  auto senderTask = std::async(
-      [](std::unique_ptr<ferret::ISinglePointCot> spcot,
-         std::vector<__m128i>&& baseCot,
-         __m128i delta) {
-        spcot->senderInit(delta);
-        return spcot->senderExtend(std::move(baseCot));
-      },
-      std::move(sender),
-      std::move(baseOTSend),
-      delta);
-  auto receiverTask = std::async(
-      [](std::unique_ptr<ferret::ISinglePointCot> spcot,
-         std::vector<__m128i>&& baseCot) {
-        spcot->receiverInit();
-        return spcot->receiverExtend(std::move(baseCot));
-      },
-      std::move(receiver),
-      std::move(baseOTReceive));
-
-  senderTask.get();
-  receiverTask.get();
-
-  BENCHMARK_SUSPEND {
-    auto [senderSent, senderReceived] = agent0->getTrafficStatistics();
-    counters["transmitted_bytes"] = senderSent + senderReceived;
+    sender_->senderInit(delta);
+    receiver_->receiverInit();
   }
+
+ protected:
+  void runSender() override {
+    sender_->senderExtend(std::move(baseOTSend_));
+  }
+
+  void runReceiver() override {
+    receiver_->receiverExtend(std::move(baseOTReceive_));
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    return agent0_->getTrafficStatistics();
+  }
+
+ private:
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
+
+  std::unique_ptr<ferret::ISinglePointCot> sender_;
+  std::unique_ptr<ferret::ISinglePointCot> receiver_;
+
+  std::vector<__m128i> baseOTSend_;
+  std::vector<__m128i> baseOTReceive_;
+};
+
+BENCHMARK_COUNTERS(SinglePointCot, counters) {
+  SinglePointCotBenchmark benchmark;
+  benchmark.runBenchmark(counters);
 }
+
+class MultiPointCotBenchmark final : public util::NetworkedBenchmark {
+ public:
+  void setup() override {
+    auto [agent0, agent1] = util::getSocketAgents();
+    agent0_ = std::move(agent0);
+    agent1_ = std::move(agent1);
+
+    ferret::RegularErrorMultiPointCotFactory factory(
+        std::make_unique<ferret::SinglePointCotFactory>());
+
+    sender_ = factory.create(agent0_);
+    receiver_ = factory.create(agent1_);
+
+    auto baseOtSize =
+        std::log2(ferret::kExtendedSize / ferret::kWeight) * ferret::kWeight;
+    auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
+    baseOTSend_ = std::move(baseOTSend);
+    baseOTReceive_ = std::move(baseOTReceive);
+
+    sender_->senderInit(delta, ferret::kExtendedSize, ferret::kWeight);
+    receiver_->receiverInit(ferret::kExtendedSize, ferret::kWeight);
+  }
+
+ protected:
+  void runSender() override {
+    sender_->senderExtend(std::move(baseOTSend_));
+  }
+
+  void runReceiver() override {
+    receiver_->receiverExtend(std::move(baseOTReceive_));
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    return agent0_->getTrafficStatistics();
+  }
+
+ private:
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
+
+  std::unique_ptr<ferret::IMultiPointCot> sender_;
+  std::unique_ptr<ferret::IMultiPointCot> receiver_;
+
+  std::vector<__m128i> baseOTSend_;
+  std::vector<__m128i> baseOTReceive_;
+};
 
 BENCHMARK_COUNTERS(MultiPointCot, counters) {
-  BenchmarkSuspender braces;
-  auto [agent0, agent1] = util::getSocketAgents();
-
-  ferret::RegularErrorMultiPointCotFactory factory(
-      std::make_unique<ferret::SinglePointCotFactory>());
-
-  auto sender = factory.create(agent0);
-  auto receiver = factory.create(agent1);
-
-  auto baseOtSize =
-      std::log2(ferret::kExtendedSize / ferret::kWeight) * ferret::kWeight;
-  auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
-
-  braces.dismiss();
-
-  auto senderTask = std::async(
-      [](std::unique_ptr<ferret::IMultiPointCot> mpcot,
-         std::vector<__m128i>&& baseCot,
-         __m128i delta) {
-        mpcot->senderInit(delta, ferret::kExtendedSize, ferret::kWeight);
-        return mpcot->senderExtend(std::move(baseCot));
-      },
-      std::move(sender),
-      std::move(baseOTSend),
-      delta);
-  auto receiverTask = std::async(
-      [](std::unique_ptr<ferret::IMultiPointCot> mpcot,
-         std::vector<__m128i>&& baseCot) {
-        mpcot->receiverInit(ferret::kExtendedSize, ferret::kWeight);
-        return mpcot->receiverExtend(std::move(baseCot));
-      },
-      std::move(receiver),
-      std::move(baseOTReceive));
-
-  senderTask.get();
-  receiverTask.get();
-
-  BENCHMARK_SUSPEND {
-    auto [senderSent, senderReceived] = agent0->getTrafficStatistics();
-    counters["transmitted_bytes"] = senderSent + senderReceived;
-  }
+  MultiPointCotBenchmark benchmark;
+  benchmark.runBenchmark(counters);
 }
 
-BENCHMARK_COUNTERS(RcotExtender, counters) {
-  BenchmarkSuspender braces;
-  auto [agent0, agent1] = util::getSocketAgents();
+class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
+ public:
+  void setup() override {
+    auto [agent0, agent1] = util::getSocketAgents();
 
-  ferret::RcotExtenderFactory factory(
-      std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
-      std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
-          std::make_unique<ferret::SinglePointCotFactory>()));
+    ferret::RcotExtenderFactory factory(
+        std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+        std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+            std::make_unique<ferret::SinglePointCotFactory>()));
 
-  auto extender0 = factory.create();
-  auto extender1 = factory.create();
+    sender_ = factory.create();
+    receiver_ = factory.create();
 
-  extender0->setCommunicationAgent(std::move(agent0));
-  extender1->setCommunicationAgent(std::move(agent1));
+    sender_->setCommunicationAgent(std::move(agent0));
+    receiver_->setCommunicationAgent(std::move(agent1));
 
-  auto baseOtSize = ferret::kBaseSize +
-      std::log2(ferret::kExtendedSize / ferret::kWeight) * ferret::kWeight;
-  auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
+    auto baseOtSize = ferret::kBaseSize +
+        std::log2(ferret::kExtendedSize / ferret::kWeight) * ferret::kWeight;
+    auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
+    baseOTSend_ = std::move(baseOTSend);
+    baseOTReceive_ = std::move(baseOTReceive);
 
-  braces.dismiss();
-
-  auto senderTask = std::async(
-      [](std::unique_ptr<ferret::IRcotExtender> rcotExtender,
-         std::vector<__m128i>&& baseCot,
-         __m128i delta) {
-        rcotExtender->senderInit(
-            delta, ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
-        rcotExtender->senderExtendRcot(std::move(baseCot));
-        return rcotExtender;
-      },
-      std::move(extender0),
-      std::move(baseOTSend),
-      delta);
-  auto receiverTask = std::async(
-      [](std::unique_ptr<ferret::IRcotExtender> rcotExtender,
-         std::vector<__m128i>&& baseCot) {
-        rcotExtender->receiverInit(
-            ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
-        rcotExtender->receiverExtendRcot(std::move(baseCot));
-      },
-      std::move(extender1),
-      std::move(baseOTReceive));
-
-  extender0 = senderTask.get();
-  receiverTask.get();
-
-  BENCHMARK_SUSPEND {
-    auto [senderSent, senderReceived] = extender0->getTrafficStatistics();
-    counters["transmitted_bytes"] = senderSent + senderReceived;
+    sender_->senderInit(
+        delta, ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
+    receiver_->receiverInit(
+        ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
   }
+
+ protected:
+  void runSender() override {
+    sender_->senderExtendRcot(std::move(baseOTSend_));
+  }
+
+  void runReceiver() override {
+    receiver_->receiverExtendRcot(std::move(baseOTReceive_));
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    return sender_->getTrafficStatistics();
+  }
+
+ private:
+  std::unique_ptr<ferret::IRcotExtender> sender_;
+  std::unique_ptr<ferret::IRcotExtender> receiver_;
+
+  std::vector<__m128i> baseOTSend_;
+  std::vector<__m128i> baseOTReceive_;
+};
+
+BENCHMARK_COUNTERS(RcotExtender, counters) {
+  RcotExtenderBenchmark benchmark;
+  benchmark.runBenchmark(counters);
 }
 
 int main(int argc, char* argv[]) {
