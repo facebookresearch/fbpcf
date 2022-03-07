@@ -1,0 +1,295 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+#include <stdexcept>
+#include <vector>
+
+#include "fbpcf/mpc_framework/scheduler/PlaintextScheduler.h"
+
+namespace fbpcf::mpc_framework::scheduler {
+
+PlaintextScheduler::PlaintextScheduler(std::unique_ptr<IWireKeeper> wireKeeper)
+    : wireKeeper_{std::move(wireKeeper)} {}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateBooleanInput(
+    bool v,
+    int /*partyId*/) {
+  freeGates_++;
+  return wireKeeper_->allocateBooleanValue(v);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::privateBooleanInputBatch(
+    const std::vector<bool>& v,
+    int /*partyId*/) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchBooleanValue(v);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::publicBooleanInput(
+    bool v) {
+  freeGates_++;
+  return wireKeeper_->allocateBooleanValue(v);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::publicBooleanInputBatch(const std::vector<bool>& v) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchBooleanValue(v);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::recoverBooleanWire(
+    bool v) {
+  freeGates_++;
+  return wireKeeper_->allocateBooleanValue(v);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::recoverBooleanWireBatch(const std::vector<bool>& v) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchBooleanValue(v);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::openBooleanValueToParty(
+    WireId<IScheduler::Boolean> src,
+    int /*partyId*/) {
+  nonFreeGates_++;
+  return wireKeeper_->allocateBooleanValue(wireKeeper_->getBooleanValue(src));
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::openBooleanValueToPartyBatch(
+    WireId<IScheduler::Boolean> src,
+    int /*partyId*/) {
+  auto& v = wireKeeper_->getBatchBooleanValue(src);
+  nonFreeGates_ += v.size();
+  return wireKeeper_->allocateBatchBooleanValue(v);
+}
+
+bool PlaintextScheduler::extractBooleanSecretShare(
+    WireId<IScheduler::Boolean> id) {
+  return wireKeeper_->getBooleanValue(id);
+}
+
+std::vector<bool> PlaintextScheduler::extractBooleanSecretShareBatch(
+    WireId<IScheduler::Boolean> id) {
+  return wireKeeper_->getBatchBooleanValue(id);
+}
+
+bool PlaintextScheduler::getBooleanValue(WireId<IScheduler::Boolean> id) {
+  return wireKeeper_->getBooleanValue(id);
+}
+
+std::vector<bool> PlaintextScheduler::getBooleanValueBatch(
+    WireId<IScheduler::Boolean> id) {
+  return wireKeeper_->getBatchBooleanValue(id);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateAndPrivate(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  nonFreeGates_++;
+  return wireKeeper_->allocateBooleanValue(
+      wireKeeper_->getBooleanValue(left) & wireKeeper_->getBooleanValue(right));
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::privateAndPrivateBatch(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  auto& leftValue = wireKeeper_->getBatchBooleanValue(left);
+  auto& rightValue = wireKeeper_->getBatchBooleanValue(right);
+  if (leftValue.size() != rightValue.size()) {
+    throw std::invalid_argument("invalid inputs!");
+  }
+  nonFreeGates_ += leftValue.size();
+  std::vector<bool> rst(leftValue.size());
+  for (int i = 0; i < leftValue.size(); i++) {
+    rst[i] = leftValue[i] & rightValue[i];
+  }
+  return wireKeeper_->allocateBatchBooleanValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateAndPublic(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  freeGates_++;
+  return wireKeeper_->allocateBooleanValue(
+      wireKeeper_->getBooleanValue(left) & wireKeeper_->getBooleanValue(right));
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::privateAndPublicBatch(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  auto& leftValue = wireKeeper_->getBatchBooleanValue(left);
+  auto& rightValue = wireKeeper_->getBatchBooleanValue(right);
+  if (leftValue.size() != rightValue.size()) {
+    throw std::invalid_argument("invalid inputs!");
+  }
+  freeGates_ += leftValue.size();
+  std::vector<bool> rst(leftValue.size());
+  for (int i = 0; i < leftValue.size(); i++) {
+    rst[i] = leftValue.at(i) & rightValue.at(i);
+  }
+  return wireKeeper_->allocateBatchBooleanValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::publicAndPublic(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  return privateAndPublic(left, right);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::publicAndPublicBatch(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  return privateAndPublicBatch(left, right);
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::privateAndPrivateComposite(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
+  throw std::runtime_error("Not implemented");
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::privateAndPrivateCompositeBatch(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
+  throw std::runtime_error("Not implemented");
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::privateAndPublicComposite(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
+  throw std::runtime_error("Not implemented");
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::privateAndPublicCompositeBatch(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
+  throw std::runtime_error("Not implemented");
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::publicAndPublicComposite(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
+  throw std::runtime_error("Not implemented");
+}
+
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::publicAndPublicCompositeBatch(
+    IScheduler::WireId<IScheduler::Boolean> left,
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
+  throw std::runtime_error("Not implemented");
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateXorPrivate(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  freeGates_++;
+  return wireKeeper_->allocateBooleanValue(
+      wireKeeper_->getBooleanValue(left) ^ wireKeeper_->getBooleanValue(right));
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::privateXorPrivateBatch(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  auto& leftValue = wireKeeper_->getBatchBooleanValue(left);
+  auto& rightValue = wireKeeper_->getBatchBooleanValue(right);
+  if (leftValue.size() != rightValue.size()) {
+    throw std::invalid_argument("invalid inputs!");
+  }
+  freeGates_ += leftValue.size();
+  std::vector<bool> rst(leftValue.size());
+  for (int i = 0; i < leftValue.size(); i++) {
+    rst[i] = leftValue[i] ^ rightValue[i];
+  }
+  return wireKeeper_->allocateBatchBooleanValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateXorPublic(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  return privateXorPrivate(left, right);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::privateXorPublicBatch(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  return privateXorPrivateBatch(left, right);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::publicXorPublic(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  return privateXorPrivate(left, right);
+}
+
+IScheduler::WireId<IScheduler::Boolean>
+PlaintextScheduler::publicXorPublicBatch(
+    WireId<IScheduler::Boolean> left,
+    WireId<IScheduler::Boolean> right) {
+  return privateXorPrivateBatch(left, right);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPrivate(
+    WireId<IScheduler::Boolean> src) {
+  freeGates_++;
+  return wireKeeper_->allocateBooleanValue(!wireKeeper_->getBooleanValue(src));
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPrivateBatch(
+    WireId<IScheduler::Boolean> src) {
+  auto& value = wireKeeper_->getBatchBooleanValue(src);
+  freeGates_ += value.size();
+  std::vector<bool> rst(value.size());
+  for (int i = 0; i < value.size(); i++) {
+    rst[i] = !value[i];
+  }
+  return wireKeeper_->allocateBatchBooleanValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPublic(
+    WireId<IScheduler::Boolean> src) {
+  return notPrivate(src);
+}
+
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPublicBatch(
+    WireId<IScheduler::Boolean> src) {
+  return notPrivateBatch(src);
+}
+
+void PlaintextScheduler::increaseReferenceCount(
+    WireId<IScheduler::Boolean> id) {
+  wireKeeper_->increaseReferenceCount(id);
+}
+
+void PlaintextScheduler::increaseReferenceCountBatch(
+    WireId<IScheduler::Boolean> id) {
+  wireKeeper_->increaseBatchReferenceCount(id);
+}
+
+void PlaintextScheduler::decreaseReferenceCount(
+    WireId<IScheduler::Boolean> id) {
+  wireKeeper_->decreaseReferenceCount(id);
+}
+
+void PlaintextScheduler::decreaseReferenceCountBatch(
+    WireId<IScheduler::Boolean> id) {
+  wireKeeper_->decreaseBatchReferenceCount(id);
+}
+} // namespace fbpcf::mpc_framework::scheduler
