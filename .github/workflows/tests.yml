@@ -8,7 +8,7 @@ on:
 
 jobs:
   ubuntu:
-    runs-on: self-hosted
+    runs-on: [self-hosted, legacy_runner]
 
     steps:
     - uses: actions/checkout@v2
