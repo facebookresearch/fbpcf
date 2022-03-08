@@ -10,6 +10,7 @@
 #include <memory>
 #include <stdexcept>
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgentFactory.h"
+#include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IWriteOnlyOramFactory.h"
@@ -47,8 +48,9 @@ class LinearOramFactory final : public IWriteOnlyOramFactory<T> {
   /**
    * @inherit doc
    */
-  uint32_t getMaxBatchSize(size_t size, uint8_t concurrency) override {
-    throw std::runtime_error("Not implemented");
+  uint32_t getMaxBatchSize(size_t /* size */, uint8_t /* concurrency */)
+      override {
+    return 65536; // this is a very arbitrary number.
   }
 
  private:
@@ -59,5 +61,22 @@ class LinearOramFactory final : public IWriteOnlyOramFactory<T> {
   engine::communication::IPartyCommunicationAgentFactory& agentFactory_;
   std::unique_ptr<engine::util::IPrgFactory> prgFactory_;
 };
+
+template <typename T, int schedulerId>
+std::unique_ptr<IWriteOnlyOramFactory<T>> getSecureLinearOramFactory(
+    bool amIParty0,
+    int32_t party0Id,
+    int32_t party1Id,
+    engine::communication::IPartyCommunicationAgentFactory& factory) {
+  return std::make_unique<
+      fbpcf::mpc_framework::mpc_std_lib::oram::LinearOramFactory<
+          fbpcf::mpc_framework::mpc_std_lib::util::AggregationValue,
+          schedulerId>>(
+      amIParty0 ? IWriteOnlyOram<T>::Role::Alice : IWriteOnlyOram<T>::Role::Bob,
+      amIParty0 ? party0Id : party0Id,
+      amIParty0 ? party1Id : party0Id,
+      factory,
+      std::make_unique<fbpcf::mpc_framework::engine::util::AesPrgFactory>());
+}
 
 } // namespace fbpcf::mpc_framework::mpc_std_lib::oram
