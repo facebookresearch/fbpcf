@@ -295,68 +295,6 @@ TEST(WriteOnlyORAMTest, TestWriteOnlyORAMWithSecureComponents) {
       *factories[0], *factories[1]);
 }
 
-TEST(LinearORAMTest, TestHelpfunctionGenerateIndex) {
-  std::random_device rd;
-  std::mt19937_64 e(rd());
-  std::uniform_int_distribution<uint32_t> randomBatchSize(1, 0xFFF);
-  std::uniform_int_distribution<uint32_t> randomRange(1, 0x128);
-  auto batchSize = randomBatchSize(e);
-  auto range = randomRange(e);
-
-  auto factories = engine::communication::getInMemoryAgentFactory(2);
-  setupRealBackend<0, 1>(*factories[0], *factories[1]);
-  auto rst = LinearOram<uint32_t, 0>::Helper::generateIndex(batchSize, range);
-  uint32_t expectedIndex = 0;
-  for (auto& indexVector : rst) {
-    auto index = expectedIndex;
-    for (auto& bit : indexVector) {
-      auto tmp = bit.getValue();
-      EXPECT_EQ(tmp.size(), batchSize);
-      for (auto item : tmp) {
-        EXPECT_EQ(item, index & 1);
-      }
-      index >>= 1;
-    }
-    expectedIndex++;
-  }
-}
-
-TEST(LinearORAMTest, TestHelpfunctionComparison) {
-  std::random_device rd;
-  std::mt19937_64 e(rd());
-  std::uniform_int_distribution<uint32_t> randomBatchSize(1, 0xFFF);
-  std::uniform_int_distribution<uint32_t> randomRange(1, 0x128);
-  auto batchSize = randomBatchSize(e);
-  auto range = randomRange(e);
-
-  auto factories = engine::communication::getInMemoryAgentFactory(2);
-  setupRealBackend<0, 1>(*factories[0], *factories[1]);
-
-  auto future0 = std::async(
-      comparisonTestHelper<0>,
-      batchSize,
-      range,
-      LinearOram<uint32_t, 0>::Helper::generateIndex(batchSize, range));
-  auto future1 = std::async(
-      comparisonTestHelper<1>,
-      batchSize,
-      range,
-      LinearOram<uint32_t, 1>::Helper::generateIndex(batchSize, range));
-
-  auto [rst, v0] = future0.get();
-  auto [_, v1] = future1.get();
-  ASSERT_EQ(rst.size(), range);
-  ASSERT_EQ(v0.size(), batchSize);
-  ASSERT_EQ(v1.size(), batchSize);
-
-  for (size_t i = 0; i < range; i++) {
-    ASSERT_EQ(rst.at(i).size(), batchSize);
-    for (size_t j = 0; j < batchSize; j++) {
-      EXPECT_EQ(rst.at(i).at(j), (v0.at(j) ^ v1.at(j)) != i);
-    }
-  }
-}
-
 template <typename T>
 void runLinearOramTestWithSecureComponents(
     engine::communication::IPartyCommunicationAgentFactory& agentFactory0,

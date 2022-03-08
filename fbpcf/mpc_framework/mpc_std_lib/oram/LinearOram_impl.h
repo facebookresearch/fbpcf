@@ -64,24 +64,13 @@ void LinearOram<T, schedulerId>::obliviousAddBatch(
   auto value =
       util::MpcAdapters<T, schedulerId>::recoverBatchSharedSecrets(valueShares);
 
-  // this are all the oram indexes
-  auto oramIndexes = Helper::generateIndex(batchSize, size_);
-
-  // this is the default zero value
-  auto zero = util::MpcAdapters<T, schedulerId>::processSecretInputs(
-      std::vector<T>(batchSize, T(0)), party0Id_);
-
   // this is the value to add for each index - if the index is the specified
   // one, add the value; otherwise, add zero.
-  std::vector<typename util::SecBatchType<T, schedulerId>::type>
-      valueForEachIndex;
-  for (auto& item : oramIndexes) {
-    auto comparisonResult = Helper::comparison(index, item);
-    valueForEachIndex.push_back(value.mux(comparisonResult, zero));
-  }
+  auto valueForEachIndex =
+      generateInputValue(std::move(value), std::move(index), size_, batchSize);
 
   // party 1's share
-  std::vector<typename util::SecBatchType<T, schedulerId>::type> shares1;
+  std::vector<SecBatchT> shares1;
 
   for (size_t i = 0; i < valueForEachIndex.size(); i++) {
     std::vector<T> share0ForThisIndex(batchSize, T(0));
@@ -111,37 +100,48 @@ void LinearOram<T, schedulerId>::obliviousAddBatch(
 }
 
 template <typename T, int schedulerId>
-std::vector<std::vector<frontend::Bit<false, schedulerId, true>>>
-LinearOram<T, schedulerId>::Helper::generateIndex(
-    size_t batchSize,
-    size_t range) {
-  auto bitWidth = std::ceil(log2(range));
-  std::vector<std::vector<frontend::Bit<false, schedulerId, true>>> rst(
-      range, std::vector<frontend::Bit<false, schedulerId, true>>(bitWidth));
-  for (size_t i = 0; i < range; i++) {
-    size_t index = i;
-    for (size_t j = 0; j < bitWidth; j++, index >>= 1) {
-      std::vector<bool> plaintext(batchSize, index & 1);
-      rst[i][j] = frontend::Bit<false, schedulerId, true>(plaintext);
+std::vector<typename LinearOram<T, schedulerId>::SecBatchT>
+LinearOram<T, schedulerId>::generateInputValue(
+    SecBatchT&& src,
+    const std::vector<frontend::Bit<true, schedulerId, true>>&& conditions,
+    size_t range,
+    size_t batchSize) const {
+  if ((range == 0) || (batchSize == 0)) {
+    throw std::runtime_error("Invalid inputs!");
+  }
+
+  // this is the default zero value
+  auto zero = util::MpcAdapters<T, schedulerId>::processSecretInputs(
+      std::vector<T>(batchSize, T(0)), party0Id_);
+
+  std::vector<typename LinearOram<T, schedulerId>::SecBatchT> rst;
+  rst.push_back(std::move(src));
+  uint32_t bitWidth = std::ceil(log2(range));
+  for (int i = bitWidth - 1; i >= 0; i--) {
+    rst = conditionalExpansionOneLayer(std::move(rst), zero, conditions.at(i));
+    // find the smallest number that is no smaller than  ceil(range / 2^i)
+    size_t largestNeeded = (range + (1 << i) - 1) >> i;
+    if (rst.size() > largestNeeded) {
+      rst.erase(rst.begin() + largestNeeded, rst.end());
     }
   }
   return rst;
 }
 
 template <typename T, int schedulerId>
-frontend::Bit<true, schedulerId, true>
-LinearOram<T, schedulerId>::Helper::comparison(
-    const std::vector<frontend::Bit<true, schedulerId, true>>& src1,
-    const std::vector<frontend::Bit<false, schedulerId, true>>& src2) {
-  auto size = src1.size();
-  std::vector<frontend::Bit<true, schedulerId, true>> rst(size);
-
-  frontend::equalityCheck<
-      std::vector<frontend::Bit<true, schedulerId, true>>,
-      std::vector<frontend::Bit<true, schedulerId, true>>,
-      std::vector<frontend::Bit<false, schedulerId, true>>>(rst, src1, src2);
-
-  return !rst.at(0);
+std::vector<typename LinearOram<T, schedulerId>::SecBatchT>
+LinearOram<T, schedulerId>::conditionalExpansionOneLayer(
+    std::vector<SecBatchT>&& src,
+    const SecBatchT& zero,
+    const frontend::Bit<true, schedulerId, true>& condition) const {
+  std::vector<typename LinearOram<T, schedulerId>::SecBatchT> rst;
+  for (auto& item : src) {
+    auto [t0, t1] =
+        util::MpcAdapters<T, schedulerId>::obliviousSwap(item, zero, condition);
+    rst.push_back(std::move(t0));
+    rst.push_back(std::move(t1));
+  }
+  return rst;
 }
 
 } // namespace fbpcf::mpc_framework::mpc_std_lib::oram

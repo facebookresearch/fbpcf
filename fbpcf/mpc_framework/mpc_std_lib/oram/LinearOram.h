@@ -72,22 +72,6 @@ class LinearOram final : public IWriteOnlyOram<T> {
     return agent_->getTrafficStatistics();
   }
 
-  class Helper {
-   public:
-    // generate the index of all ORAM slots (e.g. 0, 1, 2, 3,..) in batched
-    // format. The output is a vector of vector of indexes, each element in the
-    // output vector is the (batched) bit vector of "0", "1", "2", ..."range -
-    // 1".
-    static std::vector<std::vector<frontend::Bit<false, schedulerId, true>>>
-    generateIndex(size_t batchSize, size_t range);
-
-    // Compare (in batch) if there are any difference between a secret bit
-    // vector and public bit vector
-    static frontend::Bit<true, schedulerId, true> comparison(
-        const std::vector<frontend::Bit<true, schedulerId, true>>& src1,
-        const std::vector<frontend::Bit<false, schedulerId, true>>& src2);
-  };
-
  private:
   size_t size_;
 
@@ -99,6 +83,36 @@ class LinearOram final : public IWriteOnlyOram<T> {
   std::unique_ptr<engine::util::IPrg> prg_;
 
   std::vector<T> memory_;
+
+  using SecBatchT = typename util::SecBatchType<T, schedulerId>::type;
+
+  /**
+   * create a vector of values where only a certain position is the given value
+   * and the rest of them are zero.
+   * @param src the value in the output
+   * @param conditions indicate the position of the given value in the output
+   * @param range how many items are there in the output
+   * @param batchSize how many actual items in the batches.
+   */
+  std::vector<SecBatchT> generateInputValue(
+      SecBatchT&& src,
+      const std::vector<frontend::Bit<true, schedulerId, true>>&& conditions,
+      size_t range,
+      size_t batchSize) const;
+
+  /**
+   * expand each element in the input into two elements in the output, one of
+   * the two elements is the corresponding input element while the other one is
+   * zero.
+   * @param src the input vector
+   * @param zero representation of zero
+   * @param condition whether the first or the second is going to be the input
+   * value: 0 means the first, 1 means the second
+   */
+  std::vector<SecBatchT> conditionalExpansionOneLayer(
+      std::vector<SecBatchT>&& src,
+      const SecBatchT& zero,
+      const frontend::Bit<true, schedulerId, true>& condition) const;
 };
 
 } // namespace fbpcf::mpc_framework::mpc_std_lib::oram
