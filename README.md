@@ -1,5 +1,7 @@
 # FBPCF (Facebook Private Computation Framework)
-The Private Computation Framework (PCF) library builds a scalable, secure, and distributed private computation platform to run secure computations on a production level. PCF library supports running the computation on AWS Cloud and is able to integrate various private computation technologies. Specifically, it leverages EMP-toolkit to enable privacy-preserving computations.
+The Private Computation Framework (PCF) library builds a scalable, secure, and distributed private computation platform to run secure computations on a production level. PCF library supports running the computation on AWS Cloud and is able to integrate various private computation technologies.
+
+We are introducing v2 of PCF.  While v1 of the framework depended directly on the EMP-Toolkit, we have done a complete re-write in this v2 release.
 
 ## Examples: Millionaire Game
 The [Millionaire](example/millionaire) game is an interesting example that implemented on top of the framework. You can run the game in two terminals representing two players. Each player will randomly return an integer from 0 to 1000000000 to represent the money they have. The game will compare the two integers and determine who is richer.
