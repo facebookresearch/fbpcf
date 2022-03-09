@@ -22,10 +22,8 @@
 #include "fbpcf/mpc_framework/engine/util/test/benchmarks/NetworkedBenchmark.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-using namespace folly;
-using namespace fbpcf::mpc_framework::engine;
-using namespace fbpcf::mpc_framework::engine::tuple_generator::
-    oblivious_transfer;
+namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
+    ferret {
 
 std::tuple<std::vector<__m128i>, std::vector<__m128i>, __m128i> getBaseOT(
     size_t baseOtSize) {
@@ -60,11 +58,11 @@ class SinglePointCotBenchmark final : public util::NetworkedBenchmark {
     agent0_ = std::move(agent0);
     agent1_ = std::move(agent1);
 
-    ferret::SinglePointCotFactory factory;
+    SinglePointCotFactory factory;
     sender_ = factory.create(agent0_);
     receiver_ = factory.create(agent1_);
 
-    auto baseOtSize = std::log2(ferret::kExtendedSize / ferret::kWeight);
+    auto baseOtSize = std::log2(kExtendedSize / kWeight);
     auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
     baseOTSend_ = std::move(baseOTSend);
     baseOTReceive_ = std::move(baseOTReceive);
@@ -90,8 +88,8 @@ class SinglePointCotBenchmark final : public util::NetworkedBenchmark {
   std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
   std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
 
-  std::unique_ptr<ferret::ISinglePointCot> sender_;
-  std::unique_ptr<ferret::ISinglePointCot> receiver_;
+  std::unique_ptr<ISinglePointCot> sender_;
+  std::unique_ptr<ISinglePointCot> receiver_;
 
   std::vector<__m128i> baseOTSend_;
   std::vector<__m128i> baseOTReceive_;
@@ -109,20 +107,19 @@ class MultiPointCotBenchmark final : public util::NetworkedBenchmark {
     agent0_ = std::move(agent0);
     agent1_ = std::move(agent1);
 
-    ferret::RegularErrorMultiPointCotFactory factory(
-        std::make_unique<ferret::SinglePointCotFactory>());
+    RegularErrorMultiPointCotFactory factory(
+        std::make_unique<SinglePointCotFactory>());
 
     sender_ = factory.create(agent0_);
     receiver_ = factory.create(agent1_);
 
-    auto baseOtSize =
-        std::log2(ferret::kExtendedSize / ferret::kWeight) * ferret::kWeight;
+    auto baseOtSize = std::log2(kExtendedSize / kWeight) * kWeight;
     auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
     baseOTSend_ = std::move(baseOTSend);
     baseOTReceive_ = std::move(baseOTReceive);
 
-    sender_->senderInit(delta, ferret::kExtendedSize, ferret::kWeight);
-    receiver_->receiverInit(ferret::kExtendedSize, ferret::kWeight);
+    sender_->senderInit(delta, kExtendedSize, kWeight);
+    receiver_->receiverInit(kExtendedSize, kWeight);
   }
 
  protected:
@@ -142,8 +139,8 @@ class MultiPointCotBenchmark final : public util::NetworkedBenchmark {
   std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
   std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
 
-  std::unique_ptr<ferret::IMultiPointCot> sender_;
-  std::unique_ptr<ferret::IMultiPointCot> receiver_;
+  std::unique_ptr<IMultiPointCot> sender_;
+  std::unique_ptr<IMultiPointCot> receiver_;
 
   std::vector<__m128i> baseOTSend_;
   std::vector<__m128i> baseOTReceive_;
@@ -159,10 +156,10 @@ class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
   void setup() override {
     auto [agent0, agent1] = util::getSocketAgents();
 
-    ferret::RcotExtenderFactory factory(
-        std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
-        std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
-            std::make_unique<ferret::SinglePointCotFactory>()));
+    RcotExtenderFactory factory(
+        std::make_unique<TenLocalLinearMatrixMultiplierFactory>(),
+        std::make_unique<RegularErrorMultiPointCotFactory>(
+            std::make_unique<SinglePointCotFactory>()));
 
     sender_ = factory.create();
     receiver_ = factory.create();
@@ -170,16 +167,13 @@ class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
     sender_->setCommunicationAgent(std::move(agent0));
     receiver_->setCommunicationAgent(std::move(agent1));
 
-    auto baseOtSize = ferret::kBaseSize +
-        std::log2(ferret::kExtendedSize / ferret::kWeight) * ferret::kWeight;
+    auto baseOtSize = kBaseSize + std::log2(kExtendedSize / kWeight) * kWeight;
     auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
     baseOTSend_ = std::move(baseOTSend);
     baseOTReceive_ = std::move(baseOTReceive);
 
-    sender_->senderInit(
-        delta, ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
-    receiver_->receiverInit(
-        ferret::kExtendedSize, ferret::kBaseSize, ferret::kWeight);
+    sender_->senderInit(delta, kExtendedSize, kBaseSize, kWeight);
+    receiver_->receiverInit(kExtendedSize, kBaseSize, kWeight);
   }
 
  protected:
@@ -196,8 +190,8 @@ class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
   }
 
  private:
-  std::unique_ptr<ferret::IRcotExtender> sender_;
-  std::unique_ptr<ferret::IRcotExtender> receiver_;
+  std::unique_ptr<IRcotExtender> sender_;
+  std::unique_ptr<IRcotExtender> receiver_;
 
   std::vector<__m128i> baseOTSend_;
   std::vector<__m128i> baseOTReceive_;
@@ -208,8 +202,11 @@ BENCHMARK_COUNTERS(RcotExtender, counters) {
   benchmark.runBenchmark(counters);
 }
 
+} // namespace
+  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+
 int main(int argc, char* argv[]) {
   facebook::initFacebook(&argc, &argv);
-  runBenchmarks();
+  folly::runBenchmarks();
   return 0;
 }

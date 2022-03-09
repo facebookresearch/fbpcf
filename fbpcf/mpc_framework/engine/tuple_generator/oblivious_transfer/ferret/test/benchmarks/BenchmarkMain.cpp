@@ -14,38 +14,39 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/test/benchmarks/MatrixMultiplierBenchmark.h"
 
-using namespace folly;
-using namespace fbpcf::mpc_framework::engine::tuple_generator::
-    oblivious_transfer;
+namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
+    ferret {
 
 inline void benchmarkMatrixMultiplier(
-    std::unique_ptr<ferret::IMatrixMultiplierFactory> factory,
+    std::unique_ptr<IMatrixMultiplierFactory> factory,
     uint64_t n) {
-  ferret::MatrixMultiplierBenchmark matrixMultiplierBenchmark;
+  MatrixMultiplierBenchmark matrixMultiplierBenchmark;
   BENCHMARK_SUSPEND {
     matrixMultiplierBenchmark.setup(
-        std::move(factory), ferret::kExtendedSize, ferret::kBaseSize);
+        std::move(factory), kExtendedSize, kBaseSize);
   }
 
   std::vector<__m128i> rst;
   while (n--) {
     rst = matrixMultiplierBenchmark.benchmark();
   }
-  doNotOptimizeAway(rst);
+  folly::doNotOptimizeAway(rst);
 }
 
 BENCHMARK(DummyMatrixMultiplier, n) {
   benchmarkMatrixMultiplier(
-      std::make_unique<ferret::insecure::DummyMatrixMultiplierFactory>(), n);
+      std::make_unique<insecure::DummyMatrixMultiplierFactory>(), n);
 }
 
 BENCHMARK(TenLocalLinearMatrixMultiplier, n) {
   benchmarkMatrixMultiplier(
-      std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(), n);
+      std::make_unique<TenLocalLinearMatrixMultiplierFactory>(), n);
 }
+} // namespace
+  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
 
 int main(int argc, char* argv[]) {
   facebook::initFacebook(&argc, &argv);
-  runBenchmarks();
+  folly::runBenchmarks();
   return 0;
 }

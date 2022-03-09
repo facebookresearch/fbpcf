@@ -15,8 +15,7 @@
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 #include "folly/BenchmarkUtil.h"
 
-using namespace folly;
-using namespace fbpcf::mpc_framework::engine::util;
+namespace fbpcf::mpc_framework::engine::util {
 
 DEFINE_int64(
     AES_Benchmark_Size,
@@ -47,7 +46,7 @@ std::vector<__m128i> generateData() {
 }
 
 BENCHMARK(Aes_encryptInPlace, n) {
-  BenchmarkSuspender braces;
+  folly::BenchmarkSuspender braces;
   auto seed = getRandomSeed();
   auto data = generateData();
   braces.dismiss();
@@ -57,11 +56,11 @@ BENCHMARK(Aes_encryptInPlace, n) {
   while (n--) {
     cipher.encryptInPlace(data);
   }
-  doNotOptimizeAway(data);
+  folly::doNotOptimizeAway(data);
 }
 
 BENCHMARK(Aes_inPlaceHash, n) {
-  BenchmarkSuspender braces;
+  folly::BenchmarkSuspender braces;
   auto seed = getRandomSeed();
   auto data = generateData();
   braces.dismiss();
@@ -71,11 +70,11 @@ BENCHMARK(Aes_inPlaceHash, n) {
   while (n--) {
     cipher.inPlaceHash(data);
   }
-  doNotOptimizeAway(data);
+  folly::doNotOptimizeAway(data);
 }
 
 BENCHMARK(AesPrg_getRandomBits, n) {
-  BenchmarkSuspender braces;
+  folly::BenchmarkSuspender braces;
   auto seed = getRandomSeed();
   braces.dismiss();
 
@@ -88,7 +87,7 @@ BENCHMARK(AesPrg_getRandomBits, n) {
 }
 
 BENCHMARK(AesPrg_getRandomBytes, n) {
-  BenchmarkSuspender braces;
+  folly::BenchmarkSuspender braces;
   auto seed = getRandomSeed();
   braces.dismiss();
 
@@ -101,7 +100,7 @@ BENCHMARK(AesPrg_getRandomBytes, n) {
 }
 
 BENCHMARK(AesPrg_getRandomDataInPlace, n) {
-  BenchmarkSuspender braces;
+  folly::BenchmarkSuspender braces;
   auto seed = getRandomSeed();
   auto data = generateData();
   braces.dismiss();
@@ -110,12 +109,13 @@ BENCHMARK(AesPrg_getRandomDataInPlace, n) {
   while (n--) {
     prg.getRandomDataInPlace(data);
   }
-  doNotOptimizeAway(data);
+  folly::doNotOptimizeAway(data);
 }
+} // namespace fbpcf::mpc_framework::engine::util
 
 int main(int argc, char* argv[]) {
   facebook::initFacebook(&argc, &argv);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  runBenchmarks();
+  folly::runBenchmarks();
   return 0;
 }
