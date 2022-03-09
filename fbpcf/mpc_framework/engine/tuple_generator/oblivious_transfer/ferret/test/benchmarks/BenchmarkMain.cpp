@@ -10,28 +10,12 @@
 #include "common/init/Init.h"
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/DummyMatrixMultiplierFactory.h"
-#include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCot.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
+#include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/test/benchmarks/CotBenchmark.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/test/benchmarks/MatrixMultiplierBenchmark.h"
 
 namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
     ferret {
-
-inline void benchmarkMatrixMultiplier(
-    std::unique_ptr<IMatrixMultiplierFactory> factory,
-    uint64_t n) {
-  MatrixMultiplierBenchmark matrixMultiplierBenchmark;
-  BENCHMARK_SUSPEND {
-    matrixMultiplierBenchmark.setup(
-        std::move(factory), kExtendedSize, kBaseSize);
-  }
-
-  std::vector<__m128i> rst;
-  while (n--) {
-    rst = matrixMultiplierBenchmark.benchmark();
-  }
-  folly::doNotOptimizeAway(rst);
-}
 
 BENCHMARK(DummyMatrixMultiplier, n) {
   benchmarkMatrixMultiplier(
@@ -41,6 +25,21 @@ BENCHMARK(DummyMatrixMultiplier, n) {
 BENCHMARK(TenLocalLinearMatrixMultiplier, n) {
   benchmarkMatrixMultiplier(
       std::make_unique<TenLocalLinearMatrixMultiplierFactory>(), n);
+}
+
+BENCHMARK_COUNTERS(SinglePointCot, counters) {
+  SinglePointCotBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(RegularErrorMultiPointCot, counters) {
+  RegularErrorMultiPointCotBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(RcotExtender, counters) {
+  RcotExtenderBenchmark benchmark;
+  benchmark.runBenchmark(counters);
 }
 } // namespace
   // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret

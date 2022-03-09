@@ -7,11 +7,13 @@
 
 #pragma once
 
+#include <folly/Benchmark.h>
 #include <folly/stop_watch.h>
 #include <memory>
 
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IMatrixMultiplierFactory.h"
+#include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCot.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
 namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
@@ -40,5 +42,20 @@ class MatrixMultiplierBenchmark {
   std::vector<__m128i> src_;
 };
 
+inline void benchmarkMatrixMultiplier(
+    std::unique_ptr<IMatrixMultiplierFactory> factory,
+    uint64_t n) {
+  MatrixMultiplierBenchmark matrixMultiplierBenchmark;
+  BENCHMARK_SUSPEND {
+    matrixMultiplierBenchmark.setup(
+        std::move(factory), kExtendedSize, kBaseSize);
+  }
+
+  std::vector<__m128i> rst;
+  while (n--) {
+    rst = matrixMultiplierBenchmark.benchmark();
+  }
+  folly::doNotOptimizeAway(rst);
+}
 } // namespace
   // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
