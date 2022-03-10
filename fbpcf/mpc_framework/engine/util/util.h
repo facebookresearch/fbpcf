@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "fbpcf/mpc_framework/engine/util/aes.h"
+#include "folly/logging/xlog.h"
 
 namespace fbpcf::engine::util {
 
@@ -78,7 +79,7 @@ class EngineWrap {
           "ENGINE_set_default failed. Error code: " +
           std::to_string(ERR_get_error()));
     }
-    std::cout << "Successfully initialized the hardware PRG.";
+    XLOG(INFO) << "Successfully initialized the hardware PRG.";
   }
   ~EngineWrap() {
     if (engine_) {
