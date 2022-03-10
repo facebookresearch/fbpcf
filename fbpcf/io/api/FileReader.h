@@ -6,8 +6,7 @@
  */
 
 #pragma once
-#include "fbpcf/io/api/ICloser.h"
-#include "fbpcf/io/api/IReader.h"
+#include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
 
@@ -18,7 +17,7 @@ cloud provider or a file on disk. Internally, this
 class will create a LocalFileReader or CloudFileReader
 depending on what file path is provided.
 */
-class FileReader : public IReader, public ICloser {
+class FileReader : public IReaderCloser {
  public:
   int close() override;
   int read(char buf[]) override;
