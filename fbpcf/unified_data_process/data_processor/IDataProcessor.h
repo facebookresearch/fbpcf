@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 #include <vector>
-#include "fbpcf/mpc_framework/frontend/BitString.h"
+#include "fbpcf/frontend/BitString.h"
 
 namespace fbpcf::udp::data_processor {
 

@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include "fbpcf/mpc_framework/frontend/BitString.h"
-#include "fbpcf/mpc_framework/mpc_std_lib/shuffler/IShuffler.h"
+#include "fbpcf/frontend/BitString.h"
+#include "fbpcf/mpc_std_lib/shuffler/IShuffler.h"
 #include "fbpcf/unified_data_process/adapter/IAdapter.h"
 
 namespace fbpcf::udp::adapter {

@@ -9,7 +9,7 @@
 
 #include <sys/types.h>
 #include <type_traits>
-#include "fbpcf/mpc_framework/frontend/mpcGame.h"
+#include "fbpcf/frontend/mpcGame.h"
 
 namespace fbpcf::billionaire_problem {
 
