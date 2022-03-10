@@ -10,7 +10,7 @@
 #include <map>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * This class abstract all the communication patterns in a secret-share-based
@@ -57,4 +57,4 @@ class ISecretShareEngineCommunicationAgent {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

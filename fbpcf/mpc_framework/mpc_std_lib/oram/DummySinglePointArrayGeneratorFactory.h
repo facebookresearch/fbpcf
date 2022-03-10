@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DummySinglePointArrayGenerator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ISinglePointArrayGeneratorFactory.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 class DummySinglePointArrayGeneratorFactory final
     : public ISinglePointArrayGeneratorFactory {
@@ -36,4 +36,4 @@ class DummySinglePointArrayGeneratorFactory final
   engine::communication::IPartyCommunicationAgentFactory& factory_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

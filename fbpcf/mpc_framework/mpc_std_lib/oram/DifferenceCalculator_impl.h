@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T, int8_t indicatorSumWidth, int schedulerId>
 std::vector<T> DifferenceCalculator<T, indicatorSumWidth, schedulerId>::
@@ -71,4 +71,4 @@ DifferenceCalculator<T, indicatorSumWidth, schedulerId>::recoverIndicators(
   return (indicator0 - indicator1)[indicatorSumWidth - 1];
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

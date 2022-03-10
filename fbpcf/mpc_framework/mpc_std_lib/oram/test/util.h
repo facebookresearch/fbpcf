@@ -23,7 +23,7 @@
 #include "fbpcf/mpc_framework/scheduler/WireKeeper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 inline std::pair<std::vector<uint32_t>, std::vector<std::vector<bool>>>
 generateTestDataForComparison(uint32_t batchSize, uint32_t range) {
@@ -72,4 +72,4 @@ comparisonTestHelper(
   return {rst, value};
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/util/AsyncBuffer.h"
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 class TwoPartyTupleGenerator final : public ITupleGenerator {
  public:
@@ -50,4 +50,4 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
   util::AsyncBuffer<BooleanTuple> buffer_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

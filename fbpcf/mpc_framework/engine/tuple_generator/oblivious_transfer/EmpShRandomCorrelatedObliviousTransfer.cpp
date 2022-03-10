@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/EmpShRandomCorrelatedObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/util/EmpNetworkAdapter.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 EmpShRandomCorrelatedObliviousTransfer::EmpShRandomCorrelatedObliviousTransfer(
     __m128i delta,
@@ -70,4 +70,4 @@ std::vector<__m128i> EmpShRandomCorrelatedObliviousTransfer::rcot(
   }
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

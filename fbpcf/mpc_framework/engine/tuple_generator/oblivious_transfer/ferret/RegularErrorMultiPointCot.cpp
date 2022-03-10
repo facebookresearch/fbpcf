@@ -18,8 +18,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCot.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 void RegularErrorMultiPointCot::init(int64_t length, int64_t weight) {
   assert(length % weight == 0);
@@ -89,4 +88,4 @@ std::vector<__m128i> RegularErrorMultiPointCot::receiverExtend(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

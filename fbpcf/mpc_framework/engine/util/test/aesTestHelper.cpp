@@ -8,7 +8,7 @@
 #include "fbpcf/mpc_framework/engine/util/test/aesTestHelper.h"
 #include <cstdint>
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 void AesTestHelper::switchToDecrypt() {
   // convert the encryption key to the decryption key
@@ -40,4 +40,4 @@ void AesTestHelper::decryptInPlace(std::vector<__m128i>& ciphertext) const {
     dataPointer[i] = _mm_aesdeclast_si128(dataPointer[i], roundKey_.at(kRound));
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

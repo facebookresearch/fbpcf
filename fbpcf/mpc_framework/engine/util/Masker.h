@@ -11,7 +11,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 template <class T>
 class Masker {
@@ -20,6 +20,6 @@ class Masker {
   static T unmask(__m128i key, bool choice, T correction0, T correction1);
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util
 
 #include "fbpcf/mpc_framework/engine/util/Masker_impl.h"

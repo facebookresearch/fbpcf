@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/SchedulerHelper.h"
 
-namespace fbpcf::mpc_framework {
+namespace fbpcf {
 
 template <typename T>
 inline void testVectorEq(
@@ -88,37 +88,33 @@ const bool unsafe = true;
 
 template <int schedulerId0, int schedulerId1>
 void setupRealBackend(
-    mpc_framework::engine::communication::IPartyCommunicationAgentFactory&
-        factory0,
-    mpc_framework::engine::communication::IPartyCommunicationAgentFactory&
-        factory1) {
+    engine::communication::IPartyCommunicationAgentFactory& factory0,
+    engine::communication::IPartyCommunicationAgentFactory& factory1) {
   auto task0 =
       [](std::reference_wrapper<
-          mpc_framework::engine::communication::IPartyCommunicationAgentFactory>
-             factory) {
+          engine::communication::IPartyCommunicationAgentFactory> factory) {
         scheduler::SchedulerKeeper<schedulerId0>::setScheduler(
-            mpc_framework::scheduler::createEagerSchedulerWithInsecureEngine<
-                unsafe>(0, factory));
+            scheduler::createEagerSchedulerWithInsecureEngine<unsafe>(
+                0, factory));
       };
   auto task1 =
       [](std::reference_wrapper<
-          mpc_framework::engine::communication::IPartyCommunicationAgentFactory>
-             factory) {
+          engine::communication::IPartyCommunicationAgentFactory> factory) {
         scheduler::SchedulerKeeper<schedulerId1>::setScheduler(
-            mpc_framework::scheduler::createEagerSchedulerWithInsecureEngine<
-                unsafe>(1, factory));
+            scheduler::createEagerSchedulerWithInsecureEngine<unsafe>(
+                1, factory));
       };
 
   auto future0 = std::async(
       task0,
-      std::reference_wrapper<mpc_framework::engine::communication::
-                                 IPartyCommunicationAgentFactory>(factory0));
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(factory0));
   auto future1 = std::async(
       task1,
-      std::reference_wrapper<mpc_framework::engine::communication::
-                                 IPartyCommunicationAgentFactory>(factory1));
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(factory1));
   future0.get();
   future1.get();
 }
 
-} // namespace fbpcf::mpc_framework
+} // namespace fbpcf

@@ -9,8 +9,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IMatrixMultiplier.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 /**
  * This is merely a dummy calculator - it won't actually generate any random
@@ -29,4 +28,4 @@ class DummyMatrixMultiplier final : public IMatrixMultiplier {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

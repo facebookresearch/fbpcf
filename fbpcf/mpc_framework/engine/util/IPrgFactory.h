@@ -11,7 +11,7 @@
 
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 /**
  * prg factory API, create a seeded prg with a given seed
@@ -22,4 +22,4 @@ class IPrgFactory {
   virtual std::unique_ptr<IPrg> create(__m128i seed) const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

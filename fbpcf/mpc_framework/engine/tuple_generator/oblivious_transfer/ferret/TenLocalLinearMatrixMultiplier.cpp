@@ -10,8 +10,7 @@
 
 #include <emmintrin.h>
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 std::vector<__m128i> TenLocalLinearMatrixMultiplier::multiplyWithRandomMatrix(
     __m128i seed,
@@ -49,4 +48,4 @@ std::vector<__m128i> TenLocalLinearMatrixMultiplier::multiplyWithRandomMatrix(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

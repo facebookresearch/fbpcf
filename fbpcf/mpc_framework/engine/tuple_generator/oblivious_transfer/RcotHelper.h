@@ -19,7 +19,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 inline std::unique_ptr<IFlexibleRandomCorrelatedObliviousTransferFactory>
 createClassicRcotFactory() {
@@ -45,4 +45,4 @@ createFerretRcotFactory(
       weight);
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

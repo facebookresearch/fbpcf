@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * This object generates product shares, namely, a party holds bits a1, b1 and
@@ -37,4 +37,4 @@ class IProductShareGenerator {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

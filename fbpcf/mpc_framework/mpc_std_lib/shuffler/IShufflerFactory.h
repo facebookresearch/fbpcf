@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/mpc_std_lib/shuffler/IShuffler.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::shuffler {
+namespace fbpcf::mpc_std_lib::shuffler {
 
 template <typename T>
 class IShufflerFactory {
@@ -18,4 +18,4 @@ class IShufflerFactory {
   virtual std::unique_ptr<IShuffler<T>> create() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::shuffler
+} // namespace fbpcf::mpc_std_lib::shuffler

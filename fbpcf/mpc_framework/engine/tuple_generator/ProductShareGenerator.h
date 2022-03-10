@@ -10,7 +10,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IBidirectionObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * This is a product shares generator that uses OT as underlying object to
@@ -44,4 +44,4 @@ class ProductShareGenerator final : public IProductShareGenerator {
       bidirectionObliviousTransfer_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

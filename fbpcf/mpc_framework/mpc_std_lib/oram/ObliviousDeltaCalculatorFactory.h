@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IObliviousDeltaCalculatorFactory.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ObliviousDeltaCalculator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <int schedulerId>
 class ObliviousDeltaCalculatorFactory final
@@ -35,4 +35,4 @@ class ObliviousDeltaCalculatorFactory final
   int32_t party1Id_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

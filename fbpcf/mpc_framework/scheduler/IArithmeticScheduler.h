@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 class IArithmeticScheduler : public IScheduler {
   /**
@@ -282,4 +282,4 @@ class IArithmeticScheduler : public IScheduler {
   virtual void decreaseReferenceCountBatch(WireId<Arithmetic> id) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

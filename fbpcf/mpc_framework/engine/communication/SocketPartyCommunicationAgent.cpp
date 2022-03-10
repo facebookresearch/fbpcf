@@ -19,7 +19,7 @@
 
 #include "folly/logging/xlog.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     int portNo,
@@ -177,4 +177,4 @@ int SocketPartyCommunicationAgent::receiveFromClient(int portNo) {
   return acceptedConnection;
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

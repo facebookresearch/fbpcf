@@ -10,7 +10,7 @@
 #include "fbpcf/mpc_framework/engine/util/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DummyObliviousDeltaCalculator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 std::tuple<std::vector<__m128i>, std::vector<bool>, std::vector<bool>>
 DummyObliviousDeltaCalculator::calculateDelta(
     const std::vector<__m128i>& delta0Shares,
@@ -41,4 +41,4 @@ DummyObliviousDeltaCalculator::calculateDelta(
   return {delta, t0, t1};
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

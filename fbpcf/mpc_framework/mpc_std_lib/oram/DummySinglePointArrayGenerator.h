@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ISinglePointArrayGenerator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 /**
  * A dummy implementation of single point array generator
@@ -45,4 +45,4 @@ class DummySinglePointArrayGenerator final : public ISinglePointArrayGenerator {
   std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

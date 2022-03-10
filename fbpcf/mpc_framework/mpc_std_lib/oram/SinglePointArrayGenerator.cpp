@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/engine/util/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 std::vector<std::pair<std::vector<bool>, std::vector<__m128i>>>
 SinglePointArrayGenerator::generateSinglePointArrays(
@@ -94,4 +94,4 @@ ISinglePointArrayGenerator::ArrayType SinglePointArrayGenerator::expandArray(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

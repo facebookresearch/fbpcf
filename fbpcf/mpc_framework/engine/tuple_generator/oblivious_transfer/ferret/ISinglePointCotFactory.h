@@ -12,8 +12,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/ISinglePointCot.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 class ISinglePointCotFactory {
  public:
@@ -23,4 +22,4 @@ class ISinglePointCotFactory {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

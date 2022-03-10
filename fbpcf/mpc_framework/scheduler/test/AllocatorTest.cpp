@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/scheduler/UnorderedMapAllocator.h"
 #include "fbpcf/mpc_framework/scheduler/VectorArenaAllocator.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 template <typename T>
 void testAllocator(std::unique_ptr<IAllocator<T>> arena) {
@@ -53,4 +53,4 @@ TEST(SafeVectorArenaAllocatorTest, testAllocator) {
 TEST(UnorderedMapAllocatorTest, testAllocator) {
   testAllocator<int64_t>(std::make_unique<UnorderedMapAllocator<int64_t>>());
 }
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

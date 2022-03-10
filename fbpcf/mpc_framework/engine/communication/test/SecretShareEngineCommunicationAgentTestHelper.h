@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/engine/communication/SecretShareEngineCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 class SecretShareEngineCommunicationAgentTestHelper {
  public:
@@ -40,4 +40,4 @@ class SecretShareEngineCommunicationAgentTestHelper {
   std::vector<std::unique_ptr<IPartyCommunicationAgentFactory>> factories_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

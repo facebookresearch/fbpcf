@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/ITupleGenerator.h"
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 
 class SecretShareEngine final : public ISecretShareEngine {
  public:
@@ -218,4 +218,4 @@ class SecretShareEngine final : public ISecretShareEngine {
   std::vector<ScheduledBatchAND> scheduledBatchANDGates_;
 };
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

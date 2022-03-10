@@ -18,7 +18,7 @@
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 
 class SecretShareEngineTestHelper {
  public:
@@ -99,4 +99,4 @@ class SecretShareEngineTestHelper {
       factories_;
 };
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

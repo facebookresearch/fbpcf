@@ -26,7 +26,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/RcotHelper.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 
 /**
  * This factory creates a secure secret share MPC engine, provided underlying
@@ -195,4 +195,4 @@ getInsecureEngineFactoryWithDummyTupleGenerator(
           tuple_generator::insecure::DummyTupleGeneratorFactory>());
 }
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

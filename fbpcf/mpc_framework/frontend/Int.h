@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/frontend/Bit.h"
 #include "fbpcf/mpc_framework/frontend/util.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 template <
     bool isSigned,
@@ -271,6 +271,6 @@ using Integer =
     typename IntTypeHelper<typename T::type, IsSecret<T>::value, schedulerId>::
         type;
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend
 
 #include "fbpcf/mpc_framework/frontend/Int_impl.h"

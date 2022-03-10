@@ -14,8 +14,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/DummyMultiPointCot.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 void DummyMultiPointCot::senderInit(
     __m128i delta,
@@ -77,4 +76,4 @@ std::vector<int64_t> DummyMultiPointCot::getRandomPositions() {
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

@@ -13,8 +13,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 /**
  * This is the API of a Rcot extender. It can extend k Rcot results to n Rcot
@@ -84,4 +83,4 @@ class IRcotExtender {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

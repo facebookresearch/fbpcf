@@ -10,7 +10,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/PlaintextScheduler.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 PlaintextScheduler::PlaintextScheduler(std::unique_ptr<IWireKeeper> wireKeeper)
     : wireKeeper_{std::move(wireKeeper)} {}
@@ -330,4 +330,4 @@ PlaintextScheduler::validateAndComputeBatchCompositeAND(
   gateCounter += leftValue.size() * rights.size();
   return returnWires;
 }
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

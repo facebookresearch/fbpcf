@@ -9,7 +9,7 @@
 
 #include <vector>
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /*
  * a write-only oram for type T, T must be an addable type and there are
@@ -67,4 +67,4 @@ class IWriteOnlyOram {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

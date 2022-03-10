@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IObliviousDeltaCalculator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 /**
  * A dummy implementation of oblivious delta calculator
@@ -39,4 +39,4 @@ class DummyObliviousDeltaCalculator final : public IObliviousDeltaCalculator {
   std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

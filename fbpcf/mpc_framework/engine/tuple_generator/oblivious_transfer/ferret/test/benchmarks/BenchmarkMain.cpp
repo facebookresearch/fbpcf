@@ -14,8 +14,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/test/benchmarks/CotBenchmark.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/test/benchmarks/MatrixMultiplierBenchmark.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 BENCHMARK(DummyMatrixMultiplier, n) {
   benchmarkMatrixMultiplier(
@@ -41,8 +40,7 @@ BENCHMARK_COUNTERS(RcotExtender, counters) {
   RcotExtenderBenchmark benchmark;
   benchmark.runBenchmark(counters);
 }
-} // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret
 
 int main(int argc, char* argv[]) {
   facebook::initFacebook(&argc, &argv);

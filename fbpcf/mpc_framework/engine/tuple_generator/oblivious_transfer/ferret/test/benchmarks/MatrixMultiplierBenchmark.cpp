@@ -10,8 +10,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/test/benchmarks/MatrixMultiplierBenchmark.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 void MatrixMultiplierBenchmark::setup(
     std::unique_ptr<IMatrixMultiplierFactory> factory,
@@ -36,4 +35,4 @@ std::vector<__m128i> MatrixMultiplierBenchmark::benchmark() const {
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

@@ -9,7 +9,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IBidirectionObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 template <class T>
 class IBidirectionObliviousTransferFactory {
@@ -24,4 +24,4 @@ class IBidirectionObliviousTransferFactory {
   virtual std::unique_ptr<IBidirectionObliviousTransfer<T>> create(int id) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

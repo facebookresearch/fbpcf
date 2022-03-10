@@ -14,7 +14,7 @@
 
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 class InMemoryPartyCommunicationAgentHost;
 
@@ -93,4 +93,4 @@ class InMemoryPartyCommunicationAgentHost {
   friend class InMemoryPartyCommunicationAgent;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

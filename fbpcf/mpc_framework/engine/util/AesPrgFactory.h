@@ -9,7 +9,7 @@
 #include "fbpcf/mpc_framework/engine/util/AesPrg.h"
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 /**
  * an aes prg factory, always creates aes-based prg.
@@ -26,4 +26,4 @@ class AesPrgFactory final : public IPrgFactory {
   int bufferSize_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

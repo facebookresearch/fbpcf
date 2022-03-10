@@ -13,7 +13,7 @@
 #include <random>
 #include <stdexcept>
 
-namespace fbpcf::mpc_framework::mpc_std_lib::util {
+namespace fbpcf::mpc_std_lib::util {
 
 /**
  * functions added here are helpers to support a write-only ORAM for
@@ -273,4 +273,4 @@ class MpcAdapters<AggregationValue, schedulerId> {
   }
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::util
+} // namespace fbpcf::mpc_std_lib::util

@@ -10,7 +10,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  * a Difference Calculator computes the difference between a randomly generated
@@ -55,4 +55,4 @@ class IDifferenceCalculator {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/scheduler/WireKeeper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 TEST(IntTest, testInputAndOutput) {
   const int8_t width = 63;
@@ -1386,4 +1386,4 @@ TEST(IntTest, testSubscriptBatch) {
   }
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

@@ -7,7 +7,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/DummyProductShareGenerator.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::insecure {
+namespace fbpcf::engine::tuple_generator::insecure {
 
 std::vector<bool> DummyProductShareGenerator::generateBooleanProductShares(
     const std::vector<bool>& left,
@@ -26,4 +26,4 @@ std::vector<bool> DummyProductShareGenerator::generateBooleanProductShares(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::insecure
+} // namespace fbpcf::engine::tuple_generator::insecure

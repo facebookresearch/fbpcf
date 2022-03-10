@@ -14,8 +14,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/DummyRandomCorrelatedObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IFlexibleRandomCorrelatedObliviousTransferFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
 
 class DummyRandomCorrelatedObliviousTransferFactory final
     : public IFlexibleRandomCorrelatedObliviousTransferFactory {
@@ -35,4 +34,4 @@ class DummyRandomCorrelatedObliviousTransferFactory final
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::insecure

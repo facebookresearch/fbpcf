@@ -10,7 +10,7 @@
 #include <optional>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 
 /**
  The MPC engine API
@@ -223,4 +223,4 @@ class ISecretShareEngine {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

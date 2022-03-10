@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IObliviousDeltaCalculator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  * A secure implementation of oblivious delta calculator
@@ -49,6 +49,6 @@ class ObliviousDeltaCalculator final : public IObliviousDeltaCalculator {
   int32_t party1Id_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram
 
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ObliviousDeltaCalculator_impl.h"

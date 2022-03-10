@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/mpc_std_lib/shuffler/IShuffler.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::shuffler::insecure {
+namespace fbpcf::mpc_std_lib::shuffler::insecure {
 
 /**
  * This shuffler doesn't do anything but simply output the input. It is only
@@ -23,4 +23,4 @@ class NonShuffler final : public IShuffler<T> {
   }
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::shuffler::insecure
+} // namespace fbpcf::mpc_std_lib::shuffler::insecure

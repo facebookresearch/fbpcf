@@ -19,8 +19,7 @@
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 void testSpCot(
     std::unique_ptr<ISinglePointCot> sender,
@@ -107,4 +106,4 @@ TEST(SPCotExtenderTest, testRealSPCot) {
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

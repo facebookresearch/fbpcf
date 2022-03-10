@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/mpc_framework/engine/communication/test/SecretShareEngineCommunicationAgentTestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 void exchangeKeyTest(
     std::unique_ptr<SecretShareEngineCommunicationAgent> agent,
@@ -160,4 +160,4 @@ TEST(secretShareEngineCommunicationAgentTest, testOpenToParty) {
   }
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

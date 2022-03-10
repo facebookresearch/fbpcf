@@ -15,8 +15,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IRcotExtenderFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RcotExtender.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 class RcotExtenderFactory final : public IRcotExtenderFactory {
  public:
@@ -37,4 +36,4 @@ class RcotExtenderFactory final : public IRcotExtenderFactory {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

@@ -9,8 +9,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IRcotExtender.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 /**
  * This is  a dummy Rcot extender. It won't do anything but simply copy-paste
@@ -70,4 +69,4 @@ class DummyRcotExtender final : public IRcotExtender {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

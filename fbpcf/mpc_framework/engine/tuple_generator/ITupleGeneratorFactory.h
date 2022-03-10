@@ -10,7 +10,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/ITupleGenerator.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * This is the API for a tuple generator that generates tuples.
@@ -26,4 +26,4 @@ class ITupleGeneratorFactory {
   virtual std::unique_ptr<ITupleGenerator> create() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

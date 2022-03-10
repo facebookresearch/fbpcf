@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IFlexibleRandomCorrelatedObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransferFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 class IFlexibleRandomCorrelatedObliviousTransferFactory
     : public IRandomCorrelatedObliviousTransferFactory {
@@ -46,4 +46,4 @@ class IFlexibleRandomCorrelatedObliviousTransferFactory
       std::unique_ptr<communication::IPartyCommunicationAgent> agent) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

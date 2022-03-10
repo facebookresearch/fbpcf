@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 template <class T>
 class RcotBasedBidirectionObliviousTransferFactory final
@@ -58,4 +58,4 @@ class RcotBasedBidirectionObliviousTransferFactory final
   std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> rcotFactory_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

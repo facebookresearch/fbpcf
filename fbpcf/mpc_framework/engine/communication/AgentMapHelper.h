@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgentFactory.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * Create an agent map for party with 'myId' with entries for all the other
@@ -33,4 +33,4 @@ inline std::map<int, std::unique_ptr<IPartyCommunicationAgent>> getAgentMap(
   return agentMap;
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

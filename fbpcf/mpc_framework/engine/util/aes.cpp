@@ -8,7 +8,7 @@
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 #include <emmintrin.h>
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 __m128i Aes::getFixedKey() {
   return _mm_set_epi64x(0, 0);
@@ -78,4 +78,4 @@ void Aes::inPlaceHash(std::vector<__m128i>& src) const {
   }
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

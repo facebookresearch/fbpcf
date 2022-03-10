@@ -14,8 +14,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplier.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 class TenLocalLinearMatrixMultiplierFactory final
     : public IMatrixMultiplierFactory {
@@ -26,4 +25,4 @@ class TenLocalLinearMatrixMultiplierFactory final
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

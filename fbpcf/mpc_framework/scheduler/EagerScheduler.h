@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/IWireKeeper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * An "eager" scheduler immediately carries out all computations upon
@@ -298,4 +298,4 @@ class EagerScheduler final : public IScheduler {
   std::unique_ptr<IWireKeeper> wireKeeper_;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

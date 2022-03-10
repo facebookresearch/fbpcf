@@ -13,7 +13,7 @@
 #include <thread>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 template <class T>
 RcotBasedBidirectionObliviousTransfer<T>::RcotBasedBidirectionObliviousTransfer(
@@ -117,4 +117,4 @@ RcotBasedBidirectionObliviousTransfer<T>::getTrafficStatistics() const {
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

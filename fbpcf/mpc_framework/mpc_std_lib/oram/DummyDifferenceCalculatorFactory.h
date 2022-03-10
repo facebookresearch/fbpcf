@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DummyDifferenceCalculator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IDifferenceCalculatorFactory.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 template <typename T, int8_t indicatorSumWidth>
 class DummyDifferenceCalculatorFactory final
@@ -37,4 +37,4 @@ class DummyDifferenceCalculatorFactory final
   engine::communication::IPartyCommunicationAgentFactory& factory_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

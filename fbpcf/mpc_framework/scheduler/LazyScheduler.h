@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/scheduler/IWireKeeper.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGateKeeper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * A "lazy" scheduler decouples the execution of the frontend
@@ -315,4 +315,4 @@ class LazyScheduler final : public IScheduler {
   void executeOneLevel();
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 // this function calculate the difference(s) between two batches of values
 template <typename T, int8_t indicatorSumWidth>
@@ -77,4 +77,4 @@ DummyDifferenceCalculator<T, indicatorSumWidth>::calculateDifferenceBatch(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

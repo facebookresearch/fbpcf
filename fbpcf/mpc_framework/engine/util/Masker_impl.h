@@ -11,7 +11,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 template <>
 class Masker<bool> {
@@ -25,4 +25,4 @@ class Masker<bool> {
   }
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

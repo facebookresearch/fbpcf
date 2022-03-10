@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransferFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
  public:
@@ -65,4 +65,4 @@ class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
   uint64_t bufferSize_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

@@ -17,7 +17,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IObliviousDeltaCalculator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ISinglePointArrayGenerator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  * A single point array generator allow two parties jointly generate a pair of
@@ -59,4 +59,4 @@ class SinglePointArrayGenerator final : public ISinglePointArrayGenerator {
   std::unique_ptr<engine::util::Expander> expander_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

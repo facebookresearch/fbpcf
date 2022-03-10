@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * product share generation algorithm:
@@ -46,4 +46,4 @@ std::vector<bool> ProductShareGenerator::generateBooleanProductShares(
   return result;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

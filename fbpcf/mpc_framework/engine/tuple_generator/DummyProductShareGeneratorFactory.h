@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/DummyProductShareGenerator.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/IProductShareGeneratorFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::insecure {
+namespace fbpcf::engine::tuple_generator::insecure {
 
 /**
  * This object always generates Dummy product share generators
@@ -32,4 +32,4 @@ class DummyProductShareGeneratorFactory final
   communication::IPartyCommunicationAgentFactory& factory_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::insecure
+} // namespace fbpcf::engine::tuple_generator::insecure

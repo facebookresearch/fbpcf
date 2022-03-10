@@ -8,7 +8,7 @@
 #pragma once
 #include "fbpcf/mpc_framework/engine/tuple_generator/ITupleGenerator.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::insecure {
+namespace fbpcf::engine::tuple_generator::insecure {
 
 /**
  A dummy boolean tuple generator, always generate tuple (0, 0,0 )
@@ -28,4 +28,4 @@ class DummyTupleGenerator final : public ITupleGenerator {
   }
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::insecure
+} // namespace fbpcf::engine::tuple_generator::insecure

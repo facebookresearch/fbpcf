@@ -7,7 +7,7 @@
 
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 Expander::Expander(int64_t index)
     : cipher0_(_mm_set_epi64x(0, (uint64_t)index << 1)),
@@ -30,4 +30,4 @@ std::vector<__m128i> Expander::expand(std::vector<__m128i>&& src) const {
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

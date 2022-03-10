@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/engine/util/AsyncBuffer.h"
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * This object uses product share generators to generate tuples.
@@ -51,4 +51,4 @@ class TupleGenerator final : public ITupleGenerator {
   util::AsyncBuffer<BooleanTuple> asyncBuffer_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

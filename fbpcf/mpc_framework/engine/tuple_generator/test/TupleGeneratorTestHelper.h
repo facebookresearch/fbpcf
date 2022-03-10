@@ -40,7 +40,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/SinglePointCotFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 const uint64_t kTestExtendedSize = 2048;
 const uint64_t kTestBaseSize = 1024;
 const uint64_t kTestWeight = 16;
@@ -139,4 +139,4 @@ createTwoPartyTupleGeneratorFactoryWithRcotExtender(
       kTestBufferSize);
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

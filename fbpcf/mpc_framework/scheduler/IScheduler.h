@@ -12,7 +12,7 @@
 #include <optional>
 #include <vector>
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 /**
  * A scheduler is the object that process all frontend computation.
  * It takes in computation requests from the frontend, (possibly passes these
@@ -424,4 +424,4 @@ class SchedulerKeeper {
   inline static std::unique_ptr<IScheduler> scheduler_;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

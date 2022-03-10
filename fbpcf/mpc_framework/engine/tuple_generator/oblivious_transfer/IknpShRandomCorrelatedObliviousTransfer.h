@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/engine/util/EmpNetworkAdapter.h"
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * This object is an in-house implementation of IKNP protocol
@@ -78,4 +78,4 @@ class IknpShRandomCorrelatedObliviousTransfer
   std::unique_ptr<util::IPrg> choiceBitPrg_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

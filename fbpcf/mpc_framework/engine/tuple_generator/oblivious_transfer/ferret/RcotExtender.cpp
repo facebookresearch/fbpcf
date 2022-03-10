@@ -18,8 +18,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/RcotExtender.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 RcotExtender::RcotExtender(
     std::unique_ptr<IMatrixMultiplier> MatrixMultiplier,
@@ -109,4 +108,4 @@ std::vector<__m128i> RcotExtender::extendRcot(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

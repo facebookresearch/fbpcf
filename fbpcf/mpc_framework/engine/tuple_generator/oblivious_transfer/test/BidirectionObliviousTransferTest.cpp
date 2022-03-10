@@ -29,7 +29,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 TEST(DummyBidirectionObliviousTransferTest, testBiDirectionOT) {
   auto factorys = communication::getInMemoryAgentFactory(2);
@@ -312,4 +312,4 @@ TEST(
           ferret::kBaseSize,
           ferret::kWeight));
 }
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

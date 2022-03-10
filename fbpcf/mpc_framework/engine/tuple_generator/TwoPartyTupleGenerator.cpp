@@ -8,7 +8,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/TwoPartyTupleGenerator.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 TwoPartyTupleGenerator::TwoPartyTupleGenerator(
     std::unique_ptr<oblivious_transfer::IRandomCorrelatedObliviousTransfer>
@@ -105,4 +105,4 @@ std::pair<uint64_t, uint64_t> TwoPartyTupleGenerator::getTrafficStatistics()
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

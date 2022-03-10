@@ -11,7 +11,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/INormalGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 template <IScheduler::WireType T>
 class BatchNormalGate final : public INormalGate<T> {
@@ -168,4 +168,4 @@ class BatchNormalGate final : public INormalGate<T> {
   }
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

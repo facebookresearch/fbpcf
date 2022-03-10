@@ -9,8 +9,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IFlexibleRandomCorrelatedObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
 
 /**
  * A Dummy Random Correlated Oblivious Transfer. It only outputs 0 vectors;
@@ -49,4 +48,4 @@ class DummyRandomCorrelatedObliviousTransfer final
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::insecure

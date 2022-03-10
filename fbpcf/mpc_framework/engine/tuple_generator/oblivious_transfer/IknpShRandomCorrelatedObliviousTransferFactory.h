@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IknpShRandomCorrelatedObliviousTransfer.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 class IknpShRandomCorrelatedObliviousTransferFactory final
     : public IFlexibleRandomCorrelatedObliviousTransferFactory {
  public:
@@ -46,4 +46,4 @@ class IknpShRandomCorrelatedObliviousTransferFactory final
   std::unique_ptr<IBaseObliviousTransferFactory> baseOtFactory_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

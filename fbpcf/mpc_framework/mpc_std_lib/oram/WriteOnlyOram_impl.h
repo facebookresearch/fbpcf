@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T>
 T WriteOnlyOram<T>::publicRead(size_t publicIndex, Role receiver) const {
@@ -113,4 +113,4 @@ std::vector<std::vector<T>> WriteOnlyOram<T>::generateMasks(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

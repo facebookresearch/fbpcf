@@ -12,8 +12,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/ISinglePointCot.h"
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 const int64_t kExtendedSize = 10805248;
 const int64_t kWeight = 1319;
@@ -94,4 +93,4 @@ class RegularErrorMultiPointCot final : public IMultiPointCot {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 // a class representing "signed integer"
 template <int8_t intWidth>
@@ -101,4 +101,4 @@ void equalityCheck(OutputT& rst, const InputT1& src1, const InputT2& src2) {
   }
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/GateKeeper.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/INormalGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 const bool unsafe = false;
 
@@ -213,4 +213,4 @@ TEST(GateKeeperTest, TestCompositeGates) {
   // check level 131
   testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires4});
 }
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

@@ -17,7 +17,7 @@
 #include "fbpcf/mpc_framework/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include "folly/logging/xlog.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 inline std::pair<
     std::unique_ptr<communication::IPartyCommunicationAgent>,
@@ -66,4 +66,4 @@ getSocketAgents() {
   throw std::runtime_error("Failed to create socket agents. Out of retries.");
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

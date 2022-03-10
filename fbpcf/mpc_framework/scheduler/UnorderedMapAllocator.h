@@ -11,7 +11,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/IAllocator.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * This class uses an std::unordered_map as its underlying storage.
@@ -65,4 +65,4 @@ class UnorderedMapAllocator final : public IAllocator<T> {
   uint64_t nextId_ = 1;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

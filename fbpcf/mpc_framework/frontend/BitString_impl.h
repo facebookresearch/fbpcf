@@ -11,7 +11,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/frontend/util.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 template <bool isSecret, int schedulerId, bool usingBatch>
 BitString<isSecret, schedulerId, usingBatch>::BitString(
@@ -160,4 +160,4 @@ BitString<isSecret, schedulerId, usingBatch>::mux(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

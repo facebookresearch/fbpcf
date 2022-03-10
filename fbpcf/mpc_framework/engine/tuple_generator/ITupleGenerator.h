@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 const uint64_t kDefaultBufferSize = 16384;
 
@@ -68,4 +68,4 @@ class ITupleGenerator {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

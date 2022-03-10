@@ -15,17 +15,16 @@ namespace fbpcf::udp::adapter {
 
 template <int schedulerId>
 class Adapter final : public IAdapter {
-  using SecBit = mpc_framework::frontend::Bit<true, schedulerId, true>;
-  using PubBit = mpc_framework::frontend::Bit<false, schedulerId, true>;
-  using SecString = mpc_framework::frontend::BitString<true, schedulerId, true>;
+  using SecBit = frontend::Bit<true, schedulerId, true>;
+  using PubBit = frontend::Bit<false, schedulerId, true>;
+  using SecString = frontend::BitString<true, schedulerId, true>;
 
  public:
   Adapter(
       bool amIParty0,
       int32_t party0Id,
       int32_t party1Id,
-      std::unique_ptr<
-          mpc_framework::mpc_std_lib::shuffler::IShuffler<SecString>> shuffler)
+      std::unique_ptr<mpc_std_lib::shuffler::IShuffler<SecString>> shuffler)
       : amIParty0_(amIParty0),
         party0Id_(party0Id),
         party1Id_(party1Id),
@@ -38,8 +37,7 @@ class Adapter final : public IAdapter {
   bool amIParty0_;
   int32_t party0Id_;
   int32_t party1Id_;
-  std::unique_ptr<mpc_framework::mpc_std_lib::shuffler::IShuffler<SecString>>
-      shuffler_;
+  std::unique_ptr<mpc_std_lib::shuffler::IShuffler<SecString>> shuffler_;
 };
 
 } // namespace fbpcf::udp::adapter

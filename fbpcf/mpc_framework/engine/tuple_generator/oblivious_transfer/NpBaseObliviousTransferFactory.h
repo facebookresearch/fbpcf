@@ -10,7 +10,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IBaseObliviousTransferFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/NpBaseObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * Create a base oblivious transfer with a particular party.
@@ -28,4 +28,4 @@ class NpBaseObliviousTransferFactory final
   }
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

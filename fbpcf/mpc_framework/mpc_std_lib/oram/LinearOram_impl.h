@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T, int schedulerId>
 T LinearOram<T, schedulerId>::publicRead(size_t publicIndex, Role receiver)
@@ -144,4 +144,4 @@ LinearOram<T, schedulerId>::conditionalExpansionOneLayer(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

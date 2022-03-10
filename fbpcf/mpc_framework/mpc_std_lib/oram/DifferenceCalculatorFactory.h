@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DifferenceCalculator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IDifferenceCalculatorFactory.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T, int8_t indicatorSumWidth, int schedulerId>
 class DifferenceCalculatorFactory final
@@ -36,4 +36,4 @@ class DifferenceCalculatorFactory final
   int32_t party1Id_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

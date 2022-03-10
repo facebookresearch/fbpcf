@@ -22,8 +22,7 @@ class DummyDataProcessor final : public IDataProcessor<schedulerId> {
   explicit DummyDataProcessor(
       int32_t myId,
       int32_t partnerId,
-      std::unique_ptr<
-          fbpcf::mpc_framework::engine::communication::IPartyCommunicationAgent>
+      std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
           agent)
       : myId_(myId), partnerId_(partnerId), agent_(std::move(agent)) {}
 
@@ -45,8 +44,7 @@ class DummyDataProcessor final : public IDataProcessor<schedulerId> {
  private:
   int32_t myId_;
   int32_t partnerId_;
-  std::unique_ptr<
-      fbpcf::mpc_framework::engine::communication::IPartyCommunicationAgent>
+  std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
       agent_;
 };
 

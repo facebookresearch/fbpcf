@@ -22,7 +22,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/test/util.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 struct ObliviousDeltaCalculatorInputType {
   std::vector<__m128i> delta0Shares;
@@ -99,7 +99,7 @@ OutputType obliviousDeltaCalculatorHelper(
 }
 
 void testEq(const OutputType& src1, const OutputType& src2) {
-  mpc_framework::testEq(std::get<0>(src1), std::get<0>(src2));
+  fbpcf::testEq(std::get<0>(src1), std::get<0>(src2));
   testVectorEq(std::get<1>(src1), std::get<1>(src2));
   testVectorEq(std::get<2>(src1), std::get<2>(src2));
 }
@@ -147,4 +147,4 @@ TEST(ObliviousDeltaCalculatorTest, testObliviousDeltaCalculator) {
   testObliviousDeltaCalculator(std::move(factory0), std::move(factory1));
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

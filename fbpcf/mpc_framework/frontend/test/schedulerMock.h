@@ -11,7 +11,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 using namespace ::testing;
 
@@ -230,4 +230,4 @@ class schedulerMock final : public scheduler::IScheduler {
   }
 };
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

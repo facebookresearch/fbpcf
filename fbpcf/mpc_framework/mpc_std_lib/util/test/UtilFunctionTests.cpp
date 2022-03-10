@@ -20,7 +20,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::util {
+namespace fbpcf::mpc_std_lib::util {
 
 template <typename T>
 void testConvertingBits() {
@@ -49,4 +49,4 @@ TEST(ConvertingBitsTest, testConvertingBitsForM128iVector) {
   testEq(v, convertedV);
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::util
+} // namespace fbpcf::mpc_std_lib::util

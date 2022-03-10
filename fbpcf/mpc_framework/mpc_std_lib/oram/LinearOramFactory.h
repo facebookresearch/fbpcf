@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IWriteOnlyOramFactory.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/LinearOram.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T, int schedulerId>
 class LinearOramFactory final : public IWriteOnlyOramFactory<T> {
@@ -68,15 +68,14 @@ std::unique_ptr<IWriteOnlyOramFactory<T>> getSecureLinearOramFactory(
     int32_t party0Id,
     int32_t party1Id,
     engine::communication::IPartyCommunicationAgentFactory& factory) {
-  return std::make_unique<
-      fbpcf::mpc_framework::mpc_std_lib::oram::LinearOramFactory<
-          fbpcf::mpc_framework::mpc_std_lib::util::AggregationValue,
-          schedulerId>>(
+  return std::make_unique<fbpcf::mpc_std_lib::oram::LinearOramFactory<
+      fbpcf::mpc_std_lib::util::AggregationValue,
+      schedulerId>>(
       amIParty0 ? IWriteOnlyOram<T>::Role::Alice : IWriteOnlyOram<T>::Role::Bob,
       amIParty0 ? party0Id : party0Id,
       amIParty0 ? party1Id : party0Id,
       factory,
-      std::make_unique<fbpcf::mpc_framework::engine::util::AesPrgFactory>());
+      std::make_unique<fbpcf::engine::util::AesPrgFactory>());
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

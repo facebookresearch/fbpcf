@@ -27,7 +27,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/test/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 std::tuple<std::vector<bool>, std::vector<bool>, uint32_t>
 generateSharedRandomBoolVector(size_t length) {
@@ -150,4 +150,4 @@ TEST(
   testSinglePointArrayGenerator(std::move(factory0), std::move(factory1));
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

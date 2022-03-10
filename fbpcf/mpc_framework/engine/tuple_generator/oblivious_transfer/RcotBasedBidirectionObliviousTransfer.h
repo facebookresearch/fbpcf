@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * This is an Rcot based oblivious transfer object.
@@ -49,6 +49,6 @@ class RcotBasedBidirectionObliviousTransfer final
   std::unique_ptr<IRandomCorrelatedObliviousTransfer> receiverRcot_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransfer_impl.h"

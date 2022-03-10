@@ -11,8 +11,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IMultiPointCot.h"
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 /**
  * A Dummy MPCOT implementation. "Dummy" means it realize the desired
@@ -72,4 +71,4 @@ class DummyMultiPointCot final : public IMultiPointCot {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

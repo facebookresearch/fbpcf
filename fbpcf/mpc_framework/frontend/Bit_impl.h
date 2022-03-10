@@ -10,7 +10,7 @@
 // included for clangd resolution. Should not execute during compilation
 #include "fbpcf/mpc_framework/frontend/Bit.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 template <bool isSecret, int schedulerId, bool usingBatch>
 void Bit<isSecret, schedulerId, usingBatch>::increaseReferenceCount(
@@ -293,4 +293,4 @@ Bit<isSecret, schedulerId, usingBatch>::extractBit() const {
   }
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/frontend/util.h"
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 template <int schedulerId>
 class MpcGame {
@@ -61,4 +61,4 @@ class MpcGame {
       Integer<Secret<BatchedType<Unsigned<width>, usingBatch>>, schedulerId>;
 };
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

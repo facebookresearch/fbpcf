@@ -10,8 +10,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IMatrixMultiplier.h"
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 /**
  * This lpn calculator uses a built-in 10 local linear code generator.
@@ -32,4 +31,4 @@ class TenLocalLinearMatrixMultiplier final : public IMatrixMultiplier {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

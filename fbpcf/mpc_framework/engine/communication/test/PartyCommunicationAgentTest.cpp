@@ -19,7 +19,7 @@
 #include "fbpcf/mpc_framework/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 void sendAndReceive(std::unique_ptr<IPartyCommunicationAgent> agent, int size) {
   int repeat = 10;
@@ -85,4 +85,4 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceive) {
   thread0.join();
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

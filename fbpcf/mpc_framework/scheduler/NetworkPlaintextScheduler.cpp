@@ -11,7 +11,7 @@
 #include <fbpcf/mpc_framework/scheduler/PlaintextScheduler.h>
 #include "fbpcf/mpc_framework/scheduler/NetworkPlaintextScheduler.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 NetworkPlaintextScheduler::NetworkPlaintextScheduler(
     int myId,
@@ -123,4 +123,4 @@ std::vector<bool> NetworkPlaintextScheduler::extractBooleanSecretShareBatch(
   }
 }
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

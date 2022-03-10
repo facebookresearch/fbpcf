@@ -21,8 +21,8 @@ class DummyDataProcessorFactory final
   DummyDataProcessorFactory(
       int32_t myId,
       int32_t partnerId,
-      fbpcf::mpc_framework::engine::communication::
-          IPartyCommunicationAgentFactory& agentFactory)
+      fbpcf::engine::communication::IPartyCommunicationAgentFactory&
+          agentFactory)
       : myId_(myId), partnerId_(partnerId), agentFactory_(agentFactory) {}
 
   std::unique_ptr<IDataProcessor<schedulerId>> create() {
@@ -33,8 +33,7 @@ class DummyDataProcessorFactory final
  private:
   int32_t myId_;
   int32_t partnerId_;
-  fbpcf::mpc_framework::engine::communication::IPartyCommunicationAgentFactory&
-      agentFactory_;
+  fbpcf::engine::communication::IPartyCommunicationAgentFactory& agentFactory_;
 };
 
 } // namespace fbpcf::udp::data_processor::insecure

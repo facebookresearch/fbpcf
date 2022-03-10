@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/IRcotExtenderFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 class ExtenderBasedRandomCorrelatedObliviousTransferFactory final
     : public IRandomCorrelatedObliviousTransferFactory {
@@ -83,4 +83,4 @@ class ExtenderBasedRandomCorrelatedObliviousTransferFactory final
   int64_t weight_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

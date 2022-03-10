@@ -10,7 +10,7 @@
 
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * An communication factory API
@@ -25,4 +25,4 @@ class IPartyCommunicationAgentFactory {
   virtual std::unique_ptr<IPartyCommunicationAgent> create(int id) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

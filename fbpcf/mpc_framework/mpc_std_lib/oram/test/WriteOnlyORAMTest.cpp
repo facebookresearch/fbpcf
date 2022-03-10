@@ -34,7 +34,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 struct WritingType {
   std::vector<std::vector<bool>> indexShares;
@@ -327,4 +327,4 @@ TEST(LinearORAMTest, TestLinearOram) {
       *factories[0], *factories[1]);
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

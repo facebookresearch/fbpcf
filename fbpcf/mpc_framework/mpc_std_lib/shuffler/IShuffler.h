@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::shuffler {
+namespace fbpcf::mpc_std_lib::shuffler {
 
 /*
  * A shuffler will shuffle a number of values, and output them in
@@ -35,4 +35,4 @@ class IShuffler {
   virtual T shuffle(const T& src) const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::shuffler
+} // namespace fbpcf::mpc_std_lib::shuffler

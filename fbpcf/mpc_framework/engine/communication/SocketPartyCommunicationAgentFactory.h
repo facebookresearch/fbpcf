@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/mpc_framework/engine/communication/SocketPartyCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * An communication factory API
@@ -82,4 +82,4 @@ class SocketPartyCommunicationAgentFactory final
   std::string tlsDir_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

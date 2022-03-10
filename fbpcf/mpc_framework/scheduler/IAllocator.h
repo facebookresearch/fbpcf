@@ -14,7 +14,7 @@
  * An instance of this class provides operations for allocating and freeing
  * memory.
  */
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 template <typename T>
 class IAllocator {
@@ -43,4 +43,4 @@ class IAllocator {
   }
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

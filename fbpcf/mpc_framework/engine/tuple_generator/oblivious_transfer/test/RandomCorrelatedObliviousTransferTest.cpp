@@ -33,7 +33,7 @@
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 void testRandomCorrelatedObliviousTransfer(
     std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory0,
     std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory1) {
@@ -353,4 +353,4 @@ TEST(
           ferret::kWeight));
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

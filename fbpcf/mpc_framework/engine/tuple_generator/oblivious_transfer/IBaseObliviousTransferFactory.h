@@ -9,7 +9,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IBaseObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * Create a base oblivious transfer with a particular party.
@@ -24,4 +24,4 @@ class IBaseObliviousTransferFactory {
       std::unique_ptr<communication::IPartyCommunicationAgent> agent) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

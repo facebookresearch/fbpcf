@@ -41,12 +41,11 @@ template <int schedulerId>
 std::pair<bool, uint64_t> runWithScheduler(
     int myId,
     std::reference_wrapper<
-        mpc_framework::engine::communication::IPartyCommunicationAgentFactory>
-        factory,
+        engine::communication::IPartyCommunicationAgentFactory> factory,
     // TODO T101868337 - Use a scheduler factory here
-    std::unique_ptr<mpc_framework::scheduler::IScheduler> schedulerCreator(
+    std::unique_ptr<scheduler::IScheduler> schedulerCreator(
         int myId,
-        mpc_framework::engine::communication::IPartyCommunicationAgentFactory&
+        engine::communication::IPartyCommunicationAgentFactory&
             communicationAgentFactory)) {
   std::random_device rd;
   std::mt19937_64 e(rd());
@@ -73,27 +72,25 @@ std::pair<bool, uint64_t> runWithScheduler(
   return {mpcResult, myTotalAssets};
 }
 
-void testWithScheduler(
-    std::unique_ptr<mpc_framework::scheduler::IScheduler> schedulerCreator(
-        int myId,
-        mpc_framework::engine::communication::IPartyCommunicationAgentFactory&
-            communicationAgentFactory)) {
-  auto factories =
-      mpc_framework::engine::communication::getInMemoryAgentFactory(2);
+void testWithScheduler(std::unique_ptr<scheduler::IScheduler> schedulerCreator(
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory)) {
+  auto factories = engine::communication::getInMemoryAgentFactory(2);
 
   auto future0 = std::async(
       runWithScheduler<0>,
       0,
-      std::reference_wrapper<mpc_framework::engine::communication::
-                                 IPartyCommunicationAgentFactory>(
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(
           *factories[0]),
       schedulerCreator);
 
   auto future1 = std::async(
       runWithScheduler<1>,
       1,
-      std::reference_wrapper<mpc_framework::engine::communication::
-                                 IPartyCommunicationAgentFactory>(
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(
           *factories[1]),
       schedulerCreator);
 
@@ -104,18 +101,15 @@ void testWithScheduler(
 }
 
 TEST(BillionaireProblemTest, testWithNetworkPlaintextScheduler) {
-  testWithScheduler(
-      mpc_framework::scheduler::createNetworkPlaintextScheduler<unsafe>);
+  testWithScheduler(scheduler::createNetworkPlaintextScheduler<unsafe>);
 }
 
 TEST(BillionaireProblemTest, testWithEagerScheduler) {
-  testWithScheduler(
-      mpc_framework::scheduler::createEagerSchedulerWithRealEngine);
+  testWithScheduler(scheduler::createEagerSchedulerWithRealEngine);
 }
 
 TEST(BillionaireProblemTest, testWithLazyScheduler) {
-  testWithScheduler(
-      mpc_framework::scheduler::createLazySchedulerWithRealEngine);
+  testWithScheduler(scheduler::createLazySchedulerWithRealEngine);
 }
 
 template <int schedulerId>
@@ -123,12 +117,10 @@ std::pair<std::vector<bool>, std::vector<uint64_t>> runBatchWithScheduler(
     int size,
     int myId,
     std::reference_wrapper<
-        mpc_framework::engine::communication::IPartyCommunicationAgentFactory>
-        factory,
-    std::unique_ptr<mpc_framework::scheduler::IScheduler> schedulerCreator(
+        engine::communication::IPartyCommunicationAgentFactory> factory,
+    std::unique_ptr<scheduler::IScheduler> schedulerCreator(
         int,
-        mpc_framework::engine::communication::
-            IPartyCommunicationAgentFactory&)) {
+        engine::communication::IPartyCommunicationAgentFactory&)) {
   auto scheduler = schedulerCreator(myId, factory);
   std::random_device rd;
   std::mt19937_64 e(rd());
@@ -167,12 +159,10 @@ std::pair<std::vector<bool>, std::vector<uint64_t>> runBatchWithScheduler(
 }
 
 void testBatchBillionaireProblem(
-    std::unique_ptr<mpc_framework::scheduler::IScheduler> schedulerCreator(
+    std::unique_ptr<scheduler::IScheduler> schedulerCreator(
         int,
-        mpc_framework::engine::communication::
-            IPartyCommunicationAgentFactory&)) {
-  auto factories =
-      mpc_framework::engine::communication::getInMemoryAgentFactory(2);
+        engine::communication::IPartyCommunicationAgentFactory&)) {
+  auto factories = engine::communication::getInMemoryAgentFactory(2);
 
   int size = 16384;
 
@@ -180,8 +170,8 @@ void testBatchBillionaireProblem(
       runBatchWithScheduler<0>,
       size,
       0,
-      std::reference_wrapper<mpc_framework::engine::communication::
-                                 IPartyCommunicationAgentFactory>(
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(
           *factories[0]),
       schedulerCreator);
 
@@ -189,8 +179,8 @@ void testBatchBillionaireProblem(
       runBatchWithScheduler<1>,
       size,
       1,
-      std::reference_wrapper<mpc_framework::engine::communication::
-                                 IPartyCommunicationAgentFactory>(
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(
           *factories[1]),
       schedulerCreator);
 
@@ -207,27 +197,23 @@ void testBatchBillionaireProblem(
 
 TEST(BillionaireProblemTest, testBatchWithNetworkPlaintextScheduler) {
   testBatchBillionaireProblem(
-      mpc_framework::scheduler::createNetworkPlaintextScheduler<unsafe>);
+      scheduler::createNetworkPlaintextScheduler<unsafe>);
 }
 
 TEST(BillionaireProblemTest, testBatchWithEagerSchedulerAndFERRET) {
-  testBatchBillionaireProblem(
-      mpc_framework::scheduler::createEagerSchedulerWithRealEngine);
+  testBatchBillionaireProblem(scheduler::createEagerSchedulerWithRealEngine);
 }
 
 TEST(BillionaireProblemTest, testBatchWithEagerSchedulerAndClassicOT) {
-  testBatchBillionaireProblem(
-      mpc_framework::scheduler::createEagerSchedulerWithClassicOT);
+  testBatchBillionaireProblem(scheduler::createEagerSchedulerWithClassicOT);
 }
 
 TEST(BillionaireProblemTest, testBatchWithLazySchedulerAndFERRET) {
-  testBatchBillionaireProblem(
-      mpc_framework::scheduler::createLazySchedulerWithRealEngine);
+  testBatchBillionaireProblem(scheduler::createLazySchedulerWithRealEngine);
 }
 
 TEST(BillionaireProblemTest, testBatchWithLazySchedulerAndClassicOT) {
-  testBatchBillionaireProblem(
-      mpc_framework::scheduler::createLazySchedulerWithClassicOT);
+  testBatchBillionaireProblem(scheduler::createLazySchedulerWithClassicOT);
 }
 
 } // namespace fbpcf::billionaire_problem

@@ -13,7 +13,7 @@
 
 #include "fbpcf/mpc_framework/engine/ISecretShareEngine.h"
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 
 /**
  * This factory creates secret share MPC engine
@@ -25,4 +25,4 @@ class ISecretShareEngineFactory {
   virtual std::unique_ptr<ISecretShareEngine> create() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

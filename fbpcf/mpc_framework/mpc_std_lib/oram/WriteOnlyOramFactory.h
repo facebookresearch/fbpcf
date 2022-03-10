@@ -17,7 +17,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/SinglePointArrayGeneratorFactory.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/WriteOnlyOram.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T>
 class WriteOnlyOramFactory final : public IWriteOnlyOramFactory<T> {
@@ -94,4 +94,4 @@ std::unique_ptr<IWriteOnlyOramFactory<T>> getSecureWriteOnlyOramFactory(
           amIParty0, party0Id, party1Id));
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

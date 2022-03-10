@@ -9,8 +9,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IBaseObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
 
 /**
  * This is a dummy base oblivious transfer object. An ideal object will realize
@@ -57,4 +56,4 @@ class DummyBaseObliviousTransfer final : public IBaseObliviousTransfer {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::insecure

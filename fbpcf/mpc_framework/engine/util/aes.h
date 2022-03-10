@@ -13,7 +13,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 /*
 AES algorithm can be divided into two parts:
@@ -80,4 +80,4 @@ class Aes {
   }
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

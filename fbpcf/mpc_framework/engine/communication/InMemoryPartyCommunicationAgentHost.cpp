@@ -7,7 +7,7 @@
 
 #include "fbpcf/mpc_framework/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 void InMemoryPartyCommunicationAgent::send(
     const std::vector<unsigned char>& data) {
@@ -70,4 +70,4 @@ std::vector<unsigned char> InMemoryPartyCommunicationAgentHost::receive(
   return result;
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

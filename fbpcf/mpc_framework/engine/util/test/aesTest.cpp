@@ -11,7 +11,7 @@
 #include <random>
 #include "fbpcf/mpc_framework/engine/util/test/aesTestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 TEST(aesTest, testEncryptionAndDecryption) {
   std::random_device rd;
@@ -38,4 +38,4 @@ TEST(aesTest, testEncryptionAndDecryption) {
   }
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

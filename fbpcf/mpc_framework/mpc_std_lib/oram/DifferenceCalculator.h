@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IDifferenceCalculator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  * a difference Calculator compute the difference between a randomly
@@ -50,6 +50,6 @@ class DifferenceCalculator final : public IDifferenceCalculator<T> {
   int32_t party1Id_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram
 
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DifferenceCalculator_impl.h"

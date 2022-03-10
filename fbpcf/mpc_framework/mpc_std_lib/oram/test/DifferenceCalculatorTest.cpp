@@ -22,7 +22,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T>
 struct InputType {
@@ -169,4 +169,4 @@ TEST(DifferenceCalculatorTest, testDifferenceCalculator) {
           1>>(false, 0, 1));
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

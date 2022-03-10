@@ -11,7 +11,7 @@
 
 #include <folly/Benchmark.h>
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 /**
  * A parent class that can be used for writing benchmarks for components that
@@ -46,4 +46,4 @@ class NetworkedBenchmark {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

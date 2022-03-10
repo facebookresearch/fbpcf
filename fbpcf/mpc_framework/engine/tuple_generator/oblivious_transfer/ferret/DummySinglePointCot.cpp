@@ -14,8 +14,7 @@
 #include <random>
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 void DummySinglePointCot::senderInit(__m128i delta) {
   delta_ = delta;
@@ -62,4 +61,4 @@ std::vector<__m128i> DummySinglePointCot::receiverExtend(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

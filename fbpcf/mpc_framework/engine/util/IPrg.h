@@ -12,7 +12,7 @@
 #include <cstdint>
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 class IPrg {
  public:
@@ -29,4 +29,4 @@ class IPrg {
   virtual std::vector<unsigned char> getRandomBytes(uint32_t size) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util
