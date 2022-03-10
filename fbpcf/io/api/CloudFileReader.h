@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <cstddef>
 #include <string>
 #include "fbpcf/io/api/IReaderCloser.h"
 
@@ -21,7 +22,7 @@ class CloudFileReader : public IReaderCloser {
   explicit CloudFileReader(std::string filePath);
 
   int close() override;
-  int read(char buf[]) override;
+  int read(char buf[], size_t nBytes) override;
   ~CloudFileReader() override;
 };
 

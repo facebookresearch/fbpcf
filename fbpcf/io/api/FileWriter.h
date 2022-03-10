@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <cstddef>
 #include <memory>
 #include <string>
 #include "fbpcf/io/api/IWriterCloser.h"
@@ -24,7 +25,7 @@ class FileWriter : public IWriterCloser {
   explicit FileWriter(std::string filePath);
 
   int close() override;
-  int write(char buf[]) override;
+  int write(char buf[], size_t nBytes) override;
   ~FileWriter() override;
 
  private:

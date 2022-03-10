@@ -7,6 +7,7 @@
 
 #pragma once
 #include <openssl/ssl.h>
+#include <cstddef>
 
 #include "fbpcf/io/api/IReaderCloser.h"
 
@@ -31,7 +32,7 @@ class SocketReader : public IReaderCloser {
   SocketReader(SSL* ssl);
 
   int close() override;
-  int read(char buf[]) override;
+  int read(char buf[], size_t nBytes) override;
   ~SocketReader() override;
 };
 

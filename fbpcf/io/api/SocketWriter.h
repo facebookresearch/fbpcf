@@ -8,6 +8,7 @@
 #pragma once
 
 #include <openssl/ssl.h>
+#include <cstddef>
 
 #include "fbpcf/io/api/IWriterCloser.h"
 
@@ -32,7 +33,7 @@ class SocketWriter : public IWriterCloser {
   SocketWriter(SSL* ssl);
 
   int close() override;
-  int write(char buf[]) override;
+  int write(char buf[], size_t nBytes) override;
   ~SocketWriter() override;
 };
 

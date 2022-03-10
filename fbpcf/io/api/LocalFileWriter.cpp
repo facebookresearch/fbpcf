@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/io/api/LocalFileWriter.h"
+#include <cstddef>
 #include <string>
 
 namespace fbpcf::io {
@@ -14,7 +15,7 @@ LocalFileWriter::LocalFileWriter(std::string /* filePath */) {}
 int LocalFileWriter::close() {
   return 0;
 }
-int LocalFileWriter::write(char buf[]) {
+int LocalFileWriter::write(char buf[], size_t nBytes) {
   return 0;
 }
 

@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/io/api/CloudFileReader.h"
+#include <cstddef>
 #include <string>
 
 namespace fbpcf::io {
@@ -15,7 +16,7 @@ CloudFileReader::CloudFileReader(std::string /* filePath */) {}
 int CloudFileReader::close() {
   return 0;
 }
-int CloudFileReader::read(char buf[]) {
+int CloudFileReader::read(char buf[], size_t nBytes) {
   return 0;
 }
 

@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/io/api/FileReader.h"
+#include <cstddef>
 #include <memory>
 #include <string>
 #include "fbpcf/io/api/CloudFileReader.h"
@@ -26,8 +27,8 @@ FileReader::~FileReader() {
   close();
 }
 
-int FileReader::read(char buf[]) {
-  return childReader_->read(buf);
+int FileReader::read(char buf[], size_t nBytes) {
+  return childReader_->read(buf, nBytes);
 }
 
 int FileReader::close() {
