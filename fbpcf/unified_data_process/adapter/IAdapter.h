@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <vector>
 
-namespace fbpcf::mpc_games::udp::adapter {
+namespace fbpcf::udp::adapter {
 
 /*
  * An adapter converts a union-like mapping result into an intersection-like
@@ -34,4 +34,4 @@ class IAdapter {
       const std::vector<int64_t>& unionMap) const = 0;
 };
 
-} // namespace fbpcf::mpc_games::udp::adapter
+} // namespace fbpcf::udp::adapter
