@@ -7,21 +7,18 @@
 
 #pragma once
 
+#include "fbpcf/io/api/ICloser.h"
+#include "fbpcf/io/api/IReader.h"
+
 namespace fbpcf::io {
 
 /*
- * Defines a class that uses an underlying
- * medium and must close it to free up the allocated
- * resources.
+ * Defines a class that reads data from an
+ * underlying medium and closes it.
  */
-class ICloser {
+class IReaderCloser : public IReader, public ICloser {
  public:
-  /*
-   * close() returns 0 if it succeeds, and -1
-   * in the case of an error.
-   */
-  virtual int close() = 0;
-  virtual ~ICloser() = default;
+  virtual ~IReaderCloser() = default;
 };
 
 } // namespace fbpcf::io

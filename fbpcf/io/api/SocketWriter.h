@@ -9,8 +9,7 @@
 
 #include <openssl/ssl.h>
 
-#include "fbpcf/io/api/ICloser.h"
-#include "fbpcf/io/api/IWriter.h"
+#include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
 
@@ -18,7 +17,7 @@ namespace fbpcf::io {
 This class is the API for writing data to a network
 socket. It is constructed with a socket file descriptor.
 */
-class SocketWriter : public IWriter, public ICloser {
+class SocketWriter : public IWriterCloser {
  public:
   /*
    * Creates a SocketWriter to write to the given

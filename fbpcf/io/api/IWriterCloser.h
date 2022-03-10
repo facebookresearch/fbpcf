@@ -7,21 +7,18 @@
 
 #pragma once
 
+#include "fbpcf/io/api/ICloser.h"
+#include "fbpcf/io/api/IWriter.h"
+
 namespace fbpcf::io {
 
 /*
- * Defines a class that uses an underlying
- * medium and must close it to free up the allocated
- * resources.
+ * Defines a class that writes data to an
+ * underlying medium and closes it.
  */
-class ICloser {
+class IWriterCloser : public IWriter, public ICloser {
  public:
-  /*
-   * close() returns 0 if it succeeds, and -1
-   * in the case of an error.
-   */
-  virtual int close() = 0;
-  virtual ~ICloser() = default;
+  virtual ~IWriterCloser() = default;
 };
 
 } // namespace fbpcf::io

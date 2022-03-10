@@ -21,8 +21,8 @@ class IWriter {
    * an error. It attempts to write the
    * entire provided buffer.
    */
-  virtual int write(char buf[]);
-  virtual ~IWriter();
+  virtual int write(char buf[]) = 0;
+  virtual ~IWriter() = default;
 };
 
 } // namespace fbpcf::io
