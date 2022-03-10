@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 #include "folly/BenchmarkUtil.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 DEFINE_int64(
     AES_Benchmark_Size,
@@ -111,7 +111,7 @@ BENCHMARK(AesPrg_getRandomDataInPlace, n) {
   }
   folly::doNotOptimizeAway(data);
 }
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util
 
 int main(int argc, char* argv[]) {
   facebook::initFacebook(&argc, &argv);

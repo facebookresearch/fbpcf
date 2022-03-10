@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdexcept>
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 inline uint64_t ceilDiv(uint64_t a, uint64_t b) {
   return a / b + (a % b != 0);
@@ -55,4 +55,4 @@ std::vector<unsigned char> AesPrg::generateRandomData(uint64_t numBytes) {
   return rstBytes;
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

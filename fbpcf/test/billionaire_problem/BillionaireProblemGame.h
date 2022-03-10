@@ -31,15 +31,14 @@ namespace fbpcf::billionaire_problem {
  * See BillionaireProblemGameTest.cpp for a concrete usage of this class.
  */
 template <int schedulerId, bool usingBatch>
-class BillionaireProblemGame
-    : public mpc_framework::frontend::MpcGame<schedulerId> {
-  using SecUnsignedInt = typename mpc_framework::frontend::MpcGame<
+class BillionaireProblemGame : public frontend::MpcGame<schedulerId> {
+  using SecUnsignedInt = typename frontend::MpcGame<
       schedulerId>::template SecUnsignedInt<32, usingBatch>;
 
  public:
   explicit BillionaireProblemGame(
-      std::unique_ptr<mpc_framework::scheduler::IScheduler> scheduler)
-      : mpc_framework::frontend::MpcGame<schedulerId>(std::move(scheduler)) {}
+      std::unique_ptr<scheduler::IScheduler> scheduler)
+      : frontend::MpcGame<schedulerId>(std::move(scheduler)) {}
 
   using AssetsType = typename std::
       conditional<usingBatch, std::vector<uint32_t>, uint32_t>::type;

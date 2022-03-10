@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/TupleGenerator.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 TupleGenerator::TupleGenerator(
     std::map<int, std::unique_ptr<IProductShareGenerator>>&&
@@ -66,4 +66,4 @@ std::pair<uint64_t, uint64_t> TupleGenerator::getTrafficStatistics() const {
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

@@ -10,7 +10,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/shuffler/IShufflerFactory.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/shuffler/NonShuffler.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::shuffler::insecure {
+namespace fbpcf::mpc_std_lib::shuffler::insecure {
 
 template <typename T>
 class NonShufflerFactory final : public IShufflerFactory<T> {
@@ -20,4 +20,4 @@ class NonShufflerFactory final : public IShufflerFactory<T> {
   }
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::shuffler::insecure
+} // namespace fbpcf::mpc_std_lib::shuffler::insecure

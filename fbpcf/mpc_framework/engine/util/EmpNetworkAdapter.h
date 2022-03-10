@@ -13,7 +13,7 @@
 
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 // this object wrapps around our own network object and provides the same API as
 // emp-tool::io
 
@@ -74,4 +74,4 @@ class EmpNetworkAdapter {
   communication::IPartyCommunicationAgent& agent_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

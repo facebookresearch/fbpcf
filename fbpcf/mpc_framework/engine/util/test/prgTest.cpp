@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include "fbpcf/mpc_framework/engine/util/AesPrg.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 TEST(AesPrgTest, testRandomBytesWithSIMDAes) {
   AesPrg prg(_mm_set_epi32(1, 2, 3, 4), 1024);
@@ -47,4 +47,4 @@ TEST(AesPrgTest, testThrow) {
   EXPECT_THROW(prg.getRandomBits(10), std::runtime_error);
 }
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

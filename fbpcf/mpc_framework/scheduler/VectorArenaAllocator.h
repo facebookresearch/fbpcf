@@ -15,7 +15,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/IAllocator.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * This class provides access to a large, contiguous block of memory that is
@@ -116,4 +116,4 @@ class VectorArenaAllocator final : public IAllocator<T> {
   }
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

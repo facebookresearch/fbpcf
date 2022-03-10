@@ -9,7 +9,7 @@
 #include <smmintrin.h>
 #include <stdexcept>
 
-namespace fbpcf::mpc_framework::mpc_std_lib::util {
+namespace fbpcf::mpc_std_lib::util {
 
 std::vector<bool> convertToBits(__m128i src) {
   std::vector<bool> rst(128);
@@ -63,4 +63,4 @@ std::vector<__m128i> convertFromBits(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::util
+} // namespace fbpcf::mpc_std_lib::util

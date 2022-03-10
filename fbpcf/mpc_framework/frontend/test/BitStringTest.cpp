@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/scheduler/WireKeeper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 TEST(StringTest, testInputAndOutput) {
   std::random_device rd;
   std::mt19937_64 e(rd());
@@ -453,4 +453,4 @@ TEST(StringTest, testResizeWithAND) {
   }
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

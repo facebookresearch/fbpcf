@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ISinglePointArrayGeneratorFactory.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/SinglePointArrayGenerator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 class SinglePointArrayGeneratorFactory final
     : public ISinglePointArrayGeneratorFactory {
@@ -35,4 +35,4 @@ class SinglePointArrayGeneratorFactory final
   std::unique_ptr<IObliviousDeltaCalculatorFactory> obliviousCalculatrFactory_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

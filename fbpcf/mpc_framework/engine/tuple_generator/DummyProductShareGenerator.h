@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/IProductShareGenerator.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::insecure {
+namespace fbpcf::engine::tuple_generator::insecure {
 
 /**
  * This is a Dummy product shares generator. It will generate shares with
@@ -39,4 +39,4 @@ class DummyProductShareGenerator final : public IProductShareGenerator {
   std::unique_ptr<communication::IPartyCommunicationAgent> agent_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::insecure
+} // namespace fbpcf::engine::tuple_generator::insecure

@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace fbpcf::mpc_framework::mpc_std_lib::util {
+namespace fbpcf::mpc_std_lib::util {
 
 template <>
 class Adapters<uint32_t> {
@@ -122,4 +122,4 @@ MpcAdapters<uint32_t, schedulerId>::obliviousSwap(
   return {rst1, rst2};
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::util
+} // namespace fbpcf::mpc_std_lib::util

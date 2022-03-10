@@ -14,8 +14,7 @@
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 /**
  * This is a real single point COT. See https://eprint.iacr.org/2020/924.pdf for
@@ -73,4 +72,4 @@ class SinglePointCot final : public ISinglePointCot {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

@@ -13,7 +13,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 template <bool isSecret, int schedulerId, bool usingBatch = false>
 class Bit : public scheduler::SchedulerKeeper<schedulerId> {
@@ -129,6 +129,6 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
   friend class Bit<!isSecret, schedulerId, usingBatch>;
 };
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend
 
 #include "fbpcf/mpc_framework/frontend/Bit_impl.h"

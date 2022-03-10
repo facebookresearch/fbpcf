@@ -20,7 +20,7 @@
 #include "fbpcf/mpc_framework/engine/SecretShareEngineFactory.h"
 #include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 
 std::vector<bool> testHelper(
     int numberOfParty,
@@ -408,4 +408,4 @@ TEST(SecretShareEngineTest, TestBatchFreeANDtWithDummyComponents) {
   }
 }
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

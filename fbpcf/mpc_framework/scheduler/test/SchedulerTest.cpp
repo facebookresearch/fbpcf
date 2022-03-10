@@ -18,7 +18,7 @@
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/GateKeeper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 const bool unsafe = false;
 const int numberOfParties = 2;
@@ -705,4 +705,4 @@ TEST_P(CompositeSchedulerTestFixture, testCompositeANDBatch) {
       });
 }
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

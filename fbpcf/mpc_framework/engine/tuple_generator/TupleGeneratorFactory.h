@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * This factory creates real tuple generators
@@ -59,4 +59,4 @@ class TupleGeneratorFactory final : public ITupleGeneratorFactory {
   int numberOfParty_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

@@ -22,7 +22,7 @@
 
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 inline bool getLsb(__m128i src) {
   return _mm_extract_epi8(src, 0) & 1;
@@ -127,4 +127,4 @@ class Expander {
   Aes cipher1_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

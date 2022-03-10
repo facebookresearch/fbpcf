@@ -110,24 +110,21 @@ void adapterTest(
 }
 
 TEST(AdapterTest, testAdapterWithNonShuffler) {
-  auto agentFactories =
-      mpc_framework::engine::communication::getInMemoryAgentFactory(2);
-  mpc_framework::setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   AdapterFactory<0> factory0(
       true,
       0,
       1,
-      std::make_unique<
-          mpc_framework::mpc_std_lib::shuffler::insecure::NonShufflerFactory<
-              mpc_framework::frontend::BitString<true, 0, true>>>());
+      std::make_unique<mpc_std_lib::shuffler::insecure::NonShufflerFactory<
+          frontend::BitString<true, 0, true>>>());
 
   AdapterFactory<1> factory1(
       false,
       0,
       1,
-      std::make_unique<
-          mpc_framework::mpc_std_lib::shuffler::insecure::NonShufflerFactory<
-              mpc_framework::frontend::BitString<true, 1, true>>>());
+      std::make_unique<mpc_std_lib::shuffler::insecure::NonShufflerFactory<
+          frontend::BitString<true, 1, true>>>());
 
   adapterTest(factory0.create(), factory1.create());
 }

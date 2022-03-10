@@ -14,15 +14,14 @@ namespace fbpcf::udp::adapter {
 
 template <int schedulerId>
 class AdapterFactory final : public IAdapterFactory {
-  using SecString = mpc_framework::frontend::BitString<true, schedulerId, true>;
+  using SecString = frontend::BitString<true, schedulerId, true>;
 
  public:
   AdapterFactory(
       bool amIParty0,
       int32_t party0Id,
       int32_t party1Id,
-      std::unique_ptr<
-          mpc_framework::mpc_std_lib::shuffler::IShufflerFactory<SecString>>
+      std::unique_ptr<mpc_std_lib::shuffler::IShufflerFactory<SecString>>
           shufflerFactory)
       : amIParty0_(amIParty0),
         party0Id_(party0Id),
@@ -37,8 +36,7 @@ class AdapterFactory final : public IAdapterFactory {
   bool amIParty0_;
   int32_t party0Id_;
   int32_t party1Id_;
-  std::unique_ptr<
-      mpc_framework::mpc_std_lib::shuffler::IShufflerFactory<SecString>>
+  std::unique_ptr<mpc_std_lib::shuffler::IShufflerFactory<SecString>>
       shufflerFactory_;
 };
 

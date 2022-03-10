@@ -20,8 +20,7 @@
 #include "fbpcf/mpc_framework/engine/util/test/benchmarks/NetworkedBenchmark.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 inline std::tuple<std::vector<__m128i>, std::vector<__m128i>, __m128i>
 getBaseOT(size_t baseOtSize) {
@@ -186,5 +185,4 @@ class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
   std::vector<__m128i> baseOTReceive_;
 };
 
-} // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret

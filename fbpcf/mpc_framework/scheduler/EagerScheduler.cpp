@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 EagerScheduler::EagerScheduler(
     std::unique_ptr<engine::ISecretShareEngine> engine,
@@ -310,4 +310,4 @@ std::pair<uint64_t, uint64_t> EagerScheduler::getTrafficStatistics() const {
   return engine_->getTrafficStatistics();
 }
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

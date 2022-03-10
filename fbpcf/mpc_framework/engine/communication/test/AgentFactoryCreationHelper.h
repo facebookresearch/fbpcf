@@ -10,7 +10,7 @@
 #include <memory>
 #include "fbpcf/mpc_framework/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 inline std::vector<std::unique_ptr<IPartyCommunicationAgentFactory>>
 getInMemoryAgentFactory(int numberOfParty) {
@@ -36,4 +36,4 @@ getInMemoryAgentFactory(int numberOfParty) {
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

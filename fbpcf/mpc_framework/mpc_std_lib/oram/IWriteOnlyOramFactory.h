@@ -10,7 +10,7 @@
 #include <memory>
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IWriteOnlyOram.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T>
 class IWriteOnlyOramFactory {
@@ -25,4 +25,4 @@ class IWriteOnlyOramFactory {
   virtual uint32_t getMaxBatchSize(size_t size, uint8_t concurrency) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

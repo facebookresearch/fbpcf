@@ -19,7 +19,7 @@
 #include "fbpcf/mpc_framework/scheduler/WireKeeper.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/GateKeeper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 template <bool unsafe>
 inline std::unique_ptr<IScheduler> createPlaintextScheduler(
@@ -132,4 +132,4 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithInsecureEngine(
       std::make_unique<GateKeeper>(wireKeeper));
 }
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

@@ -12,7 +12,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGateKeeper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 class GateKeeper : public IGateKeeper {
  public:
@@ -135,4 +135,4 @@ class GateKeeper : public IGateKeeper {
   const uint32_t kMaxUnexecutedGates = 100000;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

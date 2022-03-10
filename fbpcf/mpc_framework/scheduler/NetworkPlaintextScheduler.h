@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/IWireKeeper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * A scheduler that carries out computations in plaintext over the network.
@@ -93,4 +93,4 @@ class NetworkPlaintextScheduler final : public PlaintextScheduler {
           agentMap_;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

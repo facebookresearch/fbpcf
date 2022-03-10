@@ -7,8 +7,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/DummyMatrixMultiplier.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 std::vector<__m128i> DummyMatrixMultiplier::multiplyWithRandomMatrix(
     __m128i /*seed*/,
@@ -22,4 +21,4 @@ std::vector<__m128i> DummyMatrixMultiplier::multiplyWithRandomMatrix(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

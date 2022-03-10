@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/util/EmpNetworkAdapter.h"
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * This object is a wrapper that align our RCOT APIs and emp::IKNP APIs.
@@ -65,4 +65,4 @@ class EmpShRandomCorrelatedObliviousTransfer final
   std::unique_ptr<util::IPrg> prg_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

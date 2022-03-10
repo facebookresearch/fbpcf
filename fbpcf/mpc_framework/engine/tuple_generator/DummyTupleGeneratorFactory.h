@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/ITupleGeneratorFactory.h"
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::insecure {
+namespace fbpcf::engine::tuple_generator::insecure {
 
 /**
  * This factory creates dummy tuple generators
@@ -28,4 +28,4 @@ class DummyTupleGeneratorFactory final : public ITupleGeneratorFactory {
   }
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::insecure
+} // namespace fbpcf::engine::tuple_generator::insecure

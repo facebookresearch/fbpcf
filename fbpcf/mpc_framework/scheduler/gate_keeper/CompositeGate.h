@@ -13,7 +13,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/ICompositeGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 class CompositeGate final : public ICompositeGate {
  public:
@@ -94,4 +94,4 @@ class CompositeGate final : public ICompositeGate {
   }
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

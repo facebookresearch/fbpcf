@@ -10,7 +10,7 @@
 #include <memory>
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/ISinglePointArrayGenerator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 class ISinglePointArrayGeneratorFactory {
  public:
@@ -19,4 +19,4 @@ class ISinglePointArrayGeneratorFactory {
   virtual std::unique_ptr<ISinglePointArrayGenerator> create() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

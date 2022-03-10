@@ -11,7 +11,7 @@
 
 #include "fbpcf/mpc_framework/engine/ISecretShareEngine.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * Base interface for Gates in a boolean circuit. It is used to encapsulate
@@ -46,4 +46,4 @@ class IGate {
 
  protected:
 };
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

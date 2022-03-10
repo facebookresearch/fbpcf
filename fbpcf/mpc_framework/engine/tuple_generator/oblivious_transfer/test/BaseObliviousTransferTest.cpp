@@ -18,7 +18,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/NpBaseObliviousTransferFactory.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 void testBaseObliviousTransfer(
     std::unique_ptr<IBaseObliviousTransferFactory> factory0,
@@ -130,4 +130,4 @@ TEST(BaseObliviousTransferTest, testNpBaseOT) {
       std::make_unique<NpBaseObliviousTransferFactory>());
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

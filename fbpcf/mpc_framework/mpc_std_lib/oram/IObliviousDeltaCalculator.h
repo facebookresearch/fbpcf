@@ -10,7 +10,7 @@
 #include <emmintrin.h>
 #include <vector>
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  * an oblivious delta calculator obliviously choose between two secret-shared
@@ -38,4 +38,4 @@ class IObliviousDeltaCalculator {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

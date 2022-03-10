@@ -20,7 +20,7 @@
 #include "fbpcf/mpc_framework/scheduler/UnorderedMapAllocator.h"
 #include "fbpcf/mpc_framework/scheduler/VectorArenaAllocator.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 class WireKeeper final : public IWireKeeper {
  public:
@@ -245,4 +245,4 @@ class WireKeeper final : public IWireKeeper {
       intBatchAllocator_;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

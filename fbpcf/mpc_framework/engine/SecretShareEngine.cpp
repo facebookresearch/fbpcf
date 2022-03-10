@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/engine/SecretShareEngine.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine {
+namespace fbpcf::engine {
 SecretShareEngine::SecretShareEngine(
     std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator,
     std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
@@ -308,4 +308,4 @@ std::vector<bool> SecretShareEngine::revealToParty(
   return communicationAgent_->openSecretsToParty(id, output);
 }
 
-} // namespace fbpcf::mpc_framework::engine
+} // namespace fbpcf::engine

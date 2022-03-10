@@ -12,7 +12,7 @@
 #include <fstream>
 #include <ostream>
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 // creates a cert file, key file, and passphrase file
 // in the provided directory
@@ -88,4 +88,4 @@ inline void deleteTlsFiles(std::string dir) {
   remove((dir + "/cert.pem").c_str());
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

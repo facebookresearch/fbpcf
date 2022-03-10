@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IDifferenceCalculator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 /**
  * See design doc
@@ -48,6 +48,6 @@ class DummyDifferenceCalculator final : public IDifferenceCalculator<T> {
       agent_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure
 
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DummyDifferenceCalculator_impl.h"

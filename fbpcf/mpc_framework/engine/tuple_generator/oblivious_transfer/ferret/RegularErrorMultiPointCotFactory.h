@@ -15,8 +15,7 @@
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 class RegularErrorMultiPointCotFactory final : public IMultiPointCotFactory {
  public:
@@ -36,4 +35,4 @@ class RegularErrorMultiPointCotFactory final : public IMultiPointCotFactory {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

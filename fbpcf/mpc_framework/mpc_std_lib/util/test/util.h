@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::util {
+namespace fbpcf::mpc_std_lib::util {
 // the 3 returned valeus are: true value, first share, second share
 template <typename T>
 std::tuple<T, T, T> getRandomData(std::mt19937_64& e);
@@ -54,4 +54,4 @@ getRandomData<AggregationValue>(std::mt19937_64& e) {
   return {value, valueShare0, valueShare1};
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::util
+} // namespace fbpcf::mpc_std_lib::util

@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/INormalGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 LazyScheduler::LazyScheduler(
     std::unique_ptr<engine::ISecretShareEngine> engine,
@@ -323,4 +323,4 @@ void LazyScheduler::executeOneLevel() {
   }
 }
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

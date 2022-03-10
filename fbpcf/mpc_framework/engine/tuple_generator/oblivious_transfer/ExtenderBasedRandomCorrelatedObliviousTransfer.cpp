@@ -7,7 +7,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ExtenderBasedRandomCorrelatedObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 ExtenderBasedRandomCorrelatedObliviousTransfer::
     ExtenderBasedRandomCorrelatedObliviousTransfer(
@@ -64,4 +64,4 @@ void ExtenderBasedRandomCorrelatedObliviousTransfer::extendRcot() {
   otIndex_ = 0;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

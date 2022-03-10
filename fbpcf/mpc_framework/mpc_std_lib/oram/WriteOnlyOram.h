@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IWriteOnlyOram.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T>
 class WriteOnlyOram final : public IWriteOnlyOram<T> {
@@ -77,6 +77,6 @@ class WriteOnlyOram final : public IWriteOnlyOram<T> {
   std::vector<T> memory_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram
 
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/WriteOnlyOram_impl.h"

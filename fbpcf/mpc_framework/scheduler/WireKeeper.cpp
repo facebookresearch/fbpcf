@@ -12,7 +12,7 @@
 #include <string>
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 IScheduler::WireId<IScheduler::Boolean> WireKeeper::allocateBooleanValue(
     bool v,
@@ -206,4 +206,4 @@ void WireKeeper::decreaseBatchReferenceCount(
     intBatchAllocator_->free(id.getId());
   }
 }
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

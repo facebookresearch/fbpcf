@@ -12,8 +12,7 @@
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 /**
  * This is a dummy single point COT.
@@ -63,4 +62,4 @@ class DummySinglePointCot final : public ISinglePointCot {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/IBaseObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * This is a NP(NP stands for the authors' names - Naor and Pinkas) base
@@ -71,4 +71,4 @@ class NpBaseObliviousTransfer : public IBaseObliviousTransfer {
   std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>> order_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/communication/ISecretShareEngineCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * This object will operate with an underlying commnuication agent
@@ -55,4 +55,4 @@ class SecretShareEngineCommunicationAgent final
   std::map<int, std::unique_ptr<IPartyCommunicationAgent>> agentMap_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

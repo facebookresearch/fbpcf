@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IObliviousDeltaCalculator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 class IObliviousDeltaCalculatorFactory {
  public:
@@ -20,4 +20,4 @@ class IObliviousDeltaCalculatorFactory {
   virtual std::unique_ptr<IObliviousDeltaCalculator> create() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

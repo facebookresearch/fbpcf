@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 class EmpShRandomCorrelatedObliviousTransferFactory final
     : public IFlexibleRandomCorrelatedObliviousTransferFactory {
@@ -41,4 +41,4 @@ class EmpShRandomCorrelatedObliviousTransferFactory final
   std::unique_ptr<util::IPrgFactory> prgFactory_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

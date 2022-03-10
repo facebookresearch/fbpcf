@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/frontend/Bit.h"
 #include "fbpcf/mpc_framework/frontend/Int.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::util {
+namespace fbpcf::mpc_std_lib::util {
 
 /*
  * these helpers are for non-MPC part
@@ -61,7 +61,7 @@ std::vector<std::vector<bool>> convertToBits(const std::vector<__m128i>& src);
 
 std::vector<__m128i> convertFromBits(const std::vector<std::vector<bool>>& src);
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::util
+} // namespace fbpcf::mpc_std_lib::util
 
 #include "fbpcf/mpc_framework/mpc_std_lib/util/uint32_impl.h"
 

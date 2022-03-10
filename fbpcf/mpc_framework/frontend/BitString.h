@@ -13,7 +13,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/frontend/Bit.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 /**
  * BitString type is merely a vector of bits with some basic APIs like bit-wise
@@ -127,6 +127,6 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   friend class BitString<!isSecret, schedulerId, usingBatch>;
 };
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend
 
 #include "fbpcf/mpc_framework/frontend/BitString_impl.h"

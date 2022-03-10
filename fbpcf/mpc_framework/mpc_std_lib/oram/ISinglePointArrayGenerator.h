@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <vector>
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  * a single point array generator allow two parties jointly generate a pair of
@@ -42,4 +42,4 @@ class ISinglePointArrayGenerator {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

@@ -12,7 +12,7 @@
 
 #include "fbpcf/mpc_framework/engine/communication/SecretShareEngineCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 std::map<int, __m128i> SecretShareEngineCommunicationAgent::exchangeKeys(
     const std::map<int, __m128i>& keys) {
   std::map<int, __m128i> rst;
@@ -74,4 +74,4 @@ SecretShareEngineCommunicationAgent::getTrafficStatistics() const {
   return {sent, received};
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

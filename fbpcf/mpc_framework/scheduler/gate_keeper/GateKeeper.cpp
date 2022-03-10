@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/NormalGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 GateKeeper::GateKeeper(std::shared_ptr<IWireKeeper> wireKeeper)
     : wireKeeper_{wireKeeper} {}
 
@@ -216,4 +216,4 @@ uint32_t GateKeeper::getFirstAvailableLevelForNewWire(
       std::max(minAvailableLeft, minAvailableRight),
       minAvailableFirstUnexecuted);
 }
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

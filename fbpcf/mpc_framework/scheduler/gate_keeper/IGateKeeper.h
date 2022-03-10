@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/INormalGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * This object stores gates for a circuit that have yet to be executed.
@@ -92,4 +92,4 @@ class IGateKeeper {
   }
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

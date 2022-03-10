@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/scheduler/IWireKeeper.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * This class executes gates in a circuit. There are subclasses for batched and
@@ -139,4 +139,4 @@ class INormalGate : public IGate {
   virtual void decreaseReferenceCount(IScheduler::WireId<T> wire) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

@@ -12,7 +12,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/DummyObliviousDeltaCalculator.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IObliviousDeltaCalculatorFactory.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 class DummyObliviousDeltaCalculatorFactory final
     : public IObliviousDeltaCalculatorFactory {
@@ -32,4 +32,4 @@ class DummyObliviousDeltaCalculatorFactory final
   engine::communication::IPartyCommunicationAgentFactory& factory_;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

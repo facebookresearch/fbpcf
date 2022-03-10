@@ -11,7 +11,7 @@
 #include <memory>
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 /**
  * A base oblivious transfer interface
@@ -47,4 +47,4 @@ class IBaseObliviousTransfer {
   extractCommunicationAgent() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

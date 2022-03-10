@@ -13,7 +13,7 @@
 #include "fbpcf/mpc_framework/engine/util/util.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure {
+namespace fbpcf::mpc_std_lib::oram::insecure {
 
 std::vector<std::pair<std::vector<bool>, std::vector<__m128i>>>
 DummySinglePointArrayGenerator::generateSinglePointArrays(
@@ -56,4 +56,4 @@ DummySinglePointArrayGenerator::generateSinglePointArrays(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram::insecure
+} // namespace fbpcf::mpc_std_lib::oram::insecure

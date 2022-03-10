@@ -12,8 +12,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/ferret/SinglePointCot.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 std::vector<__m128i> SinglePointCot::constructALayerOfKeyForSender(
     std::vector<__m128i>&& previousLayer,
@@ -127,4 +126,4 @@ std::vector<__m128i> SinglePointCot::receiverExtend(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

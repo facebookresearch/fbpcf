@@ -7,8 +7,7 @@
 
 #pragma once
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
 
 template <class T>
 std::vector<T> DummyBidirectionObliviousTransfer<T>::biDirectionOT(
@@ -42,4 +41,4 @@ std::vector<T> DummyBidirectionObliviousTransfer<T>::biDirectionOT(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::insecure

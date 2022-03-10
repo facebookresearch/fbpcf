@@ -12,7 +12,7 @@
 
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 /**
  * A wire keeper is the object that stores all the live wires and free
  * upon request.
@@ -166,4 +166,4 @@ class IWireKeeper {
   };
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

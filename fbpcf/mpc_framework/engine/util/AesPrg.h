@@ -22,7 +22,7 @@
 #include "fbpcf/mpc_framework/engine/util/IPrg.h"
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 class AesPrg final : public IPrg {
  public:
@@ -73,4 +73,4 @@ class AesPrg final : public IPrg {
   std::unique_ptr<AsyncBuffer<unsigned char>> asyncBuffer_ = nullptr;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

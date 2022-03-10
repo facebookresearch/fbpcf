@@ -15,7 +15,7 @@
 #include "fbpcf/mpc_framework/scheduler/WireKeeper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 using namespace ::testing;
 
@@ -591,4 +591,4 @@ TEST(BitTest, testReferenceCountBatch) {
   scheduler::SchedulerKeeper<0>::freeScheduler();
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

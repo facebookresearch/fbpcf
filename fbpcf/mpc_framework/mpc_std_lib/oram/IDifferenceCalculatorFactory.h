@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IDifferenceCalculator.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <typename T>
 class IDifferenceCalculatorFactory {
@@ -21,4 +21,4 @@ class IDifferenceCalculatorFactory {
   virtual std::unique_ptr<IDifferenceCalculator<T>> create() = 0;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

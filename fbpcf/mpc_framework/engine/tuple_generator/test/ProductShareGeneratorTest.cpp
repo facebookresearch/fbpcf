@@ -29,7 +29,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/test/TupleGeneratorTestHelper.h"
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 void testGenerator(
     std::unique_ptr<IProductShareGeneratorFactory> factory0,
@@ -121,4 +121,4 @@ TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
                   kTestExtendedSize, kTestBaseSize, kTestWeight))));
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

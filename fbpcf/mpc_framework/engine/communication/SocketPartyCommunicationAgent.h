@@ -11,7 +11,7 @@
 
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * This object connect two parties on different machines via socket. This object
@@ -72,4 +72,4 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   uint64_t receivedData_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

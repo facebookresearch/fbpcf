@@ -21,9 +21,8 @@ namespace fbpcf::udp::data_processor {
 template <int schedulerId>
 class IDataProcessor {
  public:
-  using SecString = mpc_framework::frontend::BitString<true, schedulerId, true>;
-  using PubString =
-      mpc_framework::frontend::BitString<false, schedulerId, true>;
+  using SecString = frontend::BitString<true, schedulerId, true>;
+  using PubString = frontend::BitString<false, schedulerId, true>;
 
   virtual ~IDataProcessor() = default;
 

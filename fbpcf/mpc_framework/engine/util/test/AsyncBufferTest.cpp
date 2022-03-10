@@ -9,7 +9,7 @@
 
 #include "fbpcf/mpc_framework/engine/util/AsyncBuffer.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 TEST(AsyncBufferTest, TestGetData) {
   auto index = 0;
@@ -53,4 +53,4 @@ TEST(AsyncBufferTest, TestGetData) {
     EXPECT_EQ(allData.at(i), i);
   }
 }
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

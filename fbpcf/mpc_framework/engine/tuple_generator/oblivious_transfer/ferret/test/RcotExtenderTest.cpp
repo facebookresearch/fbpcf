@@ -26,8 +26,7 @@
 #include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret {
 
 void testRcotExtender(std::unique_ptr<IRcotExtenderFactory> factory) {
   communication::InMemoryPartyCommunicationAgentHost host;
@@ -129,4 +128,4 @@ TEST(RcotExtenderTest, testWithRegularErrorMPCOTandRealSPCOT) {
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret

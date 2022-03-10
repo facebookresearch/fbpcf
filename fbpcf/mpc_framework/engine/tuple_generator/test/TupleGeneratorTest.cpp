@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/engine/tuple_generator/ITupleGenerator.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/test/TupleGeneratorTestHelper.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 using TupleGeneratorFactoryCreator =
     std::unique_ptr<tuple_generator::ITupleGeneratorFactory>(
@@ -109,4 +109,4 @@ TEST(TupleGeneratorTest, testTwoPartyTupleGeneratorWithRcotExtender) {
   testTupleGenerator(2, createTwoPartyTupleGeneratorFactoryWithRcotExtender);
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

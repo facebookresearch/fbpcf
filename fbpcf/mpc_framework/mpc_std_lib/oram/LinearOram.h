@@ -14,7 +14,7 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/IWriteOnlyOram.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/util/util.h"
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 /**
  *A linear ORAM behaviors the same way as the ideal ORAM functionality when
@@ -115,6 +115,6 @@ class LinearOram final : public IWriteOnlyOram<T> {
       const frontend::Bit<true, schedulerId, true>& condition) const;
 };
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram
 
 #include "fbpcf/mpc_framework/mpc_std_lib/oram/LinearOram_impl.h"

@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include "fbpcf/mpc_framework/test/TestHelper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
   // Non batch API: Bool
@@ -249,4 +249,4 @@ TEST(SafeVectorArenaWireKeeperTest, testReferenceCount) {
   wireKeeperTestReferenceCount(
       WireKeeper::createWithVectorArena</*unsafe*/ false>());
 }
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

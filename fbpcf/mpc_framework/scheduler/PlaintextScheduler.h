@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/scheduler/IScheduler.h"
 #include "fbpcf/mpc_framework/scheduler/IWireKeeper.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 /**
  * A plaintext scheduler will simply keep a book of all wires, and immediately
  * carry out all computations upon request without an underlying engine. This
@@ -315,4 +315,4 @@ class PlaintextScheduler : public IScheduler {
       uint64_t& gateCounter);
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

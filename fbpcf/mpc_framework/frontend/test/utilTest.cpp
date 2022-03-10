@@ -10,7 +10,7 @@
 
 #include "fbpcf/mpc_framework/frontend/util.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 TEST(TypeIndicatorTest, testIntegerTypes) {
   const int width = 31;
@@ -27,4 +27,4 @@ TEST(TypeIndicatorTest, testIntegerTypes) {
   EXPECT_FALSE(IsBatch<Unsigned<width>>::value);
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

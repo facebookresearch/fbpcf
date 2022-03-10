@@ -10,7 +10,7 @@
 #include <openssl/sha.h>
 #include <stdexcept>
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 NpBaseObliviousTransfer::NpBaseObliviousTransfer(
     std::unique_ptr<communication::IPartyCommunicationAgent> agent)
@@ -359,4 +359,4 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
   return m;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

@@ -16,7 +16,7 @@
 #include "fbpcf/mpc_framework/scheduler/IWireKeeper.h"
 #include "fbpcf/mpc_framework/scheduler/gate_keeper/IGate.h"
 
-namespace fbpcf::mpc_framework::scheduler {
+namespace fbpcf::scheduler {
 
 /**
  * This class executes composite gates in a circuit. i.e. where one value is
@@ -160,4 +160,4 @@ class ICompositeGate : public IGate {
       IScheduler::WireId<IScheduler::Boolean> wire) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::scheduler
+} // namespace fbpcf::scheduler

@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
 IknpShRandomCorrelatedObliviousTransfer::
     IknpShRandomCorrelatedObliviousTransfer(
@@ -211,4 +211,4 @@ std::vector<__m128i> IknpShRandomCorrelatedObliviousTransfer::rcot(
   return rst;
 }
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer
+} // namespace fbpcf::engine::tuple_generator::oblivious_transfer

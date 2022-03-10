@@ -8,7 +8,7 @@
 #pragma once
 #include "fbpcf/mpc_framework/engine/util/aes.h"
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 class AesTestHelper final : public Aes {
  public:
@@ -22,4 +22,4 @@ class AesTestHelper final : public Aes {
   void decryptInPlace(std::vector<__m128i>& ciphertext) const;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

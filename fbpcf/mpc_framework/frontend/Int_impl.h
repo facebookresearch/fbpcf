@@ -11,7 +11,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/frontend/util.h"
 
-namespace fbpcf::mpc_framework::frontend {
+namespace fbpcf::frontend {
 
 template <
     bool isSigned,
@@ -560,4 +560,4 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::convertBitsToInt(
   }
 }
 
-} // namespace fbpcf::mpc_framework::frontend
+} // namespace fbpcf::frontend

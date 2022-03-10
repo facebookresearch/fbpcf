@@ -97,14 +97,13 @@ void testDataProcessor(
   future1.get();
   auto rst = future0.get();
   for (size_t i = 0; i < outputSize; i++) {
-    fbpcf::mpc_framework::testVectorEq(rst.at(i), expectedOutput.at(i));
+    fbpcf::testVectorEq(rst.at(i), expectedOutput.at(i));
   }
 }
 
 TEST(DummyDataProcessor, testDummyDataProcessor) {
-  auto agentFactories =
-      mpc_framework::engine::communication::getInMemoryAgentFactory(2);
-  mpc_framework::setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
 
   insecure::DummyDataProcessorFactory<0> factory0(0, 1, *agentFactories[0]);
   insecure::DummyDataProcessorFactory<1> factory1(1, 0, *agentFactories[1]);

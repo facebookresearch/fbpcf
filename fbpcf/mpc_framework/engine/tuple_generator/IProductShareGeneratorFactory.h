@@ -11,7 +11,7 @@
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/mpc_framework/engine/tuple_generator/IProductShareGenerator.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator {
+namespace fbpcf::engine::tuple_generator {
 
 /**
  * This is the API for an object that generates product shares. namely, a party
@@ -31,4 +31,4 @@ class IProductShareGeneratorFactory {
   virtual std::unique_ptr<IProductShareGenerator> create(int id) = 0;
 };
 
-} // namespace fbpcf::mpc_framework::engine::tuple_generator
+} // namespace fbpcf::engine::tuple_generator

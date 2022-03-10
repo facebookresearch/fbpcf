@@ -12,7 +12,7 @@
 #include <future>
 #include <vector>
 
-namespace fbpcf::mpc_framework::engine::util {
+namespace fbpcf::engine::util {
 
 /**
  * Holds a buffer that returns the requested amount of data on-demand. Data is
@@ -64,4 +64,4 @@ class AsyncBuffer {
   std::future<std::vector<T>> futureBuffer_;
 };
 
-} // namespace fbpcf::mpc_framework::engine::util
+} // namespace fbpcf::engine::util

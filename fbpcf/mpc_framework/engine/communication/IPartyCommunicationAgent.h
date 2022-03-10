@@ -15,7 +15,7 @@
 #error "Machine must be little endian"
 #endif
 
-namespace fbpcf::mpc_framework::engine::communication {
+namespace fbpcf::engine::communication {
 
 /**
  * This is the network API between two parties.
@@ -158,4 +158,4 @@ inline std::vector<bool> IPartyCommunicationAgent::receiveT(int size) {
   return receiveBool(size);
 }
 
-} // namespace fbpcf::mpc_framework::engine::communication
+} // namespace fbpcf::engine::communication

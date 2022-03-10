@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace fbpcf::mpc_framework::mpc_std_lib::oram {
+namespace fbpcf::mpc_std_lib::oram {
 
 template <int schedulerId>
 std::tuple<std::vector<__m128i>, std::vector<bool>, std::vector<bool>>
@@ -72,4 +72,4 @@ ObliviousDeltaCalculator<schedulerId>::calculateDelta(
   return {delta, t0, t1};
 }
 
-} // namespace fbpcf::mpc_framework::mpc_std_lib::oram
+} // namespace fbpcf::mpc_std_lib::oram

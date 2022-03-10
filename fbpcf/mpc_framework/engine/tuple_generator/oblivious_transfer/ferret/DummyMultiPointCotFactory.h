@@ -15,8 +15,7 @@
 #include "fbpcf/mpc_framework/engine/util/IPrgFactory.h"
 #include "fbpcf/mpc_framework/engine/util/util.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    ferret::insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 class DummyMultiPointCotFactory final : public IMultiPointCotFactory {
  public:
@@ -36,4 +35,4 @@ class DummyMultiPointCotFactory final : public IMultiPointCotFactory {
 };
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::ferret::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure

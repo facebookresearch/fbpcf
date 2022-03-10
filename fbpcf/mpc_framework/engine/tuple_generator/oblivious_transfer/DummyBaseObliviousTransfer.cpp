@@ -7,8 +7,7 @@
 
 #include "fbpcf/mpc_framework/engine/tuple_generator/oblivious_transfer/DummyBaseObliviousTransfer.h"
 
-namespace fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::
-    insecure {
+namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
 
 std::pair<std::vector<__m128i>, std::vector<__m128i>>
 DummyBaseObliviousTransfer::send(
@@ -33,4 +32,4 @@ std::vector<__m128i> DummyBaseObliviousTransfer::receive(
 }
 
 } // namespace
-  // fbpcf::mpc_framework::engine::tuple_generator::oblivious_transfer::insecure
+  // fbpcf::engine::tuple_generator::oblivious_transfer::insecure
