@@ -88,7 +88,7 @@ struct IsSecret<Public<T>> : std::false_type {};
 template <typename OutputT, typename InputT1, typename InputT2>
 void equalityCheck(OutputT& rst, const InputT1& src1, const InputT2& src2) {
   // first compute XOR and NOT gates
-  for (int8_t i = 0; i < src1.size(); i++) {
+  for (uint8_t i = 0; i < src1.size(); i++) {
     rst[i] = (!src1.at(i) ^ src2.at(i));
   }
   // compute AND gates in pairs and store in subarray of rst with size tmpWidth

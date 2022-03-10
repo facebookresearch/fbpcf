@@ -43,13 +43,13 @@ std::vector<TupleGenerator::BooleanTuple> TupleGenerator::generateTuples(
   for (auto& item : productShareGeneratorMap_) {
     auto shares = item.second->generateBooleanProductShares(vectorA, vectorB);
     assert(shares.size() == size);
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       vectorC[i] = vectorC[i] ^ shares[i];
     }
   }
 
   std::vector<TupleGenerator::BooleanTuple> booleanTuples(size);
-  for (int i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
     booleanTuples[i] = BooleanTuple(
         vectorA[i], vectorB[i], (vectorA[i] & vectorB[i]) ^ vectorC[i]);
   }

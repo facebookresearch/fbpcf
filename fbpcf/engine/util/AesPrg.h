@@ -57,7 +57,7 @@ class AesPrg final : public IPrg {
     if (prgCounter_ > 0xFFFFFFFFFFFFFFFF /* 2^ 64 - 1 */ - data.size()) {
       throw std::runtime_error("PRG counter overflow!");
     }
-    for (int i = 0; i < data.size(); i++) {
+    for (size_t i = 0; i < data.size(); i++) {
       data[i] = _mm_set_epi64x(0, prgCounter_++);
     }
     cipher_.encryptInPlace(data);

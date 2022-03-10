@@ -54,13 +54,13 @@ std::vector<T> RcotBasedBidirectionObliviousTransfer<T>::biDirectionOT(
   assert(rcotReceiverMessages.size() == otSize);
 
   std::vector<__m128i> rcotSender1Messages(otSize);
-  for (int i = 0; i < otSize; i++) {
+  for (size_t i = 0; i < otSize; i++) {
     // u_1
     rcotSender1Messages[i] = _mm_xor_si128(rcotSender0Messages[i], delta_);
   }
 
   std::vector<bool> maskedChoice(otSize);
-  for (int i = 0; i < otSize; i++) {
+  for (size_t i = 0; i < otSize; i++) {
     // c ^ b
     maskedChoice[i] = util::getLsb(rcotReceiverMessages[i]) ^ choice[i];
   }
@@ -78,7 +78,7 @@ std::vector<T> RcotBasedBidirectionObliviousTransfer<T>::biDirectionOT(
   std::vector<T> maskedInput0(otSize);
   std::vector<T> maskedInput1(otSize);
 
-  for (int i = 0; i < otSize; i++) {
+  for (size_t i = 0; i < otSize; i++) {
     maskedInput0[i] = util::Masker<T>::mask(
         input0[i],
         flipIndicator[i] ? rcotSender1Messages[i] : rcotSender0Messages[i]);
@@ -98,7 +98,7 @@ std::vector<T> RcotBasedBidirectionObliviousTransfer<T>::biDirectionOT(
 
   std::vector<T> output(otSize);
 
-  for (int i = 0; i < otSize; i++) {
+  for (size_t i = 0; i < otSize; i++) {
     output[i] = util::Masker<T>::unmask(
         rcotReceiverMessages[i], choice[i], correction0[i], correction1[i]);
   }

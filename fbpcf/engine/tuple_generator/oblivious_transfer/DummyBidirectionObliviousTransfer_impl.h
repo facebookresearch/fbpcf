@@ -21,7 +21,7 @@ std::vector<T> DummyBidirectionObliviousTransfer<T>::biDirectionOT(
   buffer[0] = std::vector<T>(choice.size());
   buffer[1] = std::vector<T>(choice.size());
 
-  for (int i = 0; i < choice.size(); i++) {
+  for (size_t i = 0; i < choice.size(); i++) {
     buffer[0][i] = input0[i];
     buffer[1][i] = input1[i];
   }
@@ -34,7 +34,7 @@ std::vector<T> DummyBidirectionObliviousTransfer<T>::biDirectionOT(
 
   std::vector<T> rst(choice.size());
 
-  for (int i = 0; i < choice.size(); i++) {
+  for (size_t i = 0; i < choice.size(); i++) {
     rst[i] = buffer[choice[i]][i];
   }
   return rst;

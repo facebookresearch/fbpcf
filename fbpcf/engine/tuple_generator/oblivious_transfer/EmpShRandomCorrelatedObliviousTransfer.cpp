@@ -45,7 +45,7 @@ std::vector<__m128i> EmpShRandomCorrelatedObliviousTransfer::rcot(
   switch (role_) {
     case util::Role::sender: {
       shot_->send_cot(rst.data(), size);
-      for (int i = 0; i < rst.size(); i++) {
+      for (size_t i = 0; i < rst.size(); i++) {
         util::setLsbTo0(rst[i]);
       }
       return rst;
@@ -57,7 +57,7 @@ std::vector<__m128i> EmpShRandomCorrelatedObliviousTransfer::rcot(
         b[i] = choice[i];
       }
       shot_->recv_cot(rst.data(), b, size);
-      for (int i = 0; i < rst.size(); i++) {
+      for (size_t i = 0; i < rst.size(); i++) {
         if (b[i] == 0) {
           util::setLsbTo0(rst[i]);
         } else {

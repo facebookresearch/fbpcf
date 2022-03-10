@@ -34,13 +34,13 @@ std::vector<bool> ProductShareGenerator::generateBooleanProductShares(
   assert(input0.size() == left.size());
   std::vector<bool> input1(left.size());
 
-  for (int i = 0; i < left.size(); i++) {
+  for (size_t i = 0; i < left.size(); i++) {
     input1[i] = input0[i] ^ left[i];
   }
 
   auto result =
       bidirectionObliviousTransfer_->biDirectionOT(input0, input1, right);
-  for (int i = 0; i < result.size(); i++) {
+  for (size_t i = 0; i < result.size(); i++) {
     result[i] = result[i] ^ input0[i];
   }
   return result;

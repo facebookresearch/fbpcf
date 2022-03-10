@@ -66,7 +66,7 @@ testTemplate(
              int myId,
              int numberOfParty) {
     std::vector<bool> inputs;
-    for (int i = 0; i < inputsArrangement.size(); i++) {
+    for (size_t i = 0; i < inputsArrangement.size(); i++) {
       if (inputsArrangement[i].second < numberOfParty) {
         // a private value
         if (myId == inputsArrangement[i].second) {
@@ -141,7 +141,7 @@ std::vector<bool> asymmetricNOTTestBody(
     ISecretShareEngine& engine,
     const std::vector<bool>& inputs) {
   std::vector<bool> rst(inputs.size());
-  for (int i = 0; i < inputs.size(); i++) {
+  for (size_t i = 0; i < inputs.size(); i++) {
     rst[i] = engine.computeAsymmetricNOT(inputs[i]);
   }
   return rst;
@@ -201,7 +201,7 @@ std::vector<bool> symmetricXORTestBody(
   EXPECT_EQ(size % 2, 0);
 
   std::vector<bool> rst(size / 2);
-  for (int i = 0; i < size / 2; i++) {
+  for (size_t i = 0; i < size / 2; i++) {
     rst[i] = engine.computeSymmetricXOR(inputs[i], inputs[i + size / 2]);
   }
   return rst;
@@ -214,7 +214,7 @@ std::vector<bool> asymmetricXORTestBody(
   EXPECT_EQ(size % 2, 0);
 
   std::vector<bool> rst(size / 2);
-  for (int i = 0; i < size / 2; i++) {
+  for (size_t i = 0; i < size / 2; i++) {
     rst[i] = engine.computeAsymmetricXOR(inputs[i], inputs[i + size / 2]);
   }
   return rst;
@@ -318,7 +318,7 @@ std::vector<bool> ANDTestBody(
   engine.executeScheduledAND();
 
   std::vector<bool> rst(size / 2);
-  for (int i = 0; i < size / 2; i++) {
+  for (size_t i = 0; i < size / 2; i++) {
     rst[i] = engine.getANDExecutionResult(index[i]);
   }
   auto tmp = engine.getBatchANDExecutionResult(batchIndex0);
@@ -355,7 +355,7 @@ std::vector<bool> FreeANDTestBody(
   EXPECT_EQ(size % 2, 0);
 
   std::vector<bool> rst(size / 2);
-  for (int i = 0; i < size / 2; i++) {
+  for (size_t i = 0; i < size / 2; i++) {
     rst[i] = engine.computeFreeAND(inputs[i], inputs[i + size / 2]);
   }
   return rst;

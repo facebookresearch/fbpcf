@@ -19,12 +19,12 @@ std::vector<__m128i> Expander::expand(std::vector<__m128i>&& src) const {
   std::vector<__m128i> tmp = src;
   cipher0_.encryptInPlace(tmp);
   std::vector<__m128i> rst(src.size() * 2);
-  for (int i = 0; i < src.size(); i++) {
+  for (size_t i = 0; i < src.size(); i++) {
     rst[2 * i] = _mm_xor_si128(tmp.at(i), src.at(i));
     rst[2 * i + 1] = src.at(i);
   }
   cipher1_.encryptInPlace(src);
-  for (int i = 0; i < src.size(); i++) {
+  for (size_t i = 0; i < src.size(); i++) {
     rst[2 * i + 1] = _mm_xor_si128(src.at(i), rst.at(2 * i + 1));
   }
   return rst;

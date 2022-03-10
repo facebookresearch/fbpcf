@@ -24,7 +24,7 @@ std::vector<__m128i> SinglePointCot::constructALayerOfKeyForSender(
   masks[0] = _mm_xor_si128(masks[0], baseCot);
   masks[1] = _mm_xor_si128(masks[1], _mm_xor_si128(baseCot, delta_));
 
-  for (int i = 0; i < rst.size(); i += 2) {
+  for (size_t i = 0; i < rst.size(); i += 2) {
     masks[0] = _mm_xor_si128(masks[0], rst[i]);
     masks[1] = _mm_xor_si128(masks[1], rst[i + 1]);
   }
@@ -51,7 +51,7 @@ std::vector<__m128i> SinglePointCot::constructALayerOfKeyForReceiver(
   rst[positionToFix] =
       _mm_xor_si128(masks[util::getLsb(baseCot)], rst[positionToFix]);
 
-  for (int i = util::getLsb(baseCot); i < rst.size(); i += 2) {
+  for (size_t i = util::getLsb(baseCot); i < rst.size(); i += 2) {
     if (i != positionToFix) {
       rst[positionToFix] = _mm_xor_si128(rst[i], rst[positionToFix]);
     }
@@ -78,12 +78,12 @@ std::vector<__m128i> SinglePointCot::senderExtend(
   std::vector<__m128i> rst{util::getRandomM128iFromSystemNoise()};
 
   // contruct the ggm tree
-  for (int i = 0; i < baseCot.size(); i++) {
+  for (size_t i = 0; i < baseCot.size(); i++) {
     rst = constructALayerOfKeyForSender(std::move(rst), baseCot[i]);
   }
   __m128i totalXor = delta_;
 
-  for (int i = 0; i < rst.size(); i++) {
+  for (size_t i = 0; i < rst.size(); i++) {
     util::setLsbTo0(rst[i]);
     totalXor = _mm_xor_si128(totalXor, rst[i]);
   }
@@ -105,7 +105,7 @@ std::vector<__m128i> SinglePointCot::receiverExtend(
   int64_t position = 0;
 
   // reconstruct the ggm tree. Only m_position is missing
-  for (int i = 0; i < baseCot.size(); i++) {
+  for (size_t i = 0; i < baseCot.size(); i++) {
     rst = constructALayerOfKeyForReceiver(std::move(rst), baseCot[i], position);
     position <<= 1;
     position ^= !util::getLsb(baseCot[i]);
@@ -114,7 +114,7 @@ std::vector<__m128i> SinglePointCot::receiverExtend(
   __m128i totalXor = agent_->receiveSingleT<__m128i>();
 
   rst[position] = _mm_set_epi64x(0, 0);
-  for (int i = 0; i < rst.size(); i++) {
+  for (size_t i = 0; i < rst.size(); i++) {
     util::setLsbTo0(rst[i]);
     totalXor = _mm_xor_si128(totalXor, rst[i]);
   }

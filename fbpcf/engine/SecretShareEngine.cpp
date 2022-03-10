@@ -66,12 +66,12 @@ std::vector<bool> SecretShareEngine::setBatchInput(
     if (rst.size() == 0) {
       throw std::invalid_argument("empty input!");
     }
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       rst[i] = v[i];
     }
     for (auto& item : inputPrgs_) {
       auto mask = item.second.first->getRandomBits(size);
-      for (int i = 0; i < size; i++) {
+      for (size_t i = 0; i < size; i++) {
         rst[i] = rst[i] ^ mask[i];
       }
     }
@@ -96,7 +96,7 @@ std::vector<bool> SecretShareEngine::computeBatchSymmetricXOR(
     return std::vector<bool>();
   }
   std::vector<bool> rst(left.size());
-  for (int i = 0; i < left.size(); i++) {
+  for (size_t i = 0; i < left.size(); i++) {
     rst[i] = left[i] ^ right[i];
   }
   return rst;
@@ -121,7 +121,7 @@ std::vector<bool> SecretShareEngine::computeBatchAsymmetricXOR(
   }
   if (myId_ == 0) {
     std::vector<bool> rst(left.size());
-    for (int i = 0; i < left.size(); i++) {
+    for (size_t i = 0; i < left.size(); i++) {
       rst[i] = left[i] ^ right[i];
     }
     return rst;
@@ -140,7 +140,7 @@ std::vector<bool> SecretShareEngine::computeBatchSymmetricNOT(
     return std::vector<bool>();
   }
   std::vector<bool> rst(input.size());
-  for (int i = 0; i < rst.size(); i++) {
+  for (size_t i = 0; i < rst.size(); i++) {
     rst[i] = !input[i];
   }
   return rst;
@@ -163,7 +163,7 @@ std::vector<bool> SecretShareEngine::computeBatchAsymmetricNOT(
     return input;
   }
   std::vector<bool> rst(input.size());
-  for (int i = 0; i < input.size(); i++) {
+  for (size_t i = 0; i < input.size(); i++) {
     rst[i] = !input[i];
   }
   return rst;
@@ -183,7 +183,7 @@ std::vector<bool> SecretShareEngine::computeBatchFreeAND(
     return std::vector<bool>();
   }
   std::vector<bool> rst(left.size());
-  for (int i = 0; i < left.size(); i++) {
+  for (size_t i = 0; i < left.size(); i++) {
     rst[i] = left[i] & right[i];
   }
   return rst;
@@ -197,7 +197,7 @@ uint32_t SecretShareEngine::scheduleAND(bool left, bool right) {
 void SecretShareEngine::executeScheduledAND() {
   std::vector<bool> left(scheduledANDGates_.size());
   std::vector<bool> right(scheduledANDGates_.size());
-  for (int i = 0; i < scheduledANDGates_.size(); i++) {
+  for (size_t i = 0; i < scheduledANDGates_.size(); i++) {
     left[i] = scheduledANDGates_[i].getLeft();
     right[i] = scheduledANDGates_[i].getRight();
   }
@@ -207,7 +207,7 @@ void SecretShareEngine::executeScheduledAND() {
   std::vector<std::reference_wrapper<const std::vector<bool>>> rightBatch(
       1, std::reference_wrapper<const std::vector<bool>>(right));
 
-  for (int i = 0; i < scheduledBatchANDGates_.size(); i++) {
+  for (size_t i = 0; i < scheduledBatchANDGates_.size(); i++) {
     leftBatch.push_back(std::reference_wrapper<const std::vector<bool>>(
         scheduledBatchANDGates_.at(i).getLeft()));
     rightBatch.push_back(std::reference_wrapper<const std::vector<bool>>(

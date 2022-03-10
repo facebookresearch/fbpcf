@@ -190,7 +190,7 @@ void testBatchBillionaireProblem(
   EXPECT_EQ(aliceTotal.size(), bobTotal.size());
   EXPECT_EQ(aliceTotal.size(), result.size());
 
-  for (int i = 0; i < result.size(); i++) {
+  for (size_t i = 0; i < result.size(); i++) {
     EXPECT_EQ(aliceTotal.at(i) < bobTotal.at(i), result.at(i));
   }
 }

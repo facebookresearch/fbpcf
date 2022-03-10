@@ -73,7 +73,7 @@ void Aes::inPlaceHash(std::vector<__m128i>& src) const {
   assert(!std::empty(src));
   auto tmp = src;
   encryptInPlace(src);
-  for (int i = 0; i < src.size(); i++) {
+  for (size_t i = 0; i < src.size(); i++) {
     src[i] = _mm_xor_si128(src[i], tmp[i]);
   }
 }

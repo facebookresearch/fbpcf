@@ -100,7 +100,7 @@ std::vector<__m128i> RcotExtender::extendRcot(
         std::make_move_iterator(baseCot.end())));
   }
   assert(mpCotResult.size() == matrixMultiplicationResult.size());
-  for (int i = 0; i < matrixMultiplicationResult.size(); i++) {
+  for (size_t i = 0; i < matrixMultiplicationResult.size(); i++) {
     matrixMultiplicationResult[i] =
         _mm_xor_si128(matrixMultiplicationResult[i], mpCotResult[i]);
   }
