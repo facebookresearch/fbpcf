@@ -8,8 +8,7 @@
 #pragma once
 #include <openssl/ssl.h>
 
-#include "fbpcf/io/api/ICloser.h"
-#include "fbpcf/io/api/IReader.h"
+#include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
 
@@ -17,7 +16,7 @@ namespace fbpcf::io {
 This class is the API for reading data from network
 socket. It is constructed with a socket file descriptor.
 */
-class SocketReader : public IReader, public ICloser {
+class SocketReader : public IReaderCloser {
  public:
   /*
    * Creates a SocketReader to read from the given
