@@ -11,7 +11,7 @@
 #include <type_traits>
 #include "fbpcf/mpc_framework/frontend/mpcGame.h"
 
-namespace fbpcf::mpc_games::billionaire_problem {
+namespace fbpcf::billionaire_problem {
 
 /**
  * A variant of the classic "Millionaire Problem":
@@ -70,6 +70,6 @@ class BillionaireProblemGame
   };
 };
 
-} // namespace fbpcf::mpc_games::billionaire_problem
+} // namespace fbpcf::billionaire_problem
 
-#include "fbpcf/mpc_games/billionaire_problem/BillionaireProblemGame_impl.h"
+#include "fbpcf/test/billionaire_problem/BillionaireProblemGame_impl.h"
