@@ -6,5 +6,19 @@
  */
 
 #include "fbpcf/io/api/LocalFileWriter.h"
+#include <string>
 
-namespace fbpcf::io {} // namespace fbpcf::io
+namespace fbpcf::io {
+LocalFileWriter::LocalFileWriter(std::string /* filePath */) {}
+
+int LocalFileWriter::close() {
+  return 0;
+}
+int LocalFileWriter::write(char buf[]) {
+  return 0;
+}
+
+LocalFileWriter::~LocalFileWriter() {
+  close();
+}
+} // namespace fbpcf::io

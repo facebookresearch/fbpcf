@@ -5,22 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "fbpcf/io/api/CloudFileReader.h"
+#pragma once
+
 #include <string>
 
 namespace fbpcf::io {
 
-CloudFileReader::CloudFileReader(std::string /* filePath */) {}
-
-int CloudFileReader::close() {
-  return 0;
-}
-int CloudFileReader::read(char buf[]) {
-  return 0;
-}
-
-CloudFileReader::~CloudFileReader() {
-  close();
-}
+class IOUtils {
+ public:
+  static bool isCloudFile(std::string filePath) {
+    return filePath.find("https://", 0) == 0;
+  }
+};
 
 } // namespace fbpcf::io
