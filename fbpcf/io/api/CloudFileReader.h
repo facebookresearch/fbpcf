@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <string>
 #include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
@@ -17,6 +18,8 @@ cannot be a local file.
 */
 class CloudFileReader : public IReaderCloser {
  public:
+  explicit CloudFileReader(std::string filePath);
+
   int close() override;
   int read(char buf[]) override;
   ~CloudFileReader() override;

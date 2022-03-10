@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <string>
 #include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
@@ -17,6 +18,8 @@ cannot be a local file.
 */
 class CloudFileWriter : public IWriterCloser {
  public:
+  explicit CloudFileWriter(std::string filePath);
+
   int close() override;
   int write(char buf[]) override;
   ~CloudFileWriter() override;

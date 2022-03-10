@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include <memory>
+#include <string>
 #include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
@@ -19,9 +21,14 @@ depending on what file path is provided.
 */
 class FileWriter : public IWriterCloser {
  public:
+  explicit FileWriter(std::string filePath);
+
   int close() override;
   int write(char buf[]) override;
   ~FileWriter() override;
+
+ private:
+  std::unique_ptr<IWriterCloser> childWriter_;
 };
 
 } // namespace fbpcf::io
