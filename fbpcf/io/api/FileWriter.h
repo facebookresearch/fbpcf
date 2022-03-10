@@ -6,8 +6,7 @@
  */
 
 #pragma once
-#include "fbpcf/io/api/ICloser.h"
-#include "fbpcf/io/api/IWriter.h"
+#include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
 
@@ -18,7 +17,7 @@ cloud provider or a file on disk. Internally, this
 class will create a LocalFileWriter or CloudFileWriter
 depending on what file path is provided.
 */
-class FileWriter : public IWriter, public ICloser {
+class FileWriter : public IWriterCloser {
  public:
   int close() override;
   int write(char buf[]) override;

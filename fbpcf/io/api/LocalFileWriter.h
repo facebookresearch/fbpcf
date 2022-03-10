@@ -6,8 +6,7 @@
  */
 
 #pragma once
-#include "fbpcf/io/api/ICloser.h"
-#include "fbpcf/io/api/IWriter.h"
+#include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
 
@@ -16,7 +15,7 @@ This class is the API for writing a file to local
 storage. It must be on disk and cannot be a file in
 cloud storage.
 */
-class LocalFileWriter : public IWriter, public ICloser {
+class LocalFileWriter : public IWriterCloser {
  public:
   int close() override;
   int write(char buf[]) override;
