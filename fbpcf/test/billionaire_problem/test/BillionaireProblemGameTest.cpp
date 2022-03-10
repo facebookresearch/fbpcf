@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "fbpcf/mpc_games/billionaire_problem/BillionaireProblemGame.h"
+#include "fbpcf/test/billionaire_problem/BillionaireProblemGame.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <functional>
@@ -24,7 +24,7 @@
 #include "fbpcf/mpc_framework/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
 #include "fbpcf/mpc_framework/scheduler/EagerScheduler.h"
 
-namespace fbpcf::mpc_games::billionaire_problem {
+namespace fbpcf::billionaire_problem {
 
 const bool unsafe = true;
 
@@ -230,4 +230,4 @@ TEST(BillionaireProblemTest, testBatchWithLazySchedulerAndClassicOT) {
       mpc_framework::scheduler::createLazySchedulerWithClassicOT);
 }
 
-} // namespace fbpcf::mpc_games::billionaire_problem
+} // namespace fbpcf::billionaire_problem

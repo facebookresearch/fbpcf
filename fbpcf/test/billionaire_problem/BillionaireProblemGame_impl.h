@@ -8,9 +8,9 @@
 #pragma once
 
 #include "fbpcf/mpc_framework/frontend/mpcGame.h"
-#include "fbpcf/mpc_games/billionaire_problem/BillionaireProblemGame.h"
+#include "fbpcf/test/billionaire_problem/BillionaireProblemGame.h"
 
-namespace fbpcf::mpc_games::billionaire_problem {
+namespace fbpcf::billionaire_problem {
 
 template <int schedulerId, bool usingBatch>
 typename BillionaireProblemGame<schedulerId, usingBatch>::CompareResult
@@ -44,4 +44,4 @@ BillionaireProblemGame<schedulerId, usingBatch>::SecAssetsLists::
   return cash_ + stock_ + property_;
 }
 
-} // namespace fbpcf::mpc_games::billionaire_problem
+} // namespace fbpcf::billionaire_problem
