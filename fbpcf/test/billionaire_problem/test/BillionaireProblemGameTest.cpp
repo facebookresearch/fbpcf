@@ -13,16 +13,16 @@
 #include <random>
 #include <tuple>
 #include <vector>
-#include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
-#include "fbpcf/mpc_framework/engine/util/AesPrgFactory.h"
-#include "fbpcf/mpc_framework/scheduler/IScheduler.h"
-#include "fbpcf/mpc_framework/scheduler/PlaintextScheduler.h"
-#include "fbpcf/mpc_framework/scheduler/SchedulerHelper.h"
-#include "fbpcf/mpc_framework/scheduler/WireKeeper.h"
+#include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/util/AesPrgFactory.h"
+#include "fbpcf/scheduler/IScheduler.h"
+#include "fbpcf/scheduler/PlaintextScheduler.h"
+#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/scheduler/WireKeeper.h"
 
-#include "fbpcf/mpc_framework/engine/SecretShareEngineFactory.h"
-#include "fbpcf/mpc_framework/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
-#include "fbpcf/mpc_framework/scheduler/EagerScheduler.h"
+#include "fbpcf/engine/SecretShareEngineFactory.h"
+#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
+#include "fbpcf/scheduler/EagerScheduler.h"
 
 namespace fbpcf::billionaire_problem {
 

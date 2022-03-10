@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "fbpcf/mpc_framework/frontend/mpcGame.h"
+#include "fbpcf/frontend/mpcGame.h"
 #include "fbpcf/test/billionaire_problem/BillionaireProblemGame.h"
 
 namespace fbpcf::billionaire_problem {
