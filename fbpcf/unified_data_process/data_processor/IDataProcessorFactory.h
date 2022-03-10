@@ -8,9 +8,9 @@
 #pragma once
 
 #include <memory>
-#include "fbpcf/mpc_games/unified_data_process/data_processor/IDataProcessor.h"
+#include "fbpcf/unified_data_process/data_processor/IDataProcessor.h"
 
-namespace fbpcf::mpc_games::udp::data_processor {
+namespace fbpcf::udp::data_processor {
 
 template <int schedulerId>
 class IDataProcessorFactory {
@@ -19,4 +19,4 @@ class IDataProcessorFactory {
   virtual std::unique_ptr<IDataProcessor<schedulerId>> create() = 0;
 };
 
-} // namespace fbpcf::mpc_games::udp::data_processor
+} // namespace fbpcf::udp::data_processor

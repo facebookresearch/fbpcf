@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include "fbpcf/mpc_games/unified_data_process/adapter/Adapter.h"
-#include "fbpcf/mpc_games/unified_data_process/adapter/IAdapterFactory.h"
+#include "fbpcf/unified_data_process/adapter/Adapter.h"
+#include "fbpcf/unified_data_process/adapter/IAdapterFactory.h"
 
-namespace fbpcf::mpc_games::udp::adapter {
+namespace fbpcf::udp::adapter {
 
 template <int schedulerId>
 class AdapterFactory final : public IAdapterFactory {
@@ -42,4 +42,4 @@ class AdapterFactory final : public IAdapterFactory {
       shufflerFactory_;
 };
 
-} // namespace fbpcf::mpc_games::udp::adapter
+} // namespace fbpcf::udp::adapter

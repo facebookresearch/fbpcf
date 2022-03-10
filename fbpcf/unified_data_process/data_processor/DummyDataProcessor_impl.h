@@ -7,7 +7,7 @@
 
 #pragma once
 
-namespace fbpcf::mpc_games::udp::data_processor::insecure {
+namespace fbpcf::udp::data_processor::insecure {
 
 template <int schedulerId>
 typename IDataProcessor<schedulerId>::SecString
@@ -51,4 +51,4 @@ DummyDataProcessor<schedulerId>::processPeersData(
   return typename IDataProcessor<schedulerId>::SecString(myShare, myId_);
 }
 
-} // namespace fbpcf::mpc_games::udp::data_processor::insecure
+} // namespace fbpcf::udp::data_processor::insecure

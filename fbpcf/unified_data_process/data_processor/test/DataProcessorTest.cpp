@@ -16,9 +16,9 @@
 #include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_framework/scheduler/SchedulerHelper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
-#include "fbpcf/mpc_games/unified_data_process/data_processor/DummyDataProcessorFactory.h"
+#include "fbpcf/unified_data_process/data_processor/DummyDataProcessorFactory.h"
 
-namespace fbpcf::mpc_games::udp::data_processor {
+namespace fbpcf::udp::data_processor {
 
 std::tuple<
     std::vector<std::vector<uint8_t>>,
@@ -111,4 +111,4 @@ TEST(DummyDataProcessor, testDummyDataProcessor) {
   testDataProcessor(factory0.create(), factory1.create());
 }
 
-} // namespace fbpcf::mpc_games::udp::data_processor
+} // namespace fbpcf::udp::data_processor

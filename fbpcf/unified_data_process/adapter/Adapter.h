@@ -9,9 +9,9 @@
 
 #include "fbpcf/mpc_framework/frontend/BitString.h"
 #include "fbpcf/mpc_framework/mpc_std_lib/shuffler/IShuffler.h"
-#include "fbpcf/mpc_games/unified_data_process/adapter/IAdapter.h"
+#include "fbpcf/unified_data_process/adapter/IAdapter.h"
 
-namespace fbpcf::mpc_games::udp::adapter {
+namespace fbpcf::udp::adapter {
 
 template <int schedulerId>
 class Adapter final : public IAdapter {
@@ -42,6 +42,6 @@ class Adapter final : public IAdapter {
       shuffler_;
 };
 
-} // namespace fbpcf::mpc_games::udp::adapter
+} // namespace fbpcf::udp::adapter
 
-#include "fbpcf/mpc_games/unified_data_process/adapter/Adapter_impl.h"
+#include "fbpcf/unified_data_process/adapter/Adapter_impl.h"

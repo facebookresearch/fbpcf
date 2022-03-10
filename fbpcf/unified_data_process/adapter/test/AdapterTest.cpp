@@ -17,9 +17,9 @@
 #include "fbpcf/mpc_framework/mpc_std_lib/shuffler/NonShufflerFactory.h"
 #include "fbpcf/mpc_framework/scheduler/SchedulerHelper.h"
 #include "fbpcf/mpc_framework/test/TestHelper.h"
-#include "fbpcf/mpc_games/unified_data_process/adapter/AdapterFactory.h"
+#include "fbpcf/unified_data_process/adapter/AdapterFactory.h"
 
-namespace fbpcf::mpc_games::udp::adapter {
+namespace fbpcf::udp::adapter {
 
 std::vector<int64_t> generateShuffledIndex(size_t size) {
   std::vector<int64_t> rst(size);
@@ -132,4 +132,4 @@ TEST(AdapterTest, testAdapterWithNonShuffler) {
   adapterTest(factory0.create(), factory1.create());
 }
 
-} // namespace fbpcf::mpc_games::udp::adapter
+} // namespace fbpcf::udp::adapter

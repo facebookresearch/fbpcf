@@ -11,7 +11,7 @@
 #include <vector>
 #include "fbpcf/mpc_framework/frontend/BitString.h"
 
-namespace fbpcf::mpc_games::udp::data_processor {
+namespace fbpcf::udp::data_processor {
 
 /**
  * A data processor can generate the secret shares of the data of the matched
@@ -53,4 +53,4 @@ class IDataProcessor {
       size_t dataWidth) = 0;
 };
 
-} // namespace fbpcf::mpc_games::udp::data_processor
+} // namespace fbpcf::udp::data_processor
