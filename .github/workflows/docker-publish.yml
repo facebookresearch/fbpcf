@@ -57,3 +57,12 @@ jobs:
       - name: Push Docker image
         run: |
           docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
+
+      - name: Cleanup
+        run: |
+          # remove all images
+          docker image prune -af
+
+          # stop and remove all containers
+          docker kill $(docker ps -q) || echo "No running containers to stop."
+          docker rm $(docker ps -a -q) || echo "No containers to delete."
