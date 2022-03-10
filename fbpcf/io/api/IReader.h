@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace fbpcf::io {
 
 /*
@@ -21,7 +23,7 @@ class IReader {
    * the provided buffer with the data that was
    * read
    */
-  virtual int read(char buf[]) = 0;
+  virtual int read(char buf[], size_t nBytes) = 0;
   virtual ~IReader() = default;
 };
 

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <cstddef>
 #include <memory>
 #include <string>
 #include "fbpcf/io/api/IReaderCloser.h"
@@ -24,7 +25,7 @@ class FileReader : public IReaderCloser {
   explicit FileReader(std::string filePath);
 
   int close() override;
-  int read(char buf[]) override;
+  int read(char buf[], size_t nBytes) override;
   ~FileReader() override;
 
  private:

@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/io/api/FileWriter.h"
+#include <cstddef>
 #include <memory>
 #include <string>
 #include "fbpcf/io/api/CloudFileWriter.h"
@@ -25,8 +26,8 @@ FileWriter::~FileWriter() {
   close();
 }
 
-int FileWriter::write(char buf[]) {
-  return childWriter_->write(buf);
+int FileWriter::write(char buf[], size_t nBytes) {
+  return childWriter_->write(buf, nBytes);
 }
 
 int FileWriter::close() {

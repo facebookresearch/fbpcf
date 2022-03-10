@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 namespace fbpcf::io {
 
 /*
@@ -18,10 +20,10 @@ class IWriter {
   /*
    * write() returns the number of bytes it
    * was able to write, or -1 if there was
-   * an error. It attempts to write the
-   * entire provided buffer.
+   * an error. It attempts to write the first
+   * n bytes of the entire provided buffer.
    */
-  virtual int write(char buf[]) = 0;
+  virtual int write(char buf[], size_t nBytes) = 0;
   virtual ~IWriter() = default;
 };
 
