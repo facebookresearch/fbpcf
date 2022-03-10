@@ -36,7 +36,7 @@ std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToAll(
       receivedShares = iter.second->receiveBool(secretShares.size());
       iter.second->sendBool(secretShares);
     }
-    for (int i = 0; i < rst.size(); i++) {
+    for (size_t i = 0; i < rst.size(); i++) {
       rst[i] = rst[i] ^ receivedShares[i];
     }
   }
@@ -50,7 +50,7 @@ std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToParty(
     std::vector<bool> rst = secretShares;
     for (auto& iter : agentMap_) {
       auto receivedShares = iter.second->receiveBool(secretShares.size());
-      for (int i = 0; i < rst.size(); i++) {
+      for (size_t i = 0; i < rst.size(); i++) {
         rst[i] = rst[i] ^ receivedShares[i];
       }
     }

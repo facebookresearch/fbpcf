@@ -17,7 +17,7 @@ class DummyTupleGenerator final : public ITupleGenerator {
  public:
   std::vector<BooleanTuple> getBooleanTuple(uint32_t size) override {
     std::vector<BooleanTuple> result;
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       result.push_back(BooleanTuple(0, 0, 0));
     }
     return result;

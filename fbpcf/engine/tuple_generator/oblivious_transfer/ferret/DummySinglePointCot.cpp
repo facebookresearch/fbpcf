@@ -52,7 +52,7 @@ std::vector<__m128i> DummySinglePointCot::receiverExtend(
   auto rst = agent_->receiveT<__m128i>(length);
 
   int64_t position = 0;
-  for (int i = 0; i < baseCot.size(); i++) {
+  for (size_t i = 0; i < baseCot.size(); i++) {
     position <<= 1;
     position ^= !util::getLsb(baseCot[i]);
   }

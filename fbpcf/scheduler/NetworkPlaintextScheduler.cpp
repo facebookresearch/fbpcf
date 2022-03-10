@@ -92,7 +92,7 @@ NetworkPlaintextScheduler::recoverBooleanWireBatch(const std::vector<bool>& v) {
       receivedShares = iter.second->receiveBool(v.size());
       iter.second->sendBool(v);
     }
-    for (int i = 0; i < result.size(); i++) {
+    for (size_t i = 0; i < result.size(); i++) {
       result[i] = result.at(i) ^ receivedShares.at(i);
     }
   }

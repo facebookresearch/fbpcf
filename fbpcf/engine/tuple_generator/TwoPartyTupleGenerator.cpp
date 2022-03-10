@@ -81,7 +81,7 @@ TwoPartyTupleGenerator::generateTuples(uint64_t size) {
   hashFromAes_.inPlaceHash(receiverMessages);
 
   std::vector<ITupleGenerator::BooleanTuple> booleanTuples(size);
-  for (int i = 0; i < size; i++) {
+  for (size_t i = 0; i < size; i++) {
     auto a = util::getLsb(sender0Messages.at(i)) ^
         util::getLsb(sender1Messages.at(i));
     auto b = choiceBits.at(i);

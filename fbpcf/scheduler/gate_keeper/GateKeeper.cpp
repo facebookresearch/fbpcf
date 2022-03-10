@@ -123,13 +123,13 @@ GateKeeper::RightWireType<isCompositeWire> GateKeeper::addGate(
   RightWireType<isCompositeWire> outputWire;
   if constexpr (isCompositeWire) {
     if constexpr (usingBatch) {
-      for (int i = 0; i < right.size(); i++) {
+      for (size_t i = 0; i < right.size(); i++) {
         outputWire.push_back(wireKeeper_->allocateBatchBooleanValue({}, level));
       }
       gatesForLevel.push_back(std::make_unique<BatchCompositeGate>(
           gateType, outputWire, left, right, 0, *wireKeeper_));
     } else {
-      for (int i = 0; i < right.size(); i++) {
+      for (size_t i = 0; i < right.size(); i++) {
         outputWire.push_back(wireKeeper_->allocateBooleanValue(0, level));
       }
       gatesForLevel.push_back(std::make_unique<CompositeGate>(

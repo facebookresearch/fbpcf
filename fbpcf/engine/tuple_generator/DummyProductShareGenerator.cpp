@@ -20,7 +20,7 @@ std::vector<bool> DummyProductShareGenerator::generateBooleanProductShares(
   auto partnerRight = agent_->receiveBool(left.size());
 
   std::vector<bool> rst(left.size());
-  for (int i = 0; i < left.size(); i++) {
+  for (size_t i = 0; i < left.size(); i++) {
     rst[i] = left[i] & partnerRight[i];
   }
   return rst;
