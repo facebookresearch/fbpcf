@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include "fbpcf/mpc_games/unified_data_process/adapter/IAdapter.h"
+#include "fbpcf/unified_data_process/adapter/IAdapter.h"
 
-namespace fbpcf::mpc_games::udp::adapter {
+namespace fbpcf::udp::adapter {
 
 class IAdapterFactory {
  public:
@@ -17,4 +17,4 @@ class IAdapterFactory {
   virtual std::unique_ptr<IAdapter> create() = 0;
 };
 
-} // namespace fbpcf::mpc_games::udp::adapter
+} // namespace fbpcf::udp::adapter

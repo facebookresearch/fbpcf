@@ -8,9 +8,9 @@
 #pragma once
 
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
-#include "fbpcf/mpc_games/unified_data_process/data_processor/IDataProcessor.h"
+#include "fbpcf/unified_data_process/data_processor/IDataProcessor.h"
 
-namespace fbpcf::mpc_games::udp::data_processor::insecure {
+namespace fbpcf::udp::data_processor::insecure {
 
 /**
  * This is an insecure implementation. This object is only meant to be used as a
@@ -50,6 +50,6 @@ class DummyDataProcessor final : public IDataProcessor<schedulerId> {
       agent_;
 };
 
-} // namespace fbpcf::mpc_games::udp::data_processor::insecure
+} // namespace fbpcf::udp::data_processor::insecure
 
-#include "fbpcf/mpc_games/unified_data_process/data_processor/DummyDataProcessor_impl.h"
+#include "fbpcf/unified_data_process/data_processor/DummyDataProcessor_impl.h"

@@ -9,10 +9,10 @@
 
 #include <memory>
 #include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgentFactory.h"
-#include "fbpcf/mpc_games/unified_data_process/data_processor/DummyDataProcessor.h"
-#include "fbpcf/mpc_games/unified_data_process/data_processor/IDataProcessorFactory.h"
+#include "fbpcf/unified_data_process/data_processor/DummyDataProcessor.h"
+#include "fbpcf/unified_data_process/data_processor/IDataProcessorFactory.h"
 
-namespace fbpcf::mpc_games::udp::data_processor::insecure {
+namespace fbpcf::udp::data_processor::insecure {
 
 template <int schedulerId>
 class DummyDataProcessorFactory final
@@ -37,4 +37,4 @@ class DummyDataProcessorFactory final
       agentFactory_;
 };
 
-} // namespace fbpcf::mpc_games::udp::data_processor::insecure
+} // namespace fbpcf::udp::data_processor::insecure

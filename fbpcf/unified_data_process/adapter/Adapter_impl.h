@@ -8,9 +8,9 @@
 #pragma once
 
 #include <cmath>
-#include "fbpcf/mpc_games/unified_data_process/adapter/Adapter.h"
+#include "fbpcf/unified_data_process/adapter/Adapter.h"
 
-namespace fbpcf::mpc_games::udp::adapter {
+namespace fbpcf::udp::adapter {
 
 template <int schedulerId>
 std::vector<int64_t> Adapter<schedulerId>::adapt(
@@ -88,4 +88,4 @@ std::vector<int64_t> Adapter<schedulerId>::adapt(
   return rst;
 }
 
-} // namespace fbpcf::mpc_games::udp::adapter
+} // namespace fbpcf::udp::adapter
