@@ -498,7 +498,6 @@ TEST(BitTest, testReferenceCount) {
     // no change
     auto b3(std::move(b2));
 
-    std::cout << "here executed" << std::endl;
     // increase reference
     // decrease reference
     b1 = b3;
@@ -519,7 +518,6 @@ TEST(BitTest, testReferenceCount) {
     // no change
     auto b3(std::move(b2));
 
-    std::cout << "here executed" << std::endl;
     // increase reference
     // decrease reference
     b1 = b3;
@@ -556,7 +554,6 @@ TEST(BitTest, testReferenceCountBatch) {
     // no change
     auto b3(std::move(b2));
 
-    std::cout << "here executed" << std::endl;
     // increase reference
     // decrease reference
     b1 = b3;
@@ -577,7 +574,6 @@ TEST(BitTest, testReferenceCountBatch) {
     // no change
     auto b3(std::move(b2));
 
-    std::cout << "here executed" << std::endl;
     // increase reference
     // decrease reference
     b1 = b3;
