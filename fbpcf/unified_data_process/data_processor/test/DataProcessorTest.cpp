@@ -13,9 +13,9 @@
 #include <random>
 #include <unordered_map>
 
-#include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
-#include "fbpcf/mpc_framework/scheduler/SchedulerHelper.h"
-#include "fbpcf/mpc_framework/test/TestHelper.h"
+#include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/test/TestHelper.h"
 #include "fbpcf/unified_data_process/data_processor/DummyDataProcessorFactory.h"
 
 namespace fbpcf::udp::data_processor {

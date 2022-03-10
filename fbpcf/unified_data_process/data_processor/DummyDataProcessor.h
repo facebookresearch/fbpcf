@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgent.h"
+#include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/unified_data_process/data_processor/IDataProcessor.h"
 
 namespace fbpcf::udp::data_processor::insecure {

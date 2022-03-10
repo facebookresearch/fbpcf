@@ -8,7 +8,7 @@
 #pragma once
 
 #include <memory>
-#include "fbpcf/mpc_framework/engine/communication/IPartyCommunicationAgentFactory.h"
+#include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/unified_data_process/data_processor/DummyDataProcessor.h"
 #include "fbpcf/unified_data_process/data_processor/IDataProcessorFactory.h"
 

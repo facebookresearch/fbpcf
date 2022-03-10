@@ -13,10 +13,10 @@
 #include <random>
 #include <unordered_map>
 
-#include "fbpcf/mpc_framework/engine/communication/test/AgentFactoryCreationHelper.h"
-#include "fbpcf/mpc_framework/mpc_std_lib/shuffler/NonShufflerFactory.h"
-#include "fbpcf/mpc_framework/scheduler/SchedulerHelper.h"
-#include "fbpcf/mpc_framework/test/TestHelper.h"
+#include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/mpc_std_lib/shuffler/NonShufflerFactory.h"
+#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/test/TestHelper.h"
 #include "fbpcf/unified_data_process/adapter/AdapterFactory.h"
 
 namespace fbpcf::udp::adapter {
