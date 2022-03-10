@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <string>
 #include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
@@ -17,6 +18,8 @@ cloud storage.
 */
 class LocalFileReader : public IReaderCloser {
  public:
+  explicit LocalFileReader(std::string filePath);
+
   int close() override;
   int read(char buf[]) override;
   ~LocalFileReader() override;

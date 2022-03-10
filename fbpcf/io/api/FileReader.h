@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include <memory>
+#include <string>
 #include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
@@ -19,9 +21,14 @@ depending on what file path is provided.
 */
 class FileReader : public IReaderCloser {
  public:
+  explicit FileReader(std::string filePath);
+
   int close() override;
   int read(char buf[]) override;
   ~FileReader() override;
+
+ private:
+  std::unique_ptr<IReaderCloser> childReader_;
 };
 
 } // namespace fbpcf::io

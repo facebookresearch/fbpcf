@@ -6,5 +6,30 @@
  */
 
 #include "fbpcf/io/api/FileWriter.h"
+#include <memory>
+#include <string>
+#include "fbpcf/io/api/CloudFileWriter.h"
+#include "fbpcf/io/api/IOUtils.h"
+#include "fbpcf/io/api/LocalFileWriter.h"
 
-namespace fbpcf::io {} // namespace fbpcf::io
+namespace fbpcf::io {
+FileWriter::FileWriter(std::string filePath) {
+  if (IOUtils::isCloudFile(filePath)) {
+    childWriter_ = std::make_unique<CloudFileWriter>(filePath);
+  } else {
+    childWriter_ = std::make_unique<LocalFileWriter>(filePath);
+  }
+}
+
+FileWriter::~FileWriter() {
+  close();
+}
+
+int FileWriter::write(char buf[]) {
+  return childWriter_->write(buf);
+}
+
+int FileWriter::close() {
+  return childWriter_->close();
+}
+} // namespace fbpcf::io

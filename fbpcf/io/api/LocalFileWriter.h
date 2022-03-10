@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <string>
 #include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
@@ -17,6 +18,8 @@ cloud storage.
 */
 class LocalFileWriter : public IWriterCloser {
  public:
+  explicit LocalFileWriter(std::string filePath);
+
   int close() override;
   int write(char buf[]) override;
   ~LocalFileWriter() override;
