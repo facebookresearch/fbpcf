@@ -68,11 +68,10 @@ std::unique_ptr<IWriteOnlyOramFactory<T>> getSecureLinearOramFactory(
     int32_t party0Id,
     int32_t party1Id,
     engine::communication::IPartyCommunicationAgentFactory& factory) {
-  return std::make_unique<fbpcf::mpc_std_lib::oram::LinearOramFactory<
-      fbpcf::mpc_std_lib::util::AggregationValue,
-      schedulerId>>(
+  return std::make_unique<
+      fbpcf::mpc_std_lib::oram::LinearOramFactory<T, schedulerId>>(
       amIParty0 ? IWriteOnlyOram<T>::Role::Alice : IWriteOnlyOram<T>::Role::Bob,
-      amIParty0 ? party0Id : party0Id,
+      amIParty0 ? party0Id : party1Id,
       amIParty0 ? party1Id : party0Id,
       factory,
       std::make_unique<fbpcf::engine::util::AesPrgFactory>());
