@@ -262,25 +262,12 @@ void runOramTestWithSecureComponents(
     engine::communication::IPartyCommunicationAgentFactory& agentFactory0,
     engine::communication::IPartyCommunicationAgentFactory& agentFactory1) {
   const int8_t indicatorSumWidth = 12;
-  auto factory0 = std::make_unique<WriteOnlyOramFactory<T>>(
-      IWriteOnlyOram<T>::Alice,
-      1,
-      agentFactory0,
-      std::make_unique<SinglePointArrayGeneratorFactory>(
-          true,
-          std::make_unique<ObliviousDeltaCalculatorFactory<0>>(true, 0, 1)),
-      std::make_unique<DifferenceCalculatorFactory<T, indicatorSumWidth, 0>>(
-          true, 0, 1));
 
-  auto factory1 = std::make_unique<WriteOnlyOramFactory<T>>(
-      IWriteOnlyOram<T>::Bob,
-      0,
-      agentFactory1,
-      std::make_unique<SinglePointArrayGeneratorFactory>(
-          false,
-          std::make_unique<ObliviousDeltaCalculatorFactory<1>>(false, 0, 1)),
-      std::make_unique<DifferenceCalculatorFactory<T, indicatorSumWidth, 1>>(
-          false, 0, 1));
+  auto factory0 = getSecureWriteOnlyOramFactory<T, indicatorSumWidth, 0>(
+      true, 0, 1, agentFactory0);
+
+  auto factory1 = getSecureWriteOnlyOramFactory<T, indicatorSumWidth, 1>(
+      false, 0, 1, agentFactory1);
 
   size_t oramSize = 150;
   testWriteOnlyOram<T>(std::move(factory0), std::move(factory1), oramSize);
@@ -299,19 +286,9 @@ template <typename T>
 void runLinearOramTestWithSecureComponents(
     engine::communication::IPartyCommunicationAgentFactory& agentFactory0,
     engine::communication::IPartyCommunicationAgentFactory& agentFactory1) {
-  auto factory0 = std::make_unique<LinearOramFactory<T, 0>>(
-      IWriteOnlyOram<T>::Alice,
-      0,
-      1,
-      agentFactory0,
-      std::make_unique<engine::util::AesPrgFactory>());
+  auto factory0 = getSecureLinearOramFactory<T, 0>(true, 0, 1, agentFactory0);
 
-  auto factory1 = std::make_unique<LinearOramFactory<T, 1>>(
-      IWriteOnlyOram<T>::Bob,
-      1,
-      0,
-      agentFactory1,
-      std::make_unique<engine::util::AesPrgFactory>());
+  auto factory1 = getSecureLinearOramFactory<T, 1>(false, 0, 1, agentFactory1);
 
   size_t oramSize = 4;
   testWriteOnlyOram<T>(std::move(factory0), std::move(factory1), oramSize);
