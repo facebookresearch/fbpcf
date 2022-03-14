@@ -6,7 +6,9 @@
  */
 
 #include <cstddef>
+#include <exception>
 #include <iterator>
+#include <memory>
 #include <stdexcept>
 
 #include "fbpcf/engine/SecretShareEngine.h"
@@ -169,6 +171,8 @@ std::vector<bool> SecretShareEngine::computeBatchAsymmetricNOT(
   return rst;
 }
 
+//======== Below are free AND computation API's: ========
+
 bool SecretShareEngine::computeFreeAND(bool left, bool right) const {
   return left & right;
 }
@@ -189,117 +193,139 @@ std::vector<bool> SecretShareEngine::computeBatchFreeAND(
   return rst;
 }
 
+//======== Below are API's to schedule non-free AND's: ========
+
 uint32_t SecretShareEngine::scheduleAND(bool left, bool right) {
   scheduledANDGates_.push_back(ScheduledAND(left, right));
   return scheduledANDGates_.size() - 1;
 }
 
-void SecretShareEngine::executeScheduledAND() {
-  std::vector<bool> left(scheduledANDGates_.size());
-  std::vector<bool> right(scheduledANDGates_.size());
-  for (size_t i = 0; i < scheduledANDGates_.size(); i++) {
-    left[i] = scheduledANDGates_[i].getLeft();
-    right[i] = scheduledANDGates_[i].getRight();
-  }
-
-  std::vector<std::reference_wrapper<const std::vector<bool>>> leftBatch(
-      1, std::reference_wrapper<const std::vector<bool>>(left));
-  std::vector<std::reference_wrapper<const std::vector<bool>>> rightBatch(
-      1, std::reference_wrapper<const std::vector<bool>>(right));
-
-  for (size_t i = 0; i < scheduledBatchANDGates_.size(); i++) {
-    leftBatch.push_back(std::reference_wrapper<const std::vector<bool>>(
-        scheduledBatchANDGates_.at(i).getLeft()));
-    rightBatch.push_back(std::reference_wrapper<const std::vector<bool>>(
-        scheduledBatchANDGates_.at(i).getRight()));
-  }
-
-  executionResults_ = computeANDsWithVectorInputs(leftBatch, rightBatch);
-
-  scheduledANDGates_ = std::vector<ScheduledAND>();
-  scheduledBatchANDGates_ = std::vector<ScheduledBatchAND>();
-}
-
-bool SecretShareEngine::getANDExecutionResult(uint32_t index) const {
-  return executionResults_.at(0).at(index);
-}
-
 uint32_t SecretShareEngine::scheduleBatchAND(
     const std::vector<bool>& left,
     const std::vector<bool>& right) {
+  if (left.size() != right.size()) {
+    throw std::runtime_error("Batch AND's must have the same length");
+  }
   scheduledBatchANDGates_.push_back(ScheduledBatchAND(left, right));
   return scheduledBatchANDGates_.size() - 1;
 }
 
-const std::vector<bool>& SecretShareEngine::getBatchANDExecutionResult(
-    uint32_t index) const {
-  return executionResults_.at(index + 1);
+//======== Below are API's to execute non free AND's: ========
+
+void SecretShareEngine::executeScheduledAND() {
+  executionResults_ = computeAllANDsFromScheduledANDs(
+      scheduledANDGates_, scheduledBatchANDGates_);
+
+  scheduledANDGates_.clear();
+  scheduledBatchANDGates_.clear();
 }
 
-std::vector<bool> SecretShareEngine::computeBatchAND(
+std::vector<bool> SecretShareEngine::computeBatchANDImmediately(
     const std::vector<bool>& left,
     const std::vector<bool>& right) {
-  return computeANDsWithVectorInputs(
-             {std::reference_wrapper<const std::vector<bool>>(left)},
-             {std::reference_wrapper<const std::vector<bool>>(right)})
-      .at(0);
+  if (left.size() != right.size()) {
+    throw std::runtime_error("Left and right must have equal length");
+  }
+  std::vector<ScheduledAND> scheduledANDs;
+  scheduledANDs.reserve(left.size());
+  std::vector<ScheduledBatchAND> scheduledBatchANDs;
+  for (int i = 0; i < left.size(); i++) {
+    scheduledANDs.push_back(ScheduledAND(left.at(i), right.at(i)));
+  }
+  return computeAllANDsFromScheduledANDs(scheduledANDs, scheduledBatchANDs)
+      .andResults;
 }
 
-std::vector<std::vector<bool>> SecretShareEngine::computeANDsWithVectorInputs(
-    std::vector<std::reference_wrapper<const std::vector<bool>>> left,
-    std::vector<std::reference_wrapper<const std::vector<bool>>> right) {
-  auto count = left.size();
-  if (count != right.size()) {
-    throw std::invalid_argument("The input sizes are not the same.");
-  }
-  if (count == 0) {
-    return std::vector<std::vector<bool>>();
-  }
-  size_t size = 0;
-  for (size_t i = 0; i < count; i++) {
-    if (left.at(i).get().size() != right.at(i).get().size()) {
-      throw std::invalid_argument("The input sizes are not the same.");
-    }
-    size += left.at(i).get().size();
+//======== Below are API's to retrieve non-free AND results: ========
+
+bool SecretShareEngine::getANDExecutionResult(uint32_t index) const {
+  return executionResults_.andResults.at(index);
+}
+
+const std::vector<bool>& SecretShareEngine::getBatchANDExecutionResult(
+    uint32_t index) const {
+  return executionResults_.batchANDResults.at(index);
+}
+
+SecretShareEngine::ExecutionResults
+SecretShareEngine::computeAllANDsFromScheduledANDs(
+    std::vector<ScheduledAND>& ands,
+    std::vector<ScheduledBatchAND>& batchAnds) {
+  size_t tupleCount = ands.size();
+
+  for (size_t i = 0; i < batchAnds.size(); i++) {
+    tupleCount += batchAnds[i].getLeft().size();
   }
 
-  auto tuples = tupleGenerator_->getBooleanTuple(size);
-  std::vector<bool> secretsToOpen(size * 2);
+  if (tupleCount == 0) {
+    return {std::vector<bool>(), std::vector<std::vector<bool>>()};
+  }
+
+  auto tuples = tupleGenerator_->getBooleanTuple(tupleCount);
+  std::vector<bool> secretsToOpen(tupleCount * 2);
 
   size_t index = 0;
-  for (size_t i = 0; i < count; i++) {
-    for (size_t j = 0; j < left.at(i).get().size(); j++) {
-      secretsToOpen[index * 2] =
-          left.at(i).get().at(j) ^ tuples.at(index).getA();
+  for (size_t i = 0; i < ands.size(); i++) {
+    secretsToOpen[index * 2] = ands[i].getLeft() ^ tuples.at(index).getA();
+    secretsToOpen[index * 2 + 1] = ands[i].getRight() ^ tuples.at(index).getB();
+    index++;
+  }
+
+  for (size_t i = 0; i < batchAnds.size(); i++) {
+    auto& leftValues = batchAnds[i].getLeft();
+    auto& rightValues = batchAnds[i].getRight();
+    for (int j = 0; j < leftValues.size(); j++) {
+      secretsToOpen[index * 2] = leftValues[j] ^ tuples.at(index).getA();
       secretsToOpen[index * 2 + 1] =
-          right.at(i).get().at(j) ^ tuples.at(index).getB();
+          rightValues.at(j) ^ tuples.at(index).getB();
       index++;
     }
   }
+
   auto openedSecrets =
       communicationAgent_->openSecretsToAll(std::move(secretsToOpen));
 
-  if (openedSecrets.size() != size * 2) {
+  if (openedSecrets.size() != tupleCount * 2) {
     throw std::runtime_error("unexpected number of opened secrets");
   }
 
-  std::vector<std::vector<bool>> rst(count);
+  std::vector<bool> andResults;
+  andResults.reserve(ands.size());
+  std::vector<std::vector<bool>> batchAndResults;
+  batchAndResults.reserve(batchAnds.size());
   index = 0;
-  for (size_t i = 0; i < count; i++) {
-    rst[i] = std::vector<bool>(left.at(i).get().size());
-    for (size_t j = 0; j < left.at(i).get().size(); j++) {
-      rst[i][j] = tuples.at(index).getC() ^
+
+  for (size_t i = 0; i < ands.size(); i++) {
+    bool val = tuples.at(index).getC() ^
+        (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
+        (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
+    if (myId_ == 0) {
+      val =
+          val ^ (openedSecrets.at(2 * index) & openedSecrets.at(2 * index + 1));
+    }
+    andResults.push_back(val);
+    index++;
+  }
+
+  for (size_t i = 0; i < batchAnds.size(); i++) {
+    auto& leftValues = batchAnds[i].getLeft();
+    auto batchSize = leftValues.size();
+    std::vector<bool> rst(batchSize);
+    for (int j = 0; j < batchSize; j++) {
+      bool val = tuples.at(index).getC() ^
           (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
           (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
       if (myId_ == 0) {
-        rst[i][j] = rst[i][j] ^
+        val = val ^
             (openedSecrets.at(2 * index) & openedSecrets.at(2 * index + 1));
       }
+      rst[j] = val;
       index++;
     }
+    batchAndResults.push_back(std::move(rst));
   }
 
-  return rst;
+  return {andResults, batchAndResults};
 }
 
 std::vector<bool> SecretShareEngine::revealToParty(

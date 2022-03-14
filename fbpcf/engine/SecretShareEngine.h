@@ -83,6 +83,8 @@ class SecretShareEngine final : public ISecretShareEngine {
   std::vector<bool> computeBatchAsymmetricNOT(
       const std::vector<bool>& input) const override;
 
+  //======== Below are free AND computation API's: ========
+
   /**
    * @inherit doc
    */
@@ -98,17 +100,17 @@ class SecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
+
+  /**
+   * @inherit doc
+   */
+
+  //======== Below are API's to schedule non-free AND's: ========
+
+  /**
+   * @inherit doc
+   */
   uint32_t scheduleAND(bool left, bool right) override;
-
-  /**
-   * @inherit doc
-   */
-  void executeScheduledAND() override;
-
-  /**
-   * @inherit doc
-   */
-  bool getANDExecutionResult(uint32_t index) const override;
 
   /**
    * @inherit doc
@@ -120,15 +122,37 @@ class SecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  const std::vector<bool>& getBatchANDExecutionResult(
-      uint32_t index) const override;
 
   /**
    * @inherit doc
    */
-  std::vector<bool> computeBatchAND(
+
+  //======== Below are API's to execute non free AND's: ========
+
+  /**
+   * @inherit doc
+   */
+  void executeScheduledAND() override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<bool> computeBatchANDImmediately(
       const std::vector<bool>& left,
       const std::vector<bool>& right) override;
+
+  //======== Below are API's to retrieve non-free AND results: ========
+
+  /**
+   * @inherit doc
+   */
+  bool getANDExecutionResult(uint32_t index) const override;
+
+  /**
+   * @inherit doc
+   */
+  const std::vector<bool>& getBatchANDExecutionResult(
+      uint32_t index) const override;
 
   /**
    * @inherit doc
@@ -148,14 +172,20 @@ class SecretShareEngine final : public ISecretShareEngine {
   }
 
  private:
-  std::vector<std::vector<bool>> computeANDsWithVectorInputs(
-      std::vector<std::reference_wrapper<const std::vector<bool>>> left,
-      std::vector<std::reference_wrapper<const std::vector<bool>>> right);
+  struct ExecutionResults {
+    std::vector<bool> andResults;
+    std::vector<std::vector<bool>> batchANDResults;
+  };
 
   class ScheduledAND {
    public:
     ScheduledAND(bool left, bool right)
         : value_{static_cast<unsigned char>((left << 1) ^ right)} {}
+
+    explicit ScheduledAND(const ScheduledAND&) = default;
+    ScheduledAND(ScheduledAND&&) = default;
+    ScheduledAND& operator=(const ScheduledAND&) = delete;
+    ScheduledAND& operator=(ScheduledAND&&) = delete;
 
     bool getLeft() const {
       return value_ >> 1;
@@ -176,6 +206,11 @@ class SecretShareEngine final : public ISecretShareEngine {
         const std::vector<bool>& right)
         : left_(left), right_(right) {}
 
+    explicit ScheduledBatchAND(const ScheduledBatchAND&) = default;
+    ScheduledBatchAND(ScheduledBatchAND&&) = default;
+    ScheduledBatchAND& operator=(const ScheduledBatchAND&) = delete;
+    ScheduledBatchAND& operator=(ScheduledBatchAND&&) = delete;
+
     std::vector<bool>& getLeft() {
       return left_;
     }
@@ -188,6 +223,10 @@ class SecretShareEngine final : public ISecretShareEngine {
     std::vector<bool> left_;
     std::vector<bool> right_;
   };
+
+  ExecutionResults computeAllANDsFromScheduledANDs(
+      std::vector<ScheduledAND>& ands,
+      std::vector<ScheduledBatchAND>& batchAnds);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
@@ -210,12 +249,9 @@ class SecretShareEngine final : public ISecretShareEngine {
   // only for demonstration purpose, needs to replace with a more efficient
   // memory arena to speed up
   std::vector<ScheduledAND> scheduledANDGates_;
-
-  // use executionResults_.at(0) to store non-batching execution results, rest
-  // of them will be batch execution results
-  std::vector<std::vector<bool>> executionResults_;
-
   std::vector<ScheduledBatchAND> scheduledBatchANDGates_;
+
+  ExecutionResults executionResults_;
 };
 
 } // namespace fbpcf::engine
