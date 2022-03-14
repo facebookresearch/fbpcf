@@ -155,6 +155,8 @@ class ISecretShareEngine {
       const std::vector<bool>& left,
       const std::vector<bool>& right) const = 0;
 
+  //======== Below are API's to schedule non-free AND's: ========
+
   /** Schedule an AND gate for computation. Since computing AND gates incurs 2
    * roundtrips, we want to batch them together to reduce the total number of
    * roundtrips.
@@ -177,12 +179,37 @@ class ISecretShareEngine {
       const std::vector<bool>& left,
       const std::vector<bool>& right) = 0;
 
+  /** Schedule a composite AND gate for computation. Since computing AND gates
+   * incurs 2 roundtrips, we want to batch them together to reduce the total
+   * number of roundtrips.
+   * @param left the value on left input wire
+   * @param rights the values of the right wires to AND with the left wire
+   * @return the index of the scheduled gate, i.e. how many gates has already
+   * been scheduled.
+   */
+  virtual uint32_t scheduleCompositeAND(
+      bool left,
+      std::vector<bool> rights) = 0;
+
+  /** Schedule a batch composite AND gate for computation. Since computing AND
+   * gates incurs 2 roundtrips, we want to batch them together to reduce the
+   * total number of roundtrips.
+   * @param left the values on left input wire
+   * @param rights the values of the right wires to AND with the left wire. The
+   * inner vector length must be the same as left length.
+   * @return the index of the scheduled gate, i.e. how many gates has already
+   * been scheduled.
+   */
+  virtual uint32_t scheduleBatchCompositeAND(
+      const std::vector<bool>& left,
+      const std::vector<std::vector<bool>>& rights) = 0;
+
   //======== Below are API's to execute non free AND's: ========
 
   /**
-   * Get the execution result of the executed AND gate
-   * @param index the index of the AND gate in the schedule
-   * @return the result value
+   * Execute all the scheduled AND/batch AND computation within TWO roundtrips,
+   * no matter how many AND gates are scheduled. This includes composite AND
+   * gates.
    */
   virtual void executeScheduledAND() = 0;
 
@@ -207,12 +234,28 @@ class ISecretShareEngine {
   virtual bool getANDExecutionResult(uint32_t index) const = 0;
 
   /**
-   * Get the execution result of the executed AND gate
-   * @param index the index of the AND gate in the schedule
+   * Get the execution result of the executed batch AND gate
+   * @param index the index of the batch AND gate in the schedule
    * @return the result value
    */
   virtual const std::vector<bool>& getBatchANDExecutionResult(
       uint32_t index) const = 0;
+
+  /**
+   * Get the execution result of the executed composite AND gate
+   * @param index the index of the AND gate in the schedule
+   * @return the result value
+   */
+  virtual const std::vector<bool>& getCompositeANDExecutionResult(
+      uint32_t index) const = 0;
+
+  /**
+   * Get the execution result of the executed batch composite AND gate
+   * @param index the index of the AND gate in the schedule
+   * @return the result value
+   */
+  virtual const std::vector<std::vector<bool>>&
+  getBatchCompositeANDExecutionResult(uint32_t index) const = 0;
 
   /**
    * reveal a vector of shared secret to a designated party
