@@ -123,7 +123,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPrivateBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   nonFreeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchAND(leftValue, rightValue));
+      engine_->computeBatchANDImmediately(leftValue, rightValue));
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPublic(
