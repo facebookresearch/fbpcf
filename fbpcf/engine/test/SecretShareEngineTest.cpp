@@ -220,7 +220,7 @@ std::vector<bool> asymmetricXORTestBody(
   return rst;
 }
 
-TEST(SecretShareEngineTest, TestXORtWithDummyComponents) {
+TEST(SecretShareEngineTest, TestXORtWitDummyComponents) {
   int numberOfParty = 4;
   int size = 16384;
   auto inputs1 = generateRandomInputs(numberOfParty, size, size);
@@ -270,7 +270,7 @@ std::vector<bool> batchAsymmetricXORTestBody(
   return engine.computeBatchAsymmetricXOR(firstHalfInput, secondHalfInput);
 }
 
-TEST(SecretShareEngineTest, TestBatchXORtWithDummyComponents) {
+TEST(SecretShareEngineTest, TestBatchXORWithDummyComponents) {
   int numberOfParty = 4;
   int size = 16384;
   auto inputs1 = generateRandomInputs(numberOfParty, size, size);
@@ -310,7 +310,7 @@ std::vector<bool> ANDTestBody(
 
   auto secondHalfInput =
       std::vector<bool>(inputs.begin() + size / 2, inputs.end());
-  engine.computeBatchAND(firstHalfInput, secondHalfInput);
+  engine.computeBatchANDImmediately(firstHalfInput, secondHalfInput);
 
   auto batchIndex0 = engine.scheduleBatchAND(firstHalfInput, secondHalfInput);
   auto batchIndex1 = engine.scheduleBatchAND(firstHalfInput, secondHalfInput);
@@ -327,12 +327,12 @@ std::vector<bool> ANDTestBody(
   tmp = engine.getBatchANDExecutionResult(batchIndex1);
   rst.insert(rst.end(), tmp.begin(), tmp.end());
 
-  tmp = engine.computeBatchAND(firstHalfInput, secondHalfInput);
+  tmp = engine.computeBatchANDImmediately(firstHalfInput, secondHalfInput);
   rst.insert(rst.end(), tmp.begin(), tmp.end());
   return rst;
 }
 
-TEST(SecretShareEngineTest, TestANDtWithDummyComponents) {
+TEST(SecretShareEngineTest, TestANDWithDummyComponents) {
   int numberOfParty = 4;
   int size = 16384;
   auto inputs = generateRandomInputs(numberOfParty, size, size);
@@ -361,7 +361,7 @@ std::vector<bool> FreeANDTestBody(
   return rst;
 }
 
-TEST(SecretShareEngineTest, TestFreeANDtWithDummyComponents) {
+TEST(SecretShareEngineTest, TestFreeANDWithDummyComponents) {
   int numberOfParty = 4;
   int size = 16384;
   auto inputs1 = generateRandomInputs(numberOfParty, size, size / 2);
@@ -392,7 +392,7 @@ std::vector<bool> BatchFreeANDTestBody(
   return engine.computeBatchFreeAND(firstHalfInput, secondHalfInput);
 }
 
-TEST(SecretShareEngineTest, TestBatchFreeANDtWithDummyComponents) {
+TEST(SecretShareEngineTest, TestBatchFreeANDWithDummyComponents) {
   int numberOfParty = 4;
   int size = 16384;
   auto inputs1 = generateRandomInputs(numberOfParty, size, size / 2);
