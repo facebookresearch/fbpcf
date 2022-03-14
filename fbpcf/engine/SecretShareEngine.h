@@ -97,14 +97,6 @@ class SecretShareEngine final : public ISecretShareEngine {
       const std::vector<bool>& left,
       const std::vector<bool>& right) const override;
 
-  /**
-   * @inherit doc
-   */
-
-  /**
-   * @inherit doc
-   */
-
   //======== Below are API's to schedule non-free AND's: ========
 
   /**
@@ -122,10 +114,14 @@ class SecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
+  uint32_t scheduleCompositeAND(bool left, std::vector<bool> rights) override;
 
   /**
    * @inherit doc
    */
+  uint32_t scheduleBatchCompositeAND(
+      const std::vector<bool>& left,
+      const std::vector<std::vector<bool>>& rights) override;
 
   //======== Below are API's to execute non free AND's: ========
 
@@ -157,6 +153,18 @@ class SecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
+  const std::vector<bool>& getCompositeANDExecutionResult(
+      uint32_t index) const override;
+
+  /**
+   * @inherit doc
+   */
+  const std::vector<std::vector<bool>>& getBatchCompositeANDExecutionResult(
+      uint32_t index) const override;
+
+  /**
+   * @inherit doc
+   */
   std::vector<bool> revealToParty(int id, const std::vector<bool>& output)
       const override;
 
@@ -175,6 +183,8 @@ class SecretShareEngine final : public ISecretShareEngine {
   struct ExecutionResults {
     std::vector<bool> andResults;
     std::vector<std::vector<bool>> batchANDResults;
+    std::vector<std::vector<bool>> compositeANDResults;
+    std::vector<std::vector<std::vector<bool>>> compositeBatchANDResults;
   };
 
   class ScheduledAND {
@@ -224,9 +234,62 @@ class SecretShareEngine final : public ISecretShareEngine {
     std::vector<bool> right_;
   };
 
+  class ScheduledCompositeAND {
+   public:
+    ScheduledCompositeAND(bool left, std::vector<bool>& rights)
+        : left_{left}, rights_{rights} {}
+
+    explicit ScheduledCompositeAND(const ScheduledCompositeAND&) = default;
+    ScheduledCompositeAND(ScheduledCompositeAND&&) = default;
+    ScheduledCompositeAND& operator=(const ScheduledCompositeAND&) = delete;
+    ScheduledCompositeAND& operator=(ScheduledCompositeAND&&) = delete;
+
+    bool getLeft() const {
+      return left_;
+    }
+
+    std::vector<bool>& getRights() {
+      return rights_;
+    }
+
+   private:
+    bool left_;
+    std::vector<bool> rights_;
+  };
+
+  class ScheduledBatchCompositeAND {
+   public:
+    ScheduledBatchCompositeAND(
+        const std::vector<bool>& left,
+        const std::vector<std::vector<bool>>& rights)
+        : left_(left), rights_(rights) {}
+
+    explicit ScheduledBatchCompositeAND(const ScheduledBatchCompositeAND&) =
+        default;
+    ScheduledBatchCompositeAND(ScheduledBatchCompositeAND&&) = default;
+    ScheduledBatchCompositeAND& operator=(const ScheduledBatchCompositeAND&) =
+        delete;
+    ScheduledBatchCompositeAND& operator=(ScheduledBatchCompositeAND&&) =
+        delete;
+
+    std::vector<bool>& getLeft() {
+      return left_;
+    }
+
+    std::vector<std::vector<bool>>& getRights() {
+      return rights_;
+    }
+
+   private:
+    std::vector<bool> left_;
+    std::vector<std::vector<bool>> rights_;
+  };
+
   ExecutionResults computeAllANDsFromScheduledANDs(
       std::vector<ScheduledAND>& ands,
-      std::vector<ScheduledBatchAND>& batchAnds);
+      std::vector<ScheduledBatchAND>& batchAnds,
+      std::vector<ScheduledCompositeAND>& compositeAnds,
+      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
@@ -250,6 +313,8 @@ class SecretShareEngine final : public ISecretShareEngine {
   // memory arena to speed up
   std::vector<ScheduledAND> scheduledANDGates_;
   std::vector<ScheduledBatchAND> scheduledBatchANDGates_;
+  std::vector<ScheduledCompositeAND> scheduledCompositeANDGates_;
+  std::vector<ScheduledBatchCompositeAND> scheduledBatchCompositeANDGates_;
 
   ExecutionResults executionResults_;
 };
