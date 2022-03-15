@@ -15,7 +15,7 @@ jobs:
   push:
     runs-on: [self-hosted, e2e_test_runner]
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
