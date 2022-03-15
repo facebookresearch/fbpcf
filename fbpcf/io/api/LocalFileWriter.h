@@ -8,6 +8,8 @@
 #pragma once
 #include <cstddef>
 #include <string>
+#include <vector>
+
 #include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
@@ -22,7 +24,7 @@ class LocalFileWriter : public IWriterCloser {
   explicit LocalFileWriter(std::string filePath);
 
   int close() override;
-  int write(char buf[], size_t nBytes) override;
+  size_t write(std::vector<char>& buf) override;
   ~LocalFileWriter() override;
 };
 

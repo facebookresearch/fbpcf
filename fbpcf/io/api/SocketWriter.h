@@ -9,6 +9,7 @@
 
 #include <openssl/ssl.h>
 #include <cstddef>
+#include <vector>
 
 #include "fbpcf/io/api/IWriterCloser.h"
 
@@ -33,7 +34,7 @@ class SocketWriter : public IWriterCloser {
   SocketWriter(SSL* ssl);
 
   int close() override;
-  int write(char buf[], size_t nBytes) override;
+  size_t write(std::vector<char>& buf) override;
   ~SocketWriter() override;
 };
 

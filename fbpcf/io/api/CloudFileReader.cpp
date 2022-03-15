@@ -8,6 +8,7 @@
 #include "fbpcf/io/api/CloudFileReader.h"
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace fbpcf::io {
 
@@ -16,7 +17,7 @@ CloudFileReader::CloudFileReader(std::string /* filePath */) {}
 int CloudFileReader::close() {
   return 0;
 }
-int CloudFileReader::read(char buf[], size_t nBytes) {
+size_t CloudFileReader::read(std::vector<char>& /* buf */) {
   return 0;
 }
 

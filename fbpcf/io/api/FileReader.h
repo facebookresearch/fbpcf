@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <vector>
 #include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
@@ -25,7 +26,7 @@ class FileReader : public IReaderCloser {
   explicit FileReader(std::string filePath);
 
   int close() override;
-  int read(char buf[], size_t nBytes) override;
+  size_t read(std::vector<char>& buf) override;
   ~FileReader() override;
 
  private:

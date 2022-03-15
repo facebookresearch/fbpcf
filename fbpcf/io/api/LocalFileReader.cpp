@@ -7,6 +7,7 @@
 
 #include "fbpcf/io/api/LocalFileReader.h"
 #include <cstddef>
+#include <vector>
 
 namespace fbpcf::io {
 
@@ -15,7 +16,7 @@ LocalFileReader::LocalFileReader(std::string /* filePath */) {}
 int LocalFileReader::close() {
   return 0;
 }
-int LocalFileReader::read(char buf[], size_t nBytes) {
+size_t LocalFileReader::read(std::vector<char>& /* buf */) {
   return 0;
 }
 

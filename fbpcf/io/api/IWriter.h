@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstddef>
+#include <vector>
 
 namespace fbpcf::io {
 
@@ -23,7 +24,7 @@ class IWriter {
    * an error. It attempts to write the first
    * n bytes of the entire provided buffer.
    */
-  virtual int write(char buf[], size_t nBytes) = 0;
+  virtual size_t write(std::vector<char>& buf) = 0;
   virtual ~IWriter() = default;
 };
 
