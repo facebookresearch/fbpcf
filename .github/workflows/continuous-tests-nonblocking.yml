@@ -210,7 +210,7 @@ jobs:
 
     - name: Start container
       run: |
-        ./start_container.sh ${{ env.PA_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE }}:${{ env.VERSION_TAG }}
+        ./start_container.sh ${{ env.PL_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE }}:${{ env.VERSION_TAG }}
       working-directory: fbpcf/tests/github/
 
     - name: Lift - Create Instance
