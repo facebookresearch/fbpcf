@@ -10,10 +10,13 @@
 #include <future>
 #include <map>
 #include <memory>
+#include <mutex>
+#include <queue>
 #include <random>
 #include <stdexcept>
 
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
+#include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include "folly/logging/xlog.h"
 
@@ -65,5 +68,65 @@ getSocketAgents() {
 
   throw std::runtime_error("Failed to create socket agents. Out of retries.");
 }
+
+// A wrapper class around the existing SocketPartyCommunicationAgentFactory,
+// with retries added to prevent flakiness when binding to unavailable ports.
+class BenchmarkSocketAgentFactory final
+    : public communication::IPartyCommunicationAgentFactory {
+ public:
+  struct AgentsByParty {
+    // The agents for party i are stored at index i of the vector.
+    std::vector<
+        std::queue<std::unique_ptr<communication::IPartyCommunicationAgent>>>
+        agents;
+    std::unique_ptr<std::mutex> mutex;
+  };
+
+  BenchmarkSocketAgentFactory(
+      int myId,
+      std::shared_ptr<AgentsByParty> agentsByParty)
+      : myId_(myId), agentsByParty_(agentsByParty) {}
+
+  // The socket agents are stored in a queue.
+  // If a party calls create() and the queue is empty, create a new pair of
+  // socket agents and add it to the queue. If the queue is not empty, take the
+  // socket agent from the front of the queue. This code uses a mutex to ensure
+  // there are no race conditions.
+  // NOTE: This API is not thread-safe if one party is creating new agents in
+  // multiple threads.
+  std::unique_ptr<communication::IPartyCommunicationAgent> create(
+      int id) override {
+    std::lock_guard<std::mutex> lock(*agentsByParty_->mutex);
+
+    if (agentsByParty_->agents.at(myId_).empty()) {
+      auto [agent0, agent1] = getSocketAgents();
+      agentsByParty_->agents.at(0).push(std::move(agent0));
+      agentsByParty_->agents.at(1).push(std::move(agent1));
+    }
+
+    auto agent = std::move(agentsByParty_->agents.at(myId_).front());
+    agentsByParty_->agents.at(myId_).pop();
+    return agent;
+  }
+
+ private:
+  int myId_;
+  std::shared_ptr<AgentsByParty> agentsByParty_;
+};
+
+inline std::pair<
+    std::unique_ptr<communication::IPartyCommunicationAgentFactory>,
+    std::unique_ptr<communication::IPartyCommunicationAgentFactory>>
+getSocketAgentFactories() {
+  auto agentsByParty =
+      std::make_shared<BenchmarkSocketAgentFactory::AgentsByParty>();
+  agentsByParty->agents = std::vector<
+      std::queue<std::unique_ptr<communication::IPartyCommunicationAgent>>>(2);
+  agentsByParty->mutex = std::make_unique<std::mutex>();
+
+  return {
+      std::make_unique<util::BenchmarkSocketAgentFactory>(0, agentsByParty),
+      std::make_unique<util::BenchmarkSocketAgentFactory>(1, agentsByParty)};
+};
 
 } // namespace fbpcf::engine::util
