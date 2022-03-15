@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <vector>
 #include "fbpcf/io/api/CloudFileReader.h"
 #include "fbpcf/io/api/LocalFileReader.h"
 
@@ -27,8 +28,8 @@ FileReader::~FileReader() {
   close();
 }
 
-int FileReader::read(char buf[], size_t nBytes) {
-  return childReader_->read(buf, nBytes);
+size_t FileReader::read(std::vector<char>& buf) {
+  return childReader_->read(buf);
 }
 
 int FileReader::close() {

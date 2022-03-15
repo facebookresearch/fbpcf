@@ -7,7 +7,9 @@
 
 #include "fbpcf/io/api/CloudFileWriter.h"
 #include <cstddef>
+#include <memory>
 #include <string>
+#include <vector>
 
 namespace fbpcf::io {
 
@@ -16,7 +18,7 @@ CloudFileWriter::CloudFileWriter(std::string /* filePath */) {}
 int CloudFileWriter::close() {
   return 0;
 }
-int CloudFileWriter::write(char buf[], size_t nBytes) {
+size_t CloudFileWriter::write(std::vector<char>& /* buf */) {
   return 0;
 }
 

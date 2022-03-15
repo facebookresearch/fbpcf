@@ -8,6 +8,7 @@
 #include "fbpcf/io/api/LocalFileWriter.h"
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace fbpcf::io {
 LocalFileWriter::LocalFileWriter(std::string /* filePath */) {}
@@ -15,7 +16,7 @@ LocalFileWriter::LocalFileWriter(std::string /* filePath */) {}
 int LocalFileWriter::close() {
   return 0;
 }
-int LocalFileWriter::write(char buf[], size_t nBytes) {
+size_t LocalFileWriter::write(std::vector<char>& /* buf */) {
   return 0;
 }
 

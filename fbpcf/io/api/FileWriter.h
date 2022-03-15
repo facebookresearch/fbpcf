@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <vector>
 #include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
@@ -25,7 +26,7 @@ class FileWriter : public IWriterCloser {
   explicit FileWriter(std::string filePath);
 
   int close() override;
-  int write(char buf[], size_t nBytes) override;
+  size_t write(std::vector<char>& buf) override;
   ~FileWriter() override;
 
  private:

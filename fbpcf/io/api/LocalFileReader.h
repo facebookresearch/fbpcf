@@ -8,6 +8,8 @@
 #pragma once
 #include <cstddef>
 #include <string>
+#include <vector>
+
 #include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
@@ -22,7 +24,7 @@ class LocalFileReader : public IReaderCloser {
   explicit LocalFileReader(std::string filePath);
 
   int close() override;
-  int read(char buf[], size_t nBytes) override;
+  size_t read(std::vector<char>& buf) override;
   ~LocalFileReader() override;
 };
 

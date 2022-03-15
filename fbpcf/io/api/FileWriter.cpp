@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <vector>
 #include "fbpcf/io/api/CloudFileWriter.h"
 #include "fbpcf/io/api/IOUtils.h"
 #include "fbpcf/io/api/LocalFileWriter.h"
@@ -26,8 +27,8 @@ FileWriter::~FileWriter() {
   close();
 }
 
-int FileWriter::write(char buf[], size_t nBytes) {
-  return childWriter_->write(buf, nBytes);
+size_t FileWriter::write(std::vector<char>& buf) {
+  return childWriter_->write(buf);
 }
 
 int FileWriter::close() {
