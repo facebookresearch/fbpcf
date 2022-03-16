@@ -37,14 +37,7 @@ class NpBaseObliviousTransferBenchmark : public util::NetworkedBenchmark {
     sender_ = factory.create(std::move(agent0));
     receiver_ = factory.create(std::move(agent1));
 
-    std::random_device rd;
-    std::mt19937_64 e(rd());
-    std::uniform_int_distribution<uint8_t> randomChoice(0, 1);
-
-    choice_ = std::vector<bool>(size_);
-    for (auto i = 0; i < size_; ++i) {
-      choice_[i] = randomChoice(e);
-    }
+    choice_ = util::getRandomBoolVector(size_);
   }
 
   void runSender() override {
@@ -213,13 +206,13 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
         std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
             1, *agentFactory1_, getRcotFactory());
 
-    senderInput0_ = getRandomBoolVector();
-    senderInput1_ = getRandomBoolVector();
-    senderChoice_ = getRandomBoolVector();
+    senderInput0_ = util::getRandomBoolVector(size_);
+    senderInput1_ = util::getRandomBoolVector(size_);
+    senderChoice_ = util::getRandomBoolVector(size_);
 
-    receiverInput0_ = getRandomBoolVector();
-    receiverInput1_ = getRandomBoolVector();
-    receiverChoice_ = getRandomBoolVector();
+    receiverInput0_ = util::getRandomBoolVector(size_);
+    receiverInput1_ = util::getRandomBoolVector(size_);
+    receiverChoice_ = util::getRandomBoolVector(size_);
   }
 
   void runSender() override {
@@ -241,18 +234,6 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
   getRcotFactory() = 0;
 
  private:
-  std::vector<bool> getRandomBoolVector() {
-    std::random_device rd;
-    std::mt19937_64 e(rd());
-    std::uniform_int_distribution<uint8_t> randomChoice(0, 1);
-
-    auto result = std::vector<bool>(size_);
-    for (auto i = 0; i < size_; ++i) {
-      result[i] = randomChoice(e);
-    }
-    return result;
-  }
-
   size_t size_ = 1000000;
 
   std::unique_ptr<communication::IPartyCommunicationAgentFactory>

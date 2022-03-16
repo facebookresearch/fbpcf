@@ -18,9 +18,18 @@
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
+#include "folly/Random.h"
 #include "folly/logging/xlog.h"
 
 namespace fbpcf::engine::util {
+
+inline std::vector<bool> getRandomBoolVector(size_t size) {
+  auto result = std::vector<bool>(size);
+  for (auto i = 0; i < size; ++i) {
+    result[i] = folly::Random::secureOneIn(2);
+  }
+  return result;
+}
 
 inline std::pair<
     std::unique_ptr<communication::IPartyCommunicationAgent>,
