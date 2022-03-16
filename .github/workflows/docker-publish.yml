@@ -72,12 +72,12 @@ jobs:
           docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
 
       - name: Create release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "actions/create-release@v1"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          prerelease: false
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
-          title: ${{ steps.create_version.outputs.version_tag }}
+          release_name: ${{ steps.create_version.outputs.version_tag }}
+          tag_name: ${{ steps.create_version.outputs.version_tag }}
 
       - name: Cleanup
         run: |
