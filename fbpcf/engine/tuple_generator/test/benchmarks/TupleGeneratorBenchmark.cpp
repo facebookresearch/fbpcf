@@ -47,13 +47,20 @@ class ProductShareGeneratorBenchmark : public util::NetworkedBenchmark {
     receiverRight_ = util::getRandomBoolVector(size_);
   }
 
-  void runSender() override {
+ protected:
+  void initSender() override {
     sender_ = senderFactory_->create(1);
+  }
+
+  void runSender() override {
     sender_->generateBooleanProductShares(senderLeft_, senderRight_);
   }
 
-  void runReceiver() override {
+  void initReceiver() override {
     receiver_ = receiverFactory_->create(0);
+  }
+
+  void runReceiver() override {
     receiver_->generateBooleanProductShares(receiverLeft_, receiverRight_);
   }
 
@@ -98,13 +105,20 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
     receiverFactory_ = getTupleGeneratorFactory(1, *agentFactory1_);
   }
 
-  void runSender() override {
+ protected:
+  void initSender() override {
     sender_ = senderFactory_->create();
+  }
+
+  void runSender() override {
     sender_->getBooleanTuple(size_);
   }
 
-  void runReceiver() override {
+  void initReceiver() override {
     receiver_ = receiverFactory_->create();
+  }
+
+  void runReceiver() override {
     receiver_->getBooleanTuple(size_);
   }
 
@@ -112,7 +126,6 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
     return sender_->getTrafficStatistics();
   }
 
- protected:
   virtual std::unique_ptr<ITupleGeneratorFactory> getTupleGeneratorFactory(
       int myId,
       communication::IPartyCommunicationAgentFactory& agentFactory) = 0;

@@ -32,16 +32,25 @@ class NpBaseObliviousTransferBenchmark : public util::NetworkedBenchmark {
  public:
   void setup() override {
     auto [agent0, agent1] = util::getSocketAgents();
-
-    NpBaseObliviousTransferFactory factory;
-    sender_ = factory.create(std::move(agent0));
-    receiver_ = factory.create(std::move(agent1));
+    agent0_ = std::move(agent0);
+    agent1_ = std::move(agent1);
 
     choice_ = util::getRandomBoolVector(size_);
   }
 
+ protected:
+  void initSender() override {
+    NpBaseObliviousTransferFactory factory;
+    sender_ = factory.create(std::move(agent0_));
+  }
+
   void runSender() override {
     sender_->send(size_);
+  }
+
+  void initReceiver() override {
+    NpBaseObliviousTransferFactory factory;
+    receiver_ = factory.create(std::move(agent1_));
   }
 
   void runReceiver() override {
@@ -54,6 +63,9 @@ class NpBaseObliviousTransferBenchmark : public util::NetworkedBenchmark {
 
  private:
   size_t size_ = 1024;
+
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
 
   std::unique_ptr<IBaseObliviousTransfer> sender_;
   std::unique_ptr<IBaseObliviousTransfer> receiver_;
@@ -81,13 +93,20 @@ class RandomCorrelatedObliviousTransferBenchmark
     util::setLsbTo1(delta_);
   }
 
-  void runSender() override {
+ protected:
+  void initSender() override {
     sender_ = factory_->create(delta_, std::move(agent0_));
+  }
+
+  void runSender() override {
     sender_->rcot(size_);
   }
 
-  void runReceiver() override {
+  void initReceiver() override {
     receiver_ = factory_->create(std::move(agent1_));
+  }
+
+  void runReceiver() override {
     receiver_->rcot(size_);
   }
 
@@ -95,7 +114,6 @@ class RandomCorrelatedObliviousTransferBenchmark
     return sender_->getTrafficStatistics();
   }
 
- protected:
   std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory_;
 
  private:
@@ -192,7 +210,6 @@ BENCHMARK_COUNTERS(
 }
 
 class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
- protected:
  public:
   void setup() override {
     auto [agentFactory0, agentFactory1] = util::getSocketAgentFactories();
@@ -215,13 +232,20 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
     receiverChoice_ = util::getRandomBoolVector(size_);
   }
 
-  void runSender() override {
+ protected:
+  void initSender() override {
     sender_ = senderFactory_->create(1);
+  }
+
+  void runSender() override {
     sender_->biDirectionOT(senderInput0_, senderInput1_, senderChoice_);
   }
 
-  void runReceiver() override {
+  void initReceiver() override {
     receiver_ = receiverFactory_->create(0);
+  }
+
+  void runReceiver() override {
     receiver_->biDirectionOT(receiverInput0_, receiverInput1_, receiverChoice_);
   }
 
@@ -229,7 +253,6 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
     return sender_->getTrafficStatistics();
   }
 
- protected:
   virtual std::unique_ptr<IRandomCorrelatedObliviousTransferFactory>
   getRcotFactory() = 0;
 
