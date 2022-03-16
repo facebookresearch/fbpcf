@@ -16,6 +16,7 @@
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IknpShRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/NpBaseObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RcotExtenderFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCot.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCotFactory.h"
@@ -194,6 +195,132 @@ BENCHMARK_COUNTERS(
     ExtenderBasedRandomCorrelatedObliviousTransferWithEmp,
     counters) {
   ExtenderBasedRandomCorrelatedObliviousTransferWithEmpBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
+ protected:
+ public:
+  void setup() override {
+    auto [agentFactory0, agentFactory1] = util::getSocketAgentFactories();
+    agentFactory0_ = std::move(agentFactory0);
+    agentFactory1_ = std::move(agentFactory1);
+
+    senderFactory_ =
+        std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
+            0, *agentFactory0_, getRcotFactory());
+    receiverFactory_ =
+        std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
+            1, *agentFactory1_, getRcotFactory());
+
+    senderInput0_ = getRandomBoolVector();
+    senderInput1_ = getRandomBoolVector();
+    senderChoice_ = getRandomBoolVector();
+
+    receiverInput0_ = getRandomBoolVector();
+    receiverInput1_ = getRandomBoolVector();
+    receiverChoice_ = getRandomBoolVector();
+  }
+
+  void runSender() override {
+    sender_ = senderFactory_->create(1);
+    sender_->biDirectionOT(senderInput0_, senderInput1_, senderChoice_);
+  }
+
+  void runReceiver() override {
+    receiver_ = receiverFactory_->create(0);
+    receiver_->biDirectionOT(receiverInput0_, receiverInput1_, receiverChoice_);
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    return sender_->getTrafficStatistics();
+  }
+
+ protected:
+  virtual std::unique_ptr<IRandomCorrelatedObliviousTransferFactory>
+  getRcotFactory() = 0;
+
+ private:
+  std::vector<bool> getRandomBoolVector() {
+    std::random_device rd;
+    std::mt19937_64 e(rd());
+    std::uniform_int_distribution<uint8_t> randomChoice(0, 1);
+
+    auto result = std::vector<bool>(size_);
+    for (auto i = 0; i < size_; ++i) {
+      result[i] = randomChoice(e);
+    }
+    return result;
+  }
+
+  size_t size_ = 1000000;
+
+  std::unique_ptr<communication::IPartyCommunicationAgentFactory>
+      agentFactory0_;
+  std::unique_ptr<communication::IPartyCommunicationAgentFactory>
+      agentFactory1_;
+
+  std::unique_ptr<IBidirectionObliviousTransferFactory<bool>> senderFactory_;
+  std::unique_ptr<IBidirectionObliviousTransferFactory<bool>> receiverFactory_;
+
+  std::unique_ptr<IBidirectionObliviousTransfer<bool>> sender_;
+  std::unique_ptr<IBidirectionObliviousTransfer<bool>> receiver_;
+
+  std::vector<bool> senderInput0_;
+  std::vector<bool> receiverInput0_;
+
+  std::vector<bool> senderInput1_;
+  std::vector<bool> receiverInput1_;
+
+  std::vector<bool> senderChoice_;
+  std::vector<bool> receiverChoice_;
+};
+
+class RcotBasedBidirectionObliviousTransferWithIknpBenchmark
+    : public BidirectionObliviousTransferBenchmark {
+ protected:
+  std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> getRcotFactory()
+      override {
+    return std::make_unique<
+        ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+        std::make_unique<IknpShRandomCorrelatedObliviousTransferFactory>(
+            std::make_unique<NpBaseObliviousTransferFactory>()),
+        std::make_unique<ferret::RcotExtenderFactory>(
+            std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+            std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                std::make_unique<ferret::SinglePointCotFactory>())),
+        ferret::kExtendedSize,
+        ferret::kBaseSize,
+        ferret::kWeight);
+  }
+};
+
+BENCHMARK_COUNTERS(RcotBasedBidirectionObliviousTransferWithIknp, counters) {
+  RcotBasedBidirectionObliviousTransferWithIknpBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class RcotBasedBidirectionObliviousTransferWithEmpBenchmark
+    : public BidirectionObliviousTransferBenchmark {
+ protected:
+  std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> getRcotFactory()
+      override {
+    return std::make_unique<
+        ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+        std::make_unique<EmpShRandomCorrelatedObliviousTransferFactory>(
+            std::make_unique<util::AesPrgFactory>()),
+        std::make_unique<ferret::RcotExtenderFactory>(
+            std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+            std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                std::make_unique<ferret::SinglePointCotFactory>())),
+        ferret::kExtendedSize,
+        ferret::kBaseSize,
+        ferret::kWeight);
+  }
+};
+
+BENCHMARK_COUNTERS(RcotBasedBidirectionObliviousTransferWithEmp, counters) {
+  RcotBasedBidirectionObliviousTransferWithEmpBenchmark benchmark;
   benchmark.runBenchmark(counters);
 }
 
