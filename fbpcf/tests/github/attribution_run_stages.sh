@@ -30,7 +30,8 @@ case "$stage" in
             --num_files_per_mpc_container="$ATTRIBUTION_NUM_FILES_PER_MPC_CONTAINER" \
             --concurrency="$ATTRIBUTION_CONCURRENCY" \
             --attribution_rule="$ATTRIBUTION_RULE" \
-            --aggregation_type="$ATTRIBUTION_TYPE"
+            --aggregation_type="$ATTRIBUTION_TYPE" \
+            --stage_flow="$ATTRIBUTION_STAGE_FLOW"
         echo "Create Attribution Partner instance"
         $docker_command create_instance "$ATTRIBUTION_PARTNER_NAME" \
             --config="$DOCKER_CLOUD_CONFIG_FILE" \
@@ -43,7 +44,8 @@ case "$stage" in
             --num_files_per_mpc_container="$ATTRIBUTION_NUM_FILES_PER_MPC_CONTAINER" \
             --concurrency="$ATTRIBUTION_CONCURRENCY" \
             --attribution_rule="$ATTRIBUTION_RULE" \
-            --aggregation_type="$ATTRIBUTION_TYPE"
+            --aggregation_type="$ATTRIBUTION_TYPE" \
+            --stage_flow="$ATTRIBUTION_STAGE_FLOW"
             ;;
     # Stages without passing IP addresses
     prepare_compute_input | pid_metric_export | data_validation )

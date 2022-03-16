@@ -42,6 +42,8 @@ export LIFT_PARTNER_EXPECTED_RESULT=$LIFT_RESULT_PATH/partner_expected_result.js
 export ATTRIBUTION_PUBLISHER_NAME="pa_publisher_github"
 export ATTRIBUTION_PARTNER_NAME="pa_partner_github"
 
+export ATTRIBUTION_STAGE_FLOW="private_computation_pcf2_stage_flow"
+
 export ATTRIBUTION_NUM_FILES_PER_MPC_CONTAINER=1
 export ATTRIBUTION_CONCURRENCY=1
 export ATTRIBUTION_NUM_PID_CONTAINERS=1
