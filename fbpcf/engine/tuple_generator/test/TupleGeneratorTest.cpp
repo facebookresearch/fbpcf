@@ -84,17 +84,14 @@ TEST(TupleGeneratorTest, testWithDummyProductShareGenerator) {
   int numberOfParty = 4;
 
   testTupleGenerator(
-      numberOfParty,
-
-      createInMemoryTupleGeneratorFactoryWithDummyProductShareGenerator);
+      numberOfParty, createTupleGeneratorFactoryWithDummyProductShareGenerator);
 }
 
 TEST(TupleGeneratorTest, testWithSecureProductShareGenerator) {
   int numberOfParty = 4;
 
   testTupleGenerator(
-      numberOfParty,
-      createInMemoryTupleGeneratorFactoryWithRealProductShareGenerator);
+      numberOfParty, createTupleGeneratorFactoryWithRealProductShareGenerator);
 }
 
 TEST(TupleGeneratorTest, testTwoPartyTupleGeneratorWithDummyRcot) {
