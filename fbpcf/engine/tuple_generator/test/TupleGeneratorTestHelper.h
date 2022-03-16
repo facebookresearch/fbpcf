@@ -12,8 +12,6 @@
 #include <memory>
 
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
-#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
-#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/tuple_generator/DummyProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/DummyTupleGeneratorFactory.h"
@@ -54,7 +52,7 @@ inline std::unique_ptr<ITupleGeneratorFactory> createDummyTupleGeneratorFactory(
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
-createInMemoryTupleGeneratorFactoryWithDummyProductShareGenerator(
+createTupleGeneratorFactoryWithDummyProductShareGenerator(
     int numberOfParty,
     int myId,
     communication::IPartyCommunicationAgentFactory& agentFactory) {
@@ -69,7 +67,7 @@ createInMemoryTupleGeneratorFactoryWithDummyProductShareGenerator(
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
-createInMemoryTupleGeneratorFactoryWithRealProductShareGenerator(
+createTupleGeneratorFactoryWithRealProductShareGenerator(
     int numberOfParty,
     int myId,
     communication::IPartyCommunicationAgentFactory& agentFactory) {
