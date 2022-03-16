@@ -496,7 +496,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Combine(
         ::testing::Values(
             SchedulerType::Plaintext,
-            SchedulerType::NetworkPlaintext),
+            SchedulerType::NetworkPlaintext,
+            SchedulerType::Lazy),
         ::testing::Values(16, 256, 1024)),
     [](const testing::TestParamInfo<CompositeSchedulerTestFixture::ParamType>&
            info) {
