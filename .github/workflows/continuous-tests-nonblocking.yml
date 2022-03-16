@@ -137,7 +137,7 @@ jobs:
         ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
       working-directory: fbpcf/tests/github/
 
-    - name: Attribution - Decoupled Attribution
+    - name: Attribution - PCF2 Attribution
       run: |
         ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
       working-directory: fbpcf/tests/github/
@@ -148,7 +148,7 @@ jobs:
         ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
       working-directory: fbpcf/tests/github/
 
-    - name: Attribution - Decoupled Aggregation
+    - name: Attribution - PCF2 Aggregation
       run: |
         ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
       working-directory: fbpcf/tests/github/
