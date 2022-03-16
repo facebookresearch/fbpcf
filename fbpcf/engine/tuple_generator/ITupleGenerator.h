@@ -36,17 +36,17 @@ class ITupleGenerator {
     }
 
     // get the first share
-    bool getA() {
+    bool getA() const {
       return (value_ >> 2) & 1;
     }
 
     // get the second share
-    bool getB() {
+    bool getB() const {
       return (value_ >> 1) & 1;
     }
 
     // get the third share
-    bool getC() {
+    bool getC() const {
       return value_ & 1;
     }
 

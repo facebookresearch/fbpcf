@@ -291,6 +291,21 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<ScheduledCompositeAND>& compositeAnds,
       std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds);
 
+  std::vector<bool> computeSecretSharesToOpen(
+      std::vector<ScheduledAND>& ands,
+      std::vector<ScheduledBatchAND>& batchAnds,
+      std::vector<ScheduledCompositeAND>& compositeAnds,
+      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples);
+
+  ExecutionResults computeExecutionResultsFromOpenedShares(
+      std::vector<ScheduledAND>& ands,
+      std::vector<ScheduledBatchAND>& batchAnds,
+      std::vector<ScheduledCompositeAND>& compositeAnds,
+      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<bool> openedSecrets,
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple> tuples);
+
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
       communicationAgent_;
