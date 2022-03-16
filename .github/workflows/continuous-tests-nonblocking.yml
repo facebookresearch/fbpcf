@@ -9,7 +9,7 @@ env:
   REGISTRY: ghcr.io
   FBPCF_LOCAL_IMAGE_NAME: ${{ github.event.repository.name }}/ubuntu
   REGISTRY_IMAGE_NAME: ghcr.io/${{ github.repository }}/ubuntu
-  COORDINATOR_IMAGE: ghcr.io/facebookresearch/fbpcs/coordinator
+  COORDINATOR_IMAGE_DEV: ghcr.io/facebookresearch/fbpcs/coordinator:dev
   LOCAL_IMAGE_NAME: fbpcs/onedocker
   TEST_REGISTRY_IMAGE_NAME: ghcr.io/${{ github.repository }}/test/ubuntu
   PL_CONTAINER_NAME: e2e_pl_container
@@ -81,11 +81,11 @@ jobs:
 
     - name: Pull coordinator image
       run: |
-        docker pull ${{ env.COORDINATOR_IMAGE }}:${{ env.VERSION_TAG }}
+        docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
 
     - name: Start container
       run: |
-        ./start_container.sh ${{ env.PA_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE }}:${{ env.VERSION_TAG }}
+        ./start_container.sh ${{ env.PA_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE_DEV }}
       working-directory: fbpcf/tests/github/
 
     - name: Attribution - Create Instance
@@ -196,11 +196,11 @@ jobs:
 
     - name: Pull coordinator image
       run: |
-        docker pull ${{ env.COORDINATOR_IMAGE }}:${{ env.VERSION_TAG }}
+        docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
 
     - name: Start container
       run: |
-        ./start_container.sh ${{ env.PL_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE }}:${{ env.VERSION_TAG }}
+        ./start_container.sh ${{ env.PL_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE_DEV }}
       working-directory: fbpcf/tests/github/
 
     - name: Lift - Create Instance
