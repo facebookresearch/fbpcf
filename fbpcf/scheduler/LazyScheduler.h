@@ -305,8 +305,7 @@ class LazyScheduler final : public IScheduler {
   template <bool usingBatch>
   IGateKeeper::BoolType<usingBatch> forceWire(WireId<IScheduler::Boolean> id);
 
-  // Execute some gates if we're close to reaching the memory limit.
-  WireId<IScheduler::Boolean> maybeExecuteGates(WireId<IScheduler::Boolean> id);
+  void maybeExecuteGates();
 
   // Compute all the gates up to the given level.
   void executeTillLevel(uint32_t level);

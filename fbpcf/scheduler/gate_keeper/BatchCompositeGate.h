@@ -22,15 +22,8 @@ class BatchCompositeGate final : public ICompositeGate {
       std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWireIDs,
       IScheduler::WireId<IScheduler::Boolean> left,
       std::vector<IScheduler::WireId<IScheduler::Boolean>> rights,
-      uint32_t numberOfResults,
       IWireKeeper& wireKeeper)
-      : ICompositeGate{
-            gateType,
-            outputWireIDs,
-            left,
-            rights,
-            numberOfResults,
-            wireKeeper} {
+      : ICompositeGate{gateType, outputWireIDs, left, rights, 0, wireKeeper} {
     for (auto wireID : outputWireIDs_) {
       increaseReferenceCount(wireID);
     }
@@ -51,27 +44,48 @@ class BatchCompositeGate final : public ICompositeGate {
   }
 
   void compute(
-      engine::ISecretShareEngine& /*engine*/,
+      engine::ISecretShareEngine& engine,
       std::map<int64_t, std::vector<bool>>& /*secretSharesByParty*/) override {
     switch (gateType_) {
         // Free gates
       case GateType::FreeAnd: {
-        throw std::runtime_error("Not implemented");
+        auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
+        numberOfResults_ = leftValues.size() * outputWireIDs_.size();
+
+        for (int i = 0; i < outputWireIDs_.size(); i++) {
+          wireKeeper_.setBatchBooleanValue(
+              outputWireIDs_[i],
+              engine.computeBatchFreeAND(
+                  leftValues, wireKeeper_.getBatchBooleanValue(rights_[i])));
+        }
       }
 
       case GateType::NonFreeAnd: {
-        throw std::runtime_error("Not implemented");
+        auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
+        std::vector<std::vector<bool>> rightWireValues(outputWireIDs_.size());
+        for (int i = 0; i < outputWireIDs_.size(); i++) {
+          rightWireValues[i] = wireKeeper_.getBatchBooleanValue(rights_[i]);
+        }
+        numberOfResults_ = leftValues.size() * outputWireIDs_.size();
+        scheduledResultIndex_ =
+            engine.scheduleBatchCompositeAND(leftValues, rightWireValues);
+        break;
       }
     }
   }
 
   void collectScheduledResult(
-      engine::ISecretShareEngine& /*engine*/,
+      engine::ISecretShareEngine& engine,
       std::map<int64_t, std::vector<bool>>& /*revealedSecretsByParty*/)
       override {
+    std::vector<std::vector<bool>> result;
     switch (gateType_) {
       case GateType::NonFreeAnd: {
-        throw std::runtime_error("Not implemented");
+        result =
+            engine.getBatchCompositeANDExecutionResult(scheduledResultIndex_);
+        for (int i = 0; i < result.size(); i++) {
+          wireKeeper_.setBatchBooleanValue(outputWireIDs_[i], result[i]);
+        }
         break;
       }
 

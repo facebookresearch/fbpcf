@@ -28,7 +28,7 @@ class CompositeGate final : public ICompositeGate {
             outputWireIDs,
             left,
             rights,
-            /*numberOfResults*/ 1,
+            static_cast<uint32_t>(outputWireIDs.size()),
             wireKeeper} {
     for (auto wireID : outputWireIDs_) {
       increaseReferenceCount(wireID);
@@ -50,28 +50,43 @@ class CompositeGate final : public ICompositeGate {
   }
 
   void compute(
-      engine::ISecretShareEngine& /*engine*/,
+      engine::ISecretShareEngine& engine,
       std::map<int64_t, std::vector<bool>>& /*secretSharesByParty*/) override {
     switch (gateType_) {
         // Free gates
       case GateType::FreeAnd:
-        throw std::runtime_error("Not implemented");
+        for (int i = 0; i < outputWireIDs_.size(); i++) {
+          wireKeeper_.setBooleanValue(
+              outputWireIDs_[i],
+              engine.computeFreeAND(
+                  wireKeeper_.getBooleanValue(left_),
+                  wireKeeper_.getBooleanValue(rights_[i])));
+        }
         break;
 
       // Non-free gates
       case GateType::NonFreeAnd:
-        throw std::runtime_error("Not implemented");
+        std::vector<bool> rightWireValues(outputWireIDs_.size());
+        for (int i = 0; i < outputWireIDs_.size(); i++) {
+          rightWireValues[i] = wireKeeper_.getBooleanValue(rights_[i]);
+        }
+        scheduledResultIndex_ = engine.scheduleCompositeAND(
+            wireKeeper_.getBooleanValue(left_), rightWireValues);
         break;
     }
   }
 
   void collectScheduledResult(
-      engine::ISecretShareEngine& /*engine*/,
+      engine::ISecretShareEngine& engine,
       std::map<int64_t, std::vector<bool>>& /*revealedSecretsByParty*/)
       override {
+    std::vector<bool> result;
     switch (gateType_) {
       case GateType::NonFreeAnd:
-        throw std::runtime_error("Not implemented");
+        result = engine.getCompositeANDExecutionResult(scheduledResultIndex_);
+        for (int i = 0; i < result.size(); i++) {
+          wireKeeper_.setBooleanValue(outputWireIDs_[i], result[i]);
+        }
         break;
 
       default:
