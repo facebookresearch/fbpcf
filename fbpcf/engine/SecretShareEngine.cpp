@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include "fbpcf/engine/SecretShareEngine.h"
+#include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
 #include "fbpcf/engine/util/util.h"
 
 namespace fbpcf::engine {
@@ -323,7 +324,32 @@ SecretShareEngine::computeAllANDsFromScheduledANDs(
   }
 
   auto tuples = tupleGenerator_->getBooleanTuple(tupleCount);
-  std::vector<bool> secretsToOpen(tupleCount * 2);
+  auto secretsToOpen = computeSecretSharesToOpen(
+      ands, batchAnds, compositeAnds, batchCompositeAnds, tuples);
+
+  auto openedSecrets =
+      communicationAgent_->openSecretsToAll(std::move(secretsToOpen));
+
+  if (openedSecrets.size() != tupleCount * 2) {
+    throw std::runtime_error("unexpected number of opened secrets");
+  }
+
+  return computeExecutionResultsFromOpenedShares(
+      ands,
+      batchAnds,
+      compositeAnds,
+      batchCompositeAnds,
+      openedSecrets,
+      tuples);
+}
+
+std::vector<bool> SecretShareEngine::computeSecretSharesToOpen(
+    std::vector<ScheduledAND>& ands,
+    std::vector<ScheduledBatchAND>& batchAnds,
+    std::vector<ScheduledCompositeAND>& compositeAnds,
+    std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples) {
+  std::vector<bool> secretsToOpen(tuples.size() * 2);
 
   size_t index = 0;
   for (size_t i = 0; i < ands.size(); i++) {
@@ -365,13 +391,17 @@ SecretShareEngine::computeAllANDsFromScheduledANDs(
     }
   }
 
-  auto openedSecrets =
-      communicationAgent_->openSecretsToAll(std::move(secretsToOpen));
+  return secretsToOpen;
+}
 
-  if (openedSecrets.size() != tupleCount * 2) {
-    throw std::runtime_error("unexpected number of opened secrets");
-  }
-
+SecretShareEngine::ExecutionResults
+SecretShareEngine::computeExecutionResultsFromOpenedShares(
+    std::vector<ScheduledAND>& ands,
+    std::vector<ScheduledBatchAND>& batchAnds,
+    std::vector<ScheduledCompositeAND>& compositeAnds,
+    std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<bool> openedSecrets,
+    std::vector<tuple_generator::ITupleGenerator::BooleanTuple> tuples) {
   std::vector<bool> andResults;
   andResults.reserve(ands.size());
   std::vector<std::vector<bool>> batchAndResults;
@@ -380,7 +410,7 @@ SecretShareEngine::computeAllANDsFromScheduledANDs(
   compositeAndResults.reserve(compositeAnds.size());
   std::vector<std::vector<std::vector<bool>>> compositeBatchAndResults;
   compositeBatchAndResults.reserve(batchCompositeAnds.size());
-  index = 0;
+  size_t index = 0;
 
   for (size_t i = 0; i < ands.size(); i++) {
     bool val = tuples.at(index).getC() ^
