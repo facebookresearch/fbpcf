@@ -55,22 +55,28 @@ class SinglePointCotBenchmark final : public util::NetworkedBenchmark {
     agent0_ = std::move(agent0);
     agent1_ = std::move(agent1);
 
-    SinglePointCotFactory factory;
-    sender_ = factory.create(agent0_);
-    receiver_ = factory.create(agent1_);
-
     auto baseOtSize = std::log2(kExtendedSize / kWeight);
     auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
     baseOTSend_ = std::move(baseOTSend);
     baseOTReceive_ = std::move(baseOTReceive);
-
-    sender_->senderInit(delta);
-    receiver_->receiverInit();
+    delta_ = delta;
   }
 
  protected:
+  void initSender() override {
+    SinglePointCotFactory factory;
+    sender_ = factory.create(agent0_);
+    sender_->senderInit(delta_);
+  }
+
   void runSender() override {
     sender_->senderExtend(std::move(baseOTSend_));
+  }
+
+  void initReceiver() override {
+    SinglePointCotFactory factory;
+    receiver_ = factory.create(agent1_);
+    receiver_->receiverInit();
   }
 
   void runReceiver() override {
@@ -90,6 +96,7 @@ class SinglePointCotBenchmark final : public util::NetworkedBenchmark {
 
   std::vector<__m128i> baseOTSend_;
   std::vector<__m128i> baseOTReceive_;
+  __m128i delta_;
 };
 
 class RegularErrorMultiPointCotBenchmark final
@@ -100,24 +107,29 @@ class RegularErrorMultiPointCotBenchmark final
     agent0_ = std::move(agent0);
     agent1_ = std::move(agent1);
 
-    RegularErrorMultiPointCotFactory factory(
+    factory_ = std::make_unique<RegularErrorMultiPointCotFactory>(
         std::make_unique<SinglePointCotFactory>());
-
-    sender_ = factory.create(agent0_);
-    receiver_ = factory.create(agent1_);
 
     auto baseOtSize = std::log2(kExtendedSize / kWeight) * kWeight;
     auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
     baseOTSend_ = std::move(baseOTSend);
     baseOTReceive_ = std::move(baseOTReceive);
-
-    sender_->senderInit(delta, kExtendedSize, kWeight);
-    receiver_->receiverInit(kExtendedSize, kWeight);
+    delta_ = delta;
   }
 
  protected:
+  void initSender() override {
+    sender_ = factory_->create(agent0_);
+    sender_->senderInit(delta_, kExtendedSize, kWeight);
+  }
+
   void runSender() override {
     sender_->senderExtend(std::move(baseOTSend_));
+  }
+
+  void initReceiver() override {
+    receiver_ = factory_->create(agent1_);
+    receiver_->receiverInit(kExtendedSize, kWeight);
   }
 
   void runReceiver() override {
@@ -129,6 +141,8 @@ class RegularErrorMultiPointCotBenchmark final
   }
 
  private:
+  std::unique_ptr<RegularErrorMultiPointCotFactory> factory_;
+
   std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
   std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
 
@@ -137,36 +151,43 @@ class RegularErrorMultiPointCotBenchmark final
 
   std::vector<__m128i> baseOTSend_;
   std::vector<__m128i> baseOTReceive_;
+  __m128i delta_;
 };
 
 class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
  public:
   void setup() override {
     auto [agent0, agent1] = util::getSocketAgents();
+    agent0_ = std::move(agent0);
+    agent1_ = std::move(agent1);
 
-    RcotExtenderFactory factory(
+    factory_ = std::make_unique<RcotExtenderFactory>(
         std::make_unique<TenLocalLinearMatrixMultiplierFactory>(),
         std::make_unique<RegularErrorMultiPointCotFactory>(
             std::make_unique<SinglePointCotFactory>()));
-
-    sender_ = factory.create();
-    receiver_ = factory.create();
-
-    sender_->setCommunicationAgent(std::move(agent0));
-    receiver_->setCommunicationAgent(std::move(agent1));
 
     auto baseOtSize = kBaseSize + std::log2(kExtendedSize / kWeight) * kWeight;
     auto [baseOTSend, baseOTReceive, delta] = getBaseOT(baseOtSize);
     baseOTSend_ = std::move(baseOTSend);
     baseOTReceive_ = std::move(baseOTReceive);
-
-    sender_->senderInit(delta, kExtendedSize, kBaseSize, kWeight);
-    receiver_->receiverInit(kExtendedSize, kBaseSize, kWeight);
+    delta_ = delta;
   }
 
  protected:
+  void initSender() override {
+    sender_ = factory_->create();
+    sender_->setCommunicationAgent(std::move(agent0_));
+    sender_->senderInit(delta_, kExtendedSize, kBaseSize, kWeight);
+  }
+
   void runSender() override {
     sender_->senderExtendRcot(std::move(baseOTSend_));
+  }
+
+  void initReceiver() override {
+    receiver_ = factory_->create();
+    receiver_->setCommunicationAgent(std::move(agent1_));
+    receiver_->receiverInit(kExtendedSize, kBaseSize, kWeight);
   }
 
   void runReceiver() override {
@@ -178,11 +199,17 @@ class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
   }
 
  private:
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
+  std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
+
+  std::unique_ptr<RcotExtenderFactory> factory_;
+
   std::unique_ptr<IRcotExtender> sender_;
   std::unique_ptr<IRcotExtender> receiver_;
 
   std::vector<__m128i> baseOTSend_;
   std::vector<__m128i> baseOTReceive_;
+  __m128i delta_;
 };
 
 } // namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret
