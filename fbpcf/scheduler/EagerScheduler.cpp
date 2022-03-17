@@ -166,42 +166,88 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>>
 EagerScheduler::privateAndPrivateComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  nonFreeGates_ += rights.size();
+  std::vector<bool> rightValues(rights.size());
+  for (size_t i = 0; i < rights.size(); i++) {
+    rightValues[i] = wireKeeper_->getBooleanValue(rights[i]);
+  }
+  auto index = engine_->scheduleCompositeAND(
+      wireKeeper_->getBooleanValue(left), rightValues);
+  engine_->executeScheduledAND();
+  auto result = engine_->getCompositeANDExecutionResult(index);
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
+      result.size());
+  for (size_t i = 0; i < rights.size(); i++) {
+    outputWires[i] = wireKeeper_->allocateBooleanValue(result[i]);
+  }
+  return outputWires;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 EagerScheduler::privateAndPrivateCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto leftValues = wireKeeper_->getBatchBooleanValue(left);
+  nonFreeGates_ += leftValues.size() * rights.size();
+  std::vector<std::vector<bool>> rightValues;
+  for (size_t i = 0; i < rights.size(); i++) {
+    rightValues.push_back(wireKeeper_->getBatchBooleanValue(rights[i]));
+  }
+
+  auto index = engine_->scheduleBatchCompositeAND(leftValues, rightValues);
+  engine_->executeScheduledAND();
+  auto result = engine_->getBatchCompositeANDExecutionResult(index);
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
+      result.size());
+  for (size_t i = 0; i < result.size(); i++) {
+    outputWires[i] = wireKeeper_->allocateBatchBooleanValue(result[i]);
+  }
+  return outputWires;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 EagerScheduler::privateAndPublicComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  freeGates_ += rights.size();
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
+      rights.size());
+  for (size_t i = 0; i < rights.size(); i++) {
+    outputWires[i] = wireKeeper_->allocateBooleanValue(engine_->computeFreeAND(
+        wireKeeper_->getBooleanValue(left),
+        wireKeeper_->getBooleanValue(rights[i])));
+  }
+  return outputWires;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 EagerScheduler::privateAndPublicCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto leftValues = wireKeeper_->getBatchBooleanValue(left);
+  freeGates_ += leftValues.size() * rights.size();
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
+      rights.size());
+  for (size_t i = 0; i < rights.size(); i++) {
+    outputWires[i] =
+        wireKeeper_->allocateBatchBooleanValue((engine_->computeBatchFreeAND(
+            leftValues, wireKeeper_->getBatchBooleanValue(rights[i]))));
+  }
+  return outputWires;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 EagerScheduler::publicAndPublicComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return privateAndPublicComposite(left, rights);
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 EagerScheduler::publicAndPublicCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  return privateAndPublicCompositeBatch(left, rights);
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateXorPrivate(
