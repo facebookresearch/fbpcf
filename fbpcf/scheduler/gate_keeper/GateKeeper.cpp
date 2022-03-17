@@ -127,7 +127,7 @@ GateKeeper::RightWireType<isCompositeWire> GateKeeper::addGate(
         outputWire.push_back(wireKeeper_->allocateBatchBooleanValue({}, level));
       }
       gatesForLevel.push_back(std::make_unique<BatchCompositeGate>(
-          gateType, outputWire, left, right, 0, *wireKeeper_));
+          gateType, outputWire, left, right, *wireKeeper_));
     } else {
       for (size_t i = 0; i < right.size(); i++) {
         outputWire.push_back(wireKeeper_->allocateBooleanValue(0, level));

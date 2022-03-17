@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 
+#include <fbpcf/scheduler/gate_keeper/GateKeeper.h>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
@@ -29,48 +30,62 @@ LazyScheduler::LazyScheduler(
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateBooleanInput(
     bool v,
     int partyId) {
-  return maybeExecuteGates(
-      gateKeeper_->inputGate(engine_->setInput(partyId, v)));
+  auto id = gateKeeper_->inputGate(engine_->setInput(partyId, v));
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateBooleanInputBatch(
     const std::vector<bool>& v,
     int partyId) {
-  return maybeExecuteGates(
-      gateKeeper_->inputGateBatch(engine_->setBatchInput(partyId, v)));
+  auto id = gateKeeper_->inputGateBatch(engine_->setBatchInput(partyId, v));
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::publicBooleanInput(
     bool v) {
-  return maybeExecuteGates(gateKeeper_->inputGate(v));
+  auto id = gateKeeper_->inputGate(v);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::publicBooleanInputBatch(
     const std::vector<bool>& v) {
-  return maybeExecuteGates(gateKeeper_->inputGateBatch(v));
+  auto id = gateKeeper_->inputGateBatch(v);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::recoverBooleanWire(
     bool v) {
-  return maybeExecuteGates(gateKeeper_->inputGate(v));
+  auto id = gateKeeper_->inputGate(v);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::recoverBooleanWireBatch(
     const std::vector<bool>& v) {
-  return maybeExecuteGates(gateKeeper_->inputGateBatch(v));
+  auto id = gateKeeper_->inputGateBatch(v);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::openBooleanValueToParty(
     WireId<IScheduler::Boolean> src,
     int partyId) {
-  return maybeExecuteGates(gateKeeper_->outputGate(src, partyId));
+  auto id = gateKeeper_->outputGate(src, partyId);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean>
 LazyScheduler::openBooleanValueToPartyBatch(
     WireId<IScheduler::Boolean> src,
     int partyId) {
-  return maybeExecuteGates(gateKeeper_->outputGateBatch(src, partyId));
+  auto id = gateKeeper_->outputGateBatch(src, partyId);
+  maybeExecuteGates();
+  return id;
 }
 
 bool LazyScheduler::extractBooleanSecretShare(WireId<IScheduler::Boolean> id) {
@@ -94,151 +109,201 @@ std::vector<bool> LazyScheduler::getBooleanValueBatch(
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateAndPrivate(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, left, right));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateAndPrivateBatch(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, left, right));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateAndPublic(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateAndPublicBatch(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::publicAndPublic(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::publicAndPublicBatch(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::FreeAnd, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 LazyScheduler::privateAndPrivateComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto id = gateKeeper_->compositeGate(
+      ICompositeGate::GateType::NonFreeAnd, left, rights);
+  maybeExecuteGates();
+  return id;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 LazyScheduler::privateAndPrivateCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto id = gateKeeper_->compositeGateBatch(
+      ICompositeGate::GateType::NonFreeAnd, left, rights);
+  maybeExecuteGates();
+  return id;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 LazyScheduler::privateAndPublicComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto id = gateKeeper_->compositeGate(
+      ICompositeGate::GateType::FreeAnd, left, rights);
+  maybeExecuteGates();
+  return id;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 LazyScheduler::privateAndPublicCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto id = gateKeeper_->compositeGateBatch(
+      ICompositeGate::GateType::FreeAnd, left, rights);
+  maybeExecuteGates();
+  return id;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 LazyScheduler::publicAndPublicComposite(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto id = gateKeeper_->compositeGate(
+      ICompositeGate::GateType::FreeAnd, left, rights);
+  maybeExecuteGates();
+  return id;
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 LazyScheduler::publicAndPublicCompositeBatch(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) {
-  throw std::runtime_error("Not implemented");
+  auto id = gateKeeper_->compositeGateBatch(
+      ICompositeGate::GateType::FreeAnd, left, rights);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateXorPrivate(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateXorPrivateBatch(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateXorPublic(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR, left, right));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateXorPublicBatch(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR, left, right));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::publicXorPublic(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::publicXorPublicBatch(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::SymmetricXOR, left, right);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::notPrivate(
     WireId<IScheduler::Boolean> src) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricNot, src));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::AsymmetricNot, src);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::notPrivateBatch(
     WireId<IScheduler::Boolean> src) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricNot, src));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::AsymmetricNot, src);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::notPublic(
     WireId<IScheduler::Boolean> src) {
-  return maybeExecuteGates(gateKeeper_->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::SymmetricNot, src));
+  auto id = gateKeeper_->normalGate(
+      INormalGate<IScheduler::Boolean>::GateType::SymmetricNot, src);
+  maybeExecuteGates();
+  return id;
 }
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::notPublicBatch(
     WireId<IScheduler::Boolean> src) {
-  return maybeExecuteGates(gateKeeper_->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::SymmetricNot, src));
+  auto id = gateKeeper_->normalGateBatch(
+      INormalGate<IScheduler::Boolean>::GateType::SymmetricNot, src);
+  maybeExecuteGates();
+  return id;
 }
 
 void LazyScheduler::increaseReferenceCount(WireId<IScheduler::Boolean> id) {
@@ -275,12 +340,10 @@ IGateKeeper::BoolType<usingBatch> LazyScheduler::forceWire(
   }
 }
 
-IScheduler::WireId<IScheduler::Boolean> LazyScheduler::maybeExecuteGates(
-    IScheduler::WireId<IScheduler::Boolean> id) {
+void LazyScheduler::maybeExecuteGates() {
   while (gateKeeper_->hasReachedBatchingLimit()) {
     executeOneLevel();
   }
-  return id;
 }
 
 void LazyScheduler::executeTillLevel(uint32_t level) {
