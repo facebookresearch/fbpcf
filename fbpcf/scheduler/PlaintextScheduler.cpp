@@ -309,6 +309,47 @@ PlaintextScheduler::computeCompositeAND(
   return rst;
 }
 
+// band a number of batches into one batch.
+IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::batchingUp(
+    std::vector<WireId<Boolean>> src) {
+  size_t batchSize = 0;
+  for (auto& item : src) {
+    batchSize += wireKeeper_->getBatchBooleanValue(item).size();
+  }
+  std::vector<bool> vector(batchSize, 0);
+  size_t index = 0;
+  for (auto& item : src) {
+    auto& batch = wireKeeper_->getBatchBooleanValue(item);
+    for (auto v : batch) {
+      vector[index++] = v;
+    }
+  }
+  return wireKeeper_->allocateBatchBooleanValue(vector);
+}
+
+// decompose a batch of values into several smaller batches.
+std::vector<IScheduler::WireId<IScheduler::Boolean>>
+PlaintextScheduler::unbatching(
+    WireId<Boolean> src,
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
+  auto& batch = wireKeeper_->getBatchBooleanValue(src);
+  size_t index = 0;
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> rst(
+      unbatchingStrategy->size());
+  for (size_t i = 0; i < rst.size(); i++) {
+    std::vector<bool> v(unbatchingStrategy->at(i));
+    if (index + v.size() > batch.size()) {
+      throw std::runtime_error(
+          "Failed to unbatch, you are unbatching to more values than the input has.");
+    }
+    for (size_t j = 0; j < v.size(); j++) {
+      v[j] = batch.at(index++);
+    }
+    rst[i] = wireKeeper_->allocateBatchBooleanValue(v);
+  }
+  return rst;
+}
+
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::validateAndComputeBatchCompositeAND(
     IScheduler::WireId<IScheduler::Boolean> left,

@@ -487,6 +487,34 @@ TEST_P(SchedulerTestFixture, testReferenceCountBatch) {
   runWithScheduler(GetParam(), testReferenceCountBatch);
 }
 
+void testBatchingAndUnbatching(
+    std::unique_ptr<IScheduler> scheduler,
+    int8_t myId) {
+  auto wire1 = scheduler->privateBooleanInputBatch({false, true}, 0);
+  auto wire2 = scheduler->privateBooleanInputBatch({true, false, false}, 1);
+  auto wire3 = scheduler->batchingUp({wire1, wire2});
+  auto revealed3 = scheduler->getBooleanValueBatch(
+      scheduler->openBooleanValueToPartyBatch(wire3, 0));
+  if (myId == 0) {
+    testVectorEq(revealed3, {false, true, true, false, false});
+  }
+  auto wire45 = scheduler->unbatching(
+      wire3,
+      std::make_shared<std::vector<uint32_t>>(std::vector<uint32_t>({3, 1})));
+  auto revealed4 = scheduler->getBooleanValueBatch(
+      scheduler->openBooleanValueToPartyBatch(wire45.at(0), 0));
+  auto revealed5 = scheduler->getBooleanValueBatch(
+      scheduler->openBooleanValueToPartyBatch(wire45.at(1), 0));
+  if (myId == 0) {
+    testVectorEq(revealed4, {false, true, true});
+    testVectorEq(revealed5, {false});
+  }
+}
+
+TEST_P(SchedulerTestFixture, testBatchingAndUnbatching) {
+  runWithScheduler(GetParam(), testBatchingAndUnbatching);
+}
+
 class CompositeSchedulerTestFixture
     : public ::testing::TestWithParam<std::tuple<SchedulerType, size_t>> {};
 
