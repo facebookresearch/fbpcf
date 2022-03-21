@@ -289,6 +289,14 @@ class schedulerMock final : public scheduler::IScheduler {
 
   MOCK_METHOD1(decreaseReferenceCountBatch, void(WireId<IScheduler::Boolean>));
 
+  MOCK_METHOD1(batchingUp, WireId<Boolean>(std::vector<WireId<Boolean>>));
+
+  MOCK_METHOD2(
+      unbatching,
+      std::vector<WireId<Boolean>>(
+          WireId<Boolean>,
+          std::shared_ptr<std::vector<uint32_t>>));
+
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return {0, 0};
   }
