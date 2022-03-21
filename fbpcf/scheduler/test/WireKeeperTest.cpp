@@ -40,11 +40,14 @@ void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
   EXPECT_EQ(wireKeeper->getIntegerValue(wire6), 0);
 
   // Batch API: Bool
-  std::vector<bool> testValue1(true, 3);
+  std::vector<bool> testValue1(3, true);
   auto wire7 = wireKeeper->allocateBatchBooleanValue(testValue1);
   testVectorEq(wireKeeper->getBatchBooleanValue(wire7), testValue1);
-  std::vector<bool> testValue2(false, 4);
+  std::vector<bool> testValue2(4, false);
   wireKeeper->setBatchBooleanValue(wire7, testValue2);
+  testVectorEq(wireKeeper->getBatchBooleanValue(wire7), testValue2);
+  testValue2[0] = true;
+  wireKeeper->getWritableBatchBooleanValue(wire7)[0] = true;
   testVectorEq(wireKeeper->getBatchBooleanValue(wire7), testValue2);
 
   // Batch API: Int
@@ -55,6 +58,9 @@ void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   std::vector<uint64_t> testValue4({10, 11, 12});
   wireKeeper->setBatchIntegerValue(wire8, testValue4);
+  testVectorEq(wireKeeper->getBatchIntegerValue(wire8), testValue4);
+  testValue4[0] = 33;
+  wireKeeper->getWritableBatchIntegerValue(wire8)[0] = 33;
   testVectorEq(wireKeeper->getBatchIntegerValue(wire8), testValue4);
 }
 
