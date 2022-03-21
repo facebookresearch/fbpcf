@@ -1,0 +1,71 @@
+/*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+#include <gtest/gtest.h>
+#include <stdio.h>
+#include <filesystem>
+#include <string>
+#include "folly/logging/xlog.h"
+
+#include "fbpcf/io/api/LocalFileWriter.h"
+#include "fbpcf/io/api/test/utils/IOTestHelper.h"
+
+namespace fbpcf::io {
+
+inline void cleanup(std::string fileToDelete) {
+  remove(fileToDelete.c_str());
+}
+
+TEST(LocalFileWriterTest, testWritingToFile) {
+  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
+  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file.txt";
+  auto writer = std::make_unique<fbpcf::io::LocalFileWriter>(fileToWriteTo);
+
+  /*
+    CASE 1
+    Write simple string to file
+  */
+  std::string toWrite =
+      "this file contains the expected text in local_file_writer_test_file.text";
+  auto buf =
+      std::vector<char>(toWrite.c_str(), toWrite.c_str() + toWrite.size());
+  auto nBytes = writer->write(buf);
+  EXPECT_EQ(nBytes, toWrite.size());
+
+  /*
+      CASE 2
+      Write arbitrary bytes to file
+  */
+  std::vector<char> arbitraryBytes{'\n', '\n', 'L', 'o', 'c', 'a', 'l', 'F',
+                                   'i',  'l',  'e', 'W', 'r', 'i', 't', 'e',
+                                   'r',  'T',  'e', 's', 't', ' '};
+  nBytes = writer->write(arbitraryBytes);
+  EXPECT_EQ(nBytes, arbitraryBytes.size());
+
+  /*
+    CASE 3
+    Write larger buffer
+  */
+  std::string remainingLine =
+      "writes to the above file\nWe assert that it's contents match this file\n";
+  auto buf2 = std::vector<char>(
+      remainingLine.c_str(), remainingLine.c_str() + remainingLine.size());
+  nBytes = writer->write(buf2);
+  EXPECT_EQ(nBytes, remainingLine.size());
+
+  EXPECT_EQ(writer->close(), 0);
+
+  /*
+    Verify that file contents match the expected
+  */
+  IOTestHelper::expectFileContentsMatch(
+      fileToWriteTo, baseDir + "data/expected_local_file_writer_test_file.txt");
+
+  cleanup(fileToWriteTo);
+}
+
+} // namespace fbpcf::io
