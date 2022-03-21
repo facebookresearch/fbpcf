@@ -7,17 +7,30 @@
 
 #include "fbpcf/io/api/LocalFileWriter.h"
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 namespace fbpcf::io {
-LocalFileWriter::LocalFileWriter(std::string /* filePath */) {}
+LocalFileWriter::LocalFileWriter(std::string filePath) {
+  outputStream_ = std::make_unique<std::ofstream>(filePath);
+}
 
 int LocalFileWriter::close() {
-  return 0;
+  outputStream_->close();
+
+  return outputStream_->fail() ? -1 : 0;
 }
-size_t LocalFileWriter::write(std::vector<char>& /* buf */) {
-  return 0;
+
+size_t LocalFileWriter::write(std::vector<char>& buf) {
+  outputStream_->write(buf.data(), buf.size());
+
+  if (outputStream_->fail()) {
+    throw std::runtime_error(
+        "Internal error when writing to local file. Stream integrity may have been affected.");
+  }
+
+  return buf.size();
 }
 
 LocalFileWriter::~LocalFileWriter() {

@@ -1,0 +1,4 @@
+this file contains the expected text in local_file_writer_test_file.text
+
+LocalFileWriterTest writes to the above file
+We assert that it's contents match this file
