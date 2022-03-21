@@ -172,6 +172,14 @@ class WireKeeper final : public IWireKeeper {
   const std::vector<uint64_t>& getBatchIntegerValue(
       IScheduler::WireId<IScheduler::Arithmetic> id) const override;
 
+  // get the writable batch of value associated with boolean wire with given id.
+  std::vector<bool>& getWritableBatchBooleanValue(
+      IScheduler::WireId<IScheduler::Boolean> id) const override;
+
+  // get the writable batch of value associated with integer wire with given id.
+  std::vector<uint64_t>& getWritableBatchIntegerValue(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const override;
+
   /**
    * @inherit doc
    */
