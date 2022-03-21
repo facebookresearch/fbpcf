@@ -282,16 +282,12 @@ class EagerScheduler final : public IScheduler {
   //======== Below are rebatching APIs: ========
 
   // band a number of batches into one batch.
-  WireId<Boolean> batchingUp(std::vector<WireId<Boolean>> src) override {
-    throw std::runtime_error("Not implemented!");
-  }
+  WireId<Boolean> batchingUp(std::vector<WireId<Boolean>> src) override;
 
   // decompose a batch of values into several smaller batches.
   std::vector<WireId<Boolean>> unbatching(
       WireId<Boolean> src,
-      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) override {
-    throw std::runtime_error("Not implemented!");
-  }
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) override;
 
   //======== Below are miscellaneous APIs: ========
 
