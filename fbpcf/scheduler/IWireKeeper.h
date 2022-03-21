@@ -103,6 +103,14 @@ class IWireKeeper {
   virtual const std::vector<uint64_t>& getBatchIntegerValue(
       IScheduler::WireId<IScheduler::Arithmetic> id) const = 0;
 
+  // get the writable batch of value associated with boolean wire with given id.
+  virtual std::vector<bool>& getWritableBatchBooleanValue(
+      IScheduler::WireId<IScheduler::Boolean> id) const = 0;
+
+  // get the writable batch of value associated with integer wire with given id.
+  virtual std::vector<uint64_t>& getWritableBatchIntegerValue(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const = 0;
+
   // set the value associated with boolean wire with given id.
   virtual void setBatchBooleanValue(
       IScheduler::WireId<IScheduler::Boolean> id,
