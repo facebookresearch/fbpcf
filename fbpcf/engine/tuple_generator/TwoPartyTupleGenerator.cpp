@@ -63,29 +63,42 @@ TwoPartyTupleGenerator::generateTuples(uint64_t size) {
   auto receiverMessagesFuture =
       std::async([size, this]() { return receiverRcot_->rcot(size); });
 
+  // k0 / l0
   auto sender0Messages = senderRcot_->rcot(size);
 
   std::vector<__m128i> sender1Messages(size);
   for (auto i = 0; i < size; ++i) {
+    // k1 / l1
     sender1Messages[i] = _mm_xor_si128(sender0Messages.at(i), delta_);
   }
 
+  // lr / kp
   auto receiverMessages = receiverMessagesFuture.get();
 
   std::vector<bool> choiceBits(size);
   for (auto i = 0; i < size; ++i) {
+    // r / p
     choiceBits[i] = util::getLsb(receiverMessages.at(i));
   }
 
+  // H(k0) / H(l0)
   hashFromAes_.inPlaceHash(sender0Messages);
+  // H(k1) / H(l1)
   hashFromAes_.inPlaceHash(sender1Messages);
+  // H(lr) / H(kp)
   hashFromAes_.inPlaceHash(receiverMessages);
 
   std::vector<ITupleGenerator::BooleanTuple> booleanTuples(size);
   for (size_t i = 0; i < size; i++) {
+    // a1 = H(k0) ^ H(k1) / a2 = H(l0) ^ H(l1)
     auto a = util::getLsb(sender0Messages.at(i)) ^
         util::getLsb(sender1Messages.at(i));
+    // b1 = r / b2 = p
     auto b = choiceBits.at(i);
+    // c1 = (H(k0) ^ H(k1)) & r ^ H(k0) + H(lr)
+    //    = H(kr) + H(lr) /
+    // c2 = (H(l0) ^ H(l1)) & p ^ H(l0) + H(kp)
+    //    = H(lp) + H(kp)
     auto c = (a & b) ^ util::getLsb(sender0Messages.at(i)) ^
         util::getLsb(receiverMessages.at(i));
 
