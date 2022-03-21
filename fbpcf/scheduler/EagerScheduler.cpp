@@ -352,6 +352,46 @@ void EagerScheduler::decreaseReferenceCountBatch(
   wireKeeper_->decreaseBatchReferenceCount(id);
 }
 
+// band a number of batches into one batch.
+IScheduler::WireId<IScheduler::Boolean> EagerScheduler::batchingUp(
+    std::vector<WireId<Boolean>> src) {
+  size_t batchSize = 0;
+  for (auto& item : src) {
+    batchSize += wireKeeper_->getBatchBooleanValue(item).size();
+  }
+  std::vector<bool> vector(batchSize, 0);
+  size_t index = 0;
+  for (auto& item : src) {
+    auto& batch = wireKeeper_->getBatchBooleanValue(item);
+    for (size_t i = 0; i < batch.size(); i++) {
+      vector[index++] = batch.at(i);
+    }
+  }
+  return wireKeeper_->allocateBatchBooleanValue(vector);
+}
+
+// decompose a batch of values into several smaller batches.
+std::vector<IScheduler::WireId<IScheduler::Boolean>> EagerScheduler::unbatching(
+    WireId<Boolean> src,
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
+  auto& batch = wireKeeper_->getBatchBooleanValue(src);
+  size_t index = 0;
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> rst(
+      unbatchingStrategy->size());
+  for (size_t i = 0; i < rst.size(); i++) {
+    std::vector<bool> v(unbatchingStrategy->at(i));
+    if (index + v.size() > batch.size()) {
+      throw std::runtime_error(
+          "Failed to unbatch, you are unbatching to more values than the input has.");
+    }
+    for (size_t j = 0; j < v.size(); j++) {
+      v[j] = batch.at(index++);
+    }
+    rst[i] = wireKeeper_->allocateBatchBooleanValue(v);
+  }
+  return rst;
+}
+
 std::pair<uint64_t, uint64_t> EagerScheduler::getTrafficStatistics() const {
   return engine_->getTrafficStatistics();
 }
