@@ -11,6 +11,7 @@
 #include "fbpcf/scheduler/gate_keeper/ICompositeGate.h"
 #include "fbpcf/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
+#include "fbpcf/scheduler/gate_keeper/RebatchingGate.h"
 
 namespace fbpcf::scheduler {
 
@@ -73,6 +74,15 @@ class IGateKeeper {
       ICompositeGate::GateType gateType,
       IScheduler::WireId<IScheduler::Boolean> left,
       std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) = 0;
+
+  // band a number of batches into one batch.
+  virtual IScheduler::WireId<IScheduler::Boolean> batchingUp(
+      std::vector<IScheduler::WireId<IScheduler::Boolean>> src) = 0;
+
+  // decompose a batch of values into several smaller batches.
+  virtual std::vector<IScheduler::WireId<IScheduler::Boolean>> unbatching(
+      IScheduler::WireId<IScheduler::Boolean> src,
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) = 0;
 
   // Return the first level of gates that has not been executed yet.
   // NOTE: Free gates are added to even levels, and non-free gates are added
