@@ -328,6 +328,24 @@ std::pair<uint64_t, uint64_t> LazyScheduler::getTrafficStatistics() const {
   return engine_->getTrafficStatistics();
 }
 
+// band a number of batches into one batch.
+IScheduler::WireId<IScheduler::Boolean> LazyScheduler::batchingUp(
+    std::vector<WireId<Boolean>> src) {
+  maybeExecuteGates();
+  return gateKeeper_->batchingUp(src);
+}
+
+// decompose a batch of values into several smaller batches.
+std::vector<IScheduler::WireId<IScheduler::Boolean>> LazyScheduler::unbatching(
+    WireId<Boolean> src,
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
+  auto rst = gateKeeper_->unbatching(src, unbatchingStrategy);
+  while (gateKeeper_->hasReachedBatchingLimit()) {
+    executeOneLevel();
+  }
+  return rst;
+}
+
 template <bool usingBatch>
 IGateKeeper::BoolType<usingBatch> LazyScheduler::forceWire(
     IScheduler::WireId<IScheduler::Boolean> id) {
