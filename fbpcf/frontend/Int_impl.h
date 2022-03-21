@@ -560,4 +560,48 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::convertBitsToInt(
   }
 }
 
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret,
+    int schedulerId,
+    bool usingBatch>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>::batchingWith(
+    const std::vector<Int<isSigned, width, isSecret, schedulerId, usingBatch>>&
+        others) const {
+  static_assert(usingBatch, "Only batch values needs to rebatch!");
+  Int<isSigned, width, isSecret, schedulerId, usingBatch> rst;
+  size_t batchSize = others.size();
+  std::vector<Bit<true, schedulerId, usingBatch>> bits(batchSize);
+  for (size_t i = 0; i < width; i++) {
+    for (size_t j = 0; j < batchSize; j++) {
+      bits[j] = others.at(j).data_.at(i);
+    }
+    rst.data_[i] = data_.at(i).batchingWith(bits);
+  }
+  return rst;
+}
+
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret,
+    int schedulerId,
+    bool usingBatch>
+std::vector<Int<isSigned, width, isSecret, schedulerId, usingBatch>>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>::unbatching(
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const {
+  static_assert(usingBatch, "Only batch values needs to rebatch!");
+  std::vector<Int<isSigned, width, isSecret, schedulerId, usingBatch>> rst(
+      unbatchingStrategy->size());
+  for (size_t i = 0; i < width; i++) {
+    auto bitVec = data_.at(i).unbatching(unbatchingStrategy);
+    for (size_t j = 0; j < unbatchingStrategy->size(); j++) {
+      rst.at(j).data_.at(i) = bitVec.at(j);
+    }
+  }
+  return rst;
+}
+
 } // namespace fbpcf::frontend
