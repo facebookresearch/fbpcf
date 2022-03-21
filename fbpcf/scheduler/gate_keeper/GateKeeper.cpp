@@ -7,6 +7,7 @@
 
 #include "fbpcf/scheduler/gate_keeper/GateKeeper.h"
 #include <cstddef>
+#include <memory>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/gate_keeper/BatchCompositeGate.h"
 #include "fbpcf/scheduler/gate_keeper/BatchNormalGate.h"
@@ -180,6 +181,39 @@ GateKeeper::compositeGateBatch(
           gateType, outputWires, left, rights, *wireKeeper_),
       level);
 
+  return outputWires;
+}
+
+// band a number of batches into one batch.
+IScheduler::WireId<IScheduler::Boolean> GateKeeper::batchingUp(
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> src) {
+  auto level = getOutputLevel(true, getMaxLevel<true>(src));
+  uint32_t batchSize = 0;
+  for (auto& item : src) {
+    batchSize += wireKeeper_->getBatchBooleanValue(item).size();
+  }
+  auto outputWire = allocateNewWire(std::vector<bool>(), level);
+  addGate(
+      std::make_unique<RebatchingBooleanGate>(src, outputWire, *wireKeeper_),
+      level);
+  return outputWire;
+}
+
+// decompose a batch of values into several smaller batches.
+std::vector<IScheduler::WireId<IScheduler::Boolean>> GateKeeper::unbatching(
+    IScheduler::WireId<IScheduler::Boolean> src,
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
+  auto level =
+      getOutputLevel(true, wireKeeper_->getBatchFirstAvailableLevel(src));
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
+      unbatchingStrategy->size());
+  for (size_t i = 0; i < outputWires.size(); i++) {
+    outputWires[i] = allocateNewWire(std::vector<bool>(), level);
+  }
+  addGate(
+      std::make_unique<RebatchingBooleanGate>(
+          src, outputWires, *wireKeeper_, unbatchingStrategy),
+      level);
   return outputWires;
 }
 

@@ -79,6 +79,15 @@ class GateKeeper : public IGateKeeper {
       IScheduler::WireId<IScheduler::Boolean> left,
       std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) override;
 
+  // band a number of batches into one batch.
+  IScheduler::WireId<IScheduler::Boolean> batchingUp(
+      std::vector<IScheduler::WireId<IScheduler::Boolean>> src) override;
+
+  // decompose a batch of values into several smaller batches.
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> unbatching(
+      IScheduler::WireId<IScheduler::Boolean> src,
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) override;
+
   /**
    * @inherit doc
    */

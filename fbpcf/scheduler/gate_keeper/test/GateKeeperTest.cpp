@@ -12,32 +12,48 @@
 #include "fbpcf/scheduler/WireKeeper.h"
 #include "fbpcf/scheduler/gate_keeper/GateKeeper.h"
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
+#include "fbpcf/scheduler/gate_keeper/RebatchingGate.h"
 
 namespace fbpcf::scheduler {
 
 const bool unsafe = false;
 
+struct RebatchGateDescription {
+  IScheduler::WireId<IScheduler::Boolean> batchId;
+  std::vector<IScheduler::WireId<IScheduler::Boolean>> individualId;
+  bool isBatching;
+};
+
 void testLevel(
     std::vector<std::unique_ptr<IGate>> level,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> expectedNormalWires,
     std::vector<std::vector<IScheduler::WireId<IScheduler::Boolean>>>
-        expectedCompositeWires) {
+        expectedCompositeWires,
+    std::vector<RebatchGateDescription> expectedRebatchGates) {
   ASSERT_EQ(
-      level.size(), expectedNormalWires.size() + expectedCompositeWires.size());
+      level.size(),
+      expectedNormalWires.size() + expectedCompositeWires.size() +
+          expectedRebatchGates.size());
   int normalWireIndex = 0;
   int compositeWireIndex = 0;
+  int rebatchingGateIndex = 0;
   for (auto i = 0; i < level.size(); ++i) {
     IGate* gate = level.at(i).get();
     INormalGate<IScheduler::Boolean>* normalGate =
         dynamic_cast<INormalGate<IScheduler::Boolean>*>(gate);
     ICompositeGate* compositeGate = dynamic_cast<ICompositeGate*>(gate);
-    ASSERT_TRUE(normalGate == nullptr ^ compositeGate == nullptr);
+    RebatchingBooleanGate* rebatchingBooleanGate =
+        dynamic_cast<RebatchingBooleanGate*>(gate);
+    ASSERT_TRUE(
+        (normalGate == nullptr) + (compositeGate == nullptr) +
+            (rebatchingBooleanGate == nullptr) ==
+        2);
     if (normalGate != nullptr) {
       EXPECT_EQ(
           normalGate->getWireId().getId(),
           expectedNormalWires.at(normalWireIndex).getId());
       normalWireIndex++;
-    } else {
+    } else if (compositeGate != nullptr) {
       auto outputWireIds = compositeGate->getOutputWireIds();
       auto expectedOutputWireIds =
           expectedCompositeWires.at(compositeWireIndex);
@@ -47,6 +63,20 @@ void testLevel(
             outputWireIds.at(j).getId(), expectedOutputWireIds.at(j).getId());
       }
       compositeWireIndex++;
+    } else {
+      auto individualId = rebatchingBooleanGate->getIndividualWireIDs();
+      auto batchId = rebatchingBooleanGate->getBatchWireID();
+      auto isBatching = rebatchingBooleanGate->isBatching();
+      auto gateDescription = expectedRebatchGates.at(rebatchingGateIndex);
+      EXPECT_EQ(isBatching, gateDescription.isBatching);
+      EXPECT_EQ(batchId.getId(), gateDescription.batchId.getId());
+      ASSERT_EQ(individualId.size(), gateDescription.individualId.size());
+      for (auto j = 0; j < individualId.size(); ++j) {
+        EXPECT_EQ(
+            individualId.at(j).getId(),
+            gateDescription.individualId.at(j).getId());
+      }
+      rebatchingGateIndex++;
     }
   }
 }
@@ -68,8 +98,8 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 0);
 
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire1, wire2}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire3}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire1, wire2}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire3}, {}, {});
 
   // Level 2
   auto wire4 = gateKeeper->normalGate(
@@ -90,10 +120,11 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 2);
 
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire4, wire8, wire9}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire5, wire6}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire7}, {});
+  testLevel(
+      gateKeeper->popFirstUnexecutedLevel(), {wire4, wire8, wire9}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire5, wire6}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire7}, {}, {});
 
   // Batching API
 
@@ -101,14 +132,23 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
   wire1 = gateKeeper->inputGateBatch({true, false});
   wire2 = gateKeeper->inputGateBatch({false, true});
 
+  auto wire12 = gateKeeper->batchingUp({wire1, wire2});
+  auto wire1And2 = gateKeeper->unbatching(
+      wire12,
+      std::make_shared<std::vector<uint32_t>>(std::vector<uint32_t>({3, 1})));
+
   // Level 7
   wire3 = gateKeeper->normalGateBatch(
       INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, wire1, wire2);
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 6);
 
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire1, wire2}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire3}, {});
+  testLevel(
+      gateKeeper->popFirstUnexecutedLevel(),
+      {wire1, wire2},
+      {},
+      {{wire12, {wire1, wire2}, true}, {wire12, wire1And2, false}});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire3}, {}, {});
 
   // Level 8
   wire4 = gateKeeper->normalGateBatch(
@@ -129,10 +169,11 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 8);
 
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire4, wire8, wire9}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire5, wire6}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire7}, {});
+  testLevel(
+      gateKeeper->popFirstUnexecutedLevel(), {wire4, wire8, wire9}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire5, wire6}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {wire7}, {}, {});
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 12);
 }
@@ -160,8 +201,9 @@ TEST(GateKeeperTest, TestCompositeGates) {
       leftWire};
   expectedWires0.insert(
       expectedWires0.end(), rightWires.begin(), rightWires.end());
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), expectedWires0, {wires1});
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires2});
+  testLevel(
+      gateKeeper->popFirstUnexecutedLevel(), expectedWires0, {wires1}, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires2}, {});
 
   // level 2
   auto leftWire2 = gateKeeper->normalGate(
@@ -200,18 +242,18 @@ TEST(GateKeeperTest, TestCompositeGates) {
 
   // check level 2
   expectedWires0 = {leftWire2, rightWires2[0]};
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), expectedWires0, {});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), expectedWires0, {}, {});
 
   // check levels 3 -> 129
   for (int i = 1; i < 128; ++i) {
-    testLevel(gateKeeper->popFirstUnexecutedLevel(), {rightWires2[i]}, {});
+    testLevel(gateKeeper->popFirstUnexecutedLevel(), {rightWires2[i]}, {}, {});
   }
 
   // check level 130
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires3});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires3}, {});
 
   // check level 131
-  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires4});
+  testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires4}, {});
 }
 
 } // namespace fbpcf::scheduler
