@@ -118,6 +118,12 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
    */
   typename Bit<true, schedulerId, usingBatch>::ExtractedBit extractBit() const;
 
+  Bit<isSecret, schedulerId, usingBatch> batchingWith(
+      const std::vector<Bit<isSecret, schedulerId, usingBatch>>& others) const;
+
+  std::vector<Bit<isSecret, schedulerId, usingBatch>> unbatching(
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
+
  private:
   void increaseReferenceCount(const WireType& v) const;
   void decreaseReferenceCount(const WireType& v) const;
