@@ -24,6 +24,7 @@ using TupleGeneratorFactoryCreator =
         int myId,
         communication::IPartyCommunicationAgentFactory& agentFactory);
 
+template <bool testCompositeTuples>
 void testTupleGenerator(
     int numberOfParty,
     TupleGeneratorFactoryCreator creator) {
@@ -35,16 +36,39 @@ void testTupleGenerator(
          int myId,
          std::reference_wrapper<communication::IPartyCommunicationAgentFactory>
              agentFactory,
-         int size) {
+         uint32_t tupleSize,
+         std::unordered_map<size_t, uint32_t> compositeTupleSizes) {
         auto generator = creator(numberOfParty, myId, agentFactory)->create();
-        return generator->getBooleanTuple(size);
+        if constexpr (testCompositeTuples) {
+          return generator->getNormalAndCompositeBooleanTuples(
+              tupleSize, compositeTupleSizes);
+        } else {
+          auto tuples = generator->getBooleanTuple(tupleSize);
+          return std::make_pair(
+              std::move(tuples),
+              std::unordered_map<
+                  size_t,
+                  std::vector<ITupleGenerator::CompositeBooleanTuple>>());
+        }
       };
 
   // this size is larger than the AES and tuple generator buffer size so we can
   // test regeneration.
-  int size = kTestBufferSize * 4;
+  uint32_t tupleSize = kTestBufferSize * 4;
+  std::unordered_map<size_t, uint32_t> compositeTuplesSizes(
+      {{8, tupleSize},
+       {32, tupleSize},
+       {64, tupleSize},
+       {128, tupleSize},
+       {50, tupleSize},
+       {31, tupleSize}});
 
-  std::vector<std::future<std::vector<ITupleGenerator::BooleanTuple>>> futures;
+  std::vector<std::future<std::pair<
+      std::vector<ITupleGenerator::BooleanTuple>,
+      std::unordered_map<
+          size_t,
+          std::vector<ITupleGenerator::CompositeBooleanTuple>>>>>
+      futures;
   for (int i = 0; i < numberOfParty; i++) {
     futures.push_back(std::async(
         task,
@@ -53,57 +77,99 @@ void testTupleGenerator(
         i,
         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
             *agentFactories.at(i)),
-        size));
+        tupleSize,
+        compositeTuplesSizes));
   }
 
-  std::vector<std::vector<ITupleGenerator::BooleanTuple>> results;
+  std::vector<std::pair<
+      std::vector<ITupleGenerator::BooleanTuple>,
+      std::unordered_map<
+          size_t,
+          std::vector<ITupleGenerator::CompositeBooleanTuple>>>>
+      results;
   for (int i = 0; i < numberOfParty; i++) {
     results.push_back(futures[i].get());
   }
 
-  for (int i = 0; i < size; i++) {
+  for (int i = 0; i < tupleSize; i++) {
     bool a = false;
     bool b = false;
     bool c = false;
     for (int j = 0; j < numberOfParty; j++) {
-      a ^= results[j][i].getA();
-      b ^= results[j][i].getB();
-      c ^= results[j][i].getC();
+      a ^= std::get<0>(results[j])[i].getA();
+      b ^= std::get<0>(results[j])[i].getB();
+      c ^= std::get<0>(results[j])[i].getC();
     }
     EXPECT_EQ(c, a & b);
+  }
+
+  if constexpr (testCompositeTuples) {
+    for (auto& compositeSizeToCount : compositeTuplesSizes) {
+      size_t compositeSize = compositeSizeToCount.first;
+      uint32_t tupleCount = compositeSizeToCount.second;
+
+      for (int j = 0; j < numberOfParty; j++) {
+        ASSERT_EQ(std::get<1>(results[j]).at(compositeSize).size(), tupleCount);
+      }
+
+      for (int i = 0; i < tupleCount; i++) {
+        std::vector<bool> a(compositeSize);
+        bool b = false;
+        std::vector<bool> c(compositeSize);
+
+        for (int j = 0; j < numberOfParty; j++) {
+          b ^= std::get<1>(results[j]).at(compositeSize)[i].getB();
+          auto aShares = std::get<1>(results[j]).at(compositeSize)[i].getA();
+          auto cShares = std::get<1>(results[j]).at(compositeSize)[i].getC();
+
+          ASSERT_EQ(aShares.size(), compositeSize);
+          ASSERT_EQ(cShares.size(), compositeSize);
+          for (int k = 0; k < compositeSize; k++) {
+            a.at(k) = a.at(k) ^ aShares[k];
+            c.at(k) = c.at(k) ^ aShares[k];
+          }
+        }
+
+        for (int k = 0; k < compositeSize; k++) {
+          ASSERT_EQ(c[k], a[k] & b);
+        }
+      }
+    }
   }
 }
 
 TEST(TupleGeneratorTest, testDummyTupleGenerator) {
   int numberOfParty = 4;
 
-  testTupleGenerator(numberOfParty, createDummyTupleGeneratorFactory);
+  testTupleGenerator<true>(numberOfParty, createDummyTupleGeneratorFactory);
 }
 
 TEST(TupleGeneratorTest, testWithDummyProductShareGenerator) {
   int numberOfParty = 4;
 
-  testTupleGenerator(
+  testTupleGenerator<false>(
       numberOfParty, createTupleGeneratorFactoryWithDummyProductShareGenerator);
 }
 
 TEST(TupleGeneratorTest, testWithSecureProductShareGenerator) {
   int numberOfParty = 4;
 
-  testTupleGenerator(
+  testTupleGenerator<false>(
       numberOfParty, createTupleGeneratorFactoryWithRealProductShareGenerator);
 }
 
 TEST(TupleGeneratorTest, testTwoPartyTupleGeneratorWithDummyRcot) {
-  testTupleGenerator(2, createTwoPartyTupleGeneratorFactoryWithDummyRcot);
+  testTupleGenerator<false>(
+      2, createTwoPartyTupleGeneratorFactoryWithDummyRcot);
 }
 
 TEST(TupleGeneratorTest, testTwoPartyTupleGeneratorWithRealOt) {
-  testTupleGenerator(2, createTwoPartyTupleGeneratorFactoryWithRealOt);
+  testTupleGenerator<false>(2, createTwoPartyTupleGeneratorFactoryWithRealOt);
 }
 
 TEST(TupleGeneratorTest, testTwoPartyTupleGeneratorWithRcotExtender) {
-  testTupleGenerator(2, createTwoPartyTupleGeneratorFactoryWithRcotExtender);
+  testTupleGenerator<false>(
+      2, createTwoPartyTupleGeneratorFactoryWithRcotExtender);
 }
 
 } // namespace fbpcf::engine::tuple_generator

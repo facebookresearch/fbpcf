@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/engine/tuple_generator/TwoPartyTupleGenerator.h"
+#include <stdexcept>
 #include "fbpcf/engine/util/util.h"
 
 namespace fbpcf::engine::tuple_generator {
@@ -91,6 +92,23 @@ TwoPartyTupleGenerator::generateTuples(uint64_t size) {
     booleanTuples[i] = BooleanTuple(a, b, c);
   }
   return booleanTuples;
+}
+
+std::unordered_map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>
+TwoPartyTupleGenerator::getCompositeTuple(
+    std::unordered_map<size_t, uint32_t>& tupleSizes) {
+  throw std::runtime_error("Not implemented");
+}
+
+std::pair<
+    std::vector<ITupleGenerator::BooleanTuple>,
+    std::unordered_map<
+        size_t,
+        std::vector<ITupleGenerator::CompositeBooleanTuple>>>
+TwoPartyTupleGenerator::getNormalAndCompositeBooleanTuples(
+    uint32_t tupleSize,
+    std::unordered_map<size_t, uint32_t>& tupleSizes) {
+  throw std::runtime_error("Not implemented");
 }
 
 std::pair<uint64_t, uint64_t> TwoPartyTupleGenerator::getTrafficStatistics()
