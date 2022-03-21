@@ -160,4 +160,50 @@ BitString<isSecret, schedulerId, usingBatch>::mux(
   return rst;
 }
 
+template <bool isSecret, int schedulerId, bool usingBatch>
+BitString<isSecret, schedulerId, usingBatch>
+BitString<isSecret, schedulerId, usingBatch>::batchingWith(
+    const std::vector<BitString<isSecret, schedulerId, usingBatch>>& others)
+    const {
+  static_assert(usingBatch, "Only batch values needs to rebatch!");
+
+  for (auto& item : others) {
+    if (item.data_.size() != data_.size()) {
+      throw std::runtime_error(
+          "The BitStrings need to have the same length to batch together.");
+    }
+  }
+
+  BitString<isSecret, schedulerId, usingBatch> rst(data_.size());
+  size_t batchSize = others.size();
+  std::vector<Bit<true, schedulerId, usingBatch>> bits(batchSize);
+  for (size_t i = 0; i < data_.size(); i++) {
+    for (size_t j = 0; j < batchSize; j++) {
+      bits[j] = others.at(j).data_.at(i);
+    }
+    rst.data_[i] = data_.at(i).batchingWith(bits);
+  }
+  return rst;
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+std::vector<BitString<isSecret, schedulerId, usingBatch>>
+BitString<isSecret, schedulerId, usingBatch>::unbatching(
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const {
+  static_assert(usingBatch, "Only batch values needs to rebatch!");
+  std::vector<BitString<isSecret, schedulerId, usingBatch>> rst(
+      unbatchingStrategy->size());
+  for (auto& item : rst) {
+    item.resize(data_.size());
+  }
+
+  for (size_t i = 0; i < data_.size(); i++) {
+    auto bitVec = data_.at(i).unbatching(unbatchingStrategy);
+    for (size_t j = 0; j < unbatchingStrategy->size(); j++) {
+      rst.at(j).data_.at(i) = bitVec.at(j);
+    }
+  }
+  return rst;
+}
+
 } // namespace fbpcf::frontend

@@ -16,6 +16,7 @@
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::frontend {
+
 TEST(StringTest, testInputAndOutput) {
   std::random_device rd;
   std::mt19937_64 e(rd());
@@ -450,6 +451,75 @@ TEST(StringTest, testResizeWithAND) {
     testVectorEq(t6.at(i), testBatchValue1.at(i));
     testVectorEq(t7.at(i), testBatchValue1.at(i));
     testVectorEq(t8.at(i), testBatchValue1.at(i));
+  }
+}
+
+TEST(StringTest, testRebatching) {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint32_t> dSize(1, 1024);
+
+  std::uniform_int_distribution<uint8_t> dBool(0, 1);
+
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+
+  using SecBatchString = BitString<true, 0, true>;
+
+  std::vector<bool> testValue(dSize(e));
+  for (size_t i = 0; i < testValue.size(); i++) {
+    testValue[i] = dBool(e);
+  }
+  uint32_t length = dSize(e);
+  uint32_t batchSize1 = dSize(e);
+  uint32_t batchSize2 = dSize(e);
+  uint32_t batchSize3 = dSize(e);
+  std::vector<std::vector<bool>> testBatchValue1(
+      length, std::vector<bool>(batchSize1));
+  std::vector<std::vector<bool>> testBatchValue2(
+      length, std::vector<bool>(batchSize2));
+  std::vector<std::vector<bool>> testBatchValue3(
+      length, std::vector<bool>(batchSize3));
+
+  for (size_t i = 0; i < length; i++) {
+    for (size_t j = 0; j < batchSize1; j++) {
+      testBatchValue1[i][j] = dBool(e);
+    }
+    for (size_t j = 0; j < batchSize2; j++) {
+      testBatchValue2[i][j] = dBool(e);
+    }
+    for (size_t j = 0; j < batchSize3; j++) {
+      testBatchValue3[i][j] = dBool(e);
+    }
+  }
+
+  SecBatchString v1(testBatchValue1, 0);
+  SecBatchString v2(testBatchValue2, 0);
+  SecBatchString v3(testBatchValue3, 0);
+
+  auto v4 = v1.batchingWith({v2, v3});
+  auto v123 = v4.unbatching(std::make_shared<std::vector<uint32_t>>(
+      std::vector<uint32_t>({batchSize1, batchSize2, batchSize3})));
+
+  auto t4 = v4.openToParty(0).getValue();
+  auto t5 = v123.at(0).openToParty(0).getValue();
+  auto t6 = v123.at(1).openToParty(0).getValue();
+  auto t7 = v123.at(2).openToParty(0).getValue();
+
+  for (size_t i = 0; i < length; i++) {
+    testVectorEq(t5.at(i), testBatchValue1.at(i));
+    testVectorEq(t6.at(i), testBatchValue2.at(i));
+    testVectorEq(t7.at(i), testBatchValue3.at(i));
+    testBatchValue1[i].insert(
+        testBatchValue1[i].end(),
+        testBatchValue2[i].begin(),
+        testBatchValue2[i].end());
+    testBatchValue1[i].insert(
+        testBatchValue1[i].end(),
+        testBatchValue3[i].begin(),
+        testBatchValue3[i].end());
+    testVectorEq(t4.at(i), testBatchValue1.at(i));
   }
 }
 
