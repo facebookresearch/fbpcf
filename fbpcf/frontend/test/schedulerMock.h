@@ -15,24 +15,92 @@ namespace fbpcf::frontend {
 
 using namespace ::testing;
 
+MATCHER_P(WireIdEq, expectedId, "Check if it is the expected WireId") {
+  return expectedId == arg.getId();
+}
+
 class schedulerMock final : public scheduler::IScheduler {
  public:
   schedulerMock() {
     ON_CALL(*this, privateBooleanInput(_, _))
-        .WillByDefault(Return(WireId<IScheduler::Boolean>(1)));
+        .WillByDefault(Invoke([this](bool /*input*/, int /*party*/) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
 
     ON_CALL(*this, publicBooleanInput(_))
-        .WillByDefault(Return(WireId<IScheduler::Boolean>(1)));
+        .WillByDefault(Invoke([this](bool /*input*/) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
 
     ON_CALL(*this, privateBooleanInputBatch(_, _))
         .WillByDefault(
-            Invoke([](const std::vector<bool>& /*input*/, int /*party*/) {
-              return WireId<IScheduler::Boolean>(1);
+            Invoke([this](const std::vector<bool>& /*input*/, int /*party*/) {
+              return WireId<IScheduler::Boolean>(wireId++);
             }));
 
     ON_CALL(*this, publicBooleanInputBatch(_))
-        .WillByDefault(Invoke([](const std::vector<bool>& /*input*/) {
-          return WireId<IScheduler::Boolean>(1);
+        .WillByDefault(Invoke([this](const std::vector<bool>& /*input*/) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateAndPrivate(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateXorPrivate(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateAndPublic(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateXorPublic(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, publicAndPublic(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, publicXorPublic(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateAndPrivateBatch(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateXorPrivateBatch(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateAndPublicBatch(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, privateXorPublicBatch(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, publicAndPublicBatch(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, publicXorPublicBatch(_, _))
+        .WillByDefault(Invoke([this](auto, auto) {
+          return WireId<IScheduler::Boolean>(wireId++);
         }));
   }
 
@@ -228,6 +296,9 @@ class schedulerMock final : public scheduler::IScheduler {
   std::pair<uint64_t, uint64_t> getWireStatistics() const override {
     return {0, 0};
   }
+
+ private:
+  int wireId = 1;
 };
 
 } // namespace fbpcf::frontend
