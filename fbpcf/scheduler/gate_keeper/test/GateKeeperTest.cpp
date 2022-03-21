@@ -213,4 +213,5 @@ TEST(GateKeeperTest, TestCompositeGates) {
   // check level 131
   testLevel(gateKeeper->popFirstUnexecutedLevel(), {}, {wires4});
 }
+
 } // namespace fbpcf::scheduler
