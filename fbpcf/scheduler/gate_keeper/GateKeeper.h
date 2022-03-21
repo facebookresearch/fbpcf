@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <memory>
+#include <stdexcept>
 
 #include "fbpcf/scheduler/gate_keeper/IGateKeeper.h"
 
@@ -112,20 +113,6 @@ class GateKeeper : public IGateKeeper {
       std::vector<IScheduler::WireId<IScheduler::Boolean>>,
       IScheduler::WireId<IScheduler::Boolean>>::type;
 
-  template <bool usingBatch, bool isCompositeWire>
-  RightWireType<isCompositeWire> addGate(
-      GateType<isCompositeWire> gateType,
-      IScheduler::WireId<IScheduler::Boolean> left,
-      RightWireType<isCompositeWire> right,
-      BoolType<usingBatch> initialValue,
-      int partyID = 0);
-
-  template <bool usingBatch, bool isCompositeWire>
-  uint32_t getFirstAvailableLevelForNewWire(
-      GateType<isCompositeWire> gateType,
-      IScheduler::WireId<IScheduler::Boolean> left,
-      RightWireType<isCompositeWire> right) const;
-
   std::deque<std::vector<std::unique_ptr<IGate>>> gatesByLevelOffset_;
   std::shared_ptr<IWireKeeper> wireKeeper_;
 
@@ -133,6 +120,67 @@ class GateKeeper : public IGateKeeper {
 
   uint32_t numUnexecutedGates_ = 0;
   const uint32_t kMaxUnexecutedGates = 100000;
+
+  // below are helper functions. They are inlined for the sake of performance.
+  inline std::vector<std::unique_ptr<IGate>>& getLevel(uint32_t level) {
+    while (gatesByLevelOffset_.size() <= level - firstUnexecutedLevel_) {
+      gatesByLevelOffset_.emplace_back(std::vector<std::unique_ptr<IGate>>());
+    }
+
+    return gatesByLevelOffset_.at(level - firstUnexecutedLevel_);
+  }
+
+  inline void addGate(std::unique_ptr<IGate> gate, uint32_t level) {
+    auto& levelOfGate = getLevel(level);
+    levelOfGate.push_back(std::move(gate));
+    numUnexecutedGates_++;
+  }
+
+  inline IScheduler::WireId<IScheduler::Boolean> allocateNewWire(
+      bool v,
+      uint32_t level) const {
+    return wireKeeper_->allocateBooleanValue(v, level);
+  }
+
+  inline IScheduler::WireId<IScheduler::Boolean> allocateNewWire(
+      const std::vector<bool>& v,
+      uint32_t level) const {
+    return wireKeeper_->allocateBatchBooleanValue(v, level);
+  }
+
+  inline uint32_t getOutputLevel(bool isGateFree, uint32_t maxInputLevel)
+      const {
+    uint32_t outputLevel =
+        std::max(maxInputLevel, firstUnexecutedLevel_) + (isGateFree ? 0 : 1);
+
+    return outputLevel +
+        ((IGateKeeper::isLevelFree(outputLevel) != isGateFree) ? 1 : 0);
+  }
+
+  template <bool usingBatch>
+  inline uint32_t getMaxLevel(
+      IScheduler::WireId<IScheduler::Boolean> id) const {
+    if (id.isEmpty()) {
+      return 0;
+    } else if constexpr (usingBatch) {
+      return wireKeeper_->getBatchFirstAvailableLevel(id);
+    } else {
+      return wireKeeper_->getFirstAvailableLevel(id);
+    }
+  }
+
+  template <bool usingBatch>
+  inline uint32_t getMaxLevel(
+      const std::vector<IScheduler::WireId<IScheduler::Boolean>>& id) const {
+    if (id.size() == 0) {
+      throw std::runtime_error("Empty wire id vector!");
+    }
+    auto rst = getMaxLevel<usingBatch>(id.at(0));
+    for (size_t i = 1; i < id.size(); i++) {
+      rst = std::max(rst, getMaxLevel<usingBatch>(id.at(i)));
+    }
+    return rst;
+  }
 };
 
 } // namespace fbpcf::scheduler
