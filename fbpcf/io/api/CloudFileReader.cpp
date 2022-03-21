@@ -20,6 +20,9 @@ int CloudFileReader::close() {
 size_t CloudFileReader::read(std::vector<char>& /* buf */) {
   return 0;
 }
+bool CloudFileReader::eof() {
+  return false;
+}
 
 CloudFileReader::~CloudFileReader() {
   close();

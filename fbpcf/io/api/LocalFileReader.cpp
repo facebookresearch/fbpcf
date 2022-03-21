@@ -37,6 +37,10 @@ size_t LocalFileReader::read(std::vector<char>& buf) {
   return inputStream_->gcount();
 }
 
+bool LocalFileReader::eof() {
+  return inputStream_->eof();
+}
+
 LocalFileReader::~LocalFileReader() {
   close();
 }
