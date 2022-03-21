@@ -7,6 +7,8 @@
 
 #pragma once
 #include <cstddef>
+#include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,6 +28,9 @@ class LocalFileWriter : public IWriterCloser {
   int close() override;
   size_t write(std::vector<char>& buf) override;
   ~LocalFileWriter() override;
+
+ private:
+  std::unique_ptr<std::ofstream> outputStream_;
 };
 
 } // namespace fbpcf::io

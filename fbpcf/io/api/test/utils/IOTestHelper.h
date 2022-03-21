@@ -8,6 +8,9 @@
 #pragma once
 
 #include <gtest/gtest.h>
+#include <fstream>
+#include <memory>
+
 #include <string>
 
 namespace fbpcf::io {
@@ -25,6 +28,23 @@ class IOTestHelper {
 
   static std::string getBaseDirFromPath(const std::string& filePath) {
     return filePath.substr(0, filePath.rfind("/") + 1);
+  }
+
+  static void expectFileContentsMatch(
+      std::string testFilePath,
+      std::string expectedFilePath) {
+    auto testFile = std::make_unique<std::ifstream>(testFilePath);
+    auto expectedFile = std::make_unique<std::ifstream>(expectedFilePath);
+
+    while (!expectedFile->eof()) {
+      if (testFile->eof()) {
+        FAIL();
+      }
+
+      auto expected = expectedFile->get();
+      auto test = testFile->get();
+      EXPECT_EQ(test, expected);
+    }
   }
 };
 
