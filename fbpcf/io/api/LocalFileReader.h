@@ -7,6 +7,8 @@
 
 #pragma once
 #include <cstddef>
+#include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,6 +28,9 @@ class LocalFileReader : public IReaderCloser {
   int close() override;
   size_t read(std::vector<char>& buf) override;
   ~LocalFileReader() override;
+
+ private:
+  std::unique_ptr<std::ifstream> inputStream_;
 };
 
 } // namespace fbpcf::io
