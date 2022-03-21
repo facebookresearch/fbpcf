@@ -338,6 +338,16 @@ class IScheduler {
    */
   virtual void decreaseReferenceCountBatch(WireId<Boolean> id) = 0;
 
+  //======== Below are rebatching APIs: ========
+
+  // band a number of batches into one batch.
+  virtual WireId<Boolean> batchingUp(std::vector<WireId<Boolean>> src) = 0;
+
+  // decompose a batch of values into several smaller batches.
+  virtual std::vector<WireId<Boolean>> unbatching(
+      WireId<Boolean> src,
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) = 0;
+
   //======== Below are miscellaneous APIs: ========
   /**
    * Get the total amount of traffic transmitted.
