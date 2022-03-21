@@ -1386,4 +1386,52 @@ TEST(IntTest, testSubscriptBatch) {
   }
 }
 
+TEST(IntTest, testRebatch) {
+  const int8_t width = 15;
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using secSignedIntBatch = Integer<Secret<Batch<Signed<width>>>, 0>;
+
+  int partyId = 2;
+
+  int size1 = 5;
+  int size2 = 2;
+  int size3 = 3;
+
+  std::vector<int64_t> v1(size1, (int64_t(1) << (width - 1)) - 1);
+  std::vector<int64_t> v2(size2, -1 - v1[0]);
+  std::vector<int64_t> v3(size3, 3);
+
+  secSignedIntBatch int1(v1, partyId);
+  secSignedIntBatch int2(v2, partyId);
+  secSignedIntBatch int3(v3, partyId);
+
+  std::vector<int64_t> expectedV(size1 + size2 + size3);
+  for (size_t i = 0; i < size1; i++) {
+    expectedV[i] = v1.at(i);
+  }
+  for (size_t i = 0; i < size2; i++) {
+    expectedV[size1 + i] = v2.at(i);
+  }
+
+  for (size_t i = 0; i < size3; i++) {
+    expectedV[size1 + size2 + i] = v3.at(i);
+  }
+
+  auto int4 = int1.batchingWith({int2, int3});
+
+  testVectorEq(int4.openToParty(partyId).getValue(), expectedV);
+
+  auto int123 = int4.unbatching(
+      std::make_shared<std::vector<uint32_t>>(std::vector<uint32_t>(
+          {static_cast<unsigned int>(size1),
+           static_cast<unsigned int>(size2),
+           static_cast<unsigned int>(size3)})));
+
+  testVectorEq(int123.at(0).openToParty(partyId).getValue(), v1);
+  testVectorEq(int123.at(1).openToParty(partyId).getValue(), v2);
+  testVectorEq(int123.at(2).openToParty(partyId).getValue(), v3);
+}
+
 } // namespace fbpcf::frontend

@@ -204,6 +204,14 @@ class Int {
   typename Int<isSigned, width, true, schedulerId, usingBatch>::ExtractedInt
   extractIntShare() const;
 
+  Int<isSigned, width, isSecret, schedulerId, usingBatch> batchingWith(
+      const std::vector<
+          Int<isSigned, width, isSecret, schedulerId, usingBatch>>& others)
+      const;
+
+  std::vector<Int<isSigned, width, isSecret, schedulerId, usingBatch>>
+  unbatching(std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
+
  private:
   template <typename T>
   std::vector<UnitIntType> convertTo64BitIntVector(
