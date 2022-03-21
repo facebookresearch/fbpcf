@@ -31,25 +31,29 @@ TEST(BitTest, testInputAndOutput) {
 
   EXPECT_CALL(*mock, recoverBooleanWire(v)).Times(1);
 
-  EXPECT_CALL(*mock, openBooleanValueToParty(_, partyId)).Times(1);
+  EXPECT_CALL(*mock, openBooleanValueToParty(WireIdEq(1), partyId)).Times(1);
 
-  EXPECT_CALL(*mock, extractBooleanSecretShare(_)).Times(1);
+  EXPECT_CALL(*mock, extractBooleanSecretShare(WireIdEq(2))).Times(1);
 
-  EXPECT_CALL(*mock, getBooleanValue(_)).Times(1);
+  EXPECT_CALL(*mock, getBooleanValue(WireIdEq(3))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
   using SecBit = Bit<true, 0>;
   using PubBit = Bit<false, 0>;
   {
+    // id 1
     SecBit b1(v, partyId);
     SecBit b2;
+    // id 2
     b2.privateInput(v, partyId);
 
+    // id3
     PubBit b3(v);
 
     SecBit::ExtractedBit extractedBit(v);
 
+    // id 4
     SecBit b4(std::move(extractedBit));
 
     b1.openToParty(partyId);
@@ -73,21 +77,25 @@ TEST(BitTest, testInputAndOutputBatch) {
 
   EXPECT_CALL(*mock, recoverBooleanWireBatch(v)).Times(1);
 
-  EXPECT_CALL(*mock, openBooleanValueToPartyBatch(_, partyId)).Times(1);
+  EXPECT_CALL(*mock, openBooleanValueToPartyBatch(WireIdEq(1), partyId))
+      .Times(1);
 
-  EXPECT_CALL(*mock, extractBooleanSecretShareBatch(_)).Times(1);
+  EXPECT_CALL(*mock, extractBooleanSecretShareBatch(WireIdEq(2))).Times(1);
 
-  EXPECT_CALL(*mock, getBooleanValueBatch(_)).Times(1);
+  EXPECT_CALL(*mock, getBooleanValueBatch(WireIdEq(3))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
   using SecBitBatch = Bit<true, 0, true>;
   using PubBitBatch = Bit<false, 0, true>;
   {
+    // id 1
     SecBitBatch b1(v, partyId);
     SecBitBatch b2;
+    // id 2
     b2.privateInput(v, partyId);
 
+    // id 3
     PubBitBatch b3(v);
 
     SecBitBatch::ExtractedBit extractedBit(v);
@@ -109,11 +117,11 @@ TEST(BitTest, testAnd) {
   bool v = true;
   int partyId = 3;
 
-  EXPECT_CALL(*mock, privateAndPrivate(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateAndPrivate(WireIdEq(1), WireIdEq(2))).Times(1);
 
-  EXPECT_CALL(*mock, privateAndPublic(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateAndPublic(WireIdEq(1), WireIdEq(3))).Times(1);
 
-  EXPECT_CALL(*mock, publicAndPublic(_, _)).Times(1);
+  EXPECT_CALL(*mock, publicAndPublic(WireIdEq(4), WireIdEq(3))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
@@ -143,11 +151,11 @@ TEST(BitTest, testAndBatch) {
   std::vector<bool> v(5, true);
   int partyId = 3;
 
-  EXPECT_CALL(*mock, privateAndPrivateBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateAndPrivateBatch(WireIdEq(1), WireIdEq(2))).Times(1);
 
-  EXPECT_CALL(*mock, privateAndPublicBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateAndPublicBatch(WireIdEq(1), WireIdEq(3))).Times(1);
 
-  EXPECT_CALL(*mock, publicAndPublicBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, publicAndPublicBatch(WireIdEq(4), WireIdEq(3))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
@@ -209,11 +217,11 @@ TEST(BitTest, testXorBatch) {
   std::vector<bool> v(5, true);
   int partyId = 3;
 
-  EXPECT_CALL(*mock, privateXorPrivateBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateXorPrivateBatch(WireIdEq(1), WireIdEq(2))).Times(1);
 
-  EXPECT_CALL(*mock, privateXorPublicBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateXorPublicBatch(WireIdEq(1), WireIdEq(3))).Times(1);
 
-  EXPECT_CALL(*mock, publicXorPublicBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, publicXorPublicBatch(WireIdEq(4), WireIdEq(3))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
@@ -241,9 +249,9 @@ TEST(BitTest, testNot) {
   bool v = true;
   int partyId = 3;
 
-  EXPECT_CALL(*mock, notPrivate(_)).Times(1);
+  EXPECT_CALL(*mock, notPrivate(WireIdEq(1))).Times(1);
 
-  EXPECT_CALL(*mock, notPublic(_)).Times(1);
+  EXPECT_CALL(*mock, notPublic(WireIdEq(2))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
@@ -266,9 +274,9 @@ TEST(BitTest, testNotBatch) {
   std::vector<bool> v(5, true);
   int partyId = 3;
 
-  EXPECT_CALL(*mock, notPrivateBatch(_)).Times(1);
+  EXPECT_CALL(*mock, notPrivateBatch(WireIdEq(1))).Times(1);
 
-  EXPECT_CALL(*mock, notPublicBatch(_)).Times(1);
+  EXPECT_CALL(*mock, notPublicBatch(WireIdEq(2))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
@@ -291,33 +299,38 @@ TEST(BitTest, testOr) {
   bool v = true;
   int partyId = 3;
 
-  EXPECT_CALL(*mock, privateXorPrivate(_, _)).Times(3);
+  EXPECT_CALL(*mock, privateXorPrivate(WireIdEq(1), WireIdEq(2))).Times(1);
+  EXPECT_CALL(*mock, privateAndPrivate(WireIdEq(1), WireIdEq(2))).Times(1);
+  EXPECT_CALL(*mock, privateXorPrivate(WireIdEq(5), WireIdEq(6))).Times(1);
 
-  EXPECT_CALL(*mock, privateXorPublic(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateXorPublic(WireIdEq(1), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, privateAndPublic(WireIdEq(1), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, privateXorPrivate(WireIdEq(8), WireIdEq(9))).Times(1);
 
-  EXPECT_CALL(*mock, publicXorPublic(_, _)).Times(2);
-
-  EXPECT_CALL(*mock, privateAndPrivate(_, _)).Times(1);
-
-  EXPECT_CALL(*mock, privateAndPublic(_, _)).Times(1);
-
-  EXPECT_CALL(*mock, publicAndPublic(_, _)).Times(1);
+  EXPECT_CALL(*mock, publicXorPublic(WireIdEq(4), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, publicAndPublic(WireIdEq(4), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, publicXorPublic(WireIdEq(12), WireIdEq(11))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
   using SecBit = Bit<true, 0>;
   using PubBit = Bit<false, 0>;
   {
+    // id 1
     SecBit b1(v, partyId);
     SecBit b2;
+    // id 2
     b2.privateInput(v, partyId);
-
+    // id 3
     PubBit b3(v);
-
+    // id 4
     PubBit b4(v);
 
+    // id 7
     auto b5 = b1 || b2;
+    // id 10
     auto b6 = b1 || b3;
+    // id 13
     auto b7 = b3 || b4;
   }
   scheduler::SchedulerKeeper<0>::freeScheduler();
@@ -329,17 +342,17 @@ TEST(BitTest, testOrBatch) {
   std::vector<bool> v(5, true);
   int partyId = 3;
 
-  EXPECT_CALL(*mock, privateXorPrivateBatch(_, _)).Times(3);
+  EXPECT_CALL(*mock, privateXorPrivateBatch(WireIdEq(1), WireIdEq(2))).Times(1);
+  EXPECT_CALL(*mock, privateAndPrivateBatch(WireIdEq(1), WireIdEq(2))).Times(1);
+  EXPECT_CALL(*mock, privateXorPrivateBatch(WireIdEq(5), WireIdEq(6))).Times(1);
 
-  EXPECT_CALL(*mock, privateXorPublicBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, privateXorPublicBatch(WireIdEq(1), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, privateAndPublicBatch(WireIdEq(1), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, privateXorPrivateBatch(WireIdEq(8), WireIdEq(9))).Times(1);
 
-  EXPECT_CALL(*mock, publicXorPublicBatch(_, _)).Times(2);
-
-  EXPECT_CALL(*mock, privateAndPrivateBatch(_, _)).Times(1);
-
-  EXPECT_CALL(*mock, privateAndPublicBatch(_, _)).Times(1);
-
-  EXPECT_CALL(*mock, publicAndPublicBatch(_, _)).Times(1);
+  EXPECT_CALL(*mock, publicXorPublicBatch(WireIdEq(4), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, publicAndPublicBatch(WireIdEq(4), WireIdEq(3))).Times(1);
+  EXPECT_CALL(*mock, publicXorPublicBatch(WireIdEq(12), WireIdEq(11))).Times(1);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
@@ -481,10 +494,11 @@ TEST(BitTest, testReferenceCount) {
   bool v = true;
   int partyId = 3;
 
-  EXPECT_CALL(*mock, increaseReferenceCount(_)).Times(4);
+  EXPECT_CALL(*mock, increaseReferenceCount(WireIdEq(1))).Times(2);
+  EXPECT_CALL(*mock, increaseReferenceCount(WireIdEq(2))).Times(2);
 
-  EXPECT_CALL(*mock, decreaseReferenceCount(_)).Times(6);
-
+  EXPECT_CALL(*mock, decreaseReferenceCount(WireIdEq(1))).Times(3);
+  EXPECT_CALL(*mock, decreaseReferenceCount(WireIdEq(2))).Times(3);
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
   using SecBit = Bit<true, 0>;
@@ -537,9 +551,10 @@ TEST(BitTest, testReferenceCountBatch) {
   std::vector<bool> v(5, true);
   int partyId = 3;
 
-  EXPECT_CALL(*mock, increaseReferenceCountBatch(_)).Times(4);
-
-  EXPECT_CALL(*mock, decreaseReferenceCountBatch(_)).Times(6);
+  EXPECT_CALL(*mock, increaseReferenceCountBatch(WireIdEq(1))).Times(2);
+  EXPECT_CALL(*mock, increaseReferenceCountBatch(WireIdEq(2))).Times(2);
+  EXPECT_CALL(*mock, decreaseReferenceCountBatch(WireIdEq(1))).Times(3);
+  EXPECT_CALL(*mock, decreaseReferenceCountBatch(WireIdEq(2))).Times(3);
 
   scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
 
