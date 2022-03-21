@@ -143,6 +143,16 @@ const std::vector<uint64_t>& WireKeeper::getBatchIntegerValue(
   return intBatchAllocator_->get(id.getId()).v;
 }
 
+std::vector<bool>& WireKeeper::getWritableBatchBooleanValue(
+    IScheduler::WireId<IScheduler::Boolean> id) const {
+  return boolBatchAllocator_->getWritableReference(id.getId()).v;
+}
+
+std::vector<uint64_t>& WireKeeper::getWritableBatchIntegerValue(
+    IScheduler::WireId<IScheduler::Arithmetic> id) const {
+  return intBatchAllocator_->getWritableReference(id.getId()).v;
+}
+
 void WireKeeper::setBatchBooleanValue(
     IScheduler::WireId<IScheduler::Boolean> id,
     const std::vector<bool>& v) {
