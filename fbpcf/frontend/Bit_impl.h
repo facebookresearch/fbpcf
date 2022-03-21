@@ -8,6 +8,7 @@
 #pragma once
 
 // included for clangd resolution. Should not execute during compilation
+#include <cstddef>
 #include "fbpcf/frontend/Bit.h"
 
 namespace fbpcf::frontend {
@@ -291,6 +292,37 @@ Bit<isSecret, schedulerId, usingBatch>::extractBit() const {
         scheduler::SchedulerKeeper<schedulerId>::getScheduler()
             .extractBooleanSecretShare(id_));
   }
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+Bit<isSecret, schedulerId, usingBatch>
+Bit<isSecret, schedulerId, usingBatch>::batchingWith(
+    const std::vector<Bit<isSecret, schedulerId, usingBatch>>& others) const {
+  static_assert(usingBatch, "Only batch values needs to rebatch!");
+  Bit<isSecret, schedulerId, usingBatch> rst;
+  std::vector<WireType> ids(others.size() + 1, id_);
+  for (size_t i = 0; i < others.size(); i++) {
+    ids[i + 1] = others.at(i).id_;
+  }
+  rst.id_ =
+      scheduler::SchedulerKeeper<schedulerId>::getScheduler().batchingUp(ids);
+
+  return rst;
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+std::vector<Bit<isSecret, schedulerId, usingBatch>>
+Bit<isSecret, schedulerId, usingBatch>::unbatching(
+    std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const {
+  static_assert(usingBatch, "Only batch values needs to rebatch!");
+  auto ids = scheduler::SchedulerKeeper<schedulerId>::getScheduler().unbatching(
+      id_, unbatchingStrategy);
+  std::vector<Bit<isSecret, schedulerId, usingBatch>> rst(
+      unbatchingStrategy->size());
+  for (size_t i = 0; i < ids.size(); i++) {
+    rst[i].id_ = ids.at(i);
+  }
+  return rst;
 }
 
 } // namespace fbpcf::frontend

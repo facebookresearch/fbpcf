@@ -602,4 +602,41 @@ TEST(BitTest, testReferenceCountBatch) {
   scheduler::SchedulerKeeper<0>::freeScheduler();
 }
 
+TEST(BitTest, testBatchingAndUnBatching) {
+  auto mock = std::make_unique<schedulerMock>();
+
+  std::vector<bool> v(5, true);
+  int partyId = 3;
+
+  EXPECT_CALL(
+      *mock, batchingUp(WireIdVectorEq(std::vector<int32_t>({1, 2, 3}))))
+      .Times(1);
+  EXPECT_CALL(
+      *mock,
+      unbatching(WireIdEq(4), VectorPtrEq(std::vector<uint32_t>({3, 4, 3}))))
+      .Times(1);
+
+  EXPECT_CALL(
+      *mock, batchingUp(WireIdVectorEq(std::vector<int32_t>({1, 5, 6, 7}))))
+      .Times(1);
+
+  scheduler::SchedulerKeeper<0>::setScheduler(std::move(mock));
+
+  using SecBitBatch = Bit<true, 0, true>;
+
+  {
+    SecBitBatch b1(v, partyId);
+    SecBitBatch b2(v, partyId);
+    SecBitBatch b3(v, partyId);
+
+    // no change
+    auto b4 = b1.batchingWith({b2, b3});
+    auto b567 = b4.unbatching(std::make_shared<std::vector<uint32_t>>(
+        std::vector<uint32_t>({3, 4, 3})));
+    auto b8 = b1.batchingWith(b567);
+  }
+
+  scheduler::SchedulerKeeper<0>::freeScheduler();
+}
+
 } // namespace fbpcf::frontend

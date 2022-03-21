@@ -19,6 +19,33 @@ MATCHER_P(WireIdEq, expectedId, "Check if it is the expected WireId") {
   return expectedId == arg.getId();
 }
 
+MATCHER_P(
+    WireIdVectorEq,
+    expectedIdVector,
+    "Check if it is the expected WireId vector") {
+  if (arg.size() != expectedIdVector.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < arg.size(); i++) {
+    if (arg.at(i).getId() != expectedIdVector.at(i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+MATCHER_P(VectorPtrEq, expectedVector, "Check if it is the expected Vector") {
+  if (arg->size() != expectedVector.size()) {
+    return false;
+  }
+  for (size_t i = 0; i < arg->size(); i++) {
+    if (arg->at(i) != expectedVector.at(i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 class schedulerMock final : public scheduler::IScheduler {
  public:
   schedulerMock() {
@@ -101,6 +128,19 @@ class schedulerMock final : public scheduler::IScheduler {
     ON_CALL(*this, publicXorPublicBatch(_, _))
         .WillByDefault(Invoke([this](auto, auto) {
           return WireId<IScheduler::Boolean>(wireId++);
+        }));
+
+    ON_CALL(*this, batchingUp(_)).WillByDefault(Invoke([this](auto) {
+      return WireId<IScheduler::Boolean>(wireId++);
+    }));
+
+    ON_CALL(*this, unbatching(_, _))
+        .WillByDefault(Invoke([this](auto, auto strategy) {
+          std::vector<WireId<IScheduler::Boolean>> rst(strategy->size());
+          for (auto& item : rst) {
+            item = WireId<IScheduler::Boolean>(wireId++);
+          }
+          return rst;
         }));
   }
 
