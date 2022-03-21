@@ -18,6 +18,8 @@ TEST(LocalFileReaderTest, testReadingFromFile) {
       IOTestHelper::getBaseDirFromPath(__FILE__) +
       "data/local_file_reader_test_file.txt");
 
+  EXPECT_FALSE(reader->eof());
+
   /*
     CASE 1A
     Buffer of size 20, read 20 bytes
@@ -27,6 +29,7 @@ TEST(LocalFileReaderTest, testReadingFromFile) {
 
   EXPECT_EQ(nBytes, 20);
   IOTestHelper::expectBufferToEqualString(buf, "this is a test file\n", 20);
+  EXPECT_FALSE(reader->eof());
 
   /*
       CASE 1B
@@ -37,6 +40,7 @@ TEST(LocalFileReaderTest, testReadingFromFile) {
   EXPECT_EQ(nBytes, 25);
   IOTestHelper::expectBufferToEqualString(
       buf2, "it has many lines in it\n\n", 25);
+  EXPECT_FALSE(reader->eof());
 
   /*
       CASE 2
@@ -50,6 +54,8 @@ TEST(LocalFileReaderTest, testReadingFromFile) {
   EXPECT_EQ(nBytes, 45);
   IOTestHelper::expectBufferToEqualString(
       buf3, "the quick brown fox jumped over the lazy dog\n", 45);
+
+  EXPECT_TRUE(reader->eof());
 
   EXPECT_THROW(reader->read(buf3), std::runtime_error);
 }

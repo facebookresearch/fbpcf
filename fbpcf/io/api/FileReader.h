@@ -27,6 +27,7 @@ class FileReader : public IReaderCloser {
 
   int close() override;
   size_t read(std::vector<char>& buf) override;
+  bool eof() override;
   ~FileReader() override;
 
  private:

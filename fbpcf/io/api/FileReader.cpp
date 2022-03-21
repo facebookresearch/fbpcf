@@ -32,6 +32,10 @@ size_t FileReader::read(std::vector<char>& buf) {
   return childReader_->read(buf);
 }
 
+bool FileReader::eof() {
+  return childReader_->eof();
+}
+
 int FileReader::close() {
   return childReader_->close();
 }

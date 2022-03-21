@@ -25,6 +25,11 @@ class IReader {
    * read
    */
   virtual size_t read(std::vector<char>& buf) = 0;
+  /*
+   * eof() returns whether there is any more
+   * data left in the file
+   */
+  virtual bool eof() = 0;
   virtual ~IReader() = default;
 };
 
