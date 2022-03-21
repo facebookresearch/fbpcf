@@ -121,6 +121,13 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   mux(const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
       const BitString<isSecretOther, schedulerId, usingBatch>& other) const;
 
+  BitString<isSecret, schedulerId, usingBatch> batchingWith(
+      const std::vector<BitString<isSecret, schedulerId, usingBatch>>& others)
+      const;
+
+  std::vector<BitString<isSecret, schedulerId, usingBatch>> unbatching(
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
+
  private:
   std::vector<Bit<isSecret, schedulerId, usingBatch>> data_;
 
