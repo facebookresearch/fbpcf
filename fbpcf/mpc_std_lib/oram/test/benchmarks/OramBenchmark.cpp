@@ -14,8 +14,11 @@
 #include "fbpcf/mpc_std_lib/oram/DifferenceCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/IDifferenceCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/ISinglePointArrayGenerator.h"
+#include "fbpcf/mpc_std_lib/oram/IWriteOnlyOram.h"
+#include "fbpcf/mpc_std_lib/oram/LinearOramFactory.h"
 #include "fbpcf/mpc_std_lib/oram/ObliviousDeltaCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/SinglePointArrayGeneratorFactory.h"
+#include "fbpcf/mpc_std_lib/oram/WriteOnlyOramFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -233,6 +236,106 @@ BENCHMARK_COUNTERS(SinglePointArrayGenerator_Benchmark, counters) {
   SinglePointArrayGeneratorBenchmark benchmark;
   benchmark.runBenchmark(counters);
 }
+
+class BaseWriteOnlyOramBenchmark : public engine::util::NetworkedBenchmark {
+ public:
+  void setup() override {
+    auto [agentFactory0, agentFactory1] =
+        engine::util::getSocketAgentFactories();
+    agentFactory0_ = std::move(agentFactory0);
+    agentFactory1_ = std::move(agentFactory1);
+
+    auto batchSize = 2048;
+    auto [input0, input1, _] =
+        util::generateRandomValuesToAdd<uint32_t>(oramSize_, batchSize);
+    input0_ = input0;
+    input1_ = input1;
+  }
+
+ protected:
+  void initSender() override {
+    scheduler::SchedulerKeeper<0>::setScheduler(
+        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+    auto factory = getOramFactory(true);
+    sender_ = factory->create(oramSize_);
+  }
+
+  void runSender() override {
+    runMethod(sender_, input0_);
+  }
+
+  void initReceiver() override {
+    scheduler::SchedulerKeeper<1>::setScheduler(
+        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+    auto factory = getOramFactory(false);
+    receiver_ = factory->create(oramSize_);
+  }
+
+  void runReceiver() override {
+    runMethod(receiver_, input1_);
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    auto schedulerTraffic =
+        scheduler::SchedulerKeeper<0>::getTrafficStatistics();
+    auto oramTraffic = sender_->getTrafficStatistics();
+    return {
+        schedulerTraffic.first + oramTraffic.first,
+        schedulerTraffic.second + oramTraffic.second};
+  }
+
+  virtual std::unique_ptr<IWriteOnlyOramFactory<uint32_t>> getOramFactory(
+      bool amIParty0) = 0;
+
+  virtual void runMethod(
+      std::unique_ptr<IWriteOnlyOram<uint32_t>>& oram,
+      util::WritingType input) = 0;
+
+  std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
+      agentFactory0_;
+  std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
+      agentFactory1_;
+
+  size_t oramSize_ = 150;
+
+ private:
+  std::unique_ptr<IWriteOnlyOram<uint32_t>> sender_;
+  std::unique_ptr<IWriteOnlyOram<uint32_t>> receiver_;
+
+  util::WritingType input0_;
+  util::WritingType input1_;
+};
+
+class ObliviousAddBatchBenchmark : virtual public BaseWriteOnlyOramBenchmark {
+ protected:
+  void runMethod(
+      std::unique_ptr<IWriteOnlyOram<uint32_t>>& oram,
+      util::WritingType input) override {
+    oram->obliviousAddBatch(input.indexShares, input.valueShares);
+  }
+};
+
+class PublicReadBenchmark : virtual public BaseWriteOnlyOramBenchmark {
+ protected:
+  void runMethod(
+      std::unique_ptr<IWriteOnlyOram<uint32_t>>& oram,
+      util::WritingType) override {
+    for (auto i = 0; i < oramSize_; ++i) {
+      oram->publicRead(i, IWriteOnlyOram<uint32_t>::Alice);
+    }
+  }
+};
+
+class SecretReadBenchmark : virtual public BaseWriteOnlyOramBenchmark {
+ protected:
+  void runMethod(
+      std::unique_ptr<IWriteOnlyOram<uint32_t>>& oram,
+      util::WritingType) override {
+    for (auto i = 0; i < oramSize_; ++i) {
+      oram->secretRead(i);
+    }
+  }
+};
 } // namespace fbpcf::mpc_std_lib::oram
 
 int main(int argc, char* argv[]) {
