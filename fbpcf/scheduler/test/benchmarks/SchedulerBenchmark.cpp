@@ -10,6 +10,7 @@
 #include "common/init/Init.h"
 
 #include "fbpcf/scheduler/test/benchmarks/AllocatorBenchmark.h"
+#include "fbpcf/scheduler/test/benchmarks/WireKeeperBenchmark.h"
 
 int main(int argc, char* argv[]) {
   facebook::initFacebook(&argc, &argv);
