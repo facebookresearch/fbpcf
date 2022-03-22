@@ -13,6 +13,7 @@
 #include "fbpcf/engine/util/test/benchmarks/NetworkedBenchmark.h"
 #include "fbpcf/mpc_std_lib/oram/DifferenceCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/IDifferenceCalculatorFactory.h"
+#include "fbpcf/mpc_std_lib/oram/ObliviousDeltaCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -87,6 +88,70 @@ class DifferenceCalculatorBenchmark : public engine::util::NetworkedBenchmark {
 
 BENCHMARK_COUNTERS(DifferenceCalculator_Benchmark, counters) {
   DifferenceCalculatorBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class ObliviousDeltaCalculatorBenchmark
+    : public engine::util::NetworkedBenchmark {
+ public:
+  void setup() override {
+    auto [agentFactory0, agentFactory1] =
+        engine::util::getSocketAgentFactories();
+    agentFactory0_ = std::move(agentFactory0);
+    agentFactory1_ = std::move(agentFactory1);
+
+    auto [input0, input1, _] =
+        util::generateObliviousDeltaCalculatorInputs(batchSize_);
+    input0_ = input0;
+    input1_ = input1;
+  }
+
+ protected:
+  void initSender() override {
+    scheduler::SchedulerKeeper<0>::setScheduler(
+        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+    ObliviousDeltaCalculatorFactory<0> factory(true, 0, 1);
+    sender_ = factory.create();
+  }
+
+  void runSender() override {
+    sender_->calculateDelta(
+        input0_.delta0Shares, input0_.delta1Shares, input0_.alphaShares);
+  }
+
+  void initReceiver() override {
+    scheduler::SchedulerKeeper<1>::setScheduler(
+        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+    ObliviousDeltaCalculatorFactory<1> factory(false, 0, 1);
+    receiver_ = factory.create();
+  }
+
+  void runReceiver() override {
+    receiver_->calculateDelta(
+        input1_.delta0Shares, input1_.delta1Shares, input1_.alphaShares);
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    return scheduler::SchedulerKeeper<0>::getTrafficStatistics();
+  }
+
+ private:
+  size_t batchSize_ = 16384;
+
+  std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
+      agentFactory0_;
+  std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
+      agentFactory1_;
+
+  std::unique_ptr<IObliviousDeltaCalculator> sender_;
+  std::unique_ptr<IObliviousDeltaCalculator> receiver_;
+
+  util::ObliviousDeltaCalculatorInputType input0_;
+  util::ObliviousDeltaCalculatorInputType input1_;
+};
+
+BENCHMARK_COUNTERS(ObliviousDeltaCalculator_Benchmark, counters) {
+  ObliviousDeltaCalculatorBenchmark benchmark;
   benchmark.runBenchmark(counters);
 }
 } // namespace fbpcf::mpc_std_lib::oram
