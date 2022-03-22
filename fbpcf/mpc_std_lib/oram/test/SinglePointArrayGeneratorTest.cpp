@@ -29,26 +29,6 @@
 
 namespace fbpcf::mpc_std_lib::oram {
 
-std::tuple<std::vector<bool>, std::vector<bool>, uint32_t>
-generateSharedRandomBoolVector(size_t length) {
-  uint32_t width = std::ceil(std::log2(length));
-  std::random_device rd;
-  std::mt19937_64 e(rd());
-  std::uniform_int_distribution<uint32_t> dist(0, length - 1);
-  std::uniform_int_distribution<uint32_t> randomMask(
-      0, (uint64_t(1) << width) - 1);
-
-  auto value = dist(e);
-  auto mask0 = randomMask(e);
-  auto mask1 = mask0 ^ value;
-  auto rst0 = util::Adapters<uint32_t>::convertToBits(mask0);
-  auto rst1 = util::Adapters<uint32_t>::convertToBits(mask1);
-  rst0.erase(rst0.begin() + width, rst0.end());
-  rst1.erase(rst1.begin() + width, rst1.end());
-
-  return {rst0, rst1, value};
-}
-
 std::vector<std::pair<std::vector<bool>, std::vector<__m128i>>>
 generateSinglePointArrayHelper(
     std::unique_ptr<ISinglePointArrayGeneratorFactory> factory,
@@ -75,7 +55,9 @@ void testSinglePointArrayGenerator(
       width, std::vector<bool>(batchSize));
   std::vector<uint32_t> expectedIndex;
   for (size_t i = 0; i < batchSize; i++) {
-    auto [share0, share1, trueValue] = generateSharedRandomBoolVector(length);
+    auto [share0, share1, trueValue] =
+        util::generateSharedRandomBoolVectorForSinglePointArrayGenerator(
+            length);
     for (size_t j = 0; j < width; j++) {
       party0Input[j][i] = share0.at(j);
       party1Input[j][i] = share1.at(j);
