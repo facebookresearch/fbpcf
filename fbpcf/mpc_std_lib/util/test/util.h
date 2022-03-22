@@ -175,4 +175,23 @@ generateObliviousDeltaCalculatorInputs(size_t batchSize) {
       {delta, t0, t1}};
 }
 
+inline std::tuple<std::vector<bool>, std::vector<bool>, uint32_t>
+generateSharedRandomBoolVectorForSinglePointArrayGenerator(size_t length) {
+  uint32_t width = std::ceil(std::log2(length));
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint32_t> dist(0, length - 1);
+  std::uniform_int_distribution<uint32_t> randomMask(
+      0, (uint64_t(1) << width) - 1);
+
+  auto value = dist(e);
+  auto mask0 = randomMask(e);
+  auto mask1 = mask0 ^ value;
+  auto rst0 = util::Adapters<uint32_t>::convertToBits(mask0);
+  auto rst1 = util::Adapters<uint32_t>::convertToBits(mask1);
+  rst0.erase(rst0.begin() + width, rst0.end());
+  rst1.erase(rst1.begin() + width, rst1.end());
+
+  return {rst0, rst1, value};
+}
 } // namespace fbpcf::mpc_std_lib::util
