@@ -45,6 +45,9 @@ class IOTestHelper {
       auto test = testFile->get();
       EXPECT_EQ(test, expected);
     }
+
+    expectedFile->close();
+    testFile->close();
   }
 };
 

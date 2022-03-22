@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 #include <filesystem>
+#include <random>
 #include <string>
 #include "folly/logging/xlog.h"
 
@@ -22,7 +23,12 @@ inline void cleanup(std::string fileToDelete) {
 
 TEST(LocalFileWriterTest, testWritingToFile) {
   std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
-  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file.txt";
+  std::random_device rd;
+  std::default_random_engine defEngine(rd());
+  std::uniform_int_distribution<int> intDistro(1, 25000);
+  auto randint = intDistro(defEngine);
+  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file" +
+      std::to_string(randint) + ".txt";
   auto writer = std::make_unique<fbpcf::io::LocalFileWriter>(fileToWriteTo);
 
   /*
