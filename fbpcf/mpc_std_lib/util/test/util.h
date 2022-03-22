@@ -194,4 +194,58 @@ generateSharedRandomBoolVectorForSinglePointArrayGenerator(size_t length) {
 
   return {rst0, rst1, value};
 }
+
+struct WritingType {
+  std::vector<std::vector<bool>> indexShares;
+  std::vector<std::vector<bool>> valueShares;
+};
+
+template <typename T>
+inline std::tuple<WritingType, WritingType, std::vector<T>>
+generateRandomValuesToAdd(size_t oramSize, size_t batchSize) {
+  size_t indexWidth = std::ceil(std::log2(oramSize));
+
+  WritingType input0{
+      .indexShares = std::vector<std::vector<bool>>(
+          indexWidth, std::vector<bool>(batchSize)),
+      .valueShares = std::vector<std::vector<bool>>()};
+
+  WritingType input1{
+      .indexShares = std::vector<std::vector<bool>>(
+          indexWidth, std::vector<bool>(batchSize)),
+      .valueShares = std::vector<std::vector<bool>>()};
+
+  std::vector<T> expectedValue(oramSize, T(0));
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint32_t> randomIndex(0, oramSize - 1);
+  std::uniform_int_distribution<uint32_t> randomMask(0, 0xFFFFFFFF);
+
+  for (size_t i = 0; i < batchSize; i++) {
+    auto index = randomIndex(e);
+    auto [value, share0, share1] = util::getRandomData<T>(e);
+    expectedValue[index] += value;
+
+    auto indexShare = randomMask(e);
+    auto tmp0 = util::Adapters<uint32_t>::convertToBits(indexShare);
+    auto tmp1 = util::Adapters<uint32_t>::convertToBits(index ^ indexShare);
+    for (size_t j = 0; j < indexWidth; j++) {
+      input0.indexShares[j][i] = tmp0.at(j);
+      input1.indexShares[j][i] = tmp1.at(j);
+    }
+
+    tmp0 = util::Adapters<T>::convertToBits(share0);
+    tmp1 = util::Adapters<T>::convertToBits(share1);
+    for (size_t j = 0; j < tmp0.size(); j++) {
+      if (j >= input0.valueShares.size()) {
+        input0.valueShares.push_back(std::vector<bool>(batchSize));
+        input1.valueShares.push_back(std::vector<bool>(batchSize));
+      }
+      input0.valueShares[j][i] = tmp0[j];
+      input1.valueShares[j][i] = tmp1[j];
+    }
+  }
+  return {input0, input1, expectedValue};
+}
 } // namespace fbpcf::mpc_std_lib::util
