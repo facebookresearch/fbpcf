@@ -13,6 +13,7 @@
 #include <random>
 #include <stdexcept>
 
+#include "fbpcf/engine/util/util.h"
 #include "fbpcf/mpc_std_lib/util/util.h"
 
 namespace fbpcf::mpc_std_lib::util {
@@ -108,6 +109,70 @@ std::tuple<InputType<T>, InputType<T>, std::vector<T>> generateRandomInputs(
   }
 
   return {rst0, rst1, expectedValue};
+}
+
+struct ObliviousDeltaCalculatorInputType {
+  std::vector<__m128i> delta0Shares;
+  std::vector<__m128i> delta1Shares;
+  std::vector<bool> alphaShares;
+};
+
+using ObliviousDeltaCalculatorOutputType =
+    std::tuple<std::vector<__m128i>, std::vector<bool>, std::vector<bool>>;
+
+inline std::tuple<
+    ObliviousDeltaCalculatorInputType,
+    ObliviousDeltaCalculatorInputType,
+    ObliviousDeltaCalculatorOutputType>
+generateObliviousDeltaCalculatorInputs(size_t batchSize) {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint64_t> randomUint64(0, 0xFFFFFFFFFFFFFFFF);
+  std::uniform_int_distribution<int32_t> randomBit(0, 1);
+
+  std::vector<__m128i> delta0(batchSize);
+  std::vector<__m128i> delta1(batchSize);
+  std::vector<bool> alpha(batchSize);
+
+  std::vector<__m128i> delta(batchSize);
+  std::vector<bool> t0(batchSize);
+  std::vector<bool> t1(batchSize);
+
+  std::vector<__m128i> delta0Shares(batchSize);
+  std::vector<__m128i> delta1Shares(batchSize);
+  std::vector<bool> alphaShares(batchSize);
+
+  for (size_t i = 0; i < batchSize; i++) {
+    delta0[i] = _mm_set_epi64x(randomUint64(e), randomUint64(e));
+    delta1[i] = _mm_set_epi64x(randomUint64(e), randomUint64(e));
+    alpha[i] = randomBit(e);
+    if (alpha.at(i) == 0) {
+      delta[i] = delta1.at(i);
+    } else {
+      delta[i] = delta0.at(i);
+    }
+    t0[i] = engine::util::getLsb(delta0.at(i)) ^ alpha.at(i) ^ 1;
+    t1[i] = engine::util::getLsb(delta1.at(i)) ^ alpha.at(i);
+
+    delta0Shares[i] = _mm_set_epi64x(randomUint64(e), randomUint64(e));
+    delta1Shares[i] = _mm_set_epi64x(randomUint64(e), randomUint64(e));
+    alphaShares[i] = randomBit(e);
+
+    delta0[i] = _mm_xor_si128(delta0Shares.at(i), delta0.at(i));
+    delta1[i] = _mm_xor_si128(delta1Shares.at(i), delta1.at(i));
+    alpha[i] = alpha[i] ^ alphaShares[i];
+  }
+  return {
+      ObliviousDeltaCalculatorInputType{
+          .delta0Shares = delta0Shares,
+          .delta1Shares = delta1Shares,
+          .alphaShares = alphaShares},
+      ObliviousDeltaCalculatorInputType{
+          .delta0Shares = delta0,
+          .delta1Shares = delta1,
+          .alphaShares = alpha,
+      },
+      {delta, t0, t1}};
 }
 
 } // namespace fbpcf::mpc_std_lib::util
