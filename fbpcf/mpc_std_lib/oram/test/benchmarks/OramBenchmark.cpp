@@ -336,6 +336,78 @@ class SecretReadBenchmark : virtual public BaseWriteOnlyOramBenchmark {
     }
   }
 };
+
+class WriteOnlyOramBenchmark : virtual public BaseWriteOnlyOramBenchmark {
+ protected:
+  std::unique_ptr<IWriteOnlyOramFactory<uint32_t>> getOramFactory(
+      bool amIParty0) override {
+    return amIParty0
+        ? getSecureWriteOnlyOramFactory<uint32_t, indicatorWidth, 0>(
+              true, 0, 1, *agentFactory0_)
+        : getSecureWriteOnlyOramFactory<uint32_t, indicatorWidth, 1>(
+              false, 0, 1, *agentFactory1_);
+  }
+};
+
+class WriteOnlyOramObliviousAddBatchBenchmark
+    : public WriteOnlyOramBenchmark,
+      public ObliviousAddBatchBenchmark {};
+
+BENCHMARK_COUNTERS(WriteOnlyOramObliviousAddBatch_Benchmark, counters) {
+  WriteOnlyOramObliviousAddBatchBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class WriteOnlyOramPublicReadBenchmark : public WriteOnlyOramBenchmark,
+                                         public PublicReadBenchmark {};
+
+BENCHMARK_COUNTERS(WriteOnlyOramPublicRead_Benchmark, counters) {
+  WriteOnlyOramPublicReadBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class WriteOnlyOramSecretReadBenchmark : public WriteOnlyOramBenchmark,
+                                         public SecretReadBenchmark {};
+
+BENCHMARK_COUNTERS(WriteOnlyOramSecretRead_Benchmark, counters) {
+  WriteOnlyOramSecretReadBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class LinearOramBenchmark : virtual public BaseWriteOnlyOramBenchmark {
+ protected:
+  std::unique_ptr<IWriteOnlyOramFactory<uint32_t>> getOramFactory(
+      bool amIParty0) override {
+    return amIParty0
+        ? getSecureLinearOramFactory<uint32_t, 0>(true, 0, 1, *agentFactory0_)
+        : getSecureLinearOramFactory<uint32_t, 1>(false, 0, 1, *agentFactory1_);
+  }
+};
+
+class LinearOramObliviousAddBatchBenchmark : public LinearOramBenchmark,
+                                             public ObliviousAddBatchBenchmark {
+};
+
+BENCHMARK_COUNTERS(LinearOramObliviousAddBatch_Benchmark, counters) {
+  LinearOramObliviousAddBatchBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class LinearOramPublicReadBenchmark : public LinearOramBenchmark,
+                                      public PublicReadBenchmark {};
+
+BENCHMARK_COUNTERS(LinearOramPublicRead_Benchmark, counters) {
+  LinearOramPublicReadBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class LinearOramSecretReadBenchmark : public LinearOramBenchmark,
+                                      public SecretReadBenchmark {};
+
+BENCHMARK_COUNTERS(LinearOramSecretRead_Benchmark, counters) {
+  LinearOramSecretReadBenchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
 } // namespace fbpcf::mpc_std_lib::oram
 
 int main(int argc, char* argv[]) {
