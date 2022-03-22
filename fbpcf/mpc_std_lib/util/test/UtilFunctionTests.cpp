@@ -19,6 +19,7 @@
 #include "fbpcf/engine/util/util.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_std_lib/util/util.h"
+#include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::util {
 
