@@ -56,20 +56,17 @@ std::vector<TupleGenerator::BooleanTuple> TupleGenerator::generateTuples(
   return booleanTuples;
 }
 
-std::unordered_map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>
-TupleGenerator::getCompositeTuple(
-    std::unordered_map<size_t, uint32_t>& tupleSizes) {
+std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>
+TupleGenerator::getCompositeTuple(std::map<size_t, uint32_t>& tupleSizes) {
   throw std::runtime_error("Not implemented");
 }
 
 std::pair<
     std::vector<ITupleGenerator::BooleanTuple>,
-    std::unordered_map<
-        size_t,
-        std::vector<ITupleGenerator::CompositeBooleanTuple>>>
+    std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>
 TupleGenerator::getNormalAndCompositeBooleanTuples(
     uint32_t tupleSize,
-    std::unordered_map<size_t, uint32_t>& tupleSizes) {
+    std::map<size_t, uint32_t>& tupleSizes) {
   throw std::runtime_error("Not implemented");
 }
 

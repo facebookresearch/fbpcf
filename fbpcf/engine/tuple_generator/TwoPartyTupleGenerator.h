@@ -34,18 +34,18 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
   /**
    * @inherit doc
    */
-  std::unordered_map<size_t, std::vector<CompositeBooleanTuple>>
-  getCompositeTuple(std::unordered_map<size_t, uint32_t>& tupleSizes) override;
+  std::map<size_t, std::vector<CompositeBooleanTuple>> getCompositeTuple(
+      std::map<size_t, uint32_t>& tupleSizes) override;
 
   /**
    * @inherit doc
    */
   std::pair<
       std::vector<BooleanTuple>,
-      std::unordered_map<size_t, std::vector<CompositeBooleanTuple>>>
+      std::map<size_t, std::vector<CompositeBooleanTuple>>>
   getNormalAndCompositeBooleanTuples(
       uint32_t tupleSize,
-      std::unordered_map<size_t, uint32_t>& compositeTupleSizes) override;
+      std::map<size_t, uint32_t>& compositeTupleSizes) override;
 
   /**
    * @inherit doc
