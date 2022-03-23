@@ -8,8 +8,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <map>
 #include <stdexcept>
-#include <unordered_map>
 #include <vector>
 
 namespace fbpcf::engine::tuple_generator {
@@ -107,8 +107,8 @@ class ITupleGenerator {
    * tuples to generate.
    * @return A map of tuple sizes to vector of those tuples
    */
-  virtual std::unordered_map<size_t, std::vector<CompositeBooleanTuple>>
-  getCompositeTuple(std::unordered_map<size_t, uint32_t>& tupleSizes) = 0;
+  virtual std::map<size_t, std::vector<CompositeBooleanTuple>>
+  getCompositeTuple(std::map<size_t, uint32_t>& tupleSizes) = 0;
 
   /**
    * Wrapper method for getBooleanTuple() and getCompositeTuple() which performs
@@ -116,10 +116,10 @@ class ITupleGenerator {
    */
   virtual std::pair<
       std::vector<BooleanTuple>,
-      std::unordered_map<size_t, std::vector<CompositeBooleanTuple>>>
+      std::map<size_t, std::vector<CompositeBooleanTuple>>>
   getNormalAndCompositeBooleanTuples(
       uint32_t tupleSize,
-      std::unordered_map<size_t, uint32_t>& compositeTupleSizes) = 0;
+      std::map<size_t, uint32_t>& compositeTupleSizes) = 0;
 
   /**
    * Get the total amount of traffic transmitted.
