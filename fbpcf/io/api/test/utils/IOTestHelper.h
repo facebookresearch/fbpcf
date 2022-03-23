@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <fstream>
 #include <memory>
+#include <vector>
 
 #include <string>
 
@@ -22,7 +23,8 @@ class IOTestHelper {
       std::string contents,
       size_t nBytes) {
     for (int i = 0; i < nBytes; i++) {
-      EXPECT_EQ(buf.at(i), contents.at(i));
+      EXPECT_EQ(buf.at(i), contents.at(i))
+          << "Failure at position " << i << " of buffer.";
     }
   }
 
