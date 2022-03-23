@@ -14,7 +14,10 @@
 #include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/util/AesPrgFactory.h"
+#include "fbpcf/mpc_std_lib/permuter/DummyPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/shuffler/NonShufflerFactory.h"
+#include "fbpcf/mpc_std_lib/shuffler/PermuteBasedShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
@@ -63,6 +66,25 @@ TEST(shufflerTest, testNonShuffler) {
   insecure::NonShufflerFactory<
       frontend::Int<false, testIntWidth, true, 1, true>>
       factory1;
+
+  shufflerTest(factory0, factory1);
+}
+
+TEST(shufflerTest, testPermuteBasedShufflerWithDummyPermuter) {
+  PermuteBasedShufflerFactory<frontend::Int<false, testIntWidth, true, 0, true>>
+      factory0(
+          0,
+          1,
+          std::make_unique<permuter::insecure::DummyPermuterFactory<
+              frontend::Int<false, testIntWidth, true, 0, true>>>(0, 1),
+          std::make_unique<engine::util::AesPrgFactory>());
+  PermuteBasedShufflerFactory<frontend::Int<false, testIntWidth, true, 1, true>>
+      factory1(
+          1,
+          0,
+          std::make_unique<permuter::insecure::DummyPermuterFactory<
+              frontend::Int<false, testIntWidth, true, 1, true>>>(1, 0),
+          std::make_unique<engine::util::AesPrgFactory>());
 
   shufflerTest(factory0, factory1);
 }
