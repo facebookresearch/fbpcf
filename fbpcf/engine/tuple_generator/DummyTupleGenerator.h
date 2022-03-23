@@ -26,9 +26,9 @@ class DummyTupleGenerator final : public ITupleGenerator {
   /**
    * @inherit doc
    */
-  std::unordered_map<size_t, std::vector<CompositeBooleanTuple>>
-  getCompositeTuple(std::unordered_map<size_t, uint32_t>& tupleSizes) override {
-    std::unordered_map<size_t, std::vector<CompositeBooleanTuple>> result;
+  std::map<size_t, std::vector<CompositeBooleanTuple>> getCompositeTuple(
+      std::map<size_t, uint32_t>& tupleSizes) override {
+    std::map<size_t, std::vector<CompositeBooleanTuple>> result;
     for (auto& countOfTuples : tupleSizes) {
       size_t tupleSize = countOfTuples.first;
       uint32_t tupleCount = countOfTuples.second;
@@ -50,10 +50,10 @@ class DummyTupleGenerator final : public ITupleGenerator {
    */
   std::pair<
       std::vector<BooleanTuple>,
-      std::unordered_map<size_t, std::vector<CompositeBooleanTuple>>>
+      std::map<size_t, std::vector<CompositeBooleanTuple>>>
   getNormalAndCompositeBooleanTuples(
       uint32_t tupleSizes,
-      std::unordered_map<size_t, uint32_t>& compositeTupleSizes) override {
+      std::map<size_t, uint32_t>& compositeTupleSizes) override {
     auto boolResult = getBooleanTuple(tupleSizes);
     auto compositeBoolResult = getCompositeTuple(compositeTupleSizes);
     return std::make_pair(

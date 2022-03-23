@@ -9,6 +9,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <future>
+#include <map>
 #include <memory>
 #include <thread>
 
@@ -37,7 +38,7 @@ void testTupleGenerator(
          std::reference_wrapper<communication::IPartyCommunicationAgentFactory>
              agentFactory,
          uint32_t tupleSize,
-         std::unordered_map<size_t, uint32_t> compositeTupleSizes) {
+         std::map<size_t, uint32_t> compositeTupleSizes) {
         auto generator = creator(numberOfParty, myId, agentFactory)->create();
         if constexpr (testCompositeTuples) {
           return generator->getNormalAndCompositeBooleanTuples(
@@ -46,7 +47,7 @@ void testTupleGenerator(
           auto tuples = generator->getBooleanTuple(tupleSize);
           return std::make_pair(
               std::move(tuples),
-              std::unordered_map<
+              std::map<
                   size_t,
                   std::vector<ITupleGenerator::CompositeBooleanTuple>>());
         }
@@ -55,19 +56,18 @@ void testTupleGenerator(
   // this size is larger than the AES and tuple generator buffer size so we can
   // test regeneration.
   uint32_t tupleSize = kTestBufferSize * 4;
-  std::unordered_map<size_t, uint32_t> compositeTuplesSizes(
+  std::map<size_t, uint32_t> compositeTuplesSizes(
       {{8, tupleSize},
        {32, tupleSize},
        {64, tupleSize},
        {128, tupleSize},
        {50, tupleSize},
-       {31, tupleSize}});
+       {31, tupleSize},
+       {256, tupleSize}});
 
   std::vector<std::future<std::pair<
       std::vector<ITupleGenerator::BooleanTuple>,
-      std::unordered_map<
-          size_t,
-          std::vector<ITupleGenerator::CompositeBooleanTuple>>>>>
+      std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>>>
       futures;
   for (int i = 0; i < numberOfParty; i++) {
     futures.push_back(std::async(
@@ -83,9 +83,7 @@ void testTupleGenerator(
 
   std::vector<std::pair<
       std::vector<ITupleGenerator::BooleanTuple>,
-      std::unordered_map<
-          size_t,
-          std::vector<ITupleGenerator::CompositeBooleanTuple>>>>
+      std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>>
       results;
   for (int i = 0; i < numberOfParty; i++) {
     results.push_back(futures[i].get());
@@ -126,7 +124,7 @@ void testTupleGenerator(
           ASSERT_EQ(cShares.size(), compositeSize);
           for (int k = 0; k < compositeSize; k++) {
             a.at(k) = a.at(k) ^ aShares[k];
-            c.at(k) = c.at(k) ^ aShares[k];
+            c.at(k) = c.at(k) ^ cShares[k];
           }
         }
 
