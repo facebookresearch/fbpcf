@@ -30,9 +30,10 @@ class IShuffler {
   /**
    * shuffle a batch of secret values.
    * @param src the batch of values to shuffle
+   * @param size the size of the batch
    * @return the shuffled values in batch
    */
-  virtual T shuffle(const T& src) const = 0;
+  virtual T shuffle(const T& src, size_t size) const = 0;
 };
 
 } // namespace fbpcf::mpc_std_lib::shuffler
