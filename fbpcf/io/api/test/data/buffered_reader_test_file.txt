@@ -1,0 +1,12 @@
+this is a simple first line
+this is a second line that is intended to be longer than a line that can fit in a single buffer
+this is a third line that should take at least three iterations of the buffer so that we can properly check the iterative functionality
+
+we also test a blank line and
+a line that will include a newline
+
+finally, we want to test a really long block of
+text, that will take 3 or 4 chunks, but this time
+using the read API instead of the readLine API to
+make sure that we have adequate test coverage. the
+total size of this paragraph is 242 bytes.
