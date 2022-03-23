@@ -11,13 +11,16 @@
 #include <smmintrin.h>
 #include <wmmintrin.h>
 #include <xmmintrin.h>
+#include <algorithm>
 #include <array>
 #include <future>
+#include <stdexcept>
 
 #include <memory>
 #include <thread>
 #include <vector>
 
+#include <fbpcf/engine/util/util.h>
 #include "fbpcf/engine/util/AsyncBuffer.h"
 #include "fbpcf/engine/util/IPrg.h"
 #include "fbpcf/engine/util/aes.h"
@@ -63,7 +66,25 @@ class AesPrg final : public IPrg {
     cipher_.encryptInPlace(data);
   }
 
+  inline void getRandomBitsInPlace(std::vector<bool>& data) {
+    std::vector<__m128i> aesResults(ceilDiv(data.size(), sizeof(__m128i) * 8));
+    getRandomDataInPlace(aesResults);
+
+    std::vector<bool> extractedBits(sizeof(__m128i) * 8);
+    for (size_t iEncrypted = 0; iEncrypted < aesResults.size(); iEncrypted++) {
+      int bitsToCopy = std::min(
+          data.size() - iEncrypted * sizeof(__m128i) * 8, sizeof(__m128i) * 8);
+      util::extractLnbToVector(aesResults[iEncrypted], extractedBits);
+      for (int iBits = 0; iBits < bitsToCopy; iBits++) {
+        data[iEncrypted * sizeof(__m128i) * 8 + iBits] = extractedBits[iBits];
+      }
+    }
+  }
+
  private:
+  inline uint64_t ceilDiv(uint64_t a, uint64_t b) {
+    return a / b + (a % b != 0);
+  }
   inline std::vector<unsigned char> generateRandomData(uint64_t numBytes);
 
   Aes cipher_;
