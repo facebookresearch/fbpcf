@@ -17,6 +17,16 @@
 #include "fbpcf/mpc_std_lib/util/util.h"
 
 namespace fbpcf::mpc_std_lib::util {
+
+inline std::vector<uint32_t> generateRandomPermutation(size_t size) {
+  std::vector<uint32_t> rst(size);
+  for (size_t i = 0; i < size; i++) {
+    rst[i] = i;
+  }
+  std::random_shuffle(rst.begin(), rst.end());
+  return rst;
+}
+
 // the 3 returned valeus are: true value, first share, second share
 template <typename T>
 std::tuple<T, T, T> getRandomData(std::mt19937_64& e);
