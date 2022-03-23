@@ -53,31 +53,4 @@ inline void benchmarkGet(std::unique_ptr<IAllocator<T>> allocator, int n) {
   }
 }
 
-BENCHMARK(VectorArenaAllocator_allocate, n) {
-  benchmarkAllocate<int64_t>(
-      std::make_unique<VectorArenaAllocator<int64_t, unsafe>>(), n);
-}
-
-BENCHMARK(VectorArenaAllocator_free, n) {
-  benchmarkFree<int64_t>(
-      std::make_unique<VectorArenaAllocator<int64_t, unsafe>>(), n);
-}
-
-BENCHMARK(VectorArenaAllocator_get, n) {
-  benchmarkGet<int64_t>(
-      std::make_unique<VectorArenaAllocator<int64_t, unsafe>>(), n);
-}
-
-BENCHMARK(UnorderedMapAllocator_allocate, n) {
-  benchmarkAllocate<int64_t>(
-      std::make_unique<UnorderedMapAllocator<int64_t>>(), n);
-}
-
-BENCHMARK(UnorderedMapAllocator_free, n) {
-  benchmarkFree<int64_t>(std::make_unique<UnorderedMapAllocator<int64_t>>(), n);
-}
-
-BENCHMARK(UnorderedMapAllocator_get, n) {
-  benchmarkGet<int64_t>(std::make_unique<UnorderedMapAllocator<int64_t>>(), n);
-}
 } // namespace fbpcf::scheduler
