@@ -15,24 +15,16 @@
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_std_lib/permuter/DummyPermuterFactory.h"
+#include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::permuter {
 
-std::vector<uint32_t> generateRandomPermutation(size_t size) {
-  std::vector<uint32_t> rst(size);
-  for (size_t i = 0; i < size; i++) {
-    rst[i] = i;
-  }
-  std::random_shuffle(rst.begin(), rst.end());
-  return rst;
-}
-
 std::tuple<std::vector<uint32_t>, std::vector<uint32_t>, std::vector<uint64_t>>
 getPermuterTestData(size_t size) {
-  auto originalData = generateRandomPermutation(size);
-  auto order = generateRandomPermutation(size);
+  auto originalData = util::generateRandomPermutation(size);
+  auto order = util::generateRandomPermutation(size);
   std::vector<uint64_t> expectedResult(size);
   for (size_t i = 0; i < size; i++) {
     expectedResult[i] = originalData.at(order.at(i));
