@@ -51,6 +51,10 @@ class IOTestHelper {
     expectedFile->close();
     testFile->close();
   }
+
+  static void cleanup(std::string file_to_delete) {
+    remove(file_to_delete.c_str());
+  }
 };
 
 } // namespace fbpcf::io

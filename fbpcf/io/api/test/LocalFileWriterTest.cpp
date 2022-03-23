@@ -17,10 +17,6 @@
 
 namespace fbpcf::io {
 
-inline void cleanup(std::string fileToDelete) {
-  remove(fileToDelete.c_str());
-}
-
 TEST(LocalFileWriterTest, testWritingToFile) {
   std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
   std::random_device rd;
@@ -71,7 +67,7 @@ TEST(LocalFileWriterTest, testWritingToFile) {
   IOTestHelper::expectFileContentsMatch(
       fileToWriteTo, baseDir + "data/expected_local_file_writer_test_file.txt");
 
-  cleanup(fileToWriteTo);
+  IOTestHelper::cleanup(fileToWriteTo);
 }
 
 } // namespace fbpcf::io
