@@ -11,10 +11,6 @@
 
 namespace fbpcf::engine::util {
 
-inline uint64_t ceilDiv(uint64_t a, uint64_t b) {
-  return a / b + (a % b != 0);
-}
-
 AesPrg::AesPrg(__m128i seed, int bufferSize)
     : cipher_(seed),
       prgCounter_(0),

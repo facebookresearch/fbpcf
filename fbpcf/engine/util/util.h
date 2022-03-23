@@ -29,6 +29,29 @@ inline bool getLsb(__m128i src) {
   return _mm_extract_epi8(src, 0) & 1;
 }
 
+/*
+ * Extracts the last n bits in a 128 bit integer to the passed in boolean
+ * vector. The order of bits will be from least significant to most significant.
+ */
+inline void extractLnbToVector(__m128i& src, std::vector<bool>& data) {
+  if (data.size() > sizeof(src) * 8) {
+    throw std::runtime_error("Vector size is larger than __m128i size");
+  }
+  uint64_t lower64 = _mm_extract_epi64(src, 0);
+  uint64_t upper64 = _mm_extract_epi64(src, 1);
+
+  size_t lowerBitsToCopy = std::min(sizeof(lower64) * 8, data.size());
+  size_t upperBitsToCopy = data.size() - lowerBitsToCopy;
+  for (size_t i = 0; i < lowerBitsToCopy; i++) {
+    data[i] = lower64 & 1;
+    lower64 = lower64 >> 1;
+  }
+  for (size_t i = 0; i < upperBitsToCopy; i++) {
+    data[i + sizeof(lower64) * 8] = upper64 & 1;
+    upper64 = upper64 >> 1;
+  }
+}
+
 inline void setLsbTo0(__m128i& src) {
   src = _mm_andnot_si128(_mm_set_epi64x(0, 1), src);
 }
