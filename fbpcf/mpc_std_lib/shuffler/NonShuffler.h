@@ -18,7 +18,7 @@ namespace fbpcf::mpc_std_lib::shuffler::insecure {
 template <typename T>
 class NonShuffler final : public IShuffler<T> {
  public:
-  T shuffle(const T& src) const override {
+  T shuffle(const T& src, size_t /*size*/) const override {
     return src;
   }
 };
