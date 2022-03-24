@@ -8,15 +8,23 @@ env:
   DISTRO: ubuntu
   REGISTRY: ghcr.io
   LOCAL_IMAGE_NAME: ${{ github.event.repository.name }}/ubuntu
+  FBPCS_LOCAL_IMAGE_NAME: fbpcs/onedocker
   REGISTRY_IMAGE_NAME: ghcr.io/${{ github.repository }}/ubuntu
+  TEST_REGISTRY_IMAGE_NAME: ghcr.io/${{ github.repository }}/test/ubuntu
+  PL_CONTAINER_NAME: e2e_pl_container
+  PA_CONTAINER_NAME: e2e_pa_container
+  VERSION_TAG: latest-build
+  COORDINATOR_IMAGE_DEV: ghcr.io/facebookresearch/fbpcs/coordinator:dev
 
 jobs:
-  # Push image to GitHub Packages.
-  push:
+  build_prerelease_images:
     runs-on: [self-hosted, e2e_test_runner]
     permissions:
       contents: write
       packages: write
+
+    outputs:
+      version_tag: ${{ steps.create_version.outputs.version_tag }}
 
     steps:
       - uses: actions/checkout@v2
@@ -32,6 +40,13 @@ jobs:
         run: |
           ./run-millionaire-sample.sh -u
 
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Create version string
         id: create_version
         uses: paulhatch/semantic-version@v4.0.2
@@ -41,13 +56,43 @@ jobs:
           minor_pattern: "((MINOR))"
           format: "${major}.${minor}.${patch}-pre${increment}"
 
-      - name: Add tag to commit
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ steps.create_version.outputs.version_tag }}
-          tag_prefix: ""
+      - name: Clone latest stable fbpcs
+        run: |
+          git clone https://github.com/facebookresearch/fbpcs
+          cd fbpcs
+          git reset --hard $(curl \
+          --header 'content-type: application/json' \
+          "https://api.github.com/repos/facebookresearch/fbpcs/actions/workflows/12965519/runs?per_page=1&status=success" | jq \
+          ".workflow_runs[0] .head_sha" | tr -d '"')
+
+      - name: Build fbpcs image (this uses the locally built fbpcf image as a dependency)
+        run: |
+          cd fbpcs
+          ./build-docker.sh onedocker -t ${{ env.VERSION_TAG }}
+
+      - name: Tag fbpcf docker image
+        run: |
+          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.version }}
+
+      - name: Push fbpcf image to registry
+        run: |
+          docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
+
+      - name: Tag fbpcs docker image
+        run: |
+          docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+          docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:test_image
+
+      - name: Push fbpcs image to test registry
+        run: |
+          docker push --all-tags ${{ env.TEST_REGISTRY_IMAGE_NAME }}
+
+    private_attribution_e2e_test:
+      runs-on: [self-hosted, e2e_test_runner]
+      needs: build_prerelease_images
+      steps:
+      - uses: actions/checkout@v2
 
       - name: Log into registry ${{ env.REGISTRY }}
         uses: docker/login-action@v1
@@ -56,16 +101,261 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Pull coordinator image
+        run: |
+          docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
+
+      - name: Start container
+        run: |
+          ./start_container.sh ${{ env.PA_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE_DEV }}
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - Create Instance
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} create_instance
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - Data validation
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} data_validation
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - Id Match
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - PID export metrics
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} pid_metric_export
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - Prepare Compute Input
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} prepare_compute_input
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - PCF2 Attribution
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - PCF2 Aggregation
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - Aggregate Shards
+        run: |
+          ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Attribution - Validate Result
+        run: |
+          ./validate_result.sh attribution
+        working-directory: fbpcf/tests/github/
+
+      - name: Cleanup
+        run: |
+          docker stop ${{ env.PA_CONTAINER_NAME }}
+          docker rm ${{ env.PA_CONTAINER_NAME }}
+
+    private_lift_e2e_test:
+      runs-on: [self-hosted, e2e_test_runner]
+      needs: build_prerelease_images
+      steps:
+      - uses: actions/checkout@v2
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull coordinator image
+        run: |
+          docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
+
+      - name: Start container
+        run: |
+          ./start_container.sh ${{ env.PL_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE_DEV }}
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Create Instance
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} create_instance
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Data validation
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} data_validation
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Pid shard
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} pid_shard
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Pid prepare
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} pid_prepare
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Id Match
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - PID export metrics
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} pid_metric_export
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Prepare Compute Input
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} prepare_compute_input
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Compute Metrics
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Aggregate Shards
+        run: |
+          ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} run_next
+        working-directory: fbpcf/tests/github/
+
+      - name: Check Status
+        timeout-minutes: 5
+        run: |
+          ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Lift - Validate Results
+        run: |
+          ./validate_result.sh lift
+        working-directory: fbpcf/tests/github/
+
+      - name: Cleanup
+        run: |
+          docker stop ${{ env.PL_CONTAINER_NAME }}
+          docker rm ${{ env.PL_CONTAINER_NAME }}
+
+    tag_and_push:
+      runs-on: [self-hosted, e2e_test_runner]
+      needs: [private_attribution_e2e_test, private_lift_e2e_test]
+      permissions:
+        contents: write
+        packages: write
+
+      steps:
+      - name: Add tag to commit
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ jobs.build_prerelease_images.outputs.version_tag }}
+          tag_prefix: ""
+
       - name: Set output
         id: vars
         run: echo ::set-output name=ref::${GITHUB_REF##*/}
 
+      - name: Pull image for this commit from registry
+        run: |
+          docker pull ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+
       - name: Tag Docker image
         run: |
-          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
-          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
-          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.version_tag }}
-          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
+          docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
+          docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ jobs.build_prerelease_images.outputs.version_tag }}
+          docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
 
       - name: Push Docker image
         run: |
@@ -76,8 +366,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          release_name: ${{ steps.create_version.outputs.version_tag }}
-          tag_name: ${{ steps.create_version.outputs.version_tag }}
+          release_name: ${{ jobs.build_prerelease_images.outputs.version_tag }}
+          tag_name: ${{ jobs.build_prerelease_images.outputs.version_tag }}
 
       - name: Cleanup
         run: |
