@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 #include <filesystem>
+#include <random>
 #include <string>
 #include "folly/logging/xlog.h"
 
@@ -17,12 +18,16 @@
 
 namespace fbpcf::io {
 
-TEST(BufferedWriterTest, testWritingToFile) {
-  std::string base_dir = IOTestHelper::getBaseDirFromPath(__FILE__);
-  std::string file_to_write_to =
-      base_dir + "data/buffered_writer_writer_test_file.txt";
-  auto writer = fbpcf::io::LocalFileWriter(file_to_write_to);
-  auto bufferedWriter = std::make_unique<BufferedWriter>(writer, 40);
+inline void runBufferedWriterTest(size_t chunkSize) {
+  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
+  std::random_device rd;
+  std::default_random_engine defEngine(rd());
+  std::uniform_int_distribution<int> intDistro(1, 25000);
+  auto randint = intDistro(defEngine);
+  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file" +
+      std::to_string(randint) + ".txt";
+  auto writer = fbpcf::io::LocalFileWriter(fileToWriteTo);
+  auto bufferedWriter = std::make_unique<BufferedWriter>(writer, chunkSize);
 
   std::string to_write = "this file tests the buffered writer\n";
   auto buf =
@@ -61,10 +66,34 @@ TEST(BufferedWriterTest, testWritingToFile) {
     Verify that file contents match the expected
   */
   IOTestHelper::expectFileContentsMatch(
-      file_to_write_to,
-      base_dir + "data/expected_buffered_writer_test_file.txt");
+      fileToWriteTo, baseDir + "data/expected_buffered_writer_test_file.txt");
 
-  IOTestHelper::cleanup(file_to_write_to);
+  IOTestHelper::cleanup(fileToWriteTo);
 }
+
+class BufferedWriterTest
+    : public ::testing::TestWithParam<size_t> { // the only parameter is the
+                                                // chunk size
+ protected:
+  void SetUp() override {}
+
+  void TearDown() override {}
+};
+
+TEST_P(BufferedWriterTest, testWritingToFile) {
+  auto chunkSize = GetParam();
+
+  runBufferedWriterTest(chunkSize);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    BufferedWriterTest,
+    BufferedWriterTest,
+    ::testing::Values(1, 10, 40, 100, 200, 500, 1000, 4096),
+    [](const testing::TestParamInfo<BufferedWriterTest::ParamType>& info) {
+      auto chunkSize = std::to_string(info.param);
+      std::string name = "Chunk_size_" + chunkSize;
+      return name;
+    });
 
 } // namespace fbpcf::io
