@@ -354,7 +354,7 @@ jobs:
     - name: Tag Docker image
       run: |
         docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
-        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ jobs.build_prerelease_images.outputs.version_tag }}
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ needs.build_prerelease_images.outputs.version_tag }}
         docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
 
     - name: Push Docker image
@@ -366,8 +366,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        release_name: ${{ jobs.build_prerelease_images.outputs.version_tag }}
-        tag_name: ${{ jobs.build_prerelease_images.outputs.version_tag }}
+        release_name: ${{ needs.build_prerelease_images.outputs.version_tag }}
+        tag_name: ${{ needs.build_prerelease_images.outputs.version_tag }}
 
     - name: Cleanup
       run: |
