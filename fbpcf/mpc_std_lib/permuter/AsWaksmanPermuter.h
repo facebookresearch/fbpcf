@@ -14,11 +14,52 @@
 namespace fbpcf::mpc_std_lib::permuter {
 
 /**
+ * This permuter uses the AS-Waksman network to run oblivious permutation. Read
+ * more about this network:  Bruno Beauquier, Eric Darrot. On Arbitrary Waksman
+ * Networks and their Vulnerability. RR-3788, INRIA. 1999. inria-00072871f
+ **/
+template <typename T, int schedulerId>
+class AsWaksmanPermuter final
+    : public IPermuter<typename util::SecBatchType<T, schedulerId>::type> {
+ public:
+  using SecBatchType = typename util::SecBatchType<T, schedulerId>::type;
+  AsWaksmanPermuter(int myId, int partnerId)
+      : myId_(myId), partnerId_(partnerId) {}
+
+  SecBatchType permute(const SecBatchType& src, size_t size) const override;
+
+  SecBatchType permute(
+      const SecBatchType& src,
+      size_t size,
+      const std::vector<uint32_t>& order) const override;
+
+ private:
+  std::pair<SecBatchType, SecBatchType> preSubPermutationSwap(
+      const SecBatchType& src,
+      frontend::Bit<true, schedulerId, true>&& firstSwapConditions,
+      size_t size) const;
+
+  SecBatchType postSubPermutationSwap(
+      SecBatchType&& src0,
+      SecBatchType&& src1,
+      frontend::Bit<true, schedulerId, true>&& secondSwapConditions,
+      size_t size) const;
+
+  SecBatchType processTwoElements(
+      const SecBatchType& src,
+      frontend::Bit<true, schedulerId, true>&& swapConditions) const;
+
+  int myId_;
+  int partnerId_;
+};
+
+/**
  * This object is to calculate the parameters to use AsWaksman network to
  * permute a set of values. The construction of the network can be found in
  * paper: Bruno Beauquier, Eric Darrot. On Arbitrary Waksman Networks and their
  * Vulnerability. RR-3788, INRIA. 1999. inria-00072871f
  */
+
 class AsWaksmanParameterCalculator {
  public:
   explicit AsWaksmanParameterCalculator(const std::vector<uint32_t>& order)
@@ -105,3 +146,5 @@ class AsWaksmanParameterCalculator {
 };
 
 } // namespace fbpcf::mpc_std_lib::permuter
+
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuter_impl.h"

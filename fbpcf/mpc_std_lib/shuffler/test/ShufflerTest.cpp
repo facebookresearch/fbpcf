@@ -15,6 +15,7 @@
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/util/AesPrgFactory.h"
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/permuter/DummyPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/shuffler/NonShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/shuffler/PermuteBasedShufflerFactory.h"
@@ -24,7 +25,7 @@
 
 namespace fbpcf::mpc_std_lib::shuffler {
 
-const int testIntWidth = 22;
+const int testIntWidth = 32;
 
 template <int schedulerId>
 std::vector<uint64_t> task(
@@ -84,6 +85,25 @@ TEST(shufflerTest, testPermuteBasedShufflerWithDummyPermuter) {
           0,
           std::make_unique<permuter::insecure::DummyPermuterFactory<
               frontend::Int<false, testIntWidth, true, 1, true>>>(1, 0),
+          std::make_unique<engine::util::AesPrgFactory>());
+
+  shufflerTest(factory0, factory1);
+}
+
+TEST(shufflerTest, testPermuteBasedShufflerWithAsWaksmanPermuter) {
+  PermuteBasedShufflerFactory<frontend::Int<false, testIntWidth, true, 0, true>>
+      factory0(
+          0,
+          1,
+          std::make_unique<permuter::AsWaksmanPermuterFactory<uint32_t, 0>>(
+              0, 1),
+          std::make_unique<engine::util::AesPrgFactory>());
+  PermuteBasedShufflerFactory<frontend::Int<false, testIntWidth, true, 1, true>>
+      factory1(
+          1,
+          0,
+          std::make_unique<permuter::AsWaksmanPermuterFactory<uint32_t, 1>>(
+              1, 0),
           std::make_unique<engine::util::AesPrgFactory>());
 
   shufflerTest(factory0, factory1);
