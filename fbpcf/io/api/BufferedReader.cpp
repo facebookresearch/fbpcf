@@ -80,11 +80,10 @@ std::string BufferedReader::readLine() {
     loadNextChunk();
   }
 
-  auto c = buffer_.at(currentPosition_);
+  auto c = buffer_.at(currentPosition_++);
   std::string output = "";
   while (c != '\n') {
     output += c;
-    currentPosition_++;
 
     if (currentPosition_ == lastPosition_) {
       // we've run out of data, try to get the next chunk
@@ -96,9 +95,17 @@ std::string BufferedReader::readLine() {
       loadNextChunk();
     }
 
-    c = buffer_.at(currentPosition_);
+    c = buffer_.at(currentPosition_++);
   }
-  currentPosition_++;
+
+  if (currentPosition_ == lastPosition_ && !eof()) {
+    // if we are at the end of the buffer and there is more data
+    // to be loaded, we should load the next chunk.
+    // otherwise we risk the next invocation of readLine()
+    // to not return any data (in case the most recent \n was the
+    // final character of the file)
+    loadNextChunk();
+  }
 
   return output;
 }
