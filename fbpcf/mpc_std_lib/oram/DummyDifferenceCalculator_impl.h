@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <stdexcept>
 #include "fbpcf/mpc_std_lib/util/util.h"
 
 namespace fbpcf::mpc_std_lib::oram::insecure {
@@ -61,7 +62,14 @@ DummyDifferenceCalculator<T, indicatorSumWidth>::calculateDifferenceBatch(
       subtrahend = subtrahendShares.at(i) - subtrahend;
 
       T minuend = util::Adapters<T>::convertFromBits(boolBuffer.at(i));
-      rst[i] = indicator * (minuend - subtrahend);
+      if (indicator == 1) {
+        rst[i] = minuend - subtrahend;
+      } else if (indicator == -1) {
+        rst[i] = subtrahend - minuend;
+      } else {
+        throw std::runtime_error("invalid indicator!");
+      }
+
     } else {
       agent_->sendSingleT(indicatorShares.at(i));
       agent_->sendSingleT(subtrahendShares.at(i));

@@ -103,11 +103,12 @@ std::vector<std::vector<T>> WriteOnlyOram<T>::generateMasks(
 
   auto difference = calculator_->calculateDifferenceBatch(
       indicatorShares, values, subtrahendShares);
-
   for (size_t i = 0; i < batchSize; i++) {
     for (size_t j = 0; j < size_; j++) {
-      rst[i][j] =
-          rst[i][j] + indicatorKeyPairs.at(i).first.at(j) * difference.at(i);
+      bool indicator = indicatorKeyPairs.at(i).first.at(j);
+      if (indicator) {
+        rst[i][j] = rst[i][j] + difference.at(i);
+      }
     }
   }
   return rst;

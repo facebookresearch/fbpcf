@@ -54,18 +54,6 @@ inline AggregationValue operator-(const AggregationValue& v) {
   return AggregationValue{-v.conversionCount, -v.conversionValue};
 }
 
-inline AggregationValue operator*(int sign, const AggregationValue& v1) {
-  if (sign == 1) {
-    return v1;
-  } else if (sign == 0) {
-    return AggregationValue(0);
-  } else if (sign == -1) {
-    return -v1;
-  } else {
-    throw std::invalid_argument("can only multiply with -1, 0, 1");
-  }
-}
-
 inline void operator+=(AggregationValue& v1, const AggregationValue& v2) {
   v1.conversionCount += v2.conversionCount;
   v1.conversionValue += v2.conversionValue;

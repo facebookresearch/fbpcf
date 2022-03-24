@@ -57,7 +57,7 @@ void testWriteOnlyOram(
     std::unique_ptr<IWriteOnlyOramFactory<T>> factory0,
     std::unique_ptr<IWriteOnlyOramFactory<T>> factory1,
     size_t oramSize) {
-  size_t batchSize = 16384;
+  size_t batchSize = oramSize * 30;
 
   auto [input0, input1, expectedValue] =
       util::generateRandomValuesToAdd<T>(oramSize, batchSize);
@@ -113,7 +113,7 @@ void runOramTestWithDummyComponents() {
           insecure::DummyDifferenceCalculatorFactory<T, indicatorSumWidth>>(
           false, 0, *factories[1]));
 
-  size_t oramSize = 150;
+  size_t oramSize = 10; // use a smaller number due to performance issue.
   testWriteOnlyOram<T>(std::move(factory0), std::move(factory1), oramSize);
 }
 
