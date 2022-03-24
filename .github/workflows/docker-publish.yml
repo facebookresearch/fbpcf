@@ -329,7 +329,7 @@ jobs:
 
   tag_and_push:
     runs-on: [self-hosted, e2e_test_runner]
-    needs: [private_attribution_e2e_test, private_lift_e2e_test]
+    needs: [build_prerelease_images, private_attribution_e2e_test, private_lift_e2e_test]
     permissions:
       contents: write
       packages: write
@@ -340,7 +340,7 @@ jobs:
       uses: mathieudutour/github-tag-action@v6.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        custom_tag: ${{ jobs.build_prerelease_images.outputs.version_tag }}
+        custom_tag: ${{ needs.build_prerelease_images.outputs.version_tag }}
         tag_prefix: ""
 
     - name: Set output
