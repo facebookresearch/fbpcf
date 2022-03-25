@@ -18,57 +18,56 @@
 #include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/permuter/DummyPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
+#include "fbpcf/mpc_std_lib/util/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::permuter {
 
-std::tuple<std::vector<uint32_t>, std::vector<uint32_t>, std::vector<uint64_t>>
+std::tuple<
+    std::vector<std::vector<bool>>,
+    std::vector<uint32_t>,
+    std::vector<std::vector<bool>>>
 getPermuterTestData(size_t size) {
-  auto originalData = util::generateRandomPermutation(size);
+  std::vector<std::vector<bool>> originalData(size);
+  for (size_t i = 0; i < size; i++) {
+    originalData[i] = util::Adapters<uint32_t>::convertToBits(i);
+  }
   auto order = util::generateRandomPermutation(size);
-  auto tmp = order[1];
-  order[1] = order[0];
-  order[0] = tmp;
-  std::vector<uint64_t> expectedResult(size);
+  std::vector<std::vector<bool>> expectedResult(size);
   for (size_t i = 0; i < size; i++) {
     expectedResult[i] = originalData.at(order.at(i));
   }
   return {originalData, order, expectedResult};
 }
 
-const int kTestIntWidth = 32;
-
-std::pair<std::vector<uint64_t>, std::vector<uint64_t>> party0Task(
-    std::unique_ptr<
-        IPermuter<frontend::Int<false, kTestIntWidth, true, 0, true>>> permuter,
-    const std::vector<uint32_t>& data,
+std::pair<std::vector<std::vector<bool>>, std::vector<std::vector<bool>>>
+party0Task(
+    std::unique_ptr<IPermuter<frontend::BitString<true, 0, true>>> permuter,
+    const std::vector<std::vector<bool>>& data,
     const std::vector<uint32_t>& order) {
-  frontend::Int<false, kTestIntWidth, true, 0, true> ints(data, 0);
-  auto permuted0 = permuter->permute(ints, data.size(), order);
-  auto permuted1 = permuter->permute(ints, data.size());
+  frontend::BitString<true, 0, true> bits(data, 0);
+  auto permuted0 = permuter->permute(bits, data.size(), order);
+  auto permuted1 = permuter->permute(bits, data.size());
   auto rst0 = permuted0.openToParty(0).getValue();
   auto rst1 = permuted1.openToParty(0).getValue();
   return {rst0, rst1};
 }
 
 void party1Task(
-    std::unique_ptr<
-        IPermuter<frontend::Int<false, kTestIntWidth, true, 1, true>>> permuter,
-    const std::vector<uint32_t>& data,
+    std::unique_ptr<IPermuter<frontend::BitString<true, 1, true>>> permuter,
+    const std::vector<std::vector<bool>>& data,
     const std::vector<uint32_t>& order) {
-  frontend::Int<false, kTestIntWidth, true, 1, true> ints(data, 0);
-  auto permuted0 = permuter->permute(ints, data.size());
-  auto permuted1 = permuter->permute(ints, data.size(), order);
+  frontend::BitString<true, 1, true> bits(data, 0);
+  auto permuted0 = permuter->permute(bits, data.size());
+  auto permuted1 = permuter->permute(bits, data.size(), order);
   permuted0.openToParty(0);
   permuted1.openToParty(0);
 }
 
 void permuterTest(
-    IPermuterFactory<frontend::Int<false, kTestIntWidth, true, 0, true>>&
-        permuterFactory0,
-    IPermuterFactory<frontend::Int<false, kTestIntWidth, true, 1, true>>&
-        permuterFactory1) {
+    IPermuterFactory<frontend::BitString<true, 0, true>>& permuterFactory0,
+    IPermuterFactory<frontend::BitString<true, 1, true>>& permuterFactory1) {
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   auto permuter0 = permuterFactory0.create();
@@ -86,19 +85,17 @@ void permuterTest(
 }
 
 TEST(permuterTest, testDummyPermuter) {
-  insecure::DummyPermuterFactory<
-      frontend::Int<false, kTestIntWidth, true, 0, true>>
-      factory0(0, 1);
-  insecure::DummyPermuterFactory<
-      frontend::Int<false, kTestIntWidth, true, 1, true>>
-      factory1(1, 0);
+  insecure::DummyPermuterFactory<frontend::BitString<true, 0, true>> factory0(
+      0, 1);
+  insecure::DummyPermuterFactory<frontend::BitString<true, 1, true>> factory1(
+      1, 0);
 
   permuterTest(factory0, factory1);
 }
 
 TEST(permuterTest, testAsWaksmanPermuter) {
-  AsWaksmanPermuterFactory<uint32_t, 0> factory0(0, 1);
-  AsWaksmanPermuterFactory<uint32_t, 1> factory1(1, 0);
+  AsWaksmanPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
+  AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
 
   permuterTest(factory0, factory1);
 }
