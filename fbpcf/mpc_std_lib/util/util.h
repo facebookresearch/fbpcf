@@ -66,3 +66,5 @@ std::vector<__m128i> convertFromBits(const std::vector<std::vector<bool>>& src);
 #include "fbpcf/mpc_std_lib/util/uint32_impl.h"
 
 #include "fbpcf/mpc_std_lib/util/aggregationValue_impl.h"
+
+#include "fbpcf/mpc_std_lib/util/bitstring_impl.h"
