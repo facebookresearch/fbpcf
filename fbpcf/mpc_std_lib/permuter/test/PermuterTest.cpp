@@ -15,6 +15,7 @@
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuter.h"
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/permuter/DummyPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -26,6 +27,9 @@ std::tuple<std::vector<uint32_t>, std::vector<uint32_t>, std::vector<uint64_t>>
 getPermuterTestData(size_t size) {
   auto originalData = util::generateRandomPermutation(size);
   auto order = util::generateRandomPermutation(size);
+  auto tmp = order[1];
+  order[1] = order[0];
+  order[0] = tmp;
   std::vector<uint64_t> expectedResult(size);
   for (size_t i = 0; i < size; i++) {
     expectedResult[i] = originalData.at(order.at(i));
@@ -33,7 +37,7 @@ getPermuterTestData(size_t size) {
   return {originalData, order, expectedResult};
 }
 
-const int kTestIntWidth = 22;
+const int kTestIntWidth = 32;
 
 std::pair<std::vector<uint64_t>, std::vector<uint64_t>> party0Task(
     std::unique_ptr<
@@ -69,7 +73,7 @@ void permuterTest(
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   auto permuter0 = permuterFactory0.create();
   auto permuter1 = permuterFactory1.create();
-  size_t size = 16;
+  size_t size = 17;
   auto [originalData, order, expectedOutput] = getPermuterTestData(size);
   auto future0 =
       std::async(party0Task, std::move(permuter0), originalData, order);
@@ -88,6 +92,13 @@ TEST(permuterTest, testDummyPermuter) {
   insecure::DummyPermuterFactory<
       frontend::Int<false, kTestIntWidth, true, 1, true>>
       factory1(1, 0);
+
+  permuterTest(factory0, factory1);
+}
+
+TEST(permuterTest, testAsWaksmanPermuter) {
+  AsWaksmanPermuterFactory<uint32_t, 0> factory0(0, 1);
+  AsWaksmanPermuterFactory<uint32_t, 1> factory1(1, 0);
 
   permuterTest(factory0, factory1);
 }
