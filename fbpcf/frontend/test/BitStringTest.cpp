@@ -295,7 +295,7 @@ TEST(StringTest, testMux) {
   }
   std::vector<std::vector<bool>> testBatchValue1(
       dSize(e), std::vector<bool>(dSize(e)));
-  std::vector<bool> testBatchChoice(testBatchValue1.at(0).size());
+  std::vector<bool> testBatchChoice(testBatchValue1.size());
   auto testBatchValue2 = testBatchValue1;
   for (size_t i = 0; i < testBatchValue1.size(); i++) {
     for (size_t j = 0; j < testBatchValue1.at(0).size(); j++) {
@@ -303,7 +303,7 @@ TEST(StringTest, testMux) {
       testBatchValue2[i][j] = dBool(e);
     }
   }
-  for (size_t j = 0; j < testBatchValue1.at(0).size(); j++) {
+  for (size_t j = 0; j < testBatchValue1.size(); j++) {
     testBatchChoice[j] = dBool(e);
   }
 
@@ -346,7 +346,7 @@ TEST(StringTest, testMux) {
   for (size_t i = 0; i < testBatchValue1.size(); i++) {
     for (size_t j = 0; j < testBatchValue1.at(0).size(); j++) {
       testBatchValue1[i][j] =
-          testBatchChoice[j] ? testBatchValue2[i][j] : testBatchValue1[i][j];
+          testBatchChoice[i] ? testBatchValue2[i][j] : testBatchValue1[i][j];
     }
   }
 
@@ -397,14 +397,12 @@ TEST(StringTest, testResizeWithAND) {
   std::vector<std::vector<bool>> testBatchValue1(
       dSize(e), std::vector<bool>(dSize(e)));
   auto testBatchValue2 = testBatchValue1;
-  testBatchValue2.resize(testBatchValue1.size() * 2);
   for (size_t i = 0; i < testBatchValue1.size(); i++) {
-    testBatchValue2[i + testBatchValue1.size()] =
-        std::vector<bool>(testBatchValue1.at(0).size());
+    testBatchValue2[i].resize(testBatchValue1.at(0).size() * 2);
     for (size_t j = 0; j < testBatchValue1.at(0).size(); j++) {
       testBatchValue1[i][j] = dBool(e);
       testBatchValue2[i][j] = dBool(e);
-      testBatchValue2[i + testBatchValue1.size()][j] = dBool(e);
+      testBatchValue2[i][j + testBatchValue1.at(0).size()] = dBool(e);
     }
   }
 
@@ -476,21 +474,21 @@ TEST(StringTest, testRebatching) {
   uint32_t batchSize2 = dSize(e);
   uint32_t batchSize3 = dSize(e);
   std::vector<std::vector<bool>> testBatchValue1(
-      length, std::vector<bool>(batchSize1));
+      batchSize1, std::vector<bool>(length));
   std::vector<std::vector<bool>> testBatchValue2(
-      length, std::vector<bool>(batchSize2));
+      batchSize2, std::vector<bool>(length));
   std::vector<std::vector<bool>> testBatchValue3(
-      length, std::vector<bool>(batchSize3));
+      batchSize3, std::vector<bool>(length));
 
   for (size_t i = 0; i < length; i++) {
     for (size_t j = 0; j < batchSize1; j++) {
-      testBatchValue1[i][j] = dBool(e);
+      testBatchValue1[j][i] = dBool(e);
     }
     for (size_t j = 0; j < batchSize2; j++) {
-      testBatchValue2[i][j] = dBool(e);
+      testBatchValue2[j][i] = dBool(e);
     }
     for (size_t j = 0; j < batchSize3; j++) {
-      testBatchValue3[i][j] = dBool(e);
+      testBatchValue3[j][i] = dBool(e);
     }
   }
 
@@ -507,18 +505,20 @@ TEST(StringTest, testRebatching) {
   auto t6 = v123.at(1).openToParty(0).getValue();
   auto t7 = v123.at(2).openToParty(0).getValue();
 
-  for (size_t i = 0; i < length; i++) {
+  for (size_t i = 0; i < batchSize1; i++) {
     testVectorEq(t5.at(i), testBatchValue1.at(i));
+  }
+  for (size_t i = 0; i < batchSize2; i++) {
     testVectorEq(t6.at(i), testBatchValue2.at(i));
+  }
+  for (size_t i = 0; i < batchSize3; i++) {
     testVectorEq(t7.at(i), testBatchValue3.at(i));
-    testBatchValue1[i].insert(
-        testBatchValue1[i].end(),
-        testBatchValue2[i].begin(),
-        testBatchValue2[i].end());
-    testBatchValue1[i].insert(
-        testBatchValue1[i].end(),
-        testBatchValue3[i].begin(),
-        testBatchValue3[i].end());
+  }
+  testBatchValue1.insert(
+      testBatchValue1.end(), testBatchValue2.begin(), testBatchValue2.end());
+  testBatchValue1.insert(
+      testBatchValue1.end(), testBatchValue3.begin(), testBatchValue3.end());
+  for (size_t i = 0; i < batchSize1 + batchSize2 + batchSize3; i++) {
     testVectorEq(t4.at(i), testBatchValue1.at(i));
   }
 }
