@@ -133,8 +133,9 @@ BitString<isSecret, schedulerId, usingBatch>::operator&(
 template <bool isSecret, int schedulerId, bool usingBatch>
 template <bool isSecretOther>
 BitString<isSecret || isSecretOther, schedulerId, usingBatch>
-BitString<isSecret, schedulerId, usingBatch>::operator^(
-    const BitString<isSecretOther, schedulerId, usingBatch>& src) const {
+BitString<isSecret, schedulerId, usingBatch>::
+    BitString<isSecret, schedulerId, usingBatch>::operator^(
+        const BitString<isSecretOther, schedulerId, usingBatch>& src) const {
   if (src.size() != size()) {
     throw std::runtime_error(
         "The two BitStrings need to have the same length for bit-wise XOR");
