@@ -42,6 +42,22 @@ inline std::tuple<uint32_t, uint32_t, uint32_t> getRandomData<uint32_t>(
   return {value, share0, share1};
 }
 
+using TestIntp = Intp<true, 9>;
+
+template <>
+inline std::tuple<TestIntp, TestIntp, TestIntp> getRandomData<TestIntp>(
+    std::mt19937_64& e) {
+  std::uniform_int_distribution<typename TestIntp::NativeType> randomValue(
+      TestIntp::kMin / 50, TestIntp::kMax / 50);
+
+  std::uniform_int_distribution<typename TestIntp::NativeType> randomMask(
+      TestIntp::kMin, TestIntp::kMax);
+  uint32_t value = randomValue(e);
+  uint32_t share0 = randomMask(e);
+  uint32_t share1 = value ^ share0;
+  return {value, share0, share1};
+}
+
 template <>
 inline std::tuple<AggregationValue, AggregationValue, AggregationValue>
 getRandomData<AggregationValue>(std::mt19937_64& e) {

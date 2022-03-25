@@ -118,7 +118,7 @@ void runOramTestWithDummyComponents() {
 }
 
 TEST(WriteOnlyORAMTest, TestWriteOnlyORAMWithDummyComponents) {
-  runOramTestWithDummyComponents<uint32_t>();
+  runOramTestWithDummyComponents<util::TestIntp>();
   runOramTestWithDummyComponents<util::AggregationValue>();
 }
 
@@ -145,7 +145,7 @@ void runOramTestWithRealDifferenceCalculatorAndDummySinglePointArrayGenerator(
       std::make_unique<DifferenceCalculatorFactory<T, indicatorSumWidth, 1>>(
           false, 0, 1));
 
-  size_t oramSize = 150;
+  size_t oramSize = 30;
   testWriteOnlyOram<T>(std::move(factory0), std::move(factory1), oramSize);
 }
 
@@ -156,7 +156,7 @@ TEST(
   setupRealBackend<0, 1>(*factories[0], *factories[1]);
 
   runOramTestWithRealDifferenceCalculatorAndDummySinglePointArrayGenerator<
-      uint32_t>(*factories[0], *factories[1]);
+      util::TestIntp>(*factories[0], *factories[1]);
   runOramTestWithRealDifferenceCalculatorAndDummySinglePointArrayGenerator<
       util::AggregationValue>(*factories[0], *factories[1]);
 }
@@ -188,7 +188,7 @@ void runOramTestWithDummyOblivousDeltaCalculator(
       std::make_unique<DifferenceCalculatorFactory<T, indicatorSumWidth, 1>>(
           false, 0, 1));
 
-  size_t oramSize = 150;
+  size_t oramSize = 30;
   testWriteOnlyOram<T>(std::move(factory0), std::move(factory1), oramSize);
 }
 
@@ -196,7 +196,7 @@ TEST(WriteOnlyORAMTest, TestWriteOnlyORAMWithDummyOblivousDeltaCalculator) {
   auto factories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*factories[0], *factories[1]);
 
-  runOramTestWithDummyOblivousDeltaCalculator<uint32_t>(
+  runOramTestWithDummyOblivousDeltaCalculator<util::TestIntp>(
       *factories[0], *factories[1]);
   runOramTestWithDummyOblivousDeltaCalculator<util::AggregationValue>(
       *factories[0], *factories[1]);
@@ -214,7 +214,7 @@ void runOramTestWithSecureComponents(
   auto factory1 = getSecureWriteOnlyOramFactory<T, indicatorSumWidth, 1>(
       false, 0, 1, agentFactory1);
 
-  size_t oramSize = 150;
+  size_t oramSize = 30;
   testWriteOnlyOram<T>(std::move(factory0), std::move(factory1), oramSize);
 }
 
@@ -222,7 +222,7 @@ TEST(WriteOnlyORAMTest, TestWriteOnlyORAMWithSecureComponents) {
   auto factories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*factories[0], *factories[1]);
 
-  runOramTestWithSecureComponents<uint32_t>(*factories[0], *factories[1]);
+  runOramTestWithSecureComponents<util::TestIntp>(*factories[0], *factories[1]);
   runOramTestWithSecureComponents<util::AggregationValue>(
       *factories[0], *factories[1]);
 }
@@ -243,7 +243,8 @@ TEST(LinearORAMTest, TestLinearOram) {
   auto factories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*factories[0], *factories[1]);
 
-  runLinearOramTestWithSecureComponents<uint32_t>(*factories[0], *factories[1]);
+  runLinearOramTestWithSecureComponents<util::TestIntp>(
+      *factories[0], *factories[1]);
 
   runLinearOramTestWithSecureComponents<util::AggregationValue>(
       *factories[0], *factories[1]);
