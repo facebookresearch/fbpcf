@@ -15,30 +15,39 @@ namespace fbpcf::frontend {
 
 template <bool isSecret, int schedulerId, bool usingBatch>
 BitString<isSecret, schedulerId, usingBatch>::BitString(
-    const std::vector<BoolType>& data)
-    : data_(data.size()) {
-  for (size_t i = 0; i < data.size(); i++) {
-    if constexpr (usingBatch) {
-      if (data.at(i).size() != data.at(0).size()) {
-        throw std::runtime_error("All bits has to have the same batch size!");
-      }
+    const std::vector<BoolType>& data) {
+  if constexpr (usingBatch) {
+    data_ =
+        std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.at(0).size());
+    auto transposed = transposeVector(data);
+    for (size_t i = 0; i < data_.size(); i++) {
+      data_[i] = Bit<isSecret, schedulerId, usingBatch>(transposed.at(i));
     }
-    data_[i] = Bit<false, schedulerId, usingBatch>(data.at(i));
+  } else {
+    data_ = std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.size());
+    for (size_t i = 0; i < data_.size(); i++) {
+      data_[i] = Bit<isSecret, schedulerId, usingBatch>(data.at(i));
+    }
   }
 }
 
 template <bool isSecret, int schedulerId, bool usingBatch>
 BitString<isSecret, schedulerId, usingBatch>::BitString(
     const std::vector<BoolType>& data,
-    int partyId)
-    : data_(data.size()) {
-  for (size_t i = 0; i < data.size(); i++) {
-    if constexpr (usingBatch) {
-      if (data.at(i).size() != data.at(0).size()) {
-        throw std::runtime_error("All bits has to have the same batch size!");
-      }
+    int partyId) {
+  if constexpr (usingBatch) {
+    data_ =
+        std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.at(0).size());
+    auto transposed = transposeVector(data);
+    for (size_t i = 0; i < data_.size(); i++) {
+      data_[i] =
+          Bit<isSecret, schedulerId, usingBatch>(transposed.at(i), partyId);
     }
-    data_[i] = Bit<true, schedulerId, usingBatch>(data.at(i), partyId);
+  } else {
+    data_ = std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.size());
+    for (size_t i = 0; i < data_.size(); i++) {
+      data_[i] = Bit<isSecret, schedulerId, usingBatch>(data.at(i), partyId);
+    }
   }
 }
 
@@ -71,7 +80,11 @@ BitString<isSecret, schedulerId, usingBatch>::getValue() const {
   for (size_t i = 0; i < size(); i++) {
     plaintext[i] = data_.at(i).getValue();
   }
-  return plaintext;
+  if constexpr (usingBatch) {
+    return transposeVector(std::move(plaintext));
+  } else {
+    return plaintext;
+  }
 }
 
 template <bool isSecret, int schedulerId, bool usingBatch>
@@ -201,6 +214,24 @@ BitString<isSecret, schedulerId, usingBatch>::unbatching(
     auto bitVec = data_.at(i).unbatching(unbatchingStrategy);
     for (size_t j = 0; j < unbatchingStrategy->size(); j++) {
       rst.at(j).data_.at(i) = bitVec.at(j);
+    }
+  }
+  return rst;
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+std::vector<std::vector<bool>>
+BitString<isSecret, schedulerId, usingBatch>::transposeVector(
+    const std::vector<std::vector<bool>>& src) {
+  size_t outerSize = src.size();
+  size_t innerSize = src.at(0).size();
+  std::vector<std::vector<bool>> rst(innerSize, std::vector<bool>(outerSize));
+  for (size_t i = 0; i < outerSize; i++) {
+    if (src.at(i).size() != innerSize) {
+      throw std::runtime_error("All batches have to have the same size!");
+    }
+    for (size_t j = 0; j < innerSize; j++) {
+      rst[j][i] = src.at(i).at(j);
     }
   }
   return rst;

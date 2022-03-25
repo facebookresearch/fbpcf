@@ -132,6 +132,9 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   std::vector<Bit<isSecret, schedulerId, usingBatch>> data_;
 
   friend class BitString<!isSecret, schedulerId, usingBatch>;
+
+  static std::vector<std::vector<bool>> transposeVector(
+      const std::vector<std::vector<bool>>& src);
 };
 
 } // namespace fbpcf::frontend
