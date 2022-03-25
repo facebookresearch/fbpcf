@@ -44,12 +44,11 @@ void NpBaseObliviousTransfer::sendPoint(const EC_POINT& point) const {
           group_.get(), &point, POINT_CONVERSION_COMPRESSED, ctx.get()),
       free);
 
-  uint16_t size;
-  size = strlen(buf.get());
+  size_t size = strlen(buf.get());
   if (size == 0) {
     throw std::runtime_error("Can't convert point to hex.");
   }
-  agent_->sendSingleT<uint16_t>(size);
+  agent_->sendSingleT<size_t>(size);
   std::vector<unsigned char> tmp(buf.get(), buf.get() + size);
   agent_->send(tmp);
 }
@@ -58,7 +57,7 @@ NpBaseObliviousTransfer::PointPointer NpBaseObliviousTransfer::receivePoint()
     const {
   PointPointer rst(EC_POINT_new(group_.get()), EC_POINT_free);
 
-  uint16_t size = agent_->receiveSingleT<uint16_t>();
+  size_t size = agent_->receiveSingleT<size_t>();
   auto tmp = agent_->receive(size);
   // Create a CTX variable. CTX variables are used as temporary variable for
   // many Openssl functions.
