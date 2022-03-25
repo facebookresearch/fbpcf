@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuter.h"
 #include "fbpcf/mpc_std_lib/permuter/DummyPermuterFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -89,6 +90,72 @@ TEST(permuterTest, testDummyPermuter) {
       factory1(1, 0);
 
   permuterTest(factory0, factory1);
+}
+
+void testAsWaksmanParameter() {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint32_t> randomSize(2, 0xFFF);
+
+  size_t size = randomSize(e);
+  auto order = util::generateRandomPermutation(size);
+  AsWaksmanParameterCalculator calculator(order);
+  std::vector<uint32_t> testData(size);
+  for (size_t i = 0; i < size; i++) {
+    testData[i] = i;
+  }
+  std::vector<uint32_t> firstHalf(size / 2);
+  std::vector<uint32_t> secondHalf(size - size / 2);
+
+  auto firstSwapConditions = calculator.getFirstSwapConditions();
+  ASSERT_EQ(firstSwapConditions.size(), size / 2);
+  for (size_t i = 0; i < size / 2; i++) {
+    firstHalf[i] = testData.at(i);
+    secondHalf[i] = testData.at(i + size / 2);
+    if (firstSwapConditions.at(i)) {
+      auto tmp = secondHalf.at(i);
+      secondHalf[i] = firstHalf.at(i);
+      firstHalf[i] = tmp;
+    }
+  }
+
+  if ((size & 1) == 1) {
+    secondHalf[size / 2] = testData.at(size - 1);
+  }
+
+  std::vector<uint32_t> firstHalfAfterPermute(size / 2);
+  auto subOrderFirst = calculator.getFirstSubPermuteOrder();
+  for (size_t i = 0; i < size / 2; i++) {
+    firstHalfAfterPermute[i] = firstHalf.at(subOrderFirst.at(i));
+  }
+  std::vector<uint32_t> secondHalfAfterPermute(size - size / 2);
+  auto subOrderSecond = calculator.getSecondSubPermuteOrder();
+  for (size_t i = 0; i < size - size / 2; i++) {
+    secondHalfAfterPermute[i] = secondHalf.at(subOrderSecond.at(i));
+  }
+
+  auto secondSwapConditions = calculator.getSecondSwapConditions();
+  ASSERT_EQ(secondSwapConditions.size(), (size - 1) / 2);
+  for (size_t i = 0; i < (size - 1) / 2; i++) {
+    if (secondSwapConditions.at(i)) {
+      auto tmp = secondHalfAfterPermute.at(i);
+      secondHalfAfterPermute[i] = firstHalfAfterPermute.at(i);
+      firstHalfAfterPermute[i] = tmp;
+    }
+  }
+  firstHalfAfterPermute.insert(
+      firstHalfAfterPermute.end(),
+      secondHalfAfterPermute.begin(),
+      secondHalfAfterPermute.end());
+
+  testVectorEq(firstHalfAfterPermute, order);
+}
+
+TEST(AsWaksmanParameterTest, testAsWaksmanParameterCalculator) {
+  size_t repeat = 100;
+  for (size_t i = 0; i < repeat; i++) {
+    testAsWaksmanParameter();
+  }
 }
 
 } // namespace fbpcf::mpc_std_lib::permuter
