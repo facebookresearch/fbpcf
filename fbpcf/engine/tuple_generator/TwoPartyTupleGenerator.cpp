@@ -129,7 +129,7 @@ std::pair<uint64_t, uint64_t> TwoPartyTupleGenerator::getTrafficStatistics()
   auto senderStats = senderRcot_->getTrafficStatistics();
   auto receiverStats = receiverRcot_->getTrafficStatistics();
   rst.first += senderStats.first + receiverStats.first;
-  rst.second += senderStats.first + receiverStats.second;
+  rst.second += senderStats.second + receiverStats.second;
 
   return rst;
 }
