@@ -40,7 +40,7 @@ std::vector<__m128i> SinglePointCot::constructALayerOfKeyForReceiver(
     int missingPosition) {
   auto rst = expander_->expand(std::move(previousLayer));
 
-  auto positionToFix = (missingPosition << 1) + util::getLsb(baseCot);
+  size_t positionToFix = (missingPosition << 1) + util::getLsb(baseCot);
 
   std::vector<__m128i> tmp({baseCot});
   cipherForHash_->encryptInPlace(tmp);

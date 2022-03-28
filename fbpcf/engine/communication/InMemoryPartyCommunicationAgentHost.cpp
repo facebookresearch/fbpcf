@@ -15,7 +15,8 @@ void InMemoryPartyCommunicationAgent::send(
   sentData_ += data.size();
 }
 
-std::vector<unsigned char> InMemoryPartyCommunicationAgent::receive(int size) {
+std::vector<unsigned char> InMemoryPartyCommunicationAgent::receive(
+    size_t size) {
   auto result = host_.receive(myId_, size);
   if (result.size() != size) {
     throw std::runtime_error("unexpected message size!");
@@ -48,7 +49,7 @@ void InMemoryPartyCommunicationAgentHost::send(
 
 std::vector<unsigned char> InMemoryPartyCommunicationAgentHost::receive(
     int myId,
-    int size) {
+    size_t size) {
   std::vector<unsigned char> result;
 
   while (result.size() < size) {

@@ -36,7 +36,7 @@ class InMemoryPartyCommunicationAgent final : public IPartyCommunicationAgent {
   /**
    * @inherit doc
    */
-  std::vector<unsigned char> receive(int size) override;
+  std::vector<unsigned char> receive(size_t size) override;
 
   /**
    * @inherit doc
@@ -78,7 +78,7 @@ class InMemoryPartyCommunicationAgentHost {
   /**
    * Allow an in memory communication agent receive data from the other.
    */
-  std::vector<unsigned char> receive(int myId, int size);
+  std::vector<unsigned char> receive(int myId, size_t size);
 
   std::unique_ptr<InMemoryPartyCommunicationAgent> agents_[2];
 

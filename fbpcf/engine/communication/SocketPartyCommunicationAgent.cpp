@@ -52,7 +52,7 @@ void SocketPartyCommunicationAgent::send(
   fflush(outgoingPort_);
 }
 
-std::vector<unsigned char> SocketPartyCommunicationAgent::receive(int size) {
+std::vector<unsigned char> SocketPartyCommunicationAgent::receive(size_t size) {
   std::vector<unsigned char> rst(size);
   auto s = fread(rst.data(), sizeof(unsigned char), size, incomingPort_);
   assert(s == size);

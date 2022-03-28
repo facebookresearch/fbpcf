@@ -86,10 +86,10 @@ class RegularErrorMultiPointCot final : public IMultiPointCot {
   __m128i delta_;
 
   util::Role role_;
-  int baseCotSize_;
+  size_t baseCotSize_;
 
   int64_t spcotLength_;
-  int spcotCount_;
+  size_t spcotCount_;
 };
 
 } // namespace

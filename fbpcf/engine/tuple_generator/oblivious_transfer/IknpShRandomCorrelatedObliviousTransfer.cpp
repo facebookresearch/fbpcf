@@ -164,7 +164,7 @@ std::vector<__m128i> IknpShRandomCorrelatedObliviousTransfer::rcot(
     int64_t size) {
   std::vector<__m128i> rst;
   // must work with a multiplication of 128;
-  int64_t blockCount = ((size + 127) / 128);
+  size_t blockCount = ((size + 127) / 128);
   if (role_ == util::receiver) {
     std::vector<__m128i> t0(blockCount * 128);
     std::vector<__m128i> u(blockCount * 127);

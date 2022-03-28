@@ -66,7 +66,7 @@ class ExtenderBasedRandomCorrelatedObliviousTransfer final
 
   // buffered RCOT results
   std::vector<__m128i> rcotResults_;
-  int64_t otIndex_;
+  size_t otIndex_;
 };
 
 } // namespace fbpcf::engine::tuple_generator::oblivious_transfer

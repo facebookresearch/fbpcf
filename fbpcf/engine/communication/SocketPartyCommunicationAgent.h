@@ -47,7 +47,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   /**
    * @inherit doc
    */
-  std::vector<unsigned char> receive(int size) override;
+  std::vector<unsigned char> receive(size_t size) override;
 
   /**
    * @inherit doc

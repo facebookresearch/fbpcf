@@ -28,7 +28,7 @@ std::vector<bool> AesPrg::getRandomBits(uint32_t size) {
   auto randomBytes = asyncBuffer_->getData(ceilDiv(size, 8));
 
   std::vector<bool> rst(size);
-  for (auto i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     rst[i] = (randomBytes[i >> 3] >> (i & 7)) & 1;
   }
   return rst;
