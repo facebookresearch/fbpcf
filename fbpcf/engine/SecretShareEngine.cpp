@@ -262,7 +262,7 @@ std::vector<bool> SecretShareEngine::computeBatchANDImmediately(
   std::vector<ScheduledBatchAND> scheduledBatchANDs;
   std::vector<ScheduledCompositeAND> scheduledCompositeANDs;
   std::vector<ScheduledBatchCompositeAND> scheduledBatchCompositeANDs;
-  for (int i = 0; i < left.size(); i++) {
+  for (size_t i = 0; i < left.size(); i++) {
     scheduledANDs.push_back(ScheduledAND(left.at(i), right.at(i)));
   }
   return computeAllANDsFromScheduledANDs(
@@ -361,7 +361,7 @@ std::vector<bool> SecretShareEngine::computeSecretSharesToOpen(
   for (size_t i = 0; i < batchAnds.size(); i++) {
     auto& leftValues = batchAnds[i].getLeft();
     auto& rightValues = batchAnds[i].getRight();
-    for (int j = 0; j < leftValues.size(); j++) {
+    for (size_t j = 0; j < leftValues.size(); j++) {
       secretsToOpen[index * 2] = leftValues[j] ^ tuples.at(index).getA();
       secretsToOpen[index * 2 + 1] =
           rightValues.at(j) ^ tuples.at(index).getB();
@@ -382,7 +382,7 @@ std::vector<bool> SecretShareEngine::computeSecretSharesToOpen(
   for (size_t i = 0; i < batchCompositeAnds.size(); i++) {
     auto& leftValues = batchCompositeAnds[i].getLeft();
     for (auto& rightValues : batchCompositeAnds[i].getRights()) {
-      for (int j = 0; j < leftValues.size(); j++) {
+      for (size_t j = 0; j < leftValues.size(); j++) {
         secretsToOpen[index * 2] = leftValues[j] ^ tuples.at(index).getA();
         secretsToOpen[index * 2 + 1] =
             rightValues.at(j) ^ tuples.at(index).getB();
@@ -428,7 +428,7 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
     auto& leftValues = batchAnds[i].getLeft();
     auto batchSize = leftValues.size();
     std::vector<bool> rst(batchSize);
-    for (int j = 0; j < batchSize; j++) {
+    for (size_t j = 0; j < batchSize; j++) {
       bool val = tuples.at(index).getC() ^
           (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
           (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
@@ -464,9 +464,9 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
     auto batchSize = leftValues.size();
     auto outputSize = batchCompositeAnds[i].getRights().size();
     std::vector<std::vector<bool>> compositeResult(outputSize);
-    for (int j = 0; j < outputSize; j++) {
+    for (size_t j = 0; j < outputSize; j++) {
       std::vector<bool> innerBatchResult(batchSize);
-      for (int k = 0; k < batchSize; k++) {
+      for (size_t k = 0; k < batchSize; k++) {
         bool val = tuples.at(index).getC() ^
             (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
             (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());

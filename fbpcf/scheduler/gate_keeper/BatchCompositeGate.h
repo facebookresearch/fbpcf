@@ -52,7 +52,7 @@ class BatchCompositeGate final : public ICompositeGate {
         auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
         numberOfResults_ = leftValues.size() * outputWireIDs_.size();
 
-        for (int i = 0; i < outputWireIDs_.size(); i++) {
+        for (size_t i = 0; i < outputWireIDs_.size(); i++) {
           wireKeeper_.setBatchBooleanValue(
               outputWireIDs_[i],
               engine.computeBatchFreeAND(
@@ -63,7 +63,7 @@ class BatchCompositeGate final : public ICompositeGate {
       case GateType::NonFreeAnd: {
         auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
         std::vector<std::vector<bool>> rightWireValues(outputWireIDs_.size());
-        for (int i = 0; i < outputWireIDs_.size(); i++) {
+        for (size_t i = 0; i < outputWireIDs_.size(); i++) {
           rightWireValues[i] = wireKeeper_.getBatchBooleanValue(rights_[i]);
         }
         numberOfResults_ = leftValues.size() * outputWireIDs_.size();
@@ -83,7 +83,7 @@ class BatchCompositeGate final : public ICompositeGate {
       case GateType::NonFreeAnd: {
         result =
             engine.getBatchCompositeANDExecutionResult(scheduledResultIndex_);
-        for (int i = 0; i < result.size(); i++) {
+        for (size_t i = 0; i < result.size(); i++) {
           wireKeeper_.setBatchBooleanValue(outputWireIDs_[i], result[i]);
         }
         break;

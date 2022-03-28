@@ -6,6 +6,7 @@
  */
 
 #pragma once
+
 #include <emmintrin.h>
 #include <stdint.h>
 #include <string.h>
@@ -36,7 +37,7 @@ class IPartyCommunicationAgent {
    * @param size the expected size;
    * @return the received content
    */
-  virtual std::vector<unsigned char> receive(int size) = 0;
+  virtual std::vector<unsigned char> receive(size_t size) = 0;
 
   /**
    * send a byte string to the partner

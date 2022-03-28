@@ -67,7 +67,7 @@ TwoPartyTupleGenerator::generateTuples(uint64_t size) {
   auto sender0Messages = senderRcot_->rcot(size);
 
   std::vector<__m128i> sender1Messages(size);
-  for (auto i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     // k1 / l1
     sender1Messages[i] = _mm_xor_si128(sender0Messages.at(i), delta_);
   }
@@ -76,7 +76,7 @@ TwoPartyTupleGenerator::generateTuples(uint64_t size) {
   auto receiverMessages = receiverMessagesFuture.get();
 
   std::vector<bool> choiceBits(size);
-  for (auto i = 0; i < size; ++i) {
+  for (size_t i = 0; i < size; ++i) {
     // r / p
     choiceBits[i] = util::getLsb(receiverMessages.at(i));
   }

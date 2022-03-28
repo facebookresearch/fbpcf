@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <cstddef>
 #include <stdexcept>
 #include <vector>
 
@@ -109,7 +110,7 @@ PlaintextScheduler::privateAndPrivateBatch(
   }
   nonFreeGates_ += leftValue.size();
   std::vector<bool> rst(leftValue.size());
-  for (int i = 0; i < leftValue.size(); i++) {
+  for (size_t i = 0; i < leftValue.size(); i++) {
     rst[i] = leftValue[i] & rightValue[i];
   }
   return wireKeeper_->allocateBatchBooleanValue(rst);
@@ -134,7 +135,7 @@ PlaintextScheduler::privateAndPublicBatch(
   }
   freeGates_ += leftValue.size();
   std::vector<bool> rst(leftValue.size());
-  for (int i = 0; i < leftValue.size(); i++) {
+  for (size_t i = 0; i < leftValue.size(); i++) {
     rst[i] = leftValue.at(i) & rightValue.at(i);
   }
   return wireKeeper_->allocateBatchBooleanValue(rst);
@@ -214,7 +215,7 @@ PlaintextScheduler::privateXorPrivateBatch(
   }
   freeGates_ += leftValue.size();
   std::vector<bool> rst(leftValue.size());
-  for (int i = 0; i < leftValue.size(); i++) {
+  for (size_t i = 0; i < leftValue.size(); i++) {
     rst[i] = leftValue[i] ^ rightValue[i];
   }
   return wireKeeper_->allocateBatchBooleanValue(rst);
@@ -257,7 +258,7 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPrivateBatch(
   auto& value = wireKeeper_->getBatchBooleanValue(src);
   freeGates_ += value.size();
   std::vector<bool> rst(value.size());
-  for (int i = 0; i < value.size(); i++) {
+  for (size_t i = 0; i < value.size(); i++) {
     rst[i] = !value[i];
   }
   return wireKeeper_->allocateBatchBooleanValue(rst);
@@ -363,7 +364,7 @@ PlaintextScheduler::validateAndComputeBatchCompositeAND(
       throw std::invalid_argument("Batch inputs have differing sizes");
     }
     std::vector<bool> rst;
-    for (int i = 0; i < leftValue.size(); i++) {
+    for (size_t i = 0; i < leftValue.size(); i++) {
       rst.push_back(leftValue[i] & rightValue[i]);
     }
     returnWires.push_back(wireKeeper_->allocateBatchBooleanValue(rst));

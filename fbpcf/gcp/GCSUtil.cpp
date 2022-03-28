@@ -22,7 +22,7 @@ namespace fbpcf::gcp {
 GCSObjectReference uriToObjectReference(std::string url) {
   std::string bucket;
   std::string key;
-  int pos = 0;
+  size_t pos = 0;
   auto uri = folly::Uri(url);
   auto scheme = uri.scheme();
   auto host = uri.host();
