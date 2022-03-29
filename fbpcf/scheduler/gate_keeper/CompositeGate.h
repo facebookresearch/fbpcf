@@ -55,7 +55,7 @@ class CompositeGate final : public ICompositeGate {
     switch (gateType_) {
         // Free gates
       case GateType::FreeAnd:
-        for (int i = 0; i < outputWireIDs_.size(); i++) {
+        for (size_t i = 0; i < outputWireIDs_.size(); i++) {
           wireKeeper_.setBooleanValue(
               outputWireIDs_[i],
               engine.computeFreeAND(
@@ -67,7 +67,7 @@ class CompositeGate final : public ICompositeGate {
       // Non-free gates
       case GateType::NonFreeAnd:
         std::vector<bool> rightWireValues(outputWireIDs_.size());
-        for (int i = 0; i < outputWireIDs_.size(); i++) {
+        for (size_t i = 0; i < outputWireIDs_.size(); i++) {
           rightWireValues[i] = wireKeeper_.getBooleanValue(rights_[i]);
         }
         scheduledResultIndex_ = engine.scheduleCompositeAND(
@@ -84,7 +84,7 @@ class CompositeGate final : public ICompositeGate {
     switch (gateType_) {
       case GateType::NonFreeAnd:
         result = engine.getCompositeANDExecutionResult(scheduledResultIndex_);
-        for (int i = 0; i < result.size(); i++) {
+        for (size_t i = 0; i < result.size(); i++) {
           wireKeeper_.setBooleanValue(outputWireIDs_[i], result[i]);
         }
         break;

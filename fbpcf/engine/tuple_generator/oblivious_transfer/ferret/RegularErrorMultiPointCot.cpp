@@ -62,7 +62,7 @@ std::vector<__m128i> RegularErrorMultiPointCot::extend(
   std::vector<__m128i> rst;
   int64_t index = 0;
 
-  for (int i = 0; i < spcotCount_; i++) {
+  for (size_t i = 0; i < spcotCount_; i++) {
     auto tmp = singleCotExtend(std::vector(
         baseCot.begin() + index, baseCot.begin() + index + baseCotSize_));
 
