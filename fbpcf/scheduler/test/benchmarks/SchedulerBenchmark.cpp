@@ -9,6 +9,10 @@
 
 #include "common/init/Init.h"
 
+#include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
+#include "fbpcf/engine/util/test/benchmarks/BenchmarkHelper.h"
+#include "fbpcf/engine/util/test/benchmarks/NetworkedBenchmark.h"
+#include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/scheduler/test/benchmarks/AllocatorBenchmark.h"
 #include "fbpcf/scheduler/test/benchmarks/WireKeeperBenchmark.h"
 
@@ -87,6 +91,95 @@ BENCHMARK(WireKeeperBenchmark_decreaseReferenceCount, n) {
     wireKeeper->decreaseReferenceCount(wireIds.at(n));
   }
 }
+
+// Scheduler benchmarks
+
+class SchedulerBenchmark : public engine::util::NetworkedBenchmark {
+ public:
+  void setup() override {
+    auto [agentFactory0, agentFactory1] =
+        engine::util::getSocketAgentFactories();
+    agentFactory0_ = std::move(agentFactory0);
+    agentFactory1_ = std::move(agentFactory1);
+
+    // Set up randomized inputs
+    batchInput0_ = engine::util::getRandomBoolVector(batchSize_);
+    batchInput1_ = engine::util::getRandomBoolVector(batchSize_);
+
+    input0_ = batchInput0_.at(0);
+    input1_ = batchInput1_.at(0);
+
+    randomParty_ = batchInput0_.at(1);
+  }
+
+ protected:
+  void initSender() override {
+    sender_ = getScheduler(0, *agentFactory0_);
+  }
+
+  void runSender() override {
+    runMethod(sender_);
+  }
+
+  void initReceiver() override {
+    receiver_ = getScheduler(1, *agentFactory1_);
+  }
+
+  void runReceiver() override {
+    runMethod(receiver_);
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
+    return sender_->getTrafficStatistics();
+  }
+
+  virtual std::unique_ptr<IScheduler> getScheduler(
+      int myId,
+      engine::communication::IPartyCommunicationAgentFactory&
+          communicationAgentFactory) = 0;
+
+  virtual void runMethod(std::unique_ptr<IScheduler>& scheduler) = 0;
+
+  size_t batchSize_ = 1000;
+  std::vector<bool> batchInput0_;
+  std::vector<bool> batchInput1_;
+
+  bool input0_;
+  bool input1_;
+
+  int randomParty_;
+
+ private:
+  std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
+      agentFactory0_;
+  std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
+      agentFactory1_;
+
+  std::unique_ptr<IScheduler> sender_;
+  std::unique_ptr<IScheduler> receiver_;
+};
+
+class LazySchedulerBenchmark : virtual public SchedulerBenchmark {
+ protected:
+  std::unique_ptr<IScheduler> getScheduler(
+      int myId,
+      engine::communication::IPartyCommunicationAgentFactory&
+          communicationAgentFactory) override {
+    return createLazySchedulerWithInsecureEngine<unsafe>(
+        myId, communicationAgentFactory);
+  }
+};
+
+class EagerSchedulerBenchmark : virtual public SchedulerBenchmark {
+ protected:
+  std::unique_ptr<IScheduler> getScheduler(
+      int myId,
+      engine::communication::IPartyCommunicationAgentFactory&
+          communicationAgentFactory) override {
+    return createEagerSchedulerWithInsecureEngine<unsafe>(
+        myId, communicationAgentFactory);
+  }
+};
 } // namespace fbpcf::scheduler
 
 int main(int argc, char* argv[]) {
