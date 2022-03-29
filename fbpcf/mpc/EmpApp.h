@@ -24,13 +24,20 @@ class EmpApp {
       Party party,
       const std::string& serverIp,
       uint16_t port,
-      bool useTls = false,
-      const std::string& tlsDir = "")
+      bool useTls,
+      const std::string& tlsDir)
       : party_{party},
         serverIp_{serverIp},
         port_{port},
         useTls_{useTls},
         tlsDir_{tlsDir} {}
+
+  EmpApp(Party party, const std::string& serverIp, uint16_t port)
+      : party_{party},
+        serverIp_{serverIp},
+        port_{port},
+        useTls_{false},
+        tlsDir_{""} {}
 
   virtual ~EmpApp(){};
 
@@ -56,6 +63,6 @@ class EmpApp {
   uint16_t port_; // Port to bind to, or port to connect to (for publisher or
                   // partner respectively)
   bool useTls_; // whether to use TLS for communication
-  const std::string& tlsDir_; // directory that holds the TLS certificates/keys
+  const std::string tlsDir_; // directory that holds the TLS certificates/keys
 };
 } // namespace fbpcf
