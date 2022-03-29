@@ -130,6 +130,12 @@ int SocketPartyCommunicationAgent::connectToHost(
     throw std::runtime_error("error opening socket");
   }
 
+  int enable = 1;
+
+  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+    XLOG(INFO) << "setsockopt(SO_REUSEADDR) failed";
+  }
+
   while (connect(sockfd, addrs->ai_addr, addrs->ai_addrlen) < 0) {
     // wait a second and retry
     usleep(1000);
@@ -146,6 +152,11 @@ int SocketPartyCommunicationAgent::receiveFromClient(int portNo) {
   auto sockfd = socket(AF_INET, SOCK_STREAM, 0);
   if (sockfd < 0) {
     throw std::runtime_error("error opening socket");
+  }
+  int enable = 1;
+
+  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+    XLOG(INFO) << "setsockopt(SO_REUSEADDR) failed";
   }
 
   struct sockaddr_in servAddr;
