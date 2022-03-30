@@ -58,7 +58,15 @@ class Intp {
   }
 
   Intp<isSigned, width> operator-() const {
-    return Intp<isSigned, width>(round(kOffSet - v_));
+    if constexpr (isSigned) {
+      if (v_ == kMin) {
+        return v_;
+      } else {
+        return -v_;
+      }
+    } else {
+      return kOffSet - v_;
+    }
   }
 
   Intp<isSigned, width> operator-(const Intp<isSigned, width>& other) const {
