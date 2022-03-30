@@ -180,6 +180,76 @@ class EagerSchedulerBenchmark : virtual public SchedulerBenchmark {
         myId, communicationAgentFactory);
   }
 };
+
+class NonFreeGatesBenchmark : virtual public SchedulerBenchmark {
+ protected:
+  void runMethod(std::unique_ptr<IScheduler>& scheduler) override {
+    auto wire1 = scheduler->privateBooleanInput(input0_, randomParty_);
+    auto wire2 = scheduler->privateBooleanInput(input1_, 1 - randomParty_);
+    IScheduler::WireId<IScheduler::Boolean> wire3;
+    for (auto level = 0; level < 10; level++) {
+      for (auto i = 0; i < 200; i++) {
+        wire3 = scheduler->privateAndPrivate(wire1, wire2);
+      }
+      wire2 = wire3;
+    }
+    scheduler->getBooleanValue(
+        scheduler->openBooleanValueToParty(wire3, randomParty_));
+  }
+};
+
+class NonFreeGatesBatchBenchmark : virtual public SchedulerBenchmark {
+ protected:
+  void runMethod(std::unique_ptr<IScheduler>& scheduler) override {
+    auto wire1 =
+        scheduler->privateBooleanInputBatch(batchInput0_, randomParty_);
+    auto wire2 =
+        scheduler->privateBooleanInputBatch(batchInput1_, 1 - randomParty_);
+    IScheduler::WireId<IScheduler::Boolean> wire3;
+    for (auto level = 0; level < 10; level++) {
+      for (auto i = 0; i < 200; i++) {
+        wire3 = scheduler->privateAndPrivateBatch(wire1, wire2);
+      }
+      wire2 = wire3;
+    }
+    scheduler->getBooleanValueBatch(
+        scheduler->openBooleanValueToPartyBatch(wire3, randomParty_));
+  }
+};
+
+class LazyScheduler_NonFreeGates_Benchmark : public LazySchedulerBenchmark,
+                                             public NonFreeGatesBenchmark {};
+
+BENCHMARK_COUNTERS(LazyScheduler_NonFreeGates, counters) {
+  LazyScheduler_NonFreeGates_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class EagerScheduler_NonFreeGates_Benchmark : public EagerSchedulerBenchmark,
+                                              public NonFreeGatesBenchmark {};
+
+BENCHMARK_COUNTERS(EagerScheduler_NonFreeGates, counters) {
+  EagerScheduler_NonFreeGates_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class LazyScheduler_NonFreeGatesBatch_Benchmark
+    : public LazySchedulerBenchmark,
+      public NonFreeGatesBatchBenchmark {};
+
+BENCHMARK_COUNTERS(LazyScheduler_NonFreeGatesBatch, counters) {
+  LazyScheduler_NonFreeGatesBatch_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class EagerScheduler_NonFreeGatesBatch_Benchmark
+    : public EagerSchedulerBenchmark,
+      public NonFreeGatesBatchBenchmark {};
+
+BENCHMARK_COUNTERS(EagerScheduler_NonFreeGatesBatch, counters) {
+  EagerScheduler_NonFreeGatesBatch_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
 } // namespace fbpcf::scheduler
 
 int main(int argc, char* argv[]) {
