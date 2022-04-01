@@ -217,6 +217,59 @@ class NonFreeGatesBatchBenchmark : virtual public SchedulerBenchmark {
   }
 };
 
+class NonFreeGatesCompositeBenchmark : virtual public SchedulerBenchmark {
+ protected:
+  void runMethod(std::unique_ptr<IScheduler>& scheduler) override {
+    auto leftWire = scheduler->privateBooleanInput(input0_, randomParty_);
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rightWires(10);
+    for (auto i = 0; i < rightWires.size(); i++) {
+      rightWires.at(i) =
+          scheduler->privateBooleanInput(input1_, 1 - randomParty_);
+    }
+
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires;
+    for (auto level = 0; level < 10; level++) {
+      for (auto i = 0; i < 500; i++) {
+        outputWires =
+            scheduler->privateAndPrivateComposite(leftWire, rightWires);
+      }
+      rightWires = outputWires;
+    }
+
+    for (auto i = 0; i < outputWires.size(); i++) {
+      scheduler->getBooleanValue(
+          scheduler->openBooleanValueToParty(outputWires.at(i), randomParty_));
+    }
+  }
+};
+
+class NonFreeGatesCompositeBatchBenchmark : virtual public SchedulerBenchmark {
+ protected:
+  void runMethod(std::unique_ptr<IScheduler>& scheduler) override {
+    auto leftWire =
+        scheduler->privateBooleanInputBatch(batchInput0_, randomParty_);
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> rightWires(10);
+    for (auto i = 0; i < rightWires.size(); i++) {
+      rightWires.at(i) =
+          scheduler->privateBooleanInputBatch(batchInput1_, 1 - randomParty_);
+    }
+
+    std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires;
+    for (auto level = 0; level < 10; level++) {
+      for (auto i = 0; i < 500; i++) {
+        outputWires =
+            scheduler->privateAndPrivateCompositeBatch(leftWire, rightWires);
+      }
+      rightWires = outputWires;
+    }
+
+    for (auto i = 0; i < outputWires.size(); i++) {
+      scheduler->getBooleanValueBatch(scheduler->openBooleanValueToPartyBatch(
+          outputWires.at(i), randomParty_));
+    }
+  }
+};
+
 class LazyScheduler_NonFreeGates_Benchmark : public LazySchedulerBenchmark,
                                              public NonFreeGatesBenchmark {};
 
@@ -248,6 +301,42 @@ class EagerScheduler_NonFreeGatesBatch_Benchmark
 
 BENCHMARK_COUNTERS(EagerScheduler_NonFreeGatesBatch, counters) {
   EagerScheduler_NonFreeGatesBatch_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class LazyScheduler_NonFreeGatesComposite_Benchmark
+    : public LazySchedulerBenchmark,
+      public NonFreeGatesCompositeBenchmark {};
+
+BENCHMARK_COUNTERS(LazyScheduler_NonFreeGatesComposite, counters) {
+  LazyScheduler_NonFreeGatesComposite_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class EagerScheduler_NonFreeGatesComposite_Benchmark
+    : public EagerSchedulerBenchmark,
+      public NonFreeGatesCompositeBenchmark {};
+
+BENCHMARK_COUNTERS(EagerScheduler_NonFreeGatesComposite, counters) {
+  EagerScheduler_NonFreeGatesComposite_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class LazyScheduler_NonFreeGatesCompositeBatch_Benchmark
+    : public LazySchedulerBenchmark,
+      public NonFreeGatesCompositeBatchBenchmark {};
+
+BENCHMARK_COUNTERS(LazyScheduler_NonFreeGatesCompositeBatch, counters) {
+  LazyScheduler_NonFreeGatesCompositeBatch_Benchmark benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+class EagerScheduler_NonFreeGatesCompositeBatch_Benchmark
+    : public EagerSchedulerBenchmark,
+      public NonFreeGatesCompositeBatchBenchmark {};
+
+BENCHMARK_COUNTERS(EagerScheduler_NonFreeGatesCompositeBatch, counters) {
+  EagerScheduler_NonFreeGatesCompositeBatch_Benchmark benchmark;
   benchmark.runBenchmark(counters);
 }
 } // namespace fbpcf::scheduler
