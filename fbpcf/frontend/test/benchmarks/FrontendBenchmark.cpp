@@ -65,11 +65,11 @@ class FrontendBenchmark : public engine::util::NetworkedBenchmark {
   std::unique_ptr<Game1> receiver_;
 };
 
-template <int schedulerId>
+template <int schedulerId, bool usingBatch>
 class BitGame : public MpcGame<schedulerId> {
  public:
   using SecBit =
-      typename frontend::MpcGame<schedulerId>::template SecBit<false>;
+      typename frontend::MpcGame<schedulerId>::template SecBit<usingBatch>;
 
   explicit BitGame(std::unique_ptr<scheduler::IScheduler> scheduler)
       : MpcGame<schedulerId>(std::move(scheduler)) {}
@@ -77,8 +77,15 @@ class BitGame : public MpcGame<schedulerId> {
   virtual ~BitGame() = default;
 
   void play() {
-    SecBit b1(true, 0);
-    SecBit b2(false, 1);
+    SecBit b1, b2;
+    if constexpr (usingBatch) {
+      auto batchSize = 1000;
+      b1 = SecBit(std::vector<bool>(batchSize, true), 0);
+      b2 = SecBit(std::vector<bool>(batchSize, false), 1);
+    } else {
+      b1 = SecBit(true, 0);
+      b2 = SecBit(false, 1);
+    }
     for (auto i = 0; i < 100; i++) {
       b2 = operation(b1, b2);
     }
@@ -89,79 +96,99 @@ class BitGame : public MpcGame<schedulerId> {
   virtual SecBit operation(SecBit b1, SecBit b2) = 0;
 };
 
-template <int schedulerId>
-class BitAndGame : public BitGame<schedulerId> {
+template <int schedulerId, bool usingBatch>
+class BitAndGame : public BitGame<schedulerId, usingBatch> {
  public:
   explicit BitAndGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : BitGame<schedulerId>(std::move(scheduler)) {}
+      : BitGame<schedulerId, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename BitGame<schedulerId>::SecBit operation(
-      typename BitGame<schedulerId>::SecBit b1,
-      typename BitGame<schedulerId>::SecBit b2) override {
+  typename BitGame<schedulerId, usingBatch>::SecBit operation(
+      typename BitGame<schedulerId, usingBatch>::SecBit b1,
+      typename BitGame<schedulerId, usingBatch>::SecBit b2) override {
     return b1 & b2;
   }
 };
 
 BENCHMARK_COUNTERS(BitAndBenchmark, counters) {
-  FrontendBenchmark<BitAndGame<0>, BitAndGame<1>> benchmark;
+  FrontendBenchmark<BitAndGame<0, false>, BitAndGame<1, false>> benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class BitXorGame : public BitGame<schedulerId> {
+BENCHMARK_COUNTERS(BitAndBatchBenchmark, counters) {
+  FrontendBenchmark<BitAndGame<0, true>, BitAndGame<1, true>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitXorGame : public BitGame<schedulerId, usingBatch> {
  public:
   explicit BitXorGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : BitGame<schedulerId>(std::move(scheduler)) {}
+      : BitGame<schedulerId, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename BitGame<schedulerId>::SecBit operation(
-      typename BitGame<schedulerId>::SecBit b1,
-      typename BitGame<schedulerId>::SecBit b2) override {
+  typename BitGame<schedulerId, usingBatch>::SecBit operation(
+      typename BitGame<schedulerId, usingBatch>::SecBit b1,
+      typename BitGame<schedulerId, usingBatch>::SecBit b2) override {
     return b1 ^ b2;
   }
 };
 
 BENCHMARK_COUNTERS(BitXorBenchmark, counters) {
-  FrontendBenchmark<BitXorGame<0>, BitXorGame<1>> benchmark;
+  FrontendBenchmark<BitXorGame<0, false>, BitXorGame<1, false>> benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class BitOrGame : public BitGame<schedulerId> {
+BENCHMARK_COUNTERS(BitXorBatchBenchmark, counters) {
+  FrontendBenchmark<BitXorGame<0, true>, BitXorGame<1, true>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitOrGame : public BitGame<schedulerId, usingBatch> {
  public:
   explicit BitOrGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : BitGame<schedulerId>(std::move(scheduler)) {}
+      : BitGame<schedulerId, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename BitGame<schedulerId>::SecBit operation(
-      typename BitGame<schedulerId>::SecBit b1,
-      typename BitGame<schedulerId>::SecBit b2) override {
+  typename BitGame<schedulerId, usingBatch>::SecBit operation(
+      typename BitGame<schedulerId, usingBatch>::SecBit b1,
+      typename BitGame<schedulerId, usingBatch>::SecBit b2) override {
     return b1 || b2;
   }
 };
 
 BENCHMARK_COUNTERS(BitOrBenchmark, counters) {
-  FrontendBenchmark<BitOrGame<0>, BitOrGame<1>> benchmark;
+  FrontendBenchmark<BitOrGame<0, false>, BitOrGame<1, false>> benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class BitNotGame : public BitGame<schedulerId> {
+BENCHMARK_COUNTERS(BitOrBatchBenchmark, counters) {
+  FrontendBenchmark<BitOrGame<0, true>, BitOrGame<1, true>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitNotGame : public BitGame<schedulerId, usingBatch> {
  public:
   explicit BitNotGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : BitGame<schedulerId>(std::move(scheduler)) {}
+      : BitGame<schedulerId, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename BitGame<schedulerId>::SecBit operation(
-      typename BitGame<schedulerId>::SecBit b1,
-      typename BitGame<schedulerId>::SecBit) override {
+  typename BitGame<schedulerId, usingBatch>::SecBit operation(
+      typename BitGame<schedulerId, usingBatch>::SecBit b1,
+      typename BitGame<schedulerId, usingBatch>::SecBit) override {
     return !b1;
   }
 };
 
 BENCHMARK_COUNTERS(BitNotBenchmark, counters) {
-  FrontendBenchmark<BitNotGame<0>, BitNotGame<1>> benchmark;
+  FrontendBenchmark<BitNotGame<0, false>, BitNotGame<1, false>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(BitNotBatchBenchmark, counters) {
+  FrontendBenchmark<BitNotGame<0, true>, BitNotGame<1, true>> benchmark;
   benchmark.runBenchmark(counters);
 }
 } // namespace fbpcf::frontend
