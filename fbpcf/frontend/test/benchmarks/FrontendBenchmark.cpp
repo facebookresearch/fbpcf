@@ -192,13 +192,15 @@ BENCHMARK_COUNTERS(BitNotBatchBenchmark, counters) {
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId, bool isBoolOutput>
+const uint32_t batchSize = 1000;
+
+template <int schedulerId, bool isBoolOutput, bool usingBatch>
 class IntGame : public MpcGame<schedulerId> {
  public:
-  using SecSignedInt =
-      typename frontend::MpcGame<schedulerId>::template SecSignedInt<32, false>;
+  using SecSignedInt = typename frontend::MpcGame<
+      schedulerId>::template SecSignedInt<32, usingBatch>;
   using SecBit =
-      typename frontend::MpcGame<schedulerId>::template SecBit<false>;
+      typename frontend::MpcGame<schedulerId>::template SecBit<usingBatch>;
 
   using TOutput =
       typename std::conditional<isBoolOutput, SecBit, SecSignedInt>::type;
@@ -209,8 +211,21 @@ class IntGame : public MpcGame<schedulerId> {
   virtual ~IntGame() = default;
 
   void play() {
-    SecSignedInt b1(static_cast<int32_t>(folly::Random::rand32()), 0);
-    SecSignedInt b2(static_cast<int32_t>(folly::Random::rand32()), 1);
+    SecSignedInt b1;
+    SecSignedInt b2;
+    if constexpr (usingBatch) {
+      b1 = SecSignedInt(
+          std::vector<int32_t>(
+              batchSize, static_cast<int32_t>(folly::Random::rand32())),
+          0);
+      b2 = SecSignedInt(
+          std::vector<int32_t>(
+              batchSize, static_cast<int32_t>(folly::Random::rand32())),
+          1);
+    } else {
+      b1 = SecSignedInt(static_cast<int32_t>(folly::Random::rand32()), 0);
+      b2 = SecSignedInt(static_cast<int32_t>(folly::Random::rand32()), 1);
+    }
     TOutput b3;
     for (auto i = 0; i < 100; i++) {
       b3 = operation(b1, b2);
@@ -222,162 +237,233 @@ class IntGame : public MpcGame<schedulerId> {
   virtual TOutput operation(SecSignedInt b1, SecSignedInt b2) = 0;
 };
 
-template <int schedulerId>
-class IntAddGame : public IntGame<schedulerId, false> {
+template <int schedulerId, bool usingBatch>
+class IntAddGame : public IntGame<schedulerId, false, usingBatch> {
  public:
   explicit IntAddGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, false>(std::move(scheduler)) {}
+      : IntGame<schedulerId, false, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, false>::SecSignedInt operation(
-      typename IntGame<schedulerId, false>::SecSignedInt b1,
-      typename IntGame<schedulerId, false>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, false, usingBatch>::SecSignedInt operation(
+      typename IntGame<schedulerId, false, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, false, usingBatch>::SecSignedInt b2)
+      override {
     return b1 + b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntAddBenchmark, counters) {
-  FrontendBenchmark<IntAddGame<0>, IntAddGame<1>> benchmark;
+  FrontendBenchmark<IntAddGame<0, false>, IntAddGame<1, false>> benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntSubtractGame : public IntGame<schedulerId, false> {
+BENCHMARK_COUNTERS(IntAddBatchBenchmark, counters) {
+  FrontendBenchmark<IntAddGame<0, true>, IntAddGame<1, true>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntSubtractGame : public IntGame<schedulerId, false, usingBatch> {
  public:
   explicit IntSubtractGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, false>(std::move(scheduler)) {}
+      : IntGame<schedulerId, false, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, false>::SecSignedInt operation(
-      typename IntGame<schedulerId, false>::SecSignedInt b1,
-      typename IntGame<schedulerId, false>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, false, usingBatch>::SecSignedInt operation(
+      typename IntGame<schedulerId, false, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, false, usingBatch>::SecSignedInt b2)
+      override {
     return b1 - b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntSubtractBenchmark, counters) {
-  FrontendBenchmark<IntSubtractGame<0>, IntSubtractGame<1>> benchmark;
+  FrontendBenchmark<IntSubtractGame<0, false>, IntSubtractGame<1, false>>
+      benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntMuxGame : public IntGame<schedulerId, false> {
+BENCHMARK_COUNTERS(IntSubtractBatchBenchmark, counters) {
+  FrontendBenchmark<IntSubtractGame<0, true>, IntSubtractGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntMuxGame : public IntGame<schedulerId, false, usingBatch> {
  public:
   explicit IntMuxGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, false>(std::move(scheduler)) {}
+      : IntGame<schedulerId, false, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, false>::SecSignedInt operation(
-      typename IntGame<schedulerId, false>::SecSignedInt b1,
-      typename IntGame<schedulerId, false>::SecSignedInt b2) override {
-    typename IntGame<schedulerId, false>::SecBit choice(true, 1);
+  typename IntGame<schedulerId, false, usingBatch>::SecSignedInt operation(
+      typename IntGame<schedulerId, false, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, false, usingBatch>::SecSignedInt b2)
+      override {
+    typename IntGame<schedulerId, false, usingBatch>::SecBit choice;
+    if constexpr (usingBatch) {
+      choice = typename IntGame<schedulerId, false, usingBatch>::SecBit(
+          std::vector<bool>(batchSize, true), 1);
+    } else {
+      choice =
+          typename IntGame<schedulerId, false, usingBatch>::SecBit(true, 1);
+    }
     return b1.mux(choice, b2);
   }
 };
 
 BENCHMARK_COUNTERS(IntMuxBenchmark, counters) {
-  FrontendBenchmark<IntMuxGame<0>, IntMuxGame<1>> benchmark;
+  FrontendBenchmark<IntMuxGame<0, false>, IntMuxGame<1, false>> benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntLessThanGame : public IntGame<schedulerId, true> {
+BENCHMARK_COUNTERS(IntMuxBatchBenchmark, counters) {
+  FrontendBenchmark<IntMuxGame<0, true>, IntMuxGame<1, true>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntLessThanGame : public IntGame<schedulerId, true, usingBatch> {
  public:
   explicit IntLessThanGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, true>(std::move(scheduler)) {}
+      : IntGame<schedulerId, true, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, true>::SecBit operation(
-      typename IntGame<schedulerId, true>::SecSignedInt b1,
-      typename IntGame<schedulerId, true>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, true, usingBatch>::SecBit operation(
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b2)
+      override {
     return b1 < b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntLessThanBenchmark, counters) {
-  FrontendBenchmark<IntLessThanGame<0>, IntLessThanGame<1>> benchmark;
+  FrontendBenchmark<IntLessThanGame<0, false>, IntLessThanGame<1, false>>
+      benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntLessThanOrEqualToGame : public IntGame<schedulerId, true> {
+BENCHMARK_COUNTERS(IntLessThanBatchBenchmark, counters) {
+  FrontendBenchmark<IntLessThanGame<0, true>, IntLessThanGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntLessThanOrEqualToGame : public IntGame<schedulerId, true, usingBatch> {
  public:
   explicit IntLessThanOrEqualToGame(
       std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, true>(std::move(scheduler)) {}
+      : IntGame<schedulerId, true, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, true>::SecBit operation(
-      typename IntGame<schedulerId, true>::SecSignedInt b1,
-      typename IntGame<schedulerId, true>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, true, usingBatch>::SecBit operation(
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b2)
+      override {
     return b1 <= b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntLessThanOrEqualToBenchmark, counters) {
-  FrontendBenchmark<IntLessThanOrEqualToGame<0>, IntLessThanOrEqualToGame<1>>
+  FrontendBenchmark<
+      IntLessThanOrEqualToGame<0, false>,
+      IntLessThanOrEqualToGame<1, false>>
       benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntGreaterThanGame : public IntGame<schedulerId, true> {
+BENCHMARK_COUNTERS(IntLessThanOrEqualToBatchBenchmark, counters) {
+  FrontendBenchmark<
+      IntLessThanOrEqualToGame<0, true>,
+      IntLessThanOrEqualToGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntGreaterThanGame : public IntGame<schedulerId, true, usingBatch> {
  public:
   explicit IntGreaterThanGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, true>(std::move(scheduler)) {}
+      : IntGame<schedulerId, true, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, true>::SecBit operation(
-      typename IntGame<schedulerId, true>::SecSignedInt b1,
-      typename IntGame<schedulerId, true>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, true, usingBatch>::SecBit operation(
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b2)
+      override {
     return b1 > b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntGreaterThanBenchmark, counters) {
-  FrontendBenchmark<IntGreaterThanGame<0>, IntGreaterThanGame<1>> benchmark;
+  FrontendBenchmark<IntGreaterThanGame<0, false>, IntGreaterThanGame<1, false>>
+      benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntGreaterThanOrEqualToGame : public IntGame<schedulerId, true> {
+BENCHMARK_COUNTERS(IntGreaterThanBatchBenchmark, counters) {
+  FrontendBenchmark<IntGreaterThanGame<0, true>, IntGreaterThanGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntGreaterThanOrEqualToGame
+    : public IntGame<schedulerId, true, usingBatch> {
  public:
   explicit IntGreaterThanOrEqualToGame(
       std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, true>(std::move(scheduler)) {}
+      : IntGame<schedulerId, true, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, true>::SecBit operation(
-      typename IntGame<schedulerId, true>::SecSignedInt b1,
-      typename IntGame<schedulerId, true>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, true, usingBatch>::SecBit operation(
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b2)
+      override {
     return b1 >= b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntGreaterThanOrEqualToBenchmark, counters) {
   FrontendBenchmark<
-      IntGreaterThanOrEqualToGame<0>,
-      IntGreaterThanOrEqualToGame<1>>
+      IntGreaterThanOrEqualToGame<0, false>,
+      IntGreaterThanOrEqualToGame<1, false>>
       benchmark;
   benchmark.runBenchmark(counters);
 }
 
-template <int schedulerId>
-class IntEqualToGame : public IntGame<schedulerId, true> {
+BENCHMARK_COUNTERS(IntGreaterThanOrEqualToBatchBenchmark, counters) {
+  FrontendBenchmark<
+      IntGreaterThanOrEqualToGame<0, true>,
+      IntGreaterThanOrEqualToGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class IntEqualToGame : public IntGame<schedulerId, true, usingBatch> {
  public:
   explicit IntEqualToGame(std::unique_ptr<scheduler::IScheduler> scheduler)
-      : IntGame<schedulerId, true>(std::move(scheduler)) {}
+      : IntGame<schedulerId, true, usingBatch>(std::move(scheduler)) {}
 
  protected:
-  typename IntGame<schedulerId, true>::SecBit operation(
-      typename IntGame<schedulerId, true>::SecSignedInt b1,
-      typename IntGame<schedulerId, true>::SecSignedInt b2) override {
+  typename IntGame<schedulerId, true, usingBatch>::SecBit operation(
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b1,
+      typename IntGame<schedulerId, true, usingBatch>::SecSignedInt b2)
+      override {
     return b1 == b2;
   }
 };
 
 BENCHMARK_COUNTERS(IntEqualToBenchmark, counters) {
-  FrontendBenchmark<IntEqualToGame<0>, IntEqualToGame<1>> benchmark;
+  FrontendBenchmark<IntEqualToGame<0, false>, IntEqualToGame<1, false>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(IntEqualToBatchBenchmark, counters) {
+  FrontendBenchmark<IntEqualToGame<0, true>, IntEqualToGame<1, true>> benchmark;
   benchmark.runBenchmark(counters);
 }
 } // namespace fbpcf::frontend
