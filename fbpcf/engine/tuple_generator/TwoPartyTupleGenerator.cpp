@@ -24,7 +24,9 @@ TwoPartyTupleGenerator::TwoPartyTupleGenerator(
       receiverRcot_{std::move(receiverRcot)},
       delta_{delta},
       buffer_{bufferSize, [this](uint64_t size) {
-                return generateTuples(size);
+                return std::async(
+                    [this](uint64_t size) { return generateTuples(size); },
+                    size);
               }} {}
 
 std::vector<ITupleGenerator::BooleanTuple>

@@ -18,11 +18,15 @@ TEST(AsyncBufferTest, TestGetData) {
       AsyncBuffer<int32_t>(100, [&index, &generationCount](uint64_t size) {
         generationCount++;
 
-        std::vector<int32_t> res;
-        for (auto i = 0; i < size; ++i) {
-          res.push_back(index++);
-        }
-        return res;
+        return std::async(
+            [&index](int size) {
+              std::vector<int32_t> res;
+              for (auto i = 0; i < size; ++i) {
+                res.push_back(index++);
+              }
+              return res;
+            },
+            size);
       });
 
   // The data is generated asynchronously.
