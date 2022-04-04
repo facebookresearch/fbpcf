@@ -12,6 +12,7 @@
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/util/test/benchmarks/BenchmarkHelper.h"
 #include "fbpcf/engine/util/test/benchmarks/NetworkedBenchmark.h"
+#include "fbpcf/frontend/BitString.h"
 #include "fbpcf/frontend/mpcGame.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -19,6 +20,7 @@
 namespace fbpcf::frontend {
 
 const bool unsafe = true;
+const uint32_t batchSize = 1000;
 
 template <class Game0, class Game1>
 class FrontendBenchmark : public engine::util::NetworkedBenchmark {
@@ -77,7 +79,6 @@ class BitGame : public MpcGame<schedulerId> {
   void play() {
     SecBit b1, b2;
     if constexpr (usingBatch) {
-      auto batchSize = 1000;
       b1 = SecBit(std::vector<bool>(batchSize, true), 0);
       b2 = SecBit(std::vector<bool>(batchSize, false), 1);
     } else {
@@ -189,8 +190,6 @@ BENCHMARK_COUNTERS(BitNotBatchBenchmark, counters) {
   FrontendBenchmark<BitNotGame<0, true>, BitNotGame<1, true>> benchmark;
   benchmark.runBenchmark(counters);
 }
-
-const uint32_t batchSize = 1000;
 
 template <int schedulerId, bool isBoolOutput, bool usingBatch>
 class IntGame : public MpcGame<schedulerId> {
@@ -462,6 +461,157 @@ BENCHMARK_COUNTERS(IntEqualToBenchmark, counters) {
 
 BENCHMARK_COUNTERS(IntEqualToBatchBenchmark, counters) {
   FrontendBenchmark<IntEqualToGame<0, true>, IntEqualToGame<1, true>> benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitStringGame : public MpcGame<schedulerId> {
+ public:
+  using BitString = typename frontend::BitString<true, schedulerId, usingBatch>;
+
+  explicit BitStringGame(std::unique_ptr<scheduler::IScheduler> scheduler)
+      : MpcGame<schedulerId>(std::move(scheduler)) {}
+
+  virtual ~BitStringGame() = default;
+
+  void play() {
+    auto size = 32;
+    BitString b1;
+    BitString b2;
+    if constexpr (usingBatch) {
+      b1 = BitString(
+          std::vector<std::vector<bool>>(
+              batchSize, std::vector<bool>(size, true)),
+          0);
+      b2 = BitString(
+          std::vector<std::vector<bool>>(
+              batchSize, std::vector<bool>(size, false)),
+          1);
+    } else {
+      b1 = BitString(std::vector<bool>(size, true), 0);
+      b2 = BitString(std::vector<bool>(size, false), 1);
+    }
+
+    BitString b3;
+    for (auto i = 0; i < 100; i++) {
+      b3 = operation(b1, b2);
+    }
+    b3.openToParty(0).getValue();
+  }
+
+ protected:
+  virtual BitString operation(BitString b1, BitString b2) = 0;
+};
+
+template <int schedulerId, bool usingBatch>
+class BitStringNotGame : public BitStringGame<schedulerId, usingBatch> {
+ public:
+  explicit BitStringNotGame(std::unique_ptr<scheduler::IScheduler> scheduler)
+      : BitStringGame<schedulerId, usingBatch>(std::move(scheduler)) {}
+
+ protected:
+  typename BitStringGame<schedulerId, usingBatch>::BitString operation(
+      typename BitStringGame<schedulerId, usingBatch>::BitString b1,
+      typename BitStringGame<schedulerId, usingBatch>::BitString) {
+    return !b1;
+  }
+};
+
+BENCHMARK_COUNTERS(BitStringNotBenchmark, counters) {
+  FrontendBenchmark<BitStringNotGame<0, false>, BitStringNotGame<1, false>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(BitStringNotBatchBenchmark, counters) {
+  FrontendBenchmark<BitStringNotGame<0, true>, BitStringNotGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitStringAndGame : public BitStringGame<schedulerId, usingBatch> {
+ public:
+  explicit BitStringAndGame(std::unique_ptr<scheduler::IScheduler> scheduler)
+      : BitStringGame<schedulerId, usingBatch>(std::move(scheduler)) {}
+
+ protected:
+  typename BitStringGame<schedulerId, usingBatch>::BitString operation(
+      typename BitStringGame<schedulerId, usingBatch>::BitString b1,
+      typename BitStringGame<schedulerId, usingBatch>::BitString b2) override {
+    return b1 & b2;
+  }
+};
+
+BENCHMARK_COUNTERS(BitStringAndBenchmark, counters) {
+  FrontendBenchmark<BitStringAndGame<0, false>, BitStringAndGame<1, false>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(BitStringAndBatchBenchmark, counters) {
+  FrontendBenchmark<BitStringAndGame<0, true>, BitStringAndGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitStringXorGame : public BitStringGame<schedulerId, usingBatch> {
+ public:
+  explicit BitStringXorGame(std::unique_ptr<scheduler::IScheduler> scheduler)
+      : BitStringGame<schedulerId, usingBatch>(std::move(scheduler)) {}
+
+ protected:
+  typename BitStringGame<schedulerId, usingBatch>::BitString operation(
+      typename BitStringGame<schedulerId, usingBatch>::BitString b1,
+      typename BitStringGame<schedulerId, usingBatch>::BitString b2) override {
+    return b1 ^ b2;
+  }
+};
+
+BENCHMARK_COUNTERS(BitStringXorBenchmark, counters) {
+  FrontendBenchmark<BitStringXorGame<0, false>, BitStringXorGame<1, false>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(BitStringXorBatchBenchmark, counters) {
+  FrontendBenchmark<BitStringXorGame<0, true>, BitStringXorGame<1, true>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+template <int schedulerId, bool usingBatch>
+class BitStringMuxGame : public BitStringGame<schedulerId, usingBatch> {
+ public:
+  explicit BitStringMuxGame(std::unique_ptr<scheduler::IScheduler> scheduler)
+      : BitStringGame<schedulerId, usingBatch>(std::move(scheduler)) {}
+
+ protected:
+  typename BitStringGame<schedulerId, usingBatch>::BitString operation(
+      typename BitStringGame<schedulerId, usingBatch>::BitString b1,
+      typename BitStringGame<schedulerId, usingBatch>::BitString b2) override {
+    typename IntGame<schedulerId, false, usingBatch>::SecBit choice;
+    if constexpr (usingBatch) {
+      choice = typename IntGame<schedulerId, false, usingBatch>::SecBit(
+          std::vector<bool>(batchSize, true), 1);
+    } else {
+      choice =
+          typename IntGame<schedulerId, false, usingBatch>::SecBit(true, 1);
+    }
+    return b1.mux(choice, b2);
+  }
+};
+
+BENCHMARK_COUNTERS(BitStringMuxBenchmark, counters) {
+  FrontendBenchmark<BitStringMuxGame<0, false>, BitStringMuxGame<1, false>>
+      benchmark;
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(BitStringMuxBatchBenchmark, counters) {
+  FrontendBenchmark<BitStringMuxGame<0, true>, BitStringMuxGame<1, true>>
+      benchmark;
   benchmark.runBenchmark(counters);
 }
 } // namespace fbpcf::frontend
