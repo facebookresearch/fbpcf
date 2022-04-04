@@ -327,11 +327,11 @@ TEST(BitTest, testOr) {
     PubBit b4(v);
 
     // id 7
-    auto b5 = b1 || b2;
+    auto b5 = b1 | b2;
     // id 10
-    auto b6 = b1 || b3;
+    auto b6 = b1 | b3;
     // id 13
-    auto b7 = b3 || b4;
+    auto b7 = b3 | b4;
   }
   scheduler::SchedulerKeeper<0>::freeScheduler();
 }
@@ -367,9 +367,9 @@ TEST(BitTest, testOrBatch) {
 
     PubBitBatch b4(v);
 
-    auto b5 = b1 || b2;
-    auto b6 = b1 || b3;
-    auto b7 = b3 || b4;
+    auto b5 = b1 | b2;
+    auto b6 = b1 | b3;
+    auto b7 = b3 | b4;
   }
   scheduler::SchedulerKeeper<0>::freeScheduler();
 }
@@ -395,9 +395,9 @@ TEST(BitTest, testOrPlaintextScheduler) {
         SecBit b3(v3, partyId);
         PubBit b4(v4);
 
-        auto b5 = b1 || b3;
-        auto b6 = b2 || b4;
-        auto b7 = b1 || b4;
+        auto b5 = b1 | b3;
+        auto b6 = b2 | b4;
+        auto b7 = b1 | b4;
 
         EXPECT_EQ(b5.openToParty(partyId).getValue(), v1 || v3);
         EXPECT_EQ(b6.getValue(), v2 || v4);
@@ -429,9 +429,9 @@ TEST(BitTest, testOrBatchPlaintextScheduler) {
         SecBitBatch b3({v3, v1}, partyId);
         PubBitBatch b4({v4, v2});
 
-        auto b5 = b1 || b3;
-        auto b6 = b2 || b4;
-        auto b7 = b1 || b4;
+        auto b5 = b1 | b3;
+        auto b6 = b2 | b4;
+        auto b7 = b1 | b4;
 
         auto output1 = b5.openToParty(partyId).getValue();
         auto output2 = b6.getValue();

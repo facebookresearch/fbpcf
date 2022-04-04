@@ -98,6 +98,10 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
       const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
 
   template <bool isSecretOther>
+  Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator|(
+      const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
+
+  template <bool isSecretOther>
   Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator||(
       const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
 
