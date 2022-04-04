@@ -26,6 +26,7 @@ private_computation:
         constructor:
           tmp_directory: /tmp
           binary_version: latest
+          repository_path: LOCAL
     OneDockerServiceConfig:
       constructor:
         task_definition: onedocker-task-fbpcf-e2e-workflow:7#onedocker-container-fbpcf-e2e-workflow
