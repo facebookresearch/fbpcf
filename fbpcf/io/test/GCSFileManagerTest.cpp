@@ -18,7 +18,6 @@
 #include "fbpcf/exception/GcpException.h"
 #include "fbpcf/gcp/MockGCSClient.h"
 #include "fbpcf/io/GCSFileManager.h"
-#include "fbpcf/io/MockFileManager.h"
 
 using ::testing::_;
 

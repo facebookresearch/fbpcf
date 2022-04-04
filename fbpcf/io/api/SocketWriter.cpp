@@ -5,6 +5,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "fbpcf/io/api/SocketWriter.h"
-
 namespace fbpcf::io {} // namespace fbpcf::io
