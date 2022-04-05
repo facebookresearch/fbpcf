@@ -133,9 +133,20 @@ jobs:
         ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
       working-directory: fbpcf/tests/github/
 
-    - name: Attribution - Prepare Compute Input
+    - name: Attribution - Prepare Compute Input - Id Spine combine
       run: |
-        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} prepare_compute_input
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} id_spine_combiner
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Prepare Compute Input - ReSharding
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} reshard
       working-directory: fbpcf/tests/github/
 
     - name: Check Status
@@ -269,9 +280,20 @@ jobs:
         ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
       working-directory: fbpcf/tests/github/
 
-    - name: Lift - Prepare Compute Input
+    - name: Lift - Prepare Compute Input - Id Spine combine
       run: |
-        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} prepare_compute_input
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} id_spine_combiner
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Prepare Compute Input - ReSharding
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} reshard
       working-directory: fbpcf/tests/github/
 
     - name: Check Status
