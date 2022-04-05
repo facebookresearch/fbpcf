@@ -23,11 +23,11 @@ class AsyncBuffer {
  public:
   AsyncBuffer(
       uint64_t bufferSize,
-      std::function<std::vector<T>(uint64_t size)> generateData)
+      std::function<std::future<std::vector<T>>(uint64_t size)> generateData)
       : bufferSize_{bufferSize},
         bufferIndex_{bufferSize},
         generateData_{generateData} {
-    futureBuffer_ = std::async(generateData_, bufferSize_);
+    futureBuffer_ = generateData_(bufferSize_);
   }
 
   ~AsyncBuffer() {
@@ -40,7 +40,7 @@ class AsyncBuffer {
       if (bufferIndex_ >= bufferSize_) {
         buffer_ = futureBuffer_.get();
         bufferIndex_ = 0;
-        futureBuffer_ = std::async(generateData_, bufferSize_);
+        futureBuffer_ = generateData_(bufferSize_);
       }
 
       auto insertSize = std::min(size - rst.size(), bufferSize_ - bufferIndex_);
@@ -57,7 +57,7 @@ class AsyncBuffer {
   uint64_t bufferSize_;
   uint64_t bufferIndex_;
 
-  std::function<std::vector<T>(uint64_t size)> generateData_;
+  std::function<std::future<std::vector<T>>(uint64_t size)> generateData_;
 
   std::vector<T> buffer_;
 

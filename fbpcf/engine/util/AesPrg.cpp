@@ -16,7 +16,11 @@ AesPrg::AesPrg(__m128i seed, int bufferSize)
       prgCounter_(0),
       asyncBuffer_{std::make_unique<AsyncBuffer<unsigned char>>(
           sizeof(__m128i) * bufferSize,
-          [this](uint64_t size) { return generateRandomData(size); })} {}
+          [this](uint64_t size) {
+            return std::async(
+                [this](uint64_t size) { return generateRandomData(size); },
+                size);
+          })} {}
 
 AesPrg::AesPrg(__m128i seed)
     : cipher_(seed), prgCounter_(0), asyncBuffer_(nullptr) {}

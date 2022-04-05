@@ -19,7 +19,9 @@ TupleGenerator::TupleGenerator(
     : productShareGeneratorMap_{std::move(productShareGeneratorMap)},
       prg_{std::move(prg)},
       asyncBuffer_{bufferSize, [this](uint64_t size) {
-                     return generateTuples(size);
+                     return std::async(
+                         [this](uint64_t size) { return generateTuples(size); },
+                         size);
                    }} {}
 
 std::vector<ITupleGenerator::BooleanTuple> TupleGenerator::getBooleanTuple(
