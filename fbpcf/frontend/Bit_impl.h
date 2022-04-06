@@ -250,14 +250,6 @@ Bit<isSecret, schedulerId, usingBatch>::operator|(
 }
 
 template <bool isSecret, int schedulerId, bool usingBatch>
-template <bool isSecretOther>
-Bit<isSecret || isSecretOther, schedulerId, usingBatch>
-Bit<isSecret, schedulerId, usingBatch>::operator||(
-    const Bit<isSecretOther, schedulerId, usingBatch>& other) const {
-  return (*this ^ other) ^ (*this & other);
-}
-
-template <bool isSecret, int schedulerId, bool usingBatch>
 typename Bit<isSecret, schedulerId, usingBatch>::BoolType
 Bit<isSecret, schedulerId, usingBatch>::getValue() const {
   static_assert(!isSecret, "Can't get value on secret wires.");

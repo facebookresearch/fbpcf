@@ -153,7 +153,7 @@ class BitOrGame : public BitGame<schedulerId, usingBatch> {
   typename BitGame<schedulerId, usingBatch>::SecBit operation(
       typename BitGame<schedulerId, usingBatch>::SecBit b1,
       typename BitGame<schedulerId, usingBatch>::SecBit b2) override {
-    return b1 || b2;
+    return b1 | b2;
   }
 };
 
