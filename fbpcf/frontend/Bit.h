@@ -101,10 +101,6 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
   Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator|(
       const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
 
-  template <bool isSecretOther>
-  Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator||(
-      const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
-
   /**
    * Create a new bit that will carry the plaintext signal of this bit.
    * However only party with partyId will receive the actual value, other
