@@ -13,16 +13,13 @@
 
 namespace fbpcf::io {
 
-CloudFileWriter::CloudFileWriter(std::string /* filePath */) {}
-
 int CloudFileWriter::close() {
-  return 0;
-}
-size_t CloudFileWriter::write(std::vector<char>& /* buf */) {
-  return 0;
+  return cloudFileUploader_->complete();
 }
 
-CloudFileWriter::~CloudFileWriter() {
-  close();
+size_t CloudFileWriter::write(std::vector<char>& buf) {
+  return cloudFileUploader_->upload(buf);
 }
+
+CloudFileWriter::~CloudFileWriter() {}
 } // namespace fbpcf::io

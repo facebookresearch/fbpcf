@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "fbpcf/io/api/IWriterCloser.h"
+#include "fbpcf/io/cloud_util/CloudFileUtil.h"
+#include "fbpcf/io/cloud_util/IFileUploader.h"
 
 namespace fbpcf::io {
 
@@ -21,11 +23,17 @@ cannot be a local file.
 */
 class CloudFileWriter : public IWriterCloser {
  public:
-  explicit CloudFileWriter(std::string filePath);
+  explicit CloudFileWriter(const std::string& filePath) : filePath_{filePath} {
+    cloudFileUploader_ = fbpcf::cloudio::getCloudFileUploader(filePath_);
+  }
 
   int close() override;
   size_t write(std::vector<char>& buf) override;
   ~CloudFileWriter() override;
+
+ private:
+  const std::string filePath_;
+  std::unique_ptr<fbpcf::cloudio::IFileUploader> cloudFileUploader_;
 };
 
 } // namespace fbpcf::io
