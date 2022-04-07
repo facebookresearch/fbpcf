@@ -17,7 +17,7 @@ env:
   COORDINATOR_IMAGE_DEV: ghcr.io/facebookresearch/fbpcs/coordinator:dev
 
 jobs:
-  build_prerelease_images:
+  test_and_push:
     runs-on: [self-hosted, e2e_test_runner]
     permissions:
       contents: write
@@ -25,6 +25,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Build fbpcf docker image
       run: |
@@ -72,19 +74,6 @@ jobs:
     - name: Push fbpcs image to test registry
       run: |
         docker push --all-tags ${{ env.TEST_REGISTRY_IMAGE_NAME }}
-
-  private_attribution_e2e_test:
-    runs-on: [self-hosted, e2e_test_runner]
-    needs: build_prerelease_images
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Log into registry ${{ env.REGISTRY }}
-      uses: docker/login-action@v1
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Pull coordinator image
       run: |
@@ -197,23 +186,6 @@ jobs:
       run: |
         docker stop ${{ env.PA_CONTAINER_NAME }}
         docker rm ${{ env.PA_CONTAINER_NAME }}
-
-  private_lift_e2e_test:
-    runs-on: [self-hosted, e2e_test_runner]
-    needs: build_prerelease_images
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Log into registry ${{ env.REGISTRY }}
-      uses: docker/login-action@v1
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Pull coordinator image
-      run: |
-        docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
 
     - name: Start container
       run: |
@@ -333,25 +305,6 @@ jobs:
       run: |
         docker stop ${{ env.PL_CONTAINER_NAME }}
         docker rm ${{ env.PL_CONTAINER_NAME }}
-
-  tag_and_push:
-    runs-on: [self-hosted, e2e_test_runner]
-    needs: [build_prerelease_images, private_attribution_e2e_test, private_lift_e2e_test]
-    permissions:
-      contents: write
-      packages: write
-
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
-    - name: Log into registry ${{ env.REGISTRY }}
-      uses: docker/login-action@v1
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create version string
       id: create_version
