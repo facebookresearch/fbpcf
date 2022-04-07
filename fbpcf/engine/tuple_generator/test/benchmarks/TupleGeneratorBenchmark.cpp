@@ -69,7 +69,7 @@ class ProductShareGeneratorBenchmark : public util::NetworkedBenchmark {
   }
 
  private:
-  size_t size_ = 1000000;
+  size_t size_ = 10000000;
 
   std::unique_ptr<communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
@@ -133,7 +133,7 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
   size_t bufferSize_ = 1600000;
 
  private:
-  size_t size_ = 1000000;
+  size_t size_ = 10000000;
 
   std::unique_ptr<communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
