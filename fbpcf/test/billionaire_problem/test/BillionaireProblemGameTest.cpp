@@ -13,12 +13,14 @@
 #include <random>
 #include <tuple>
 #include <vector>
+
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/util/AesPrgFactory.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/PlaintextScheduler.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/scheduler/WireKeeper.h"
+#include "fbpcf/test/TestHelper.h"
 
 #include "fbpcf/engine/SecretShareEngineFactory.h"
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
@@ -42,11 +44,7 @@ std::pair<bool, uint64_t> runWithScheduler(
     int myId,
     std::reference_wrapper<
         engine::communication::IPartyCommunicationAgentFactory> factory,
-    // TODO T101868337 - Use a scheduler factory here
-    std::unique_ptr<scheduler::IScheduler> schedulerCreator(
-        int myId,
-        engine::communication::IPartyCommunicationAgentFactory&
-            communicationAgentFactory)) {
+    SchedulerCreator schedulerCreator) {
   std::random_device rd;
   std::mt19937_64 e(rd());
   std::uniform_int_distribution<uint32_t> dist(0, 0xFFFFFFFF);
@@ -72,10 +70,7 @@ std::pair<bool, uint64_t> runWithScheduler(
   return {mpcResult, myTotalAssets};
 }
 
-void testWithScheduler(std::unique_ptr<scheduler::IScheduler> schedulerCreator(
-    int myId,
-    engine::communication::IPartyCommunicationAgentFactory&
-        communicationAgentFactory)) {
+void testWithScheduler(SchedulerCreator schedulerCreator) {
   auto factories = engine::communication::getInMemoryAgentFactory(2);
 
   auto future0 = std::async(
@@ -118,9 +113,7 @@ std::pair<std::vector<bool>, std::vector<uint64_t>> runBatchWithScheduler(
     int myId,
     std::reference_wrapper<
         engine::communication::IPartyCommunicationAgentFactory> factory,
-    std::unique_ptr<scheduler::IScheduler> schedulerCreator(
-        int,
-        engine::communication::IPartyCommunicationAgentFactory&)) {
+    SchedulerCreator schedulerCreator) {
   auto scheduler = schedulerCreator(myId, factory);
   std::random_device rd;
   std::mt19937_64 e(rd());
