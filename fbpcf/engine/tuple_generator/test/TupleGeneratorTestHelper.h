@@ -137,4 +137,19 @@ createTwoPartyTupleGeneratorFactoryWithRcotExtender(
       kTestBufferSize);
 }
 
+inline std::unique_ptr<ITupleGeneratorFactory>
+createTwoPartyTupleGeneratorFactoryWithRcotExtenderAndSmallBuffer(
+    int /*numberOfParty*/,
+    int myId,
+    communication::IPartyCommunicationAgentFactory& agentFactory) {
+  auto rcot = oblivious_transfer::createFerretRcotFactory(
+      kTestExtendedSize, kTestBaseSize, kTestWeight);
+  return std::make_unique<TwoPartyTupleGeneratorFactory>(
+      std::move(rcot),
+      std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
+          agentFactory),
+      myId,
+      1);
+}
+
 } // namespace fbpcf::engine::tuple_generator
