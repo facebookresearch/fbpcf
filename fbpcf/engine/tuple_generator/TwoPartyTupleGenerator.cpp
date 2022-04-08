@@ -54,7 +54,7 @@ TwoPartyTupleGenerator::getBooleanTuple(uint32_t size) {
 
 std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>
 TwoPartyTupleGenerator::getCompositeTuple(
-    std::map<size_t, uint32_t>& tupleSizes) {
+    const std::map<size_t, uint32_t>& tupleSizes) {
   std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>> tuples;
   for (auto& tupleSizeToCount : tupleSizes) {
     size_t tupleSize = std::get<0>(tupleSizeToCount);
@@ -81,7 +81,7 @@ std::pair<
     std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>
 TwoPartyTupleGenerator::getNormalAndCompositeBooleanTuples(
     uint32_t tupleSize,
-    std::map<size_t, uint32_t>& tupleSizes) {
+    const std::map<size_t, uint32_t>& tupleSizes) {
   auto normalTuples = getBooleanTuple(tupleSize);
   auto compositeTuples = getCompositeTuple(tupleSizes);
   return std::make_pair(std::move(normalTuples), std::move(compositeTuples));
@@ -218,25 +218,25 @@ TwoPartyTupleGenerator::expandRCOTResults(
       hashFromAes_.inPlaceHash(receiverMessages);
 
       for (size_t i = 0; i < sender0Messages.size(); i++) {
-        // a1 = H(k0) ^ H(k1) / a2 = H(l0) ^ H(l1)
-        __m128i a = _mm_xor_si128(sender0Messages.at(i), sender1Messages.at(i));
-        // b1 = r / b2 = p
-        bool b = choiceBits.at(i);
+        // a1 = r / a2 = p
+        bool a = choiceBits.at(i);
+        // b1 = H(k0) ^ H(k1) / b2 = H(l0) ^ H(l1)
+        __m128i b = _mm_xor_si128(sender0Messages.at(i), sender1Messages.at(i));
         // c1 = (H(k0) ^ H(k1)) & r ^ H(k0) + H(lr)
         //    = H(kr) + H(lr) /
         // c2 = (H(l0) ^ H(l1)) & p ^ H(l0) + H(kp)
         //    = H(lp) + H(kp)
-        __m128i c = b
+        __m128i c = a
             ? _mm_xor_si128(
-                  _mm_xor_si128(a, sender0Messages.at(i)),
+                  _mm_xor_si128(b, sender0Messages.at(i)),
                   receiverMessages.at(i))
             : _mm_xor_si128(sender0Messages.at(i), receiverMessages.at(i));
 
-        std::vector<bool> aBits(requestedTupleSize);
+        std::vector<bool> bBits(requestedTupleSize);
         std::vector<bool> cBits(requestedTupleSize);
-        util::extractLnbToVector(a, aBits);
+        util::extractLnbToVector(b, bBits);
         util::extractLnbToVector(c, cBits);
-        result[i] = CompositeBooleanTuple(aBits, b, cBits);
+        result[i] = CompositeBooleanTuple(a, bBits, cBits);
       }
     } else {
       for (size_t i = 0; i < sender0Messages.size(); i++) {
@@ -250,12 +250,12 @@ TwoPartyTupleGenerator::expandRCOTResults(
         // H(lr) / H(kp)
         util::AesPrg(receiverMessages.at(i)).getRandomBitsInPlace(receiverGen);
 
-        std::vector<bool> a(requestedTupleSize);
-        auto b = choiceBits.at(i);
+        auto a = choiceBits.at(i);
+        std::vector<bool> b(requestedTupleSize);
         std::vector<bool> c(requestedTupleSize);
         for (size_t j = 0; j < requestedTupleSize; j++) {
-          a[j] = sender0Gen[j] ^ sender1Gen[j];
-          c[j] = (a[j] & b) ^ sender0Gen[j] ^ receiverGen[j];
+          b[j] = sender0Gen[j] ^ sender1Gen[j];
+          c[j] = (b[j] & a) ^ sender0Gen[j] ^ receiverGen[j];
         }
         result[i] = CompositeBooleanTuple(a, b, c);
       }

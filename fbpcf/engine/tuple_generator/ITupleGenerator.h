@@ -68,20 +68,20 @@ class ITupleGenerator {
    public:
     CompositeBooleanTuple() {}
 
-    CompositeBooleanTuple(std::vector<bool> a, bool b, std::vector<bool> c)
-        : a_{a}, c_{c}, b_{b} {
-      if (a.size() != c.size()) {
+    CompositeBooleanTuple(bool a, std::vector<bool> b, std::vector<bool> c)
+        : a_{a}, b_{b}, c_{c} {
+      if (b.size() != c.size()) {
         throw std::invalid_argument("Sizes of a and c must be equal");
       }
     }
 
-    // get the vector of A bit shares
-    std::vector<bool> getA() {
+    // get the secret-share of shared bit A
+    bool getA() {
       return a_;
     }
 
-    // get the secret-share of shared bit B
-    bool getB() {
+    // get the vector of B bit shares
+    std::vector<bool> getB() {
       return b_;
     }
 
@@ -91,8 +91,8 @@ class ITupleGenerator {
     }
 
    private:
-    std::vector<bool> a_, c_;
-    bool b_;
+    bool a_;
+    std::vector<bool> b_, c_;
   };
 
   /**
@@ -108,7 +108,7 @@ class ITupleGenerator {
    * @return A map of tuple sizes to vector of those tuples
    */
   virtual std::map<size_t, std::vector<CompositeBooleanTuple>>
-  getCompositeTuple(std::map<size_t, uint32_t>& tupleSizes) = 0;
+  getCompositeTuple(const std::map<size_t, uint32_t>& tupleSizes) = 0;
 
   /**
    * Wrapper method for getBooleanTuple() and getCompositeTuple() which performs
@@ -119,7 +119,13 @@ class ITupleGenerator {
       std::map<size_t, std::vector<CompositeBooleanTuple>>>
   getNormalAndCompositeBooleanTuples(
       uint32_t tupleSize,
-      std::map<size_t, uint32_t>& compositeTupleSizes) = 0;
+      const std::map<size_t, uint32_t>& compositeTupleSizes) = 0;
+
+  /**
+   * Temporary method to indicate whether it's safe to call composite tuple
+   * generation methods
+   */
+  virtual bool supportsCompositeTupleGeneration() = 0;
 
   /**
    * Get the total amount of traffic transmitted.

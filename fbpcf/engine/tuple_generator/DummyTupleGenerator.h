@@ -27,7 +27,7 @@ class DummyTupleGenerator final : public ITupleGenerator {
    * @inherit doc
    */
   std::map<size_t, std::vector<CompositeBooleanTuple>> getCompositeTuple(
-      std::map<size_t, uint32_t>& tupleSizes) override {
+      const std::map<size_t, uint32_t>& tupleSizes) override {
     std::map<size_t, std::vector<CompositeBooleanTuple>> result;
     for (auto& countOfTuples : tupleSizes) {
       size_t tupleSize = countOfTuples.first;
@@ -36,8 +36,8 @@ class DummyTupleGenerator final : public ITupleGenerator {
       result.emplace(tupleSize, std::vector<CompositeBooleanTuple>(tupleCount));
       for (int i = 0; i < tupleCount; i++) {
         result.at(tupleSize).at(i) = CompositeBooleanTuple(
-            std::vector<bool>(tupleSize, 0),
             0,
+            std::vector<bool>(tupleSize, 0),
             std::vector<bool>(tupleSize, 0));
       }
     }
@@ -53,11 +53,18 @@ class DummyTupleGenerator final : public ITupleGenerator {
       std::map<size_t, std::vector<CompositeBooleanTuple>>>
   getNormalAndCompositeBooleanTuples(
       uint32_t tupleSizes,
-      std::map<size_t, uint32_t>& compositeTupleSizes) override {
+      const std::map<size_t, uint32_t>& compositeTupleSizes) override {
     auto boolResult = getBooleanTuple(tupleSizes);
     auto compositeBoolResult = getCompositeTuple(compositeTupleSizes);
     return std::make_pair(
         std::move(boolResult), std::move(compositeBoolResult));
+  }
+
+  /**
+   * @inherit doc
+   */
+  bool supportsCompositeTupleGeneration() override {
+    return true;
   }
 
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
