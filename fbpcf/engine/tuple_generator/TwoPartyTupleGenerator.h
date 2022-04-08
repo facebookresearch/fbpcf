@@ -7,7 +7,11 @@
 
 #pragma once
 
+#include <emmintrin.h>
+#include <deque>
 #include <future>
+#include <mutex>
+#include <type_traits>
 
 #include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransfer.h"
@@ -53,7 +57,25 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override;
 
  private:
-  inline std::vector<BooleanTuple> generateTuples(uint64_t size);
+  inline std::vector<BooleanTuple> generateNormalTuples(uint64_t size);
+  inline std::vector<std::pair<__m128i, __m128i>> generateRcotResults(
+      uint64_t size);
+
+  template <bool isComposite>
+  using TupleType = typename std::
+      conditional<isComposite, CompositeBooleanTuple, BooleanTuple>::type;
+
+  template <bool isComposite>
+  std::vector<TupleType<isComposite>> expandRCOTResults(
+      std::vector<__m128i> sender0Messages,
+      std::vector<__m128i> receiverMessages,
+      size_t requestedTupleSize // ignored if isComposite = false
+  );
+
+  enum ScheduledTupleType {
+    Boolean,
+    Composite,
+  };
 
   util::Aes hashFromAes_;
 
@@ -63,7 +85,12 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
       receiverRcot_;
   __m128i delta_;
 
-  util::AsyncBuffer<BooleanTuple> buffer_;
+  std::mutex scheduleMutex_;
+  std::condition_variable cv_;
+  std::deque<ScheduledTupleType> toGenerate_;
+
+  util::AsyncBuffer<BooleanTuple> booleanTupleBuffer_;
+  util::AsyncBuffer<std::pair<__m128i, __m128i>> rcotBuffer_;
 };
 
 } // namespace fbpcf::engine::tuple_generator

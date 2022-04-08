@@ -86,7 +86,7 @@ std::vector<T> RcotBasedBidirectionObliviousTransfer<T>::biDirectionOT(
   std::vector<T> maskedInput1(otSize);
 
   for (size_t i = 0; i < otSize; i++) {
-    // h(key, n) = key & (1 << |x| - 1) if n >=128
+    // h(key, n) = AES_HASH(0, key) & ((1 << n) - 1) if n <= 128
     // h(key, n) = AES_PRG(key, n) if n > 128
     // mask(x, key) = x + h(key, |x|)
 
