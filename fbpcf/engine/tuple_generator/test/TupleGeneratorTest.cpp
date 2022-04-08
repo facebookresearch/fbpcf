@@ -65,25 +65,25 @@ void assertResults(
       }
 
       for (int i = 0; i < tupleCount; i++) {
-        std::vector<bool> a(compositeSize);
-        bool b = false;
+        bool a = false;
+        std::vector<bool> b(compositeSize);
         std::vector<bool> c(compositeSize);
 
         for (int j = 0; j < numberOfParty; j++) {
-          b ^= std::get<1>(results[j]).at(compositeSize)[i].getB();
-          auto aShares = std::get<1>(results[j]).at(compositeSize)[i].getA();
+          a ^= std::get<1>(results[j]).at(compositeSize)[i].getA();
+          auto bShares = std::get<1>(results[j]).at(compositeSize)[i].getB();
           auto cShares = std::get<1>(results[j]).at(compositeSize)[i].getC();
 
-          ASSERT_EQ(aShares.size(), compositeSize);
+          ASSERT_EQ(bShares.size(), compositeSize);
           ASSERT_EQ(cShares.size(), compositeSize);
           for (int k = 0; k < compositeSize; k++) {
-            a.at(k) = a.at(k) ^ aShares[k];
+            b.at(k) = b.at(k) ^ bShares[k];
             c.at(k) = c.at(k) ^ cShares[k];
           }
         }
 
         for (int k = 0; k < compositeSize; k++) {
-          ASSERT_EQ(c[k], a[k] & b);
+          ASSERT_EQ(c[k], a & b[k]);
         }
       }
     }

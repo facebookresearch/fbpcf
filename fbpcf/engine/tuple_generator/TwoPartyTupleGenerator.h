@@ -39,7 +39,7 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
    * @inherit doc
    */
   std::map<size_t, std::vector<CompositeBooleanTuple>> getCompositeTuple(
-      std::map<size_t, uint32_t>& tupleSizes) override;
+      const std::map<size_t, uint32_t>& tupleSizes) override;
 
   /**
    * @inherit doc
@@ -49,7 +49,11 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
       std::map<size_t, std::vector<CompositeBooleanTuple>>>
   getNormalAndCompositeBooleanTuples(
       uint32_t tupleSize,
-      std::map<size_t, uint32_t>& compositeTupleSizes) override;
+      const std::map<size_t, uint32_t>& compositeTupleSizes) override;
+
+  bool supportsCompositeTupleGeneration() override {
+    return true;
+  }
 
   /**
    * @inherit doc
