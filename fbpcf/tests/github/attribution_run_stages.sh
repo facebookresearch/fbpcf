@@ -51,7 +51,7 @@ case "$stage" in
             --stage_flow="$ATTRIBUTION_STAGE_FLOW"
             ;;
     # Stages without passing IP addresses
-    id_spine_combiner | reshard | pid_metric_export | data_validation )
+    id_spine_combiner | reshard | pid_shard | pid_prepare | pid_metric_export | data_validation )
         echo "Attribution Publisher $stage starts"
         $docker_command run_next "$ATTRIBUTION_PUBLISHER_NAME" \
             --config="$DOCKER_CLOUD_CONFIG_FILE"
