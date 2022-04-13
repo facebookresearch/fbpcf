@@ -1,10 +1,30 @@
 # FBPCF (Facebook Private Computation Framework)
-The Private Computation Framework (PCF) library builds a scalable, secure, and distributed private computation platform to run secure computations on a production level. PCF library supports running the computation on AWS Cloud and is able to integrate various private computation technologies.
 
-We are introducing v2 of PCF.  While v1 of the framework depended directly on the EMP-Toolkit, we have done a complete re-write in this v2 release.
+## Project Description
+Private Computation Framework (PCF) is the application framework for writing MPC "games" (applications) that are secure and private.  The games are typically created in C++ using private data structures provided by PCF, and evaluated using an MPC backend that operates much like a virtual machine.
 
-## Examples: Millionaire Game
-The [Millionaire](example/millionaire) game is an interesting example that implemented on top of the framework. You can run the game in two terminals representing two players. Each player will randomly return an integer from 0 to 1000000000 to represent the money they have. The game will compare the two integers and determine who is richer.
+We have tested PCF on AWS Cloud but we intend for it to be cloud agnostic.
+
+We are introducing v2 of PCF.  Previously in v1, the framework depended directly on the EMP-Toolkit.  We have since then done a complete rewrite in this v2 release with the following features:
+
+### XOR Secret Sharing Protocol
+PCF v2.0 implements support for an XOR Secret Sharing MPC protocol (classical [GMW protocol](https://dl.acm.org/doi/10.1145/28395.28420) with [beaver tuples](https://link.springer.com/content/pdf/10.1007/3-540-46766-1_34.pdf)) that uses two orders of magnitude less in network traffic.  Compared to our previous version which implemented the Garbled Circuit protocol we have seen 98% cost reduction.
+
+### Extensibility
+PCF v2.0 now allows the same application to run with different underlying protocols with as simple as a configuration change.  This extensibility has also enabled us to support running MPC applications in plaintext mode for easier debugging.
+
+### MPC Standard Libraries
+In addition to providing private data types in the Frontend API, PCF v2.0 also provides a standard library containing a suite of useful tools.  For instance, we provide support for a private container that is under the hood implemented as an Oblivious RAM (ORAM).  An ORAM allows securely accessing an array of secret values with a secret index.  In addition to ORAM, we also provide other useful features such as permutor, shuffler, and sorter.
+
+### Cloud Agnostic Buffered File I/O
+MPC applications typically need to access local data that is stored in the cloud.  We provide cloud-agnostic APIs that will ease the reading and writing of your input or output datasets.
+
+<img src="docs/v2/pcf2_simple_arch.png" alt="Figure 1: Architecture of an appplication on top of PCF v2" />
+
+## Examples
+
+### Example: The Millionaire Game
+As an example of how you might use the PCF v2.0 APIs, we have included an example implementation of the classic [Millionaire](fbpcf/test/billionaire_problem) game.  You can run the game in two terminals representing two players.  Each player will randomly return an integer from 0 to 1000000000 to represent the amount of money they have.  The game will compare the two integers and determine who is richer.
 
 Instructions on how to run the exmaple:
 * Build the code and get the executable. Suppose the executable is `millionaire`.
@@ -12,8 +32,24 @@ Instructions on how to run the exmaple:
 * Open the other temianl and run `./millionaire --role=2 --server_ip=127.0.0.1`.
 * Watch the results.
 
-## Examples: Private Randomized Controlled Trials
+### Example: Private Randomized Controlled Trials
 As an interesting example application on top of PCF, we implemented a library that allows developers to perform randomized controlled trials (RCT), without leaking information about who participated or what action an individual took. It uses secure multiparty computation to guarantee this privacy. It is suitable for conducting A/B testing, or measuring advertising lift and learning the aggregate statistics without sharing information on the individual level. See what is RCT [here](docs/PrivateRCT.md) and private lift games pseudocode [here](docs/PrivateLift.md).
+
+## Full Documentation
+See full documentation [here](docs/v2)
+
+## Join the PCF community
+* Website: https://github.com/facebookresearch/fbpcf
+
+See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
+
+## License
+PCF and private RCT are [MIT](LICENSE) licensed, as found in the LICENSE file.
+
+## Additional Resources on Private Computation at Meta
+* [The Value of Secure Multi-Party Computation](https://privacytech.fb.com/multi-party-computation/)
+* [Building the Next Era of Personalized Experiences](https://www.facebook.com/business/news/building-the-next-era-of-personalized-experiences)
+* [Privacy-Enhancing Technologies and Building for the Future](https://www.facebook.com/business/news/building-for-the-future)
 
 ## Requirements
 ### Dependencies for working on Ubuntu 18.04
@@ -231,103 +267,3 @@ These are essentially treated as compiled static libraries and greatly reduces r
     - This is the git release tag for https://github.com/fmtlib/fmt
   - FOLLY_RELEASE="2021.03.29.00"
     - This is the git release tag for https://github.com/facebook/folly.git
-
-## How PCF works
-Private Computation Framework enables cryptographic methods that help two parties, Alice and Bob, compute a function on each of their secret inputs and receive outputs without revealing information about the inputs to each other. Specifically, it lets the programmers implement a garbled circuit-based 2pc program.
-
-The garbled circuit protocol happens between a Garbler and an Evaluator, and the function they compute has to be described as a Boolean circuit. Garbler compiles the function into a Boolean circuit and adds their inputs to the circuit. Garbler then garbles the circuit, which hides the value of the inputs using encryption. Garbler sends the garbled circuit to Evaluator, who adds their inputs and computes the circuit. After the computation, Garbler and Evaluator will work together to get back the output of computation in clear text.
-
-We looked into multiple services that enable secure computation to decide on the best framework that meets the requirements of Private RCT. After comparing more than twenty secure computation services — across secret sharing, garbled circuits, and homomorphic encryption-based protocols, we chose EMP-toolkit as the best fit for our application.
-
-## Design Principles
-1. Simplicity. We hide details of C++ and MPC as much as possible. We hope every engineer is able to write an MPC game with minimal ramp-up effort.
-2. Efficiency. We provide many common utilities for engineers to write a game with ease. We embrace functional programming to speed up development.
-3. Test and quality. We believe testing is important given the complexity of MPC. We provide a test framework for engineers to write unit tests to validate their games. We developed a special QueueIO for two parties to communicate via an in-memory queue. This allows MPC games to be implemented as pure functions, which also makes testing easier than before.
-
-## Architecture
-
-<img src="docs/pcfArch.jpg" alt="Figure 1: Architecture of an appplication on top of
-PCF" width="30%" height="30%">
-
-
-### main
-main is the main function in C++. It is responsible for dealing with command line arguments.
-
-Note: AWS Sdk requires applications that use it to initialize it first ([Learn more](https://docs.aws.amazon.com/sdk-for-cpp/v1/developer-guide/basic-use.html)). PCF provides a singleton that makes sure this is only performed once. It can be invoked by calling `fbpcf::AwsSdk::aquire()` in the main() function.
-
-### EMPApp
-We defined a unified interface. As you can read the code below, it’s responsible for dealing with input data and output data. It’s also responsible for launching a game.
-
-
-```
-template <class GameType, class InputDataType, class OutputDataType>
-
-class EmpApp {
- public:
-   virtual void run() {
- };
-
- protected:
-   virtual InputDataType getInputData() = 0;
-   virtual void putOutputData(const OutputDataType& output) = 0;
-
- private:
-   Role role_;
-   std::string serverIp_;
-   uint16_t port_;
-};
-```
-
-### EMPGame
-
-EMPGame is another unified interface. It defines MPC role and exposes a `play` method which is as simple as taking some input data and return the output data after MPC computation.
-
-```
-enum class Role { Alice = emp::ALICE, Bob = emp::BOB };
-
-template <class IOChannel, class InputDataType, class OutputDataType>
-class EmpGame : public IMpcGame<InputDataType, OutputDataType> {
- protected:
-   Role role_;
-
- private:
-   std::unique_ptr<IOChannel> ioChannel_;
- };
-
-class IMpcGame {
- public:
-   virtual const OutputDataType play(const InputDataType& inputData) const = 0;
-};
-```
-### Other components in PCF
-**/mpc**
-- EmpVector
-- EmpTestUtil
-- QueueIO
-
-**/common**
-- Functional map/reduce
-- Vector operators
-
-**/io**
-- LocalFileManager
-- S3FileManager
-- FileManagerUtils
-- MockedFileManger for testing
-
-**/aws**
-- AwsSdk singleton
-- S3Util
-- Mocked S3 client
-
-
-## Full documentation
-See full documentation [here](docs)
-
-## Join the PCF community
-* Website: https://github.com/facebookresearch/fbpcf
-
-See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
-
-## License
-PCF and private RCT are [MIT](LICENSE) licensed, as found in the LICENSE file.
