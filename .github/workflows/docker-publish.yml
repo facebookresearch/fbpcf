@@ -103,24 +103,24 @@ jobs:
     - name: Attribution - PID shard
       run: |
         ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} pid_shard
-      working-directory: ./fbpcs/tests/github/
+      working-directory: fbpcf/tests/github/
 
     - name: Check Status
       timeout-minutes: 5
       run: |
         ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
-      working-directory: ./fbpcs/tests/github/
+      working-directory: fbpcf/tests/github/
 
     - name: Attribution - PID prepare
       run: |
         ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} pid_prepare
-      working-directory: ./fbpcs/tests/github/
+      working-directory: fbpcf/tests/github/
 
     - name: Check Status
       timeout-minutes: 5
       run: |
         ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
-      working-directory: ./fbpcs/tests/github/
+      working-directory: fbpcf/tests/github/
 
     - name: Attribution - Id Match
       run: |
