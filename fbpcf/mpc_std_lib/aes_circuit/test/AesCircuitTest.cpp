@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/DummyAesCircuitFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuit.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
