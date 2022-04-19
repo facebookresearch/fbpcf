@@ -1578,4 +1578,68 @@ TEST(IntTest, testMaxBatch) {
   }
 }
 
+TEST(IntTest, testMin) {
+  const int8_t width = 64;
+
+  int64_t largestSigned = std::numeric_limits<int64_t>().max();
+  int64_t smallestSigned = std::numeric_limits<int64_t>().min();
+  uint64_t largestUnsigned = std::numeric_limits<uint64_t>().max();
+
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using secSignedInt = Integer<Secret<Signed<width>>, 0>;
+  using pubSignedInt = Integer<Public<Signed<width>>, 0>;
+  using secUnsignedInt = Integer<Secret<Unsigned<width>>, 0>;
+  using pubUnsignedInt = Integer<Public<Unsigned<width>>, 0>;
+
+  int partyId = 2;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<int64_t> dist1(smallestSigned, largestSigned);
+
+  std::uniform_int_distribution<uint64_t> dist2(0, largestUnsigned);
+
+  for (int i = 0; i < 100; i++) {
+    int64_t v1 = dist1(e);
+    int64_t v2 = dist1(e);
+
+    secSignedInt int1(v1, partyId);
+    secSignedInt int2(v2, partyId);
+    pubSignedInt int3(v1);
+    pubSignedInt int4(v2);
+
+    auto r1 = min(int1, int2);
+    auto r2 = min(int1, int4);
+    auto r3 = min(int3, int4);
+
+    auto expectedValue = v1 < v2 ? v1 : v2;
+
+    EXPECT_EQ(r1.openToParty(partyId).getValue(), expectedValue);
+    EXPECT_EQ(r2.openToParty(partyId).getValue(), expectedValue);
+    EXPECT_EQ(r3.getValue(), expectedValue);
+  }
+
+  for (int i = 0; i < 100; i++) {
+    uint64_t v1 = dist2(e);
+    uint64_t v2 = dist2(e);
+
+    secUnsignedInt int1(v1, partyId);
+    secUnsignedInt int2(v2, partyId);
+    pubUnsignedInt int3(v1);
+    pubUnsignedInt int4(v2);
+
+    auto r1 = min(int1, int2);
+    auto r2 = min(int1, int4);
+    auto r3 = min(int3, int4);
+
+    auto expectedValue = v1 < v2 ? v1 : v2;
+
+    EXPECT_EQ(r1.openToParty(partyId).getValue(), expectedValue);
+    EXPECT_EQ(r2.openToParty(partyId).getValue(), expectedValue);
+    EXPECT_EQ(r3.getValue(), expectedValue);
+  }
+}
+
 } // namespace fbpcf::frontend
