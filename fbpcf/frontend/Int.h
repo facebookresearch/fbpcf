@@ -290,6 +290,17 @@ Int<isSigned, width, isSecret1 || isSecret2, schedulerId, usingBatch> max(
     const Int<isSigned, width, isSecret1, schedulerId, usingBatch>& left,
     const Int<isSigned, width, isSecret2, schedulerId, usingBatch>& right);
 
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret1,
+    bool isSecret2,
+    int schedulerId,
+    bool usingBatch>
+Int<isSigned, width, isSecret1 || isSecret2, schedulerId, usingBatch> min(
+    const Int<isSigned, width, isSecret1, schedulerId, usingBatch>& left,
+    const Int<isSigned, width, isSecret2, schedulerId, usingBatch>& right);
+
 } // namespace fbpcf::frontend
 
 #include "fbpcf/frontend/Int_impl.h"
