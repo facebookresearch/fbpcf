@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <openssl/ssl.h>
 #include <string>
 
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
@@ -60,6 +61,12 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   void openServerPort(int portNo);
   void openClientPort(const std::string& serverAddress, int portNo);
 
+  void openServerPortWithTls(int portNo, std::string tlsDir);
+  void openClientPortWithTls(
+      const std::string& serverAddress,
+      int portNo,
+      std::string tlsDir);
+
   /*
    * helper functions for shared code between TLS and non-TLS implementations
    */
@@ -70,6 +77,8 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
 
   uint64_t sentData_;
   uint64_t receivedData_;
+
+  SSL* ssl_;
 };
 
 } // namespace fbpcf::engine::communication

@@ -8,6 +8,7 @@
 #include <emmintrin.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <random>
@@ -18,6 +19,7 @@
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/communication/test/TlsCommunicationUtils.h"
 
 namespace fbpcf::engine::communication {
 
@@ -59,7 +61,10 @@ TEST(InMemoryPartyCommunicationAgentTest, testSendAndReceive) {
   thread0.join();
 }
 
-TEST(SocketPartyCommunicationAgentTest, testSendAndReceive) {
+TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
+  auto tempdir = std::filesystem::temp_directory_path();
+  setUpTlsFiles(tempdir);
+
   std::random_device rd;
   std::default_random_engine defEngine(rd());
   std::uniform_int_distribution<int> intDistro(10000, 25000);
@@ -72,17 +77,41 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceive) {
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo = {
       {0, {"127.0.0.1", intDistro(defEngine)}},
       {1, {"127.0.0.1", intDistro(defEngine)}}};
+
+  auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
+      0, partyInfo, true, tempdir);
+  auto factory1 = std::make_unique<SocketPartyCommunicationAgentFactory>(
+      1, partyInfo, true, tempdir);
+
+  int size = 1048576; // 1024 ^ 2
+  auto thread0 = std::thread(testAgentFactory, 0, size, std::move(factory0));
+  auto thread1 = std::thread(testAgentFactory, 1, size, std::move(factory1));
+
+  thread1.join();
+  thread0.join();
+
+  deleteTlsFiles(tempdir);
+}
+
+TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
+  std::random_device rd;
+  std::default_random_engine defEngine(rd());
+  std::uniform_int_distribution<int> intDistro(10000, 25000);
+
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo = {
+      {0, {"127.0.0.1", intDistro(defEngine)}},
+      {1, {"127.0.0.1", intDistro(defEngine)}}};
+
   auto factory0 =
       std::make_unique<SocketPartyCommunicationAgentFactory>(0, partyInfo);
   auto factory1 =
       std::make_unique<SocketPartyCommunicationAgentFactory>(1, partyInfo);
 
-  int size = 1024;
+  int size = 1048576; // 1024 ^ 2
   auto thread0 = std::thread(testAgentFactory, 0, size, std::move(factory0));
   auto thread1 = std::thread(testAgentFactory, 1, size, std::move(factory1));
 
   thread1.join();
   thread0.join();
 }
-
 } // namespace fbpcf::engine::communication
