@@ -23,6 +23,8 @@ namespace fbpcf::engine::communication {
  * NOTE: sendT/receiveT only work when the two parties have the same endianness
  */
 class IPartyCommunicationAgent {
+  friend class EmpNetworkAdapter;
+
  public:
   virtual ~IPartyCommunicationAgent() = default;
 
