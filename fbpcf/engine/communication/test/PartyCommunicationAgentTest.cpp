@@ -62,8 +62,7 @@ TEST(InMemoryPartyCommunicationAgentTest, testSendAndReceive) {
 }
 
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
-  auto tempdir = std::filesystem::temp_directory_path();
-  setUpTlsFiles(tempdir);
+  auto createdDir = setUpTlsFiles();
 
   std::random_device rd;
   std::default_random_engine defEngine(rd());
@@ -79,9 +78,9 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
       {1, {"127.0.0.1", intDistro(defEngine)}}};
 
   auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo, true, tempdir);
+      0, partyInfo, true, createdDir);
   auto factory1 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      1, partyInfo, true, tempdir);
+      1, partyInfo, true, createdDir);
 
   int size = 1048576; // 1024 ^ 2
   auto thread0 = std::thread(testAgentFactory, 0, size, std::move(factory0));
@@ -90,7 +89,7 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
   thread1.join();
   thread0.join();
 
-  deleteTlsFiles(tempdir);
+  deleteTlsFiles(createdDir);
 }
 
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
