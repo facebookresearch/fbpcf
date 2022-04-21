@@ -296,15 +296,39 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<ScheduledBatchAND>& batchAnds,
       std::vector<ScheduledCompositeAND>& compositeAnds,
       std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
-      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples);
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& normalTuples,
+      std::map<
+          size_t,
+          std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
+          compositeTuples,
+      size_t openedSecretCount);
 
   ExecutionResults computeExecutionResultsFromOpenedShares(
       std::vector<ScheduledAND>& ands,
       std::vector<ScheduledBatchAND>& batchAnds,
       std::vector<ScheduledCompositeAND>& compositeAnds,
       std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
-      std::vector<bool> openedSecrets,
-      std::vector<tuple_generator::ITupleGenerator::BooleanTuple> tuples);
+      std::vector<bool>& openedSecrets,
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& normalTuples,
+      std::map<
+          size_t,
+          std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
+          compositeTuples);
+
+  std::vector<bool> computeSecretSharesToOpenLegacy(
+      std::vector<ScheduledAND>& ands,
+      std::vector<ScheduledBatchAND>& batchAnds,
+      std::vector<ScheduledCompositeAND>& compositeAnds,
+      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples);
+
+  ExecutionResults computeExecutionResultsFromOpenedSharesLegacy(
+      std::vector<ScheduledAND>& ands,
+      std::vector<ScheduledBatchAND>& batchAnds,
+      std::vector<ScheduledCompositeAND>& compositeAnds,
+      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<bool>& openedSecrets,
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>

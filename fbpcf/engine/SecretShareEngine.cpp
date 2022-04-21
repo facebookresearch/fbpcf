@@ -300,50 +300,308 @@ SecretShareEngine::computeAllANDsFromScheduledANDs(
     std::vector<ScheduledBatchAND>& batchAnds,
     std::vector<ScheduledCompositeAND>& compositeAnds,
     std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds) {
-  size_t tupleCount = ands.size();
+  size_t normalTupleCount = ands.size();
 
   for (size_t i = 0; i < batchAnds.size(); i++) {
-    tupleCount += batchAnds[i].getLeft().size();
+    normalTupleCount += batchAnds[i].getLeft().size();
   }
 
-  for (size_t i = 0; i < compositeAnds.size(); i++) {
-    tupleCount += compositeAnds[i].getRights().size();
+  // temporary for now until multi party case supports composite AND's
+  if (tupleGenerator_->supportsCompositeTupleGeneration()) {
+    std::map<size_t, uint32_t> compositeTupleCount;
+    size_t openedSecretCount = normalTupleCount * 2;
+
+    for (size_t i = 0; i < compositeAnds.size(); i++) {
+      size_t compositeSize = compositeAnds[i].getRights().size();
+      compositeTupleCount.emplace(compositeSize, 0);
+      compositeTupleCount[compositeSize]++;
+      openedSecretCount += 1 + compositeSize;
+    }
+
+    for (size_t i = 0; i < batchCompositeAnds.size(); i++) {
+      size_t compositeSize = batchCompositeAnds[i].getRights().size();
+      size_t batchSize = batchCompositeAnds[i].getLeft().size();
+      compositeTupleCount.emplace(compositeSize, 0);
+      compositeTupleCount[compositeSize] += batchSize;
+      openedSecretCount += batchSize * (1 + compositeSize);
+    }
+
+    if (normalTupleCount == 0 && compositeTupleCount.empty()) {
+      return {
+          std::vector<bool>(),
+          std::vector<std::vector<bool>>(),
+          std::vector<std::vector<bool>>(),
+          std::vector<std::vector<std::vector<bool>>>()};
+    }
+
+    auto [normalTuples, compositeTuples] =
+        tupleGenerator_->getNormalAndCompositeBooleanTuples(
+            normalTupleCount, compositeTupleCount);
+    auto secretsToOpen = computeSecretSharesToOpen(
+        ands,
+        batchAnds,
+        compositeAnds,
+        batchCompositeAnds,
+        normalTuples,
+        compositeTuples,
+        openedSecretCount);
+
+    auto openedSecrets =
+        communicationAgent_->openSecretsToAll(std::move(secretsToOpen));
+    if (openedSecrets.size() != openedSecretCount) {
+      throw std::runtime_error("unexpected number of opened secrets");
+    }
+
+    return computeExecutionResultsFromOpenedShares(
+        ands,
+        batchAnds,
+        compositeAnds,
+        batchCompositeAnds,
+        openedSecrets,
+        normalTuples,
+        compositeTuples);
+
+  } else {
+    for (size_t i = 0; i < compositeAnds.size(); i++) {
+      normalTupleCount += compositeAnds[i].getRights().size();
+    }
+
+    for (size_t i = 0; i < batchCompositeAnds.size(); i++) {
+      size_t compositeSize = batchCompositeAnds[i].getRights().size();
+      size_t batchSize = batchCompositeAnds[i].getLeft().size();
+
+      normalTupleCount += compositeSize * batchSize;
+    }
+
+    if (normalTupleCount == 0) {
+      return {
+          std::vector<bool>(),
+          std::vector<std::vector<bool>>(),
+          std::vector<std::vector<bool>>(),
+          std::vector<std::vector<std::vector<bool>>>()};
+    }
+    auto tuples = tupleGenerator_->getBooleanTuple(normalTupleCount);
+    auto secretsToOpen = computeSecretSharesToOpenLegacy(
+        ands, batchAnds, compositeAnds, batchCompositeAnds, tuples);
+
+    auto openedSecrets =
+        communicationAgent_->openSecretsToAll(std::move(secretsToOpen));
+
+    if (openedSecrets.size() != normalTupleCount * 2) {
+      throw std::runtime_error("unexpected number of opened secrets");
+    }
+
+    return computeExecutionResultsFromOpenedSharesLegacy(
+        ands,
+        batchAnds,
+        compositeAnds,
+        batchCompositeAnds,
+        openedSecrets,
+        tuples);
   }
-
-  for (size_t i = 0; i < batchCompositeAnds.size(); i++) {
-    tupleCount += batchCompositeAnds[i].getLeft().size() *
-        batchCompositeAnds[i].getRights().size();
-  }
-
-  if (tupleCount == 0) {
-    return {
-        std::vector<bool>(),
-        std::vector<std::vector<bool>>(),
-        std::vector<std::vector<bool>>(),
-        std::vector<std::vector<std::vector<bool>>>()};
-  }
-
-  auto tuples = tupleGenerator_->getBooleanTuple(tupleCount);
-  auto secretsToOpen = computeSecretSharesToOpen(
-      ands, batchAnds, compositeAnds, batchCompositeAnds, tuples);
-
-  auto openedSecrets =
-      communicationAgent_->openSecretsToAll(std::move(secretsToOpen));
-
-  if (openedSecrets.size() != tupleCount * 2) {
-    throw std::runtime_error("unexpected number of opened secrets");
-  }
-
-  return computeExecutionResultsFromOpenedShares(
-      ands,
-      batchAnds,
-      compositeAnds,
-      batchCompositeAnds,
-      openedSecrets,
-      tuples);
 }
 
 std::vector<bool> SecretShareEngine::computeSecretSharesToOpen(
+    std::vector<ScheduledAND>& ands,
+    std::vector<ScheduledBatchAND>& batchAnds,
+    std::vector<ScheduledCompositeAND>& compositeAnds,
+    std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& normalTuples,
+    std::map<
+        size_t,
+        std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
+        compositeTuples,
+    size_t openedSecretCount) {
+  /* order of secrets:
+  * [...andSecrets, // len = 2n
+  *  ...batchAndSecrets, // len = sum(batchSize * 2)
+     ...compositeAndSecrets, // len = sum(compositeSize + 1)
+     ...batchCompositeAndSecrets, // len = sum(batchSize * (1 + compositeSize))
+     ]
+  */
+  std::vector<bool> secretsToOpen(openedSecretCount);
+  std::unordered_map<size_t, size_t> compositeTupleSizeToIndex =
+      std::unordered_map<size_t, size_t>();
+
+  size_t tupleIndex = 0;
+  for (size_t i = 0; i < ands.size(); i++) {
+    secretsToOpen[tupleIndex * 2] =
+        ands[i].getLeft() ^ normalTuples.at(tupleIndex).getA();
+    secretsToOpen[tupleIndex * 2 + 1] =
+        ands[i].getRight() ^ normalTuples.at(tupleIndex).getB();
+    tupleIndex++;
+  }
+
+  for (size_t i = 0; i < batchAnds.size(); i++) {
+    auto& leftValues = batchAnds[i].getLeft();
+    auto& rightValues = batchAnds[i].getRight();
+    for (int j = 0; j < leftValues.size(); j++) {
+      secretsToOpen[tupleIndex * 2] =
+          leftValues[j] ^ normalTuples.at(tupleIndex).getA();
+      secretsToOpen[tupleIndex * 2 + 1] =
+          rightValues.at(j) ^ normalTuples.at(tupleIndex).getB();
+      tupleIndex++;
+    }
+  }
+
+  size_t secretIndex = tupleIndex * 2;
+  for (size_t i = 0; i < compositeAnds.size(); i++) {
+    size_t compositeSize = compositeAnds[i].getRights().size();
+    compositeTupleSizeToIndex.emplace(compositeSize, 0);
+
+    tupleIndex = compositeTupleSizeToIndex[compositeSize]++;
+    auto tuple = compositeTuples[compositeSize][tupleIndex];
+    secretsToOpen[secretIndex++] = compositeAnds[i].getLeft() ^ tuple.getA();
+
+    for (size_t j = 0; j < compositeSize; j++) {
+      secretsToOpen[secretIndex++] =
+          compositeAnds[i].getRights()[j] ^ tuple.getB()[j];
+    }
+  }
+
+  for (size_t i = 0; i < batchCompositeAnds.size(); i++) {
+    auto& leftValues = batchCompositeAnds[i].getLeft();
+    auto& rightValues = batchCompositeAnds[i].getRights();
+
+    size_t batchSize = leftValues.size();
+    size_t compositeSize = rightValues.size();
+    compositeTupleSizeToIndex.emplace(compositeSize, 0);
+
+    for (size_t j = 0; j < batchSize; j++) {
+      tupleIndex = compositeTupleSizeToIndex[compositeSize]++;
+      auto tuple = compositeTuples[compositeSize][tupleIndex];
+      secretsToOpen[secretIndex++] = leftValues[j] ^ tuple.getA();
+      for (size_t k = 0; k < compositeSize; k++) {
+        secretsToOpen[secretIndex++] = rightValues[k][j] ^ tuple.getB()[k];
+      }
+    }
+  }
+
+  return secretsToOpen;
+}
+
+SecretShareEngine::ExecutionResults
+SecretShareEngine::computeExecutionResultsFromOpenedShares(
+    std::vector<ScheduledAND>& ands,
+    std::vector<ScheduledBatchAND>& batchAnds,
+    std::vector<ScheduledCompositeAND>& compositeAnds,
+    std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<bool>& openedSecrets,
+    std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& normalTuples,
+    std::map<
+        size_t,
+        std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
+        compositeTuples) {
+  std::vector<bool> andResults;
+  andResults.reserve(ands.size());
+  std::vector<std::vector<bool>> batchAndResults;
+  batchAndResults.reserve(batchAnds.size());
+  std::vector<std::vector<bool>> compositeAndResults;
+  compositeAndResults.reserve(compositeAnds.size());
+  std::vector<std::vector<std::vector<bool>>> compositeBatchAndResults;
+  compositeBatchAndResults.reserve(batchCompositeAnds.size());
+
+  size_t normalTupleIndex = 0;
+
+  for (size_t i = 0; i < ands.size(); i++) {
+    bool val = normalTuples.at(normalTupleIndex).getC() ^
+        (openedSecrets.at(2 * normalTupleIndex) &
+         normalTuples.at(normalTupleIndex).getB()) ^
+        (openedSecrets.at(2 * normalTupleIndex + 1) &
+         normalTuples.at(normalTupleIndex).getA());
+    if (myId_ == 0) {
+      val = val ^
+          (openedSecrets.at(2 * normalTupleIndex) &
+           openedSecrets.at(2 * normalTupleIndex + 1));
+    }
+    andResults.push_back(val);
+    normalTupleIndex++;
+  }
+
+  for (size_t i = 0; i < batchAnds.size(); i++) {
+    auto& leftValues = batchAnds[i].getLeft();
+    auto batchSize = leftValues.size();
+    std::vector<bool> rst(batchSize);
+    for (int j = 0; j < batchSize; j++) {
+      bool val = normalTuples.at(normalTupleIndex).getC() ^
+          (openedSecrets.at(2 * normalTupleIndex) &
+           normalTuples.at(normalTupleIndex).getB()) ^
+          (openedSecrets.at(2 * normalTupleIndex + 1) &
+           normalTuples.at(normalTupleIndex).getA());
+      if (myId_ == 0) {
+        val = val ^
+            (openedSecrets.at(2 * normalTupleIndex) &
+             openedSecrets.at(2 * normalTupleIndex + 1));
+      }
+      rst[j] = val;
+      normalTupleIndex++;
+    }
+    batchAndResults.push_back(std::move(rst));
+  }
+
+  std::unordered_map<size_t, size_t> compositeTupleSizeToIndex =
+      std::unordered_map<size_t, size_t>();
+
+  size_t secretIndex = normalTupleIndex * 2;
+  for (size_t i = 0; i < compositeAnds.size(); i++) {
+    auto compositeSize = compositeAnds[i].getRights().size();
+    compositeTupleSizeToIndex.emplace(compositeSize, 0);
+    auto compositeTupleIndex = compositeTupleSizeToIndex[compositeSize]++;
+    auto tuple = compositeTuples.at(compositeSize).at(compositeTupleIndex);
+
+    auto leftSecretIndex = secretIndex++;
+    std::vector<bool> rst(compositeSize);
+
+    for (size_t j = 0; j < compositeSize; j++) {
+      bool val = tuple.getC()[j] ^
+          (openedSecrets.at(leftSecretIndex) & tuple.getB()[j]) ^
+          (openedSecrets.at(secretIndex) & tuple.getA());
+      if (myId_ == 0) {
+        val = val ^
+            (openedSecrets.at(leftSecretIndex) & openedSecrets.at(secretIndex));
+      }
+      rst[j] = (val);
+      secretIndex++;
+    }
+    compositeAndResults.push_back(std::move(rst));
+  }
+
+  for (size_t i = 0; i < batchCompositeAnds.size(); i++) {
+    auto batchSize = batchCompositeAnds[i].getLeft().size();
+    auto compositeSize = batchCompositeAnds[i].getRights().size();
+    compositeTupleSizeToIndex.emplace(compositeSize, 0);
+
+    std::vector<std::vector<bool>> compositeResult(
+        compositeSize, std::vector<bool>(batchSize));
+    for (int j = 0; j < batchSize; j++) {
+      auto compositeTupleIndex = compositeTupleSizeToIndex[compositeSize]++;
+      auto tuple = compositeTuples[compositeSize][compositeTupleIndex];
+      auto leftSecretIndex = secretIndex++;
+
+      for (int k = 0; k < compositeSize; k++) {
+        bool val = tuple.getC().at(k) ^
+            (openedSecrets.at(leftSecretIndex) & tuple.getB()[k]) ^
+            (openedSecrets.at(secretIndex) & tuple.getA());
+        if (myId_ == 0) {
+          val = val ^
+              (openedSecrets.at(leftSecretIndex) &
+               openedSecrets.at(secretIndex));
+        }
+        compositeResult[k][j] = val;
+        secretIndex++;
+      }
+    }
+    compositeBatchAndResults.push_back(std::move(compositeResult));
+  }
+
+  return {
+      std::move(andResults),
+      std::move(batchAndResults),
+      std::move(compositeAndResults),
+      std::move(compositeBatchAndResults)};
+}
+
+std::vector<bool> SecretShareEngine::computeSecretSharesToOpenLegacy(
     std::vector<ScheduledAND>& ands,
     std::vector<ScheduledBatchAND>& batchAnds,
     std::vector<ScheduledCompositeAND>& compositeAnds,
@@ -395,13 +653,13 @@ std::vector<bool> SecretShareEngine::computeSecretSharesToOpen(
 }
 
 SecretShareEngine::ExecutionResults
-SecretShareEngine::computeExecutionResultsFromOpenedShares(
+SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
     std::vector<ScheduledAND>& ands,
     std::vector<ScheduledBatchAND>& batchAnds,
     std::vector<ScheduledCompositeAND>& compositeAnds,
     std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
-    std::vector<bool> openedSecrets,
-    std::vector<tuple_generator::ITupleGenerator::BooleanTuple> tuples) {
+    std::vector<bool>& openedSecrets,
+    std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples) {
   std::vector<bool> andResults;
   andResults.reserve(ands.size());
   std::vector<std::vector<bool>> batchAndResults;
