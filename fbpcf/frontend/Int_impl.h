@@ -426,6 +426,32 @@ template <
 void Int<isSigned, width, isSecret, schedulerId, usingBatch>::
     processSingleInput(UnitIntType& v) const {
   if constexpr (isSigned) {
+    /**
+     * We use 2's complement to represent the converted vanilla signed integer.
+     * In the following example, we use 8 bits to illustrate the vanilla
+     * integer. In our implementation we actually use uint64_t. This is to help
+     * illusrate the sign bit (8th bit) without taking too much of writing
+     * space.
+     *
+     * Assume we want to store a vanilla integer in an Int of width = 6
+     * We calculate kMask = 00111111 = 63
+     *
+     * We check if the given vanilla integer is in the acceptable value range
+     * for the converted integer of bit width 6.
+     * Min_range: -((kMask >> 1) + 1) = -32
+     * Max_range: kMask >> 1 = 31
+     *
+     * Example 1: assume the vanilla integer is 11 -> 00001011,
+     * which is in the valid range.
+     * Then the final conversion (v + kMask + 1) = 11 + 63 + 1 = 75 -> 01001011
+     * Keeping the last 6 bits, we get 001011, which is 11.
+     *
+     * Example 2: assume the vanilla integer is -11 -> 10001011,
+     * which is in the valid range.
+     * Then the final conversion (v + kMask + 1) = -11 + 63 + 1 = 53 -> 00110101
+     * Keeping the last 6 bits, we get 110101, 2's complement of 001011, which
+     * is -11.
+     **/
     if (v >= 0) {
       if ((v >> (width - 1)) != 0) {
         throw std::runtime_error(
@@ -628,6 +654,25 @@ Int<isSigned, width, isSecret1 || isSecret2, schedulerId, usingBatch> min(
     const Int<isSigned, width, isSecret1, schedulerId, usingBatch>& left,
     const Int<isSigned, width, isSecret2, schedulerId, usingBatch>& right) {
   return left.mux(left > right, right);
+}
+
+/**
+ * Returns the absolute value of a signed public integer.
+ *
+ * Note that we use 2's complement method to store
+ * the bits for signed integer. If the integer is of width X, the smallest
+ * negative integer is -2^(X-1) and the largest positive integer is
+ * 2^(X-1)-1. Therefore, the absolute value of -2^(X-1) is still -2^(X-1)
+ * due to bit overflow.
+ **/
+template <int8_t width, bool isSecret, int schedulerId, bool usingBatch>
+Int<true, width, isSecret, schedulerId, usingBatch> abs(
+    const Int<true, width, isSecret, schedulerId, usingBatch>& src) {
+  // The zero object is a helper for flipping negative to positive.
+  // Note that we create a public zero because it doesn't affect
+  // the output of zero - src, regardless src is public or secret.
+  static const Int<true, width, false, schedulerId, usingBatch> zero(0);
+  return src.mux(src[width - 1], zero - src);
 }
 
 } // namespace fbpcf::frontend

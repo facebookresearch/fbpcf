@@ -1642,4 +1642,39 @@ TEST(IntTest, testMin) {
   }
 }
 
+TEST(IntTest, testAbs) {
+  const int8_t width = 6;
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using secSignedInt = Integer<Secret<Signed<width>>, 0>;
+  using pubSignedInt = Integer<Public<Signed<width>>, 0>;
+  int partyId = 2;
+
+  // Values whose absolute values are in the valid range of integer of width X
+  for (auto v : {31, 18, 1, 0, -1, -18, -31}) {
+    secSignedInt i1(v, partyId);
+    pubSignedInt i2(v);
+
+    auto r1 = frontend::abs(i1);
+    auto r2 = frontend::abs(i2);
+
+    EXPECT_EQ(r1.openToParty(partyId).getValue(), std::abs(v));
+    EXPECT_EQ(r2.getValue(), std::abs(v));
+  }
+
+  // Because we use 2's complement to represent a signed integer, given width X,
+  // the lower bound of the integer is -2^(X - 1) while the upper bound
+  // is 2^(X - 1) - 1. Therefore, for the smallest negative number, we cannot
+  // convert it to positive due to overflow. The following test case proves
+  // that.
+  int v = -32;
+  secSignedInt i1(v, partyId);
+  pubSignedInt i2{v};
+  auto r1 = frontend::abs(i1);
+  auto r2 = frontend::abs(i2);
+  EXPECT_EQ(r1.openToParty(partyId).getValue(), v);
+  EXPECT_EQ(r2.getValue(), v);
+}
+
 } // namespace fbpcf::frontend

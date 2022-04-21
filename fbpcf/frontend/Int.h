@@ -301,6 +301,13 @@ Int<isSigned, width, isSecret1 || isSecret2, schedulerId, usingBatch> min(
     const Int<isSigned, width, isSecret1, schedulerId, usingBatch>& left,
     const Int<isSigned, width, isSecret2, schedulerId, usingBatch>& right);
 
+/**
+ * Returns the absolute value of a signed integer.
+ **/
+template <int8_t width, bool isSecret, int schedulerId, bool usingBatch>
+Int<true, width, isSecret, schedulerId, usingBatch> abs(
+    const Int<true, width, isSecret, schedulerId, usingBatch>& src);
+
 } // namespace fbpcf::frontend
 
 #include "fbpcf/frontend/Int_impl.h"
