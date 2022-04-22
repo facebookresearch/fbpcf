@@ -12,6 +12,7 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 
+#include "fbpcf/engine/SecretShareEngineFactory.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"

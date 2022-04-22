@@ -19,6 +19,7 @@
 #include "fbpcf/engine/ISecretShareEngine.h"
 #include "fbpcf/engine/SecretShareEngine.h"
 #include "fbpcf/engine/SecretShareEngineFactory.h"
+#include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 
 namespace fbpcf::engine {
@@ -30,18 +31,21 @@ T testHelper(
         T(std::unique_ptr<ISecretShareEngine> engine,
           int myId,
           int numberOfParty)> test,
+    std::function<std::unique_ptr<SecretShareEngineFactory>(
+        int myId,
+        int numberOfParty,
+        communication::IPartyCommunicationAgentFactory& agentFactory)>
+        engineFactory,
     void (*assertPartyResultsConsistent)(T base, T comparison)) {
   auto agentFactories = communication::getInMemoryAgentFactory(numberOfParty);
 
   std::vector<std::future<T>> futures;
   for (auto i = 0; i < numberOfParty; ++i) {
     futures.push_back(std::async(
-        [i, numberOfParty, test](
+        [i, numberOfParty, test, engineFactory](
             std::reference_wrapper<
                 communication::IPartyCommunicationAgentFactory> agentFactory) {
-          auto engine = getInsecureEngineFactoryWithDummyTupleGenerator(
-                            i, numberOfParty, agentFactory)
-                            ->create();
+          auto engine = engineFactory(i, numberOfParty, agentFactory)->create();
           return test(std::move(engine), i, numberOfParty);
         },
         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
@@ -192,6 +196,7 @@ TEST(SecretShareEngineTest, TestInputAndOutputWithDummyComponents) {
   auto rst = testHelper(
       numberOfParty,
       testTemplate(inputs, inputAndOutputTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   ASSERT_EQ(rst.size(), size);
   for (int i = 0; i < size; i++) {
@@ -227,10 +232,12 @@ TEST(SecretShareEngineTest, TestNOTWithDummyComponents) {
   auto rst1 = testHelper(
       numberOfParty,
       testTemplate(inputs1, symmetricNOTTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst2 = testHelper(
       numberOfParty,
       testTemplate(inputs2, asymmetricNOTTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size);
   EXPECT_EQ(rst2.size(), size);
@@ -261,10 +268,12 @@ TEST(SecretShareEngineTest, TestBatchNOTWithDummyComponents) {
   auto rst1 = testHelper(
       numberOfParty,
       testTemplate(inputs1, batchSymmetricNOTTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst2 = testHelper(
       numberOfParty,
       testTemplate(inputs2, batchAsymmetricNOTTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size);
   EXPECT_EQ(rst2.size(), size);
@@ -309,14 +318,17 @@ TEST(SecretShareEngineTest, TestXORtWitDummyComponents) {
   auto rst1 = testHelper(
       numberOfParty,
       testTemplate(inputs1, symmetricXORTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst2 = testHelper(
       numberOfParty,
       testTemplate(inputs2, asymmetricXORTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst3 = testHelper(
       numberOfParty,
       testTemplate(inputs3, symmetricXORTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size / 2);
   EXPECT_EQ(rst2.size(), size / 2);
@@ -366,14 +378,17 @@ TEST(SecretShareEngineTest, TestBatchXORWithDummyComponents) {
   auto rst1 = testHelper(
       numberOfParty,
       testTemplate(inputs1, batchSymmetricXORTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst2 = testHelper(
       numberOfParty,
       testTemplate(inputs2, batchAsymmetricXORTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst3 = testHelper(
       numberOfParty,
       testTemplate(inputs3, batchSymmetricXORTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size / 2);
   EXPECT_EQ(rst2.size(), size / 2);
@@ -511,14 +526,74 @@ std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
   return std::make_pair(andResult, compositeAndResult);
 }
 
-TEST(SecretShareEngineTest, TestANDWithDummyComponents) {
-  int numberOfParty = 4;
-  int size = 16384;
+class NonFreeAndTestFixture
+    : public ::testing::TestWithParam<std::tuple<
+          std::string, // Human readable name
+          size_t, // number of parties
+          std::function<std::unique_ptr<SecretShareEngineFactory>(
+              int myId,
+              int numberOfParty,
+              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    SecretShareEngineTest,
+    NonFreeAndTestFixture,
+    ::testing::Values(
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "InsecureEngineWithDummyTupleGenerator",
+            2,
+            getInsecureEngineFactoryWithDummyTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "InsecureEngineWithDummyTupleGenerator",
+            4,
+            getInsecureEngineFactoryWithDummyTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "SecureEngineWithFerret",
+            2,
+            getSecureEngineFactoryWithFERRET<bool>),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "SecureEngineWithFerret",
+            3,
+            getSecureEngineFactoryWithFERRET<bool>)),
+    [](const testing::TestParamInfo<NonFreeAndTestFixture::ParamType>& info) {
+      return std::get<0>(info.param) + '_' +
+          std::to_string(std::get<1>(info.param)) + "Party";
+    });
+
+TEST_P(NonFreeAndTestFixture, TestAnd) {
+  size_t numberOfParty = std::get<1>(GetParam());
+  size_t size = 16384;
   auto inputs = generateRandomInputs(numberOfParty, size, size);
 
   auto rst = testHelper(
       numberOfParty,
       testTemplate(inputs, ANDTestBody),
+      std::get<2>(GetParam()),
       assertPartyResultsConsistent);
   auto andResult = std::get<0>(rst);
   auto compositeAndResult = std::get<1>(rst);
@@ -606,10 +681,12 @@ TEST(SecretShareEngineTest, TestFreeANDWithDummyComponents) {
   auto rst1 = testHelper(
       numberOfParty,
       testTemplate(inputs1, FreeANDTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst2 = testHelper(
       numberOfParty,
       testTemplate(inputs2, FreeANDTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size / 2);
   EXPECT_EQ(rst2.size(), size / 2);
@@ -641,10 +718,12 @@ TEST(SecretShareEngineTest, TestBatchFreeANDWithDummyComponents) {
   auto rst1 = testHelper(
       numberOfParty,
       testTemplate(inputs1, BatchFreeANDTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   auto rst2 = testHelper(
       numberOfParty,
       testTemplate(inputs2, BatchFreeANDTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size / 2);
   for (int i = 0; i < size / 2; i++) {
