@@ -118,6 +118,8 @@ std::unique_ptr<Aws::S3::S3Client> createS3Client(
     config.proxySSLCertPath = std::getenv("AWS_PROXY_CERT_PATH");
   }
 
+  config.requestTimeoutMs = 30000;
+
   if (option.accessKeyId.has_value() && option.secretKey.has_value()) {
     Aws::Auth::AWSCredentials credentials(
         option.accessKeyId.value(), option.secretKey.value());
