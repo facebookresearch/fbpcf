@@ -57,6 +57,10 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
     return {sentData_, receivedData_};
   }
 
+  void recvImpl(void* data, int nBytes) override;
+
+  void sendImpl(const void* data, int nBytes) override;
+
  private:
   void openServerPort(int portNo);
   void openClientPort(const std::string& serverAddress, int portNo);

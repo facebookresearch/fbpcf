@@ -45,6 +45,10 @@ class InMemoryPartyCommunicationAgent final : public IPartyCommunicationAgent {
     return {sentData_, receivedData_};
   }
 
+  void recvImpl(void* data, int nBytes) override;
+
+  void sendImpl(const void* data, int nBytes) override;
+
  private:
   InMemoryPartyCommunicationAgentHost& host_;
   int myId_;

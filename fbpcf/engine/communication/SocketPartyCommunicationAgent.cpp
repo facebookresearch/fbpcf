@@ -87,42 +87,49 @@ SocketPartyCommunicationAgent::~SocketPartyCommunicationAgent() {
   }
 }
 
-void SocketPartyCommunicationAgent::send(
-    const std::vector<unsigned char>& data) {
+void SocketPartyCommunicationAgent::sendImpl(const void* data, int nBytes) {
   size_t bytesWritten;
   if (!ssl_) {
-    bytesWritten =
-        fwrite(data.data(), sizeof(unsigned char), data.size(), outgoingPort_);
+    bytesWritten = fwrite(data, sizeof(unsigned char), nBytes, outgoingPort_);
   } else {
-    bytesWritten = SSL_write(ssl_, (void*)data.data(), data.size());
+    bytesWritten = SSL_write(ssl_, data, nBytes);
   }
-  assert(bytesWritten == data.size());
+  assert(bytesWritten == nBytes);
   sentData_ += bytesWritten;
   if (!ssl_) {
     fflush(outgoingPort_);
   }
 }
 
-std::vector<unsigned char> SocketPartyCommunicationAgent::receive(size_t size) {
+void SocketPartyCommunicationAgent::send(
+    const std::vector<unsigned char>& data) {
+  sendImpl(static_cast<const void*>(data.data()), data.size());
+}
+
+void SocketPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
   size_t bytesRead = 0;
-  std::vector<unsigned char> rst(size);
 
   if (!ssl_) {
-    bytesRead = fread(rst.data(), sizeof(unsigned char), size, incomingPort_);
+    bytesRead = fread(data, sizeof(unsigned char), nBytes, incomingPort_);
   } else {
     // fread is blocking, but SSL_read is nonblocking. This discrepancy
     // can cause issues at the application level. We need to make sure that
     // both APIs behave consistently, so here we add a loop to ensure we
     // mimick blocking behavior.
-    while (bytesRead < size) {
+    while (bytesRead < nBytes) {
       bytesRead += SSL_read(
           ssl_,
-          rst.data() + (bytesRead * sizeof(unsigned char)),
-          size - bytesRead);
+          (unsigned char*)data + (bytesRead * sizeof(unsigned char)),
+          nBytes - bytesRead);
     }
   }
-  assert(bytesRead == size);
+  assert(bytesRead == nBytes);
   receivedData_ += bytesRead;
+}
+
+std::vector<unsigned char> SocketPartyCommunicationAgent::receive(size_t size) {
+  std::vector<unsigned char> rst(size);
+  recvImpl(static_cast<void*>(rst.data()), size);
   return rst;
 }
 

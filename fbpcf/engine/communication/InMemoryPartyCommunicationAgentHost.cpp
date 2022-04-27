@@ -9,20 +9,33 @@
 
 namespace fbpcf::engine::communication {
 
+void InMemoryPartyCommunicationAgent::sendImpl(const void* data, int nBytes) {
+  std::vector<unsigned char> buffer(nBytes);
+  memcpy(buffer.data(), data, nBytes);
+  host_.send(myId_, buffer);
+  sentData_ += nBytes;
+}
+
 void InMemoryPartyCommunicationAgent::send(
     const std::vector<unsigned char>& data) {
-  host_.send(myId_, data);
-  sentData_ += data.size();
+  sendImpl(static_cast<const void*>(data.data()), data.size());
+}
+
+void InMemoryPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
+  auto result = host_.receive(myId_, nBytes);
+
+  if (result.size() != nBytes) {
+    throw std::runtime_error("unexpected message size!");
+  }
+  memcpy(data, result.data(), nBytes);
+  receivedData_ += nBytes;
 }
 
 std::vector<unsigned char> InMemoryPartyCommunicationAgent::receive(
     size_t size) {
-  auto result = host_.receive(myId_, size);
-  if (result.size() != size) {
-    throw std::runtime_error("unexpected message size!");
-  }
-  receivedData_ += size;
-  return result;
+  std::vector<unsigned char> v(size);
+  recvImpl(static_cast<void*>(v.data()), size);
+  return v;
 }
 
 InMemoryPartyCommunicationAgentHost::InMemoryPartyCommunicationAgentHost() {
