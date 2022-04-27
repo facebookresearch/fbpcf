@@ -16,8 +16,11 @@
 #error "Machine must be little endian"
 #endif
 
-namespace fbpcf::engine::communication {
+namespace fbpcf::engine::util {
+class EmpNetworkAdapter;
+}
 
+namespace fbpcf::engine::communication {
 /**
  * This is the network API between two parties.
  * NOTE: sendT/receiveT only work when the two parties have the same endianness
@@ -89,6 +92,8 @@ class IPartyCommunicationAgent {
   virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 
  private:
+  friend class util::EmpNetworkAdapter;
+
   // convert a vector of bits into a vector of bytes
   static std::vector<unsigned char> compressToBytes(
       const std::vector<bool>& bits) {
@@ -125,6 +130,10 @@ class IPartyCommunicationAgent {
     }
     return bits;
   }
+
+  virtual void recvImpl(void* data, int nBytes) = 0;
+
+  virtual void sendImpl(const void* data, int nBytes) = 0;
 };
 
 template <>

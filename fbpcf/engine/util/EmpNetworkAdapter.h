@@ -22,15 +22,12 @@ class EmpNetworkAdapter {
   explicit EmpNetworkAdapter(communication::IPartyCommunicationAgent& agent)
       : agent_(agent) {}
 
-  void send_data(const void* data, int nByte) {
-    std::vector<unsigned char> buffer(nByte);
-    memcpy(buffer.data(), data, nByte);
-    agent_.send(buffer);
+  void send_data(const void* data, int nBytes) {
+    agent_.sendImpl(data, nBytes);
   }
 
-  void recv_data(void* data, int nByte) {
-    auto buffer = agent_.receive(nByte);
-    memcpy(data, buffer.data(), nByte);
+  void recv_data(void* data, int nBytes) {
+    agent_.recvImpl(data, nBytes);
   }
 
   void send_block(const __m128i* data, int nBlock) {
