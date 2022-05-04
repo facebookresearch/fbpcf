@@ -126,6 +126,31 @@ template <
     bool isSecret,
     int schedulerId,
     bool usingBatch>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>::operator-() const {
+  // inverse operator
+  static_assert(
+      isSigned,
+      "Only signed integers have inverse"); // assert that integer is signed
+  Int<isSigned, width, isSecret, schedulerId, usingBatch> rst;
+  for (int8_t i = 1; i < width; i++) {
+    rst.data_[i] = !data_.at(i);
+  }
+  auto carry = !data_.at(0);
+  rst.data_[0] = data_.at(0);
+  for (int8_t i = 1; i < width; i++) {
+    rst.data_[i] = rst.data_[i] ^ carry;
+    carry = (!rst.data_[i]) & carry;
+  }
+  return rst;
+}
+
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret,
+    int schedulerId,
+    bool usingBatch>
 template <bool isSecretOther>
 Int<isSigned, width, isSecret || isSecretOther, schedulerId, usingBatch>
 Int<isSigned, width, isSecret, schedulerId, usingBatch>::operator-(
@@ -668,11 +693,7 @@ Int<isSigned, width, isSecret1 || isSecret2, schedulerId, usingBatch> min(
 template <int8_t width, bool isSecret, int schedulerId, bool usingBatch>
 Int<true, width, isSecret, schedulerId, usingBatch> abs(
     const Int<true, width, isSecret, schedulerId, usingBatch>& src) {
-  // The zero object is a helper for flipping negative to positive.
-  // Note that we create a public zero because it doesn't affect
-  // the output of zero - src, regardless src is public or secret.
-  static const Int<true, width, false, schedulerId, usingBatch> zero(0);
-  return src.mux(src[width - 1], zero - src);
+  return src.mux(src[width - 1], -src);
 }
 
 } // namespace fbpcf::frontend
