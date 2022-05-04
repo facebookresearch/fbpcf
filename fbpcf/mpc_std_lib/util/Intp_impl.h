@@ -7,6 +7,7 @@
 
 #pragma once
 #include <climits>
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <type_traits>
@@ -54,7 +55,7 @@ class Intp {
   }
 
   Intp<isSigned, width> operator+(const Intp<isSigned, width>& other) const {
-    return Intp<isSigned, width>(round(v_ + other.v_));
+    return Intp<isSigned, width>(add(v_, other.v_));
   }
 
   Intp<isSigned, width> operator-() const {
@@ -70,7 +71,7 @@ class Intp {
   }
 
   Intp<isSigned, width> operator-(const Intp<isSigned, width>& other) const {
-    return Intp<isSigned, width>(round(v_ - other.v_));
+    return Intp<isSigned, width>(subtract(v_, other.v_));
   }
 
  public:
@@ -111,6 +112,42 @@ class Intp {
           ". But you provided " + std::to_string(v) + ". ");
     } else {
       return v;
+    }
+  }
+
+  static NativeType add(NativeType a, NativeType b) {
+    if constexpr (
+        isSigned &&
+        ((width == 8) || (width == 16) || (width == 32) || (width == 64))) {
+      // special handling is needed only for signed integer with some special
+      // width (e.g. overflow is possible).
+      if (std::signbit(a) == std::signbit(b)) {
+        // the two numbers have the same sign, overflow is possible.
+        // special treatment to prevent overflow
+        return round(uint64_t(a) + uint64_t(b));
+      } else {
+        return round(a + b);
+      }
+    } else {
+      return round(a + b);
+    }
+  }
+
+  static NativeType subtract(NativeType a, NativeType b) {
+    if constexpr (
+        isSigned &&
+        ((width == 8) || (width == 16) || (width == 32) || (width == 64))) {
+      // special handling is needed only for signed integer with some special
+      // width (e.g. overflow is possible).
+      if (std::signbit(a) != std::signbit(b)) {
+        // the two numbers have different sign, overflow is possible.
+        // special treatment to prevent overflow
+        return round(uint64_t(a) - uint64_t(b));
+      } else {
+        return round(a - b);
+      }
+    } else {
+      return round(a - b);
     }
   }
 
