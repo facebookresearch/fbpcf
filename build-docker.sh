@@ -22,6 +22,7 @@ Usage: $PROG_NAME [-u] [-f] [-t TAG]
 
 -u: builds the docker images against ubuntu (default)
 -f: forces a rebuild of all docker image dependencies (even if they already exist)
+-d: whether to build in dev mode. This sets the -Werror flag during the cmake build.
 -t TAG: Use the specified tag for the built image (default: latest)
 EOF
   exit 1
@@ -32,7 +33,8 @@ OS_RELEASE="${UBUNTU_RELEASE}"
 DOCKER_EXTENSION=".ubuntu"
 FORCE_REBUILD=false
 TAG="latest"
-while getopts "u,f,t:" o; do
+DEV_MODE=false
+while getopts "u,f,d,t:" o; do
   case $o in
   u)
     IMAGE_PREFIX="ubuntu"
@@ -40,6 +42,7 @@ while getopts "u,f,t:" o; do
     DOCKER_EXTENSION=".ubuntu"
     ;;
   f) FORCE_REBUILD=true ;;
+  d) DEV_MODE=true ;;
   t) TAG=$OPTARG;;
   *) usage ;;
   esac
@@ -91,11 +94,17 @@ build_dep_image "${FOLLY_IMAGE}" "folly" "--build-arg os_release=${OS_RELEASE} -
 FOLLY_IMAGE="${RETURN}"
 
 printf "\nBuilding fbpcf/%s docker image...\n" ${IMAGE_PREFIX}
+CMAKE_FLAGS=""
+if [ "${DEV_MODE}" == true ]; then
+  printf "Using dev mode. Passing -Werror to cmake."
+  CMAKE_FLAGS="-Werror"
+fi
 docker build \
   --build-arg os_release="${OS_RELEASE}" \
   --build-arg emp_image="${EMP_IMAGE}" \
   --build-arg aws_image="${AWS_IMAGE}" \
   --build-arg folly_image="${FOLLY_IMAGE}" \
   --build-arg gcp_image="${GCP_IMAGE}" \
+  --build-arg cmake_flags="${CMAKE_FLAGS}" \
   --compress \
   -t "fbpcf/${IMAGE_PREFIX}:${TAG}" -f "docker/Dockerfile${DOCKER_EXTENSION}" .

@@ -15,7 +15,9 @@ jobs:
 
     - name: Build fbpcf docker image
       run: |
-        ./build-docker.sh -u
+        # The "-d" flag builds the library with -Werror
+        # so we can catch warnings at diff time.
+        ./build-docker.sh -u -d
 
     - name: Sanity check fbpcf library
       timeout-minutes: 3
