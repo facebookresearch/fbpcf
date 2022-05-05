@@ -132,6 +132,8 @@ class Int {
   operator-(const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>&
                 other) const;
 
+  Int<isSigned, width, isSecret, schedulerId, usingBatch> operator-() const;
+
   template <bool isSecretOther>
   Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator<(
       const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>& other)

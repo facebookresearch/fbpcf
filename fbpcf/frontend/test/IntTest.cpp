@@ -275,6 +275,42 @@ TEST(IntTest, testAdd) {
   }
 }
 
+TEST(IntTest, testInverse) {
+  const int8_t width = 64;
+  int64_t largestSigned = std::numeric_limits<int64_t>().max();
+  int64_t smallestSigned = std::numeric_limits<int64_t>().min();
+  uint64_t largestUnsigned = std::numeric_limits<uint64_t>().max();
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using secSignedInt = Integer<Secret<Signed<width>>, 0>;
+  using pubSignedInt = Integer<Public<Signed<width>>, 0>;
+  int partyId = 2;
+  secSignedInt mySignedInt;
+  secSignedInt myInverse;
+  pubSignedInt myPubSignedInt;
+  pubSignedInt myPubInverse;
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<int64_t> dist1(smallestSigned, largestSigned);
+  std::uniform_int_distribution<uint64_t> dist2(0, largestUnsigned);
+  int64_t v1;
+  for (int i = 0; i < 100; i++) {
+    v1 = dist1(e);
+    mySignedInt = secSignedInt(v1, partyId);
+    myInverse = -mySignedInt;
+    EXPECT_EQ(
+        mySignedInt.openToParty(partyId).getValue(),
+        -1 * myInverse.openToParty(partyId).getValue());
+  }
+  for (int i = 0; i < 100; i++) {
+    v1 = dist1(e);
+    myPubSignedInt = pubSignedInt(v1);
+    myPubInverse = -myPubSignedInt;
+    EXPECT_EQ(myPubSignedInt.getValue(), -1 * myPubInverse.getValue());
+  }
+}
+
 template <typename T>
 std::vector<T> addVector(
     const std::vector<T>& src1,
