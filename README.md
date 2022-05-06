@@ -23,20 +23,23 @@ MPC applications typically need to access local data that is stored in the cloud
 
 ## Examples
 
-### Example: The Millionaire Game
-As an example of how you might use the PCF v2.0 APIs, we have included an example implementation of the classic [Millionaire](fbpcf/test/billionaire_problem) game.  You can run the game in two terminals representing two players.  Each player will randomly return an integer from 0 to 1000000000 to represent the amount of money they have.  The game will compare the two integers and determine who is richer.
+### Example: The Billionaire Game
+As an example of how you might use the PCF v2.0 APIs, we have included an example implementation of the classic [Billionaire](fbpcf/test/billionaire_problem) game.  You can run the game in two terminals representing two players.  Each player will randomly return an integer from 0 to 1000000000 to represent the amount of money they have.  The game will compare the two integers and determine who is richer.
 
 Instructions on how to run the exmaple:
-* Build the code and get the executable. Suppose the executable is `millionaire`.
-* Open one terminal and run `./millonaire`.
-* Open the other temianl and run `./millionaire --role=2 --server_ip=127.0.0.1`.
+* Build the code and get the executable. Suppose the executable is `billionaire`.
+* Open one terminal and run `./billionaire`.
+* Open the other temianl and run `./billionaire --party=1 --server_ip=127.0.0.1`.
 * Watch the results.
 
 ### Example: Private Randomized Controlled Trials
 As an interesting example application on top of PCF, we implemented a library that allows developers to perform randomized controlled trials (RCT), without leaking information about who participated or what action an individual took. It uses secure multiparty computation to guarantee this privacy. It is suitable for conducting A/B testing, or measuring advertising lift and learning the aggregate statistics without sharing information on the individual level. See what is RCT [here](docs/PrivateRCT.md) and private lift games pseudocode [here](docs/PrivateLift.md).
 
-## Full Documentation
-See full documentation [here](docs/v2)
+## Full Documentation and User Guide
+See full documentation for PCF 2.0 [here](docs/v2). Legacy documentation for PCF 1.0 can be found [here](docs/v1).
+
+## Release
+The latest stable image can be found in our [Github registry](https://github.com/facebookresearch/fbpcf/pkgs/container/fbpcf%2Fubuntu).
 
 ## Join the PCF community
 * Website: https://github.com/facebookresearch/fbpcf
@@ -234,16 +237,6 @@ make
 make install
 ```
 
-## Building Aggregator and Lift Game
-```
-# compile standard lift and aggregator
-cd /root || exit
-cp /root/CMakeLists.txt /root/emp_games/
-cd emp_games || exit
-cmake .
-make
-```
-
 ## How to build a docker image that containes game executables using the given docker related files
 To build the necessary docker dependencies and `fbpcf/<distro>:latest` docker image run the following script
 - `./build-docker.sh`
@@ -253,7 +246,7 @@ To build the necessary docker dependencies and `fbpcf/<distro>:latest` docker im
 - In order to reduce space and time of subsequent docker builds, `fbpcf` will build three dependent docker images: aws-s3-core, emp, and folly.
 These are essentially treated as compiled static libraries and greatly reduces rebuilds when developing fbpcf as these libaries rarely change.
 - The default build of `fbpcf/<distro>:latest` image creates a container with all the required toolchains, source and libraries to compile the fbpcf static library.  Use this image as a base image for fbpcf development.
-- This image also contains a example binary `millioniare`
+- This image also contains example binaries `millioniare` and `billionaire` that correspond to PCF v1.0 and v2.0 respectively.
 - The current dependency versions in this file are known good builds, however you may wish up update packages in the future (for development or testing)
   - UBUNTU_RELEASE="20.04"
     - Changing the Ubuntu Release will most likely require update to the apt-get packages
