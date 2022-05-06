@@ -71,4 +71,4 @@ class BillionaireProblemGame : public frontend::MpcGame<schedulerId> {
 
 } // namespace fbpcf::billionaire_problem
 
-#include "fbpcf/test/billionaire_problem/BillionaireProblemGame_impl.h"
+#include "./BillionaireProblemGame_impl.h"

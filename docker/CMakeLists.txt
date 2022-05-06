@@ -45,4 +45,14 @@ target_link_libraries(
   millionaire
   fbpcf)
 
+add_executable(
+  billionaire
+  "example/billionaire_problem/main.cpp"
+  "example/billionaire_problem/BillionaireProblemGame.h"
+  "example/billionaire_problem/BillionaireProblemGame_impl.h")
+target_link_libraries(
+  billionaire
+  fbpcf)
+
 install(TARGETS millionaire DESTINATION bin)
+install(TARGETS billionaire DESTINATION bin)
