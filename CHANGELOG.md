@@ -1,6 +1,10 @@
 # Change log
 All notable changes to this project will be documented in this file.
 
+## [2.0.0] - 2022-05-05
+- New features and APIs are explained in the README
+- Removed dependence on EMP-toolkit
+
 ## [1.0.0] - 2022-03-29
 - Official release of the v1 version of this repository.
 - This version only exposes APIs that depend on the emp-toolkit
