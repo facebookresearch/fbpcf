@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "fbpcf/test/billionaire_problem/BillionaireProblemGame.h"
+#include "../BillionaireProblemGame.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <functional>

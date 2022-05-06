@@ -10,8 +10,8 @@
 #include "folly/init/Init.h"
 #include "folly/logging/xlog.h"
 
+#include "./BillionaireProblemGame.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
-#include "fbpcf/test/billionaire_problem/BillionaireProblemGame.h"
 
 DEFINE_int32(party, 0, "my party ID");
 DEFINE_string(server_ip, "127.0.0.1", "server's ip address");
