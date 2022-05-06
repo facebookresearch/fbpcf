@@ -60,11 +60,7 @@ class Intp {
 
   Intp<isSigned, width> operator-() const {
     if constexpr (isSigned) {
-      if (v_ == kMin) {
-        return v_;
-      } else {
-        return -v_;
-      }
+      return v_ == kMin ? v_ : -v_;
     } else {
       return kOffSet - v_;
     }
@@ -121,13 +117,7 @@ class Intp {
         ((width == 8) || (width == 16) || (width == 32) || (width == 64))) {
       // special handling is needed only for signed integer with some special
       // width (e.g. overflow is possible).
-      if (std::signbit(a) == std::signbit(b)) {
-        // the two numbers have the same sign, overflow is possible.
-        // special treatment to prevent overflow
-        return round(uint64_t(a) + uint64_t(b));
-      } else {
-        return round(a + b);
-      }
+      return round(uint64_t(a) + uint64_t(b));
     } else {
       return round(a + b);
     }
@@ -139,13 +129,7 @@ class Intp {
         ((width == 8) || (width == 16) || (width == 32) || (width == 64))) {
       // special handling is needed only for signed integer with some special
       // width (e.g. overflow is possible).
-      if (std::signbit(a) != std::signbit(b)) {
-        // the two numbers have different sign, overflow is possible.
-        // special treatment to prevent overflow
-        return round(uint64_t(a) - uint64_t(b));
-      } else {
-        return round(a - b);
-      }
+      return round(uint64_t(a) - uint64_t(b));
     } else {
       return round(a - b);
     }
