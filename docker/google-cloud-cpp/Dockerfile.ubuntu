@@ -4,8 +4,8 @@
 # LICENSE file in the root directory of this source tree.
 ARG os_release="latest"
 FROM ubuntu:${os_release} AS builder
-ARG gcp_cpp_release="1.8.177"
-# Required Packages for google-cloud-cpp 
+ARG gcp_cpp_release="1.32.1"
+# Required Packages for google-cloud-cpp
 # Instructions modified from https://github.com/googleapis/google-cloud-cpp/blob/main/doc/packaging.md
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update && apt-get install --no-install-recommends -y \
@@ -39,7 +39,7 @@ RUN wget -q https://github.com/googleapis/google-cloud-cpp/archive/${gcp_cpp_rel
     tar -xf ${gcp_cpp_release}.tar.gz -C ${HOME}/google-cloud-cpp --strip=1
 
 # Install Abseil
-RUN mkdir -p ${HOME}/Downloads/abseil-cpp 
+RUN mkdir -p ${HOME}/Downloads/abseil-cpp
 WORKDIR ${HOME}/Downloads/abseil-cpp
 RUN curl -sSL https://github.com/abseil/abseil-cpp/archive/20210324.2.tar.gz | \
     tar -xzf - --strip-components=1 && \
@@ -55,7 +55,7 @@ RUN curl -sSL https://github.com/abseil/abseil-cpp/archive/20210324.2.tar.gz | \
     ldconfig
 
 # Install Protobuf
-RUN mkdir -p ${HOME}/Downloads/protobuf 
+RUN mkdir -p ${HOME}/Downloads/protobuf
 WORKDIR ${HOME}/Downloads/protobuf
 RUN curl -sSL https://github.com/protocolbuffers/protobuf/archive/v3.19.0.tar.gz | \
     tar -xzf - --strip-components=1 && \
@@ -69,7 +69,7 @@ RUN curl -sSL https://github.com/protocolbuffers/protobuf/archive/v3.19.0.tar.gz
     ldconfig
 
 # Install gRPC
-RUN mkdir -p ${HOME}/Downloads/grpc 
+RUN mkdir -p ${HOME}/Downloads/grpc
 WORKDIR ${HOME}/Downloads/grpc
 RUN curl -sSL https://github.com/grpc/grpc/archive/v1.41.1.tar.gz | \
     tar -xzf - --strip-components=1 && \
@@ -89,7 +89,7 @@ RUN curl -sSL https://github.com/grpc/grpc/archive/v1.41.1.tar.gz | \
     ldconfig
 
 # Install crc32c
-RUN mkdir -p ${HOME}/Downloads/crc32c 
+RUN mkdir -p ${HOME}/Downloads/crc32c
 WORKDIR ${HOME}/Downloads/crc32c
 RUN curl -sSL https://github.com/google/crc32c/archive/1.1.2.tar.gz | \
     tar -xzf - --strip-components=1 && \
@@ -105,7 +105,7 @@ RUN curl -sSL https://github.com/google/crc32c/archive/1.1.2.tar.gz | \
     ldconfig
 
 # Install nlohmann_json
-RUN mkdir -p ${HOME}/Downloads/json 
+RUN mkdir -p ${HOME}/Downloads/json
 WORKDIR ${HOME}/Downloads/json
 RUN curl -sSL https://github.com/nlohmann/json/archive/v3.10.4.tar.gz | \
     tar -xzf - --strip-components=1 && \
@@ -119,7 +119,7 @@ RUN curl -sSL https://github.com/nlohmann/json/archive/v3.10.4.tar.gz | \
 
 # Build google-cloud-cpp
 WORKDIR ${HOME}/google-cloud-cpp
-RUN cmake \ 
+RUN cmake \
         -DBUILD_TESTING=OFF \
         -DGOOGLE_CLOUD_CPP_ENABLE_BIGTABLE=OFF \
         -DGOOGLE_CLOUD_CPP_ENABLE_BIGQUERY=OFF \
