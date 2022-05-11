@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       name:
-        description: 'Build and publish an fbpcf/google-cloud-cpp image for a particular version'
+        description: "Build and publish an fbpcf/google-cloud-cpp image for a particular version"
         default: "Run"
       gcp_release:
         description: "The gcp version to build and publish (e.g. 1.32.1)"
@@ -15,7 +15,8 @@ on:
         required: false
         type: str
         default: "ubuntu"
-      os_release: "The os version to use (e.g. 20.04 for ubuntu)"
+      os_release:
+        description: "The os version to use (e.g. 20.04 for ubuntu)"
         required: false
         type: str
         default: "20.04"
@@ -24,36 +25,35 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  permissions:
-    contents: read
-    packages: write
-
   ubuntu:
     runs-on: [self-hosted, e2e_test_runner]
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Log into registry ${{ env.REGISTRY }}
-      uses: docker/login-action@v1
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build image
-      run: |
-        docker build \
-        --build-arg os_release=${{ github.event.inputs.os_release }} \
-        --build-arg gcp_release=${{ github.event.inputs.gcp_release }} \
-        -t "fbpcf/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }}" \
-        -f "docker/${DOCKER_DIR}/Dockerfile.${{ github.event.inputs.os }}" .
+      - name: Build image
+        run: |
+          docker build \
+          --build-arg os_release=${{ github.event.inputs.os_release }} \
+          --build-arg gcp_release=${{ github.event.inputs.gcp_release }} \
+          -t "fbpcf/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }}" \
+          -f "docker/${DOCKER_DIR}/Dockerfile.${{ github.event.inputs.os }}" .
 
-    - name: Tag image
-    - run: |
-      docker tag fbpcf/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }} \
-      ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }}
+      - name: Tag image
+        run: |
+          docker tag fbpcf/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }} \
+          ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }}
 
-    - name: Publish image
-    run: |
-      docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-google-cloud-cpp
+      - name: Publish image
+        run: |
+          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-google-cloud-cpp
