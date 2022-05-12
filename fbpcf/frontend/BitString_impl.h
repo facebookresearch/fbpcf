@@ -11,6 +11,9 @@
 #include <vector>
 #include "fbpcf/frontend/util.h"
 
+// included for clangd resolution. Should not execute during compilation
+#include "fbpcf/frontend/BitString.h"
+
 namespace fbpcf::frontend {
 
 template <bool isSecret, int schedulerId, bool usingBatch>
@@ -155,6 +158,19 @@ BitString<isSecret || isSecretChoice || isSecretOther, schedulerId, usingBatch>
 BitString<isSecret, schedulerId, usingBatch>::mux(
     const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
     const BitString<isSecretOther, schedulerId, usingBatch>& other) const {
+#ifndef USE_COMPOSITE_AND_FOR_MUX
+  return slowMux(choice, other);
+#else
+  return fastMux(choice, other);
+#endif
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+template <bool isSecretChoice, bool isSecretOther>
+BitString<isSecret || isSecretChoice || isSecretOther, schedulerId, usingBatch>
+BitString<isSecret, schedulerId, usingBatch>::slowMux(
+    const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
+    const BitString<isSecretOther, schedulerId, usingBatch>& other) const {
   if (other.size() != size()) {
     throw std::runtime_error(
         "The two BitStrings need to have the same length for MUX");
@@ -167,6 +183,38 @@ BitString<isSecret, schedulerId, usingBatch>::mux(
 
   for (size_t i = 0; i < size(); i++) {
     rst[i] = data_.at(i) ^ (choice & (other.data_.at(i) ^ data_.at(i)));
+  }
+
+  return rst;
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+template <bool isSecretChoice, bool isSecretOther>
+BitString<isSecret || isSecretChoice || isSecretOther, schedulerId, usingBatch>
+BitString<isSecret, schedulerId, usingBatch>::fastMux(
+    const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
+    const BitString<isSecretOther, schedulerId, usingBatch>& other) const {
+  if (other.size() != size()) {
+    throw std::runtime_error(
+        "The two BitStrings need to have the same length for MUX");
+  }
+  BitString<isSecret || isSecretOther, schedulerId, usingBatch> sum(
+      data_.size());
+
+  for (size_t i = 0; i < size(); i++) {
+    sum[i] = other[i] ^ data_[i];
+  }
+
+  BitString<
+      isSecret || isSecretChoice || isSecretOther,
+      schedulerId,
+      usingBatch>
+      rst(data_.size());
+
+  rst.data_ = choice & sum.data_;
+
+  for (size_t i = 0; i < size(); i++) {
+    rst[i] = data_[i] ^ rst[i];
   }
 
   return rst;
