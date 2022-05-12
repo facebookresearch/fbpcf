@@ -11,6 +11,9 @@
 #include <vector>
 #include "fbpcf/frontend/util.h"
 
+// included for clangd resolution. Should not execute during compilation
+#include "fbpcf/frontend/Int.h"
+
 namespace fbpcf::frontend {
 
 template <
@@ -307,6 +310,29 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::mux(
     const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
     const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>& other)
     const {
+#ifndef USE_COMPOSITE_AND_FOR_MUX
+  return slowMux(choice, other);
+#else
+  return fastMux(choice, other);
+#endif
+}
+
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret,
+    int schedulerId,
+    bool usingBatch>
+template <bool isSecretChoice, bool isSecretOther>
+Int<isSigned,
+    width,
+    isSecret || isSecretChoice || isSecretOther,
+    schedulerId,
+    usingBatch>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>::slowMux(
+    const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
+    const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>& other)
+    const {
   Int<isSigned,
       width,
       isSecret || isSecretChoice || isSecretOther,
@@ -316,6 +342,44 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::mux(
 
   for (int8_t i = 0; i < width; i++) {
     rst.data_[i] = data_.at(i) ^ (choice & (other.data_.at(i) ^ data_.at(i)));
+  }
+  return rst;
+}
+
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret,
+    int schedulerId,
+    bool usingBatch>
+template <bool isSecretChoice, bool isSecretOther>
+Int<isSigned,
+    width,
+    isSecret || isSecretChoice || isSecretOther,
+    schedulerId,
+    usingBatch>
+Int<isSigned, width, isSecret, schedulerId, usingBatch>::fastMux(
+    const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
+    const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>& other)
+    const {
+  Int<isSigned, width, isSecret || isSecretOther, schedulerId, usingBatch> sum;
+
+  for (int8_t i = 0; i < width; i++) {
+    sum.data_[i] = (other.data_.at(i) ^ data_.at(i));
+  }
+
+  Int<isSigned,
+      width,
+      isSecret || isSecretChoice || isSecretOther,
+      schedulerId,
+      usingBatch>
+      rst;
+
+  // composite AND
+  auto andResult = choice & sum.data_;
+
+  for (int8_t i = 0; i < width; i++) {
+    rst.data_[i] = data_.at(i) ^ andResult[i];
   }
   return rst;
 }

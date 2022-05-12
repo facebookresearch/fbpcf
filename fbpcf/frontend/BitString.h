@@ -103,6 +103,10 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
     return data_[i];
   }
 
+  const Bit<isSecret, schedulerId, usingBatch>& operator[](size_t i) const {
+    return data_[i];
+  }
+
   BitString<isSecret, schedulerId, usingBatch> operator!() const;
 
   template <bool isSecretOther>
@@ -113,6 +117,10 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   BitString<isSecret || isSecretOther, schedulerId, usingBatch> operator^(
       const BitString<isSecretOther, schedulerId, usingBatch>& src) const;
 
+  /**
+   * run multiplexer between this bitstring and another one. Return this string
+   * if choice is 0 and the other one if choice is 1.
+   */
   template <bool isSecretChoice, bool isSecretOther>
   BitString<
       isSecret || isSecretChoice || isSecretOther,
@@ -121,10 +129,21 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   mux(const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
       const BitString<isSecretOther, schedulerId, usingBatch>& other) const;
 
+  /**
+   * Combines a single BitString with a vector of BitString to create a single
+   * BitString with Batch size equal to the sum of the batch sizes of passed in
+   * BitStrings
+   */
   BitString<isSecret, schedulerId, usingBatch> batchingWith(
       const std::vector<BitString<isSecret, schedulerId, usingBatch>>& others)
       const;
 
+  /**
+   * Splits a batched bit string into smaller batches based on the passed in
+   * vector of integers. Each element of the unbatching strategy indicates the
+   * sub batch size.
+   *
+   */
   std::vector<BitString<isSecret, schedulerId, usingBatch>> unbatching(
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
 
@@ -132,6 +151,30 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   std::vector<Bit<isSecret, schedulerId, usingBatch>> data_;
 
   friend class BitString<!isSecret, schedulerId, usingBatch>;
+
+  /**
+   * Traditional multiplexer algorithm.
+   */
+  template <bool isSecretChoice, bool isSecretOther>
+  BitString<
+      isSecret || isSecretChoice || isSecretOther,
+      schedulerId,
+      usingBatch>
+  slowMux(
+      const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
+      const BitString<isSecretOther, schedulerId, usingBatch>& other) const;
+
+  /**
+   * Alternate version of multiplexer which uses composite AND to compute result
+   */
+  template <bool isSecretChoice, bool isSecretOther>
+  BitString<
+      isSecret || isSecretChoice || isSecretOther,
+      schedulerId,
+      usingBatch>
+  fastMux(
+      const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
+      const BitString<isSecretOther, schedulerId, usingBatch>& other) const;
 
   static std::vector<std::vector<bool>> transposeVector(
       const std::vector<std::vector<bool>>& src);

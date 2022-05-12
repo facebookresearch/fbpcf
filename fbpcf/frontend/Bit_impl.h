@@ -196,6 +196,89 @@ Bit<isSecret, schedulerId, usingBatch>::operator&(
 }
 
 template <bool isSecret, int schedulerId, bool usingBatch>
+template <bool isSecretOther, size_t width>
+std::array<Bit<isSecret || isSecretOther, schedulerId, usingBatch>, width>
+Bit<isSecret, schedulerId, usingBatch>::operator&(
+    const std::array<Bit<isSecretOther, schedulerId, usingBatch>, width>&
+        otherBits) const {
+  std::array<Bit<isSecret || isSecretOther, schedulerId, usingBatch>, width>
+      rst;
+  std::vector<WireType> otherWires(width);
+  for (size_t i = 0; i < otherWires.size(); i++) {
+    otherWires[i] = otherBits[i].id_;
+  }
+
+  otherWires = compositeAND<isSecretOther>(otherWires);
+
+  for (size_t i = 0; i < otherWires.size(); i++) {
+    rst[i].id_ = otherWires[i];
+  }
+
+  return rst;
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+template <bool isSecretOther>
+std::vector<Bit<isSecret || isSecretOther, schedulerId, usingBatch>>
+Bit<isSecret, schedulerId, usingBatch>::operator&(
+    const std::vector<Bit<isSecretOther, schedulerId, usingBatch>>& otherBits)
+    const {
+  std::vector<Bit<isSecret || isSecretOther, schedulerId, usingBatch>> rst(
+      otherBits.size());
+  std::vector<WireType> otherWires(otherBits.size());
+  for (size_t i = 0; i < otherWires.size(); i++) {
+    otherWires[i] = otherBits[i].id_;
+  }
+
+  otherWires = this->compositeAND<isSecretOther>(otherWires);
+
+  for (size_t i = 0; i < otherWires.size(); i++) {
+    rst[i].id_ = otherWires[i];
+  }
+
+  return rst;
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
+template <bool isSecretOther>
+std::vector<
+    typename Bit<isSecret || isSecretOther, schedulerId, usingBatch>::WireType>
+Bit<isSecret, schedulerId, usingBatch>::compositeAND(
+    const std::vector<
+        typename Bit<isSecretOther, schedulerId, usingBatch>::WireType>&
+        otherWires) const {
+  if constexpr (isSecret && isSecretOther) {
+    // both are secret
+
+    if constexpr (usingBatch) {
+      return scheduler::SchedulerKeeper<schedulerId>::getScheduler()
+          .privateAndPrivateCompositeBatch(id_, otherWires);
+    } else {
+      return scheduler::SchedulerKeeper<schedulerId>::getScheduler()
+          .privateAndPrivateComposite(id_, otherWires);
+    }
+  } else if constexpr (!isSecret && !isSecretOther) {
+    // both are not secret
+    if constexpr (usingBatch) {
+      return scheduler::SchedulerKeeper<schedulerId>::getScheduler()
+          .publicAndPublicCompositeBatch(id_, otherWires);
+    } else {
+      return scheduler::SchedulerKeeper<schedulerId>::getScheduler()
+          .publicAndPublicComposite(id_, otherWires);
+    }
+  } else {
+    // one secret, one public
+    if constexpr (usingBatch) {
+      return scheduler::SchedulerKeeper<schedulerId>::getScheduler()
+          .privateAndPublicCompositeBatch(id_, otherWires);
+    } else {
+      return scheduler::SchedulerKeeper<schedulerId>::getScheduler()
+          .privateAndPublicComposite(id_, otherWires);
+    }
+  }
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
 template <bool isSecretOther>
 Bit<isSecret || isSecretOther, schedulerId, usingBatch>
 Bit<isSecret, schedulerId, usingBatch>::operator^(

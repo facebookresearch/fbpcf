@@ -93,6 +93,17 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
   Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator&(
       const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
 
+  template <bool isSecretOther, size_t width>
+  std::array<Bit<isSecret || isSecretOther, schedulerId, usingBatch>, width>
+  operator&(
+      const std::array<Bit<isSecretOther, schedulerId, usingBatch>, width>&
+          otherBits) const;
+
+  template <bool isSecretOther>
+  std::vector<Bit<isSecret || isSecretOther, schedulerId, usingBatch>>
+  operator&(const std::vector<Bit<isSecretOther, schedulerId, usingBatch>>&
+                otherBits) const;
+
   template <bool isSecretOther>
   Bit<isSecret || isSecretOther, schedulerId, usingBatch> operator^(
       const Bit<isSecretOther, schedulerId, usingBatch>& other) const;
@@ -125,6 +136,13 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
 
  private:
+  template <bool isSecretOther>
+  std::vector<typename Bit<isSecret || isSecretOther, schedulerId, usingBatch>::
+                  WireType>
+  compositeAND(const std::vector<
+               typename Bit<isSecretOther, schedulerId, usingBatch>::WireType>&
+                   otherWires) const;
+
   void increaseReferenceCount(const WireType& v) const;
   void decreaseReferenceCount(const WireType& v) const;
   void moveId(WireType& dst, WireType& src) const;
