@@ -52,7 +52,7 @@ jobs:
           --build-arg emp_tool_release=${{ github.event.inputs.emp_tool_release }} \
           --build-arg emp_release=${{ github.event.inputs.emp_release }} \
           -t "fbpcf/${{ github.event.inputs.os }}-emp:${{ github.event.inputs.emp_tool_release }}" \
-          -f "docker/${DOCKER_DIR}/Dockerfile.${{ github.event.inputs.os }}" .
+          -f "docker/emp/Dockerfile.${{ github.event.inputs.os }}" .
 
       - name: Tag image
         run: |

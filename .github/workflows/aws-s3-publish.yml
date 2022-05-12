@@ -47,7 +47,7 @@ jobs:
           --build-arg os_release=${{ github.event.inputs.os_release }} \
           --build-arg aws_release=${{ github.event.inputs.aws_release }} \
           -t "fbpcf/${{ github.event.inputs.os }}-aws-s3-core:${{ github.event.inputs.aws_release }}" \
-          -f "docker/${DOCKER_DIR}/Dockerfile.${{ github.event.inputs.os }}" .
+          -f "docker/aws-s3-core/Dockerfile.${{ github.event.inputs.os }}" .
 
       - name: Tag image
         run: |
