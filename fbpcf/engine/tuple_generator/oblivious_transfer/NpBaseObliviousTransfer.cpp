@@ -108,7 +108,9 @@ NpBaseObliviousTransfer::generateRandomPoint() const {
   return randomPoint;
 }
 
-__m128i NpBaseObliviousTransfer::hashPoint(const EC_POINT& point) const {
+__m128i NpBaseObliviousTransfer::hashPoint(
+    const EC_POINT& point,
+    uint64_t nonce) const {
   std::vector<unsigned char> digest(SHA256_DIGEST_LENGTH);
 
   // Create a CTX variable. CTX variables are used as temporary variable for
@@ -121,10 +123,11 @@ __m128i NpBaseObliviousTransfer::hashPoint(const EC_POINT& point) const {
           group_.get(), &point, POINT_CONVERSION_COMPRESSED, ctx.get()),
       free);
 
-  SHA256(
-      reinterpret_cast<unsigned char*>(buf.get()),
-      strlen(buf.get()),
-      digest.data());
+  SHA256_CTX shaCtx;
+  SHA256_Init(&shaCtx);
+  SHA256_Update(&shaCtx, buf.get(), strlen(buf.get()));
+  SHA256_Update(&shaCtx, &nonce, sizeof(uint64_t));
+  SHA256_Final(digest.data(), &shaCtx);
   return _mm_set_epi8(
       digest.at(0),
       digest.at(1),
@@ -249,8 +252,8 @@ NpBaseObliviousTransfer::send(size_t size) {
   std::vector<__m128i> m0(size);
   std::vector<__m128i> m1(size);
   for (size_t i = 0; i < size; i++) {
-    m0[i] = hashPoint(*t.at(0).at(i));
-    m1[i] = hashPoint(*t.at(1).at(i));
+    m0[i] = hashPoint(*t.at(0).at(i), 0);
+    m1[i] = hashPoint(*t.at(1).at(i), 1);
   }
   return {std::move(m0), std::move(m1)};
 }
@@ -360,7 +363,7 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
 
   std::vector<__m128i> m(choice.size());
   for (size_t i = 0; i < choice.size(); i++) {
-    m[i] = hashPoint(*gd.at(i));
+    m[i] = hashPoint(*gd.at(i), choice.at(i));
   }
   return m;
 }
