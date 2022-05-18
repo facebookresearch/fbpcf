@@ -118,8 +118,8 @@ TEST(BaseObliviousTransferTest, TestNpBaseOTSendAndReceivePoints) {
         EC_POINT_cmp(
             ot1.group_.get(), pointToSend.get(), point.get(), ctx.get()),
         0);
-    auto hash0 = ot0.hashPoint(*pointToSend);
-    auto hash1 = ot1.hashPoint(*point);
+    auto hash0 = ot0.hashPoint(*pointToSend, 0);
+    auto hash1 = ot1.hashPoint(*point, 0);
     EXPECT_TRUE(compareM128i(hash0, hash1));
   }
 }
