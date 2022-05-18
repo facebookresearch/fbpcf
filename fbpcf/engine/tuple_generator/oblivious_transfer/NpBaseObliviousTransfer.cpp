@@ -18,7 +18,7 @@ NpBaseObliviousTransfer::NpBaseObliviousTransfer(
   group_ = std::unique_ptr<EC_GROUP, std::function<void(EC_GROUP*)>>(
       EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1), EC_GROUP_clear_free);
   if (group_ == nullptr) {
-    throw std::runtime_error("Can't create group.");
+    throw std::runtime_error("Failed to create group.");
   }
   order_ =
       std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>>(BN_new(), BN_free);
@@ -28,8 +28,12 @@ NpBaseObliviousTransfer::NpBaseObliviousTransfer(
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
 
+  if (order_ == nullptr || ctx == nullptr) {
+    throw std::runtime_error("Failed to initialize.");
+  }
+
   if (EC_GROUP_get_order(group_.get(), order_.get(), ctx.get()) != 1) {
-    throw std::runtime_error("Can't get group order.");
+    throw std::runtime_error("Failed to get group order.");
   }
 }
 
@@ -39,14 +43,22 @@ void NpBaseObliviousTransfer::sendPoint(const EC_POINT& point) const {
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
 
+  if (ctx == nullptr) {
+    throw std::runtime_error("Failed to create BN_CTX.");
+  }
+
   std::unique_ptr<char, std::function<void(char*)>> buf(
       EC_POINT_point2hex(
           group_.get(), &point, POINT_CONVERSION_COMPRESSED, ctx.get()),
       free);
 
+  if (buf == nullptr) {
+    throw std::runtime_error("Failed to convert point to hex.");
+  }
+
   size_t size = strlen(buf.get());
   if (size == 0) {
-    throw std::runtime_error("Can't convert point to hex.");
+    throw std::runtime_error("Failed to convert point to hex.");
   }
   agent_->sendSingleT<size_t>(size);
   std::vector<unsigned char> tmp(buf.get(), buf.get() + size);
@@ -57,18 +69,27 @@ NpBaseObliviousTransfer::PointPointer NpBaseObliviousTransfer::receivePoint()
     const {
   PointPointer rst(EC_POINT_new(group_.get()), EC_POINT_free);
 
+  if (rst == nullptr) {
+    throw std::runtime_error("Failed to create new point.");
+  }
+
   size_t size = agent_->receiveSingleT<size_t>();
   auto tmp = agent_->receive(size);
   // Create a CTX variable. CTX variables are used as temporary variable for
   // many Openssl functions.
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
+
+  if (ctx == nullptr) {
+    throw std::runtime_error("Failed to create BN_CTX.");
+  }
+
   if (EC_POINT_hex2point(
           group_.get(),
           reinterpret_cast<const char*>(tmp.data()),
           rst.get(),
           ctx.get()) == nullptr) {
-    throw std::runtime_error("Cant convert hex to point.");
+    throw std::runtime_error("Failed to convert hex to point.");
   }
   return rst;
 }
@@ -80,13 +101,25 @@ NpBaseObliviousTransfer::generateRandomPoint() const {
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
 
+  if (ctx == nullptr) {
+    throw std::runtime_error("Failed to create BN_CTX.");
+  }
+
   std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>> randomBn(
       BN_new(), BN_free);
+
+  if (randomBn == nullptr) {
+    throw std::runtime_error("Failed to create new big number.");
+  }
 
   if (BN_rand_range(randomBn.get(), order_.get()) != 1) {
     throw std::runtime_error("Failed to generate a random big number.");
   }
   PointPointer randomPoint(EC_POINT_new(group_.get()), EC_POINT_free);
+
+  if (randomPoint == nullptr) {
+    throw std::runtime_error("Failed to create new point.");
+  }
 
   // EC_POINT_mul(const EC_GROUP *group, EC_POINT *r, const BIGNUM *n,
   // const EC_POINT *q, const BIGNUM *m, BN_CTX *ctx) calculates the value
@@ -118,16 +151,34 @@ __m128i NpBaseObliviousTransfer::hashPoint(
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
 
+  if (ctx == nullptr) {
+    throw std::runtime_error("Failed to create BN_CTX.");
+  }
+
   std::unique_ptr<char, std::function<void(char*)>> buf(
       EC_POINT_point2hex(
           group_.get(), &point, POINT_CONVERSION_COMPRESSED, ctx.get()),
       free);
 
+  if (buf == nullptr) {
+    throw std::runtime_error("Failed to covert point to hex values.");
+  }
+
   SHA256_CTX shaCtx;
-  SHA256_Init(&shaCtx);
-  SHA256_Update(&shaCtx, buf.get(), strlen(buf.get()));
-  SHA256_Update(&shaCtx, &nonce, sizeof(uint64_t));
-  SHA256_Final(digest.data(), &shaCtx);
+
+  if (SHA256_Init(&shaCtx) != 1) {
+    throw std::runtime_error("Failed to init SHA256.");
+  }
+  if (SHA256_Update(&shaCtx, buf.get(), strlen(buf.get())) != 1) {
+    throw std::runtime_error("Failed to update SHA256 with point hex.");
+  }
+  if (SHA256_Update(&shaCtx, &nonce, sizeof(uint64_t)) != 1) {
+    throw std::runtime_error("Failed to update SHA256 with nonce.");
+  }
+  if (SHA256_Final(digest.data(), &shaCtx) != 1) {
+    throw std::runtime_error("Failed to finalize SHA256.");
+  }
+
   return _mm_set_epi8(
       digest.at(0),
       digest.at(1),
@@ -164,17 +215,28 @@ NpBaseObliviousTransfer::send(size_t size) {
 
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
+  if (ctx == nullptr) {
+    throw std::runtime_error("Failed to create BN_CTX.");
+  }
+
   {
     for (size_t i = 0; i < size; i++) {
       // set randomRs[i] to be a random big number
       randomRs[i] = std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>>(
           BN_new(), BN_free);
+      if (randomRs.at(i) == nullptr) {
+        throw std::runtime_error("Failed to create big number.");
+      }
+
       if (BN_rand_range(randomRs[i].get(), order_.get()) != 1) {
         throw std::runtime_error("Failed to generate randomRs[i].");
       }
 
       // initialize gr[i].
       gr[i] = PointPointer(EC_POINT_new(group_.get()), EC_POINT_free);
+      if (gr.at(i) == nullptr) {
+        throw std::runtime_error("Failed to create point.");
+      }
 
       // set gr[i] to be g^r[i]
       if (EC_POINT_mul(
@@ -189,6 +251,10 @@ NpBaseObliviousTransfer::send(size_t size) {
 
       // initialize mr[i].
       mr[i] = PointPointer(EC_POINT_new(group_.get()), EC_POINT_free);
+
+      if (mr.at(i) == nullptr) {
+        throw std::runtime_error("Failed to create point.");
+      }
 
       // set mr[i] to be M^r[i]
       if (EC_POINT_mul(
@@ -215,11 +281,19 @@ NpBaseObliviousTransfer::send(size_t size) {
 
   // two vectors of EC points t0 and t1
   std::vector<std::vector<PointPointer>> t(2);
+  t[0].reserve(size);
+  t[1].reserve(size);
 
   PointPointer tmp(EC_POINT_new(group_.get()), EC_POINT_free);
   for (size_t i = 0; i < size; i++) {
     t[0].push_back(PointPointer(EC_POINT_new(group_.get()), EC_POINT_free));
     t[1].push_back(PointPointer(EC_POINT_new(group_.get()), EC_POINT_free));
+    if (t.at(0).at(i) == nullptr) {
+      throw std::runtime_error("Failed to create point.");
+    }
+    if (t.at(1).at(i) == nullptr) {
+      throw std::runtime_error("Failed to create point.");
+    }
 
     // set t[0][i] to be s[i]^r[i]
     if (EC_POINT_mul(
@@ -229,7 +303,7 @@ NpBaseObliviousTransfer::send(size_t size) {
             s.at(i).get(),
             randomRs.at(i).get(),
             ctx.get()) != 1) {
-      throw std::runtime_error("Failed to compute  t[0][i].");
+      throw std::runtime_error("Failed to compute t[0][i].");
     };
 
     if (EC_POINT_copy(tmp.get(), t.at(0).at(i).get()) != 1) {
@@ -270,6 +344,9 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
   // many Openssl functions.
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
       BN_CTX_new(), BN_CTX_free);
+  if (ctx == nullptr) {
+    throw std::runtime_error("Failed to create BN_CTX.");
+  }
 
   // calculate the message for the sender; put these code in a scope such that
   // variables will expire and release the memory when they become irrevelant.
@@ -278,11 +355,22 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
 
     // two vectors of EC points s0 and s1
     std::vector<std::vector<PointPointer>> s(2);
+    s[0].reserve(size);
+    s[1].reserve(size);
 
     PointPointer tmp(EC_POINT_new(group_.get()), EC_POINT_free);
 
+    if (tmp == nullptr) {
+      throw std::runtime_error("Failed to create point.");
+    }
+
     std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>> randomRange(
         BN_dup(order_.get()), BN_free);
+
+    if (randomRange == nullptr) {
+      throw std::runtime_error("Failed to create big number.");
+    }
+
     if (BN_sub_word(randomRange.get(), 1) != 1) {
       throw std::runtime_error("Failed to calculate random range.");
     }
@@ -291,6 +379,11 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
       // set randomDs[i] to be a random big number
       randomDs[i] = std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>>(
           BN_new(), BN_free);
+
+      if (randomDs.at(i) == nullptr) {
+        throw std::runtime_error("Failed to create big number.");
+      }
+
       // we generate a random number in [0, q-2], then add 1 to it to get a
       // random number in [1, q-1].
       if (BN_rand_range(randomDs[i].get(), randomRange.get()) != 1) {
@@ -306,6 +399,10 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
           PointPointer(EC_POINT_new(group_.get()), EC_POINT_free));
       s[1 - choice.at(i)].push_back(nullptr);
 
+      if (s.at(choice.at(i)).at(i) == nullptr) {
+        throw std::runtime_error("Failed to create point.");
+      }
+
       // set s[choice.at(i)][i] to be g^d[i]
       if (EC_POINT_mul(
               group_.get(),
@@ -320,6 +417,9 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
       // this block has no effects other than preventing timing attack if
       // choice.at(i) == 0.
       PointPointer newS0i(EC_POINT_new(group_.get()), EC_POINT_free);
+      if (newS0i == nullptr) {
+        throw std::runtime_error("Failed to create point.");
+      }
 
       {
         if (EC_POINT_copy(tmp.get(), s.at(choice.at(i)).at(i).get()) != 1) {
@@ -350,17 +450,22 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
   }
 
   // g
-  std::vector<PointPointer> g(size);
+  std::vector<PointPointer> g;
+  g.reserve(size);
 
   for (size_t i = 0; i < size; i++) {
-    g[i] = receivePoint();
+    g.push_back(receivePoint());
   }
 
   // g^d
-  std::vector<PointPointer> gd(size);
+  std::vector<PointPointer> gd;
+  gd.reserve(size);
 
   for (size_t i = 0; i < size; i++) {
-    gd[i] = PointPointer(EC_POINT_new(group_.get()), EC_POINT_free);
+    gd.push_back(PointPointer(EC_POINT_new(group_.get()), EC_POINT_free));
+    if (gd.at(i) == nullptr) {
+      throw std::runtime_error("Failed to create point.");
+    }
 
     if (EC_POINT_mul(
             group_.get(),
@@ -373,9 +478,10 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
     };
   }
 
-  std::vector<__m128i> m(choice.size());
-  for (size_t i = 0; i < choice.size(); i++) {
-    m[i] = hashPoint(*gd.at(i), choice.at(i));
+  std::vector<__m128i> m;
+  m.reserve(size);
+  for (size_t i = 0; i < size; i++) {
+    m.push_back(hashPoint(*gd.at(i), choice.at(i)));
   }
   return m;
 }
