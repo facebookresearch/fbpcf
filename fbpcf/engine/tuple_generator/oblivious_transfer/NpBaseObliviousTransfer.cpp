@@ -302,11 +302,12 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
         throw std::runtime_error("Failed to compute s[choice.at(i)][i].");
       };
 
-      // if choice.at(i) == 1, compute s[0][i] based on s[1][i].
-      if (choice.at(i) == 1) {
-        s[0][i] = PointPointer(EC_POINT_new(group_.get()), EC_POINT_free);
+      // this block has no effects other than preventing timing attack if
+      // choice.at(i) == 0.
+      PointPointer newS0i(EC_POINT_new(group_.get()), EC_POINT_free);
 
-        if (EC_POINT_copy(tmp.get(), s.at(1).at(i).get()) != 1) {
+      {
+        if (EC_POINT_copy(tmp.get(), s.at(choice.at(i)).at(i).get()) != 1) {
           throw std::runtime_error("Failed to copy s[choice.at(i)][i].");
         }
 
@@ -316,14 +317,20 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
 
         if (EC_POINT_add(
                 group_.get(),
-                s[0][i].get(),
+                newS0i.get(),
                 globalM.get(),
                 tmp.get(),
                 ctx.get()) != 1) {
           throw std::runtime_error("Failed to compute s[0][i].");
         }
       }
-      sendPoint(*s.at(0).at(i));
+
+      // if choice.at(i) == 1, compute s[0][i] based on s[1][i].
+      if (choice.at(i) == 1) {
+        sendPoint(*newS0i);
+      } else {
+        sendPoint(*s.at(0).at(i));
+      }
     }
   }
 
