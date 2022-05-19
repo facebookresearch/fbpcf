@@ -281,12 +281,24 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
 
     PointPointer tmp(EC_POINT_new(group_.get()), EC_POINT_free);
 
+    std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>> randomRange(
+        BN_dup(order_.get()), BN_free);
+    if (BN_sub_word(randomRange.get(), 1) != 1) {
+      throw std::runtime_error("Failed to calculate random range.");
+    }
+
     for (size_t i = 0; i < size; i++) {
       // set randomDs[i] to be a random big number
       randomDs[i] = std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>>(
           BN_new(), BN_free);
-      if (BN_rand_range(randomDs[i].get(), order_.get()) != 1) {
+      // we generate a random number in [0, q-2], then add 1 to it to get a
+      // random number in [1, q-1].
+      if (BN_rand_range(randomDs[i].get(), randomRange.get()) != 1) {
         throw std::runtime_error("Failed to generate randomDs[i].");
+      }
+
+      if (BN_add_word(randomDs[i].get(), 1) != 1) {
+        throw std::runtime_error("Failed to correct randomDs[i].");
       }
 
       // initialize s[choice.at(i)][i].
