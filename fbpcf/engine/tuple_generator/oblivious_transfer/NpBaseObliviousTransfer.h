@@ -63,7 +63,7 @@ class NpBaseObliviousTransfer : public IBaseObliviousTransfer {
 
   PointPointer generateRandomPoint() const;
 
-  __m128i hashPoint(const EC_POINT& point) const;
+  __m128i hashPoint(const EC_POINT& point, uint64_t nonce) const;
 
   std::unique_ptr<communication::IPartyCommunicationAgent> agent_;
 
