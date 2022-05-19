@@ -200,6 +200,8 @@ __m128i NpBaseObliviousTransfer::hashPoint(
 
 std::pair<std::vector<__m128i>, std::vector<__m128i>>
 NpBaseObliviousTransfer::send(size_t size) {
+  // This global M is only used for all the OT instances in this function.
+  // Obviously this batch of OTs are between the same pair of parties.
   auto globalM = generateRandomPoint();
   sendPoint(*globalM);
 
