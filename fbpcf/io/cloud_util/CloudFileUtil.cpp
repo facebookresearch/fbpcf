@@ -9,6 +9,7 @@
 #include <re2/re2.h>
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/PcfException.h"
+#include "fbpcf/io/cloud_util/S3Client.h"
 #include "fbpcf/io/cloud_util/S3FileReader.h"
 #include "fbpcf/io/cloud_util/S3FileUploader.h"
 
@@ -59,8 +60,9 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
   if (fileType == CloudFileType::S3) {
     const auto& ref = fbpcf::aws::uriToObjectReference(filePath);
     return std::make_unique<S3FileUploader>(
-        fbpcf::aws::createS3Client(
-            fbpcf::aws::S3ClientOption{.region = ref.region}),
+        fbpcf::cloudio::S3Client::getInstance(
+            fbpcf::aws::S3ClientOption{.region = ref.region})
+            .getS3Client(),
         filePath);
   } else {
     throw fbpcf::PcfException("Not supported yet.");
