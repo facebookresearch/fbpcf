@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <fbpcf/frontend/BitString.h>
+#include <type_traits>
 namespace fbpcf::mpc_std_lib::oram {
 
 template <int schedulerId>
@@ -17,27 +19,18 @@ ObliviousDeltaCalculator<schedulerId>::calculateDelta(
     const std::vector<bool>& alphaShares) const {
   auto delta0SharesBool = util::convertToBits(delta0Shares);
   auto delta1SharesBool = util::convertToBits(delta1Shares);
-  std::vector<frontend::Bit<true, schedulerId, true>> secDelta0(
-      128 /* there are 128 bits in __m128i */);
-  std::vector<frontend::Bit<true, schedulerId, true>> secDelta1(
-      128 /* there are 128 bits in __m128i */);
-  std::vector<frontend::Bit<true, schedulerId, true>> secDelta(
-      128 /* there are 128 bits in __m128i */);
+  frontend::BitString<true, schedulerId, true> secDelta0(
+      (typename frontend::BitString<true, schedulerId, true>::ExtractedString(
+          delta0SharesBool)));
+  frontend::BitString<true, schedulerId, true> secDelta1(
+      (typename frontend::BitString<true, schedulerId, true>::ExtractedString(
+          delta1SharesBool)));
 
   frontend::Bit<true, schedulerId, true> secAlpha(
       (typename frontend::Bit<true, schedulerId, true>::ExtractedBit(
           alphaShares)));
 
-  for (size_t i = 0; i < kBitsInM128i; i++) {
-    secDelta0[i] = frontend::Bit<true, schedulerId, true>(
-        typename frontend::Bit<true, schedulerId, true>::ExtractedBit(
-            delta0SharesBool.at(i)));
-    secDelta1[i] = frontend::Bit<true, schedulerId, true>(
-        typename frontend::Bit<true, schedulerId, true>::ExtractedBit(
-            delta1SharesBool.at(i)));
-    secDelta[i] =
-        secDelta1.at(i) ^ ((secDelta0.at(i) ^ secDelta1.at(i)) & secAlpha);
-  }
+  auto secDelta = secDelta1.mux(secAlpha, secDelta0);
   auto secT0 = secDelta0.at(0) ^ !secAlpha;
   auto secT1 = secDelta1.at(0) ^ secAlpha;
 
