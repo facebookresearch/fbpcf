@@ -17,7 +17,7 @@ namespace fbpcf::cloudio {
 class S3FileUploader : public IFileUploader {
  public:
   explicit S3FileUploader(
-      std::unique_ptr<Aws::S3::S3Client> s3Client,
+      std::shared_ptr<Aws::S3::S3Client> s3Client,
       const std::string& filePath)
       : s3Client_{std::move(s3Client)}, filePath_{filePath} {
     init();
@@ -28,7 +28,7 @@ class S3FileUploader : public IFileUploader {
  private:
   void init() override;
   void abortUpload();
-  std::unique_ptr<Aws::S3::S3Client> s3Client_;
+  std::shared_ptr<Aws::S3::S3Client> s3Client_;
   const std::string filePath_;
   std::string bucket_;
   std::string key_;
