@@ -373,10 +373,6 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
       throw std::runtime_error("Failed to create big number.");
     }
 
-    if (BN_sub_word(randomRange.get(), 1) != 1) {
-      throw std::runtime_error("Failed to calculate random range.");
-    }
-
     for (size_t i = 0; i < size; i++) {
       // set randomDs[i] to be a random big number
       randomDs[i] = std::unique_ptr<BIGNUM, std::function<void(BIGNUM*)>>(
@@ -386,8 +382,8 @@ std::vector<__m128i> NpBaseObliviousTransfer::receive(
         throw std::runtime_error("Failed to create big number.");
       }
 
-      // we generate a random number in [0, q-2], then add 1 to it to get a
-      // random number in [1, q-1].
+      // we generate a random number in [0, q-1], then add 1 to it to get a
+      // random number in [1, q].
       if (BN_rand_range(randomDs[i].get(), randomRange.get()) != 1) {
         throw std::runtime_error("Failed to generate randomDs[i].");
       }
