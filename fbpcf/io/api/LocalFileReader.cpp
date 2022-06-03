@@ -41,7 +41,5 @@ bool LocalFileReader::eof() {
   return inputStream_->eof();
 }
 
-LocalFileReader::~LocalFileReader() {
-  close();
-}
+LocalFileReader::~LocalFileReader() {}
 } // namespace fbpcf::io

@@ -67,9 +67,7 @@ bool BufferedReader::eof() {
   return baseReader_.eof() && (currentPosition_ == lastPosition_);
 }
 
-BufferedReader::~BufferedReader() {
-  close();
-}
+BufferedReader::~BufferedReader() {}
 
 std::string BufferedReader::readLine() {
   if (eof()) {

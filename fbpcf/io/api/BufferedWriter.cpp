@@ -15,7 +15,7 @@ namespace fbpcf::io {
 
 int BufferedWriter::close() {
   flush();
-  return baseWriter_.close();
+  return baseWriter_->close();
 }
 
 size_t BufferedWriter::write(std::vector<char>& buf) {
@@ -45,9 +45,14 @@ size_t BufferedWriter::write(std::vector<char>& buf) {
   return written;
 }
 
-BufferedWriter::~BufferedWriter() {
-  close();
+size_t BufferedWriter::writeString(std::string& line) {
+  auto vec = std::vector<char>(line.size());
+  std::copy(line.begin(), line.end(), vec.begin());
+
+  return write(vec);
 }
+
+BufferedWriter::~BufferedWriter() {}
 
 void BufferedWriter::flush() {
   if (currentPosition_ == 0) {
@@ -63,7 +68,7 @@ void BufferedWriter::flush() {
     toWrite = buffer_;
   }
   currentPosition_ = 0;
-  if (baseWriter_.write(toWrite) != toWrite.size()) {
+  if (baseWriter_->write(toWrite) != toWrite.size()) {
     throw std::runtime_error(
         "Failed to flush contents of buffer. Terminating.");
   }

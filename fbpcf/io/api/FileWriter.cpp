@@ -23,9 +23,7 @@ FileWriter::FileWriter(std::string filePath) {
   }
 }
 
-FileWriter::~FileWriter() {
-  close();
-}
+FileWriter::~FileWriter() {}
 
 size_t FileWriter::write(std::vector<char>& buf) {
   return childWriter_->write(buf);
