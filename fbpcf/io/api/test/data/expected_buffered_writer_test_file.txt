@@ -2,3 +2,5 @@ this file tests the buffered writer
 these two lines fit in one chunk
 but this next line is going to be much longer and will require multiple iterations of the loop to fit everything in the file
 this is tiny
+writing a small string
+writing a big string that will also take multiple iterations to write everything in the file so that we have comprehensive tests

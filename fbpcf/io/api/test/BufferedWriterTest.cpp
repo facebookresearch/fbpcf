@@ -26,8 +26,9 @@ inline void runBufferedWriterTest(size_t chunkSize) {
   auto randint = intDistro(defEngine);
   std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file" +
       std::to_string(randint) + ".txt";
-  auto writer = fbpcf::io::LocalFileWriter(fileToWriteTo);
-  auto bufferedWriter = std::make_unique<BufferedWriter>(writer, chunkSize);
+  auto writer = std::make_unique<fbpcf::io::LocalFileWriter>(fileToWriteTo);
+  auto bufferedWriter =
+      std::make_unique<BufferedWriter>(std::move(writer), chunkSize);
 
   std::string to_write = "this file tests the buffered writer\n";
   auto buf =
@@ -58,6 +59,15 @@ inline void runBufferedWriterTest(size_t chunkSize) {
   auto buf4 =
       std::vector<char>(to_write.c_str(), to_write.c_str() + to_write.size());
   nBytes = bufferedWriter->write(buf4);
+  EXPECT_EQ(nBytes, to_write.size());
+
+  to_write = "writing a small string\n";
+  nBytes = bufferedWriter->writeString(to_write);
+  EXPECT_EQ(nBytes, to_write.size());
+
+  to_write =
+      "writing a big string that will also take multiple iterations to write everything in the file so that we have comprehensive tests\n";
+  nBytes = bufferedWriter->writeString(to_write);
   EXPECT_EQ(nBytes, to_write.size());
 
   bufferedWriter->close();

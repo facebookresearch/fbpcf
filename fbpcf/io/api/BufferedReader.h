@@ -21,13 +21,13 @@ provides a readLine function as well as the ability
 to specify a chunk size.
 */
 
-constexpr size_t defaultChunkSize = 4096;
+constexpr size_t defaultReaderChunkSize = 4096;
 
 class BufferedReader : public IReaderCloser {
  public:
   explicit BufferedReader(
       IReaderCloser& baseReader,
-      const size_t chunkSize = defaultChunkSize)
+      const size_t chunkSize = defaultReaderChunkSize)
       : buffer_{std::vector<char>(chunkSize)},
         currentPosition_{0},
         baseReader_{baseReader},

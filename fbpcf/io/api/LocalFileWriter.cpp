@@ -33,7 +33,5 @@ size_t LocalFileWriter::write(std::vector<char>& buf) {
   return buf.size();
 }
 
-LocalFileWriter::~LocalFileWriter() {
-  close();
-}
+LocalFileWriter::~LocalFileWriter() {}
 } // namespace fbpcf::io

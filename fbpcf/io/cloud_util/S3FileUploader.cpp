@@ -30,6 +30,8 @@ void S3FileUploader::init() {
   request.SetKey(key_);
   request.SetContentType(FILE_TYPE);
 
+  XLOG(INFO) << "Bucket: " << bucket_ << ", Key: " << key_;
+
   auto createMultipartUploadOutcome = s3Client_->CreateMultipartUpload(request);
 
   if (createMultipartUploadOutcome.IsSuccess()) {
@@ -37,6 +39,7 @@ void S3FileUploader::init() {
     XLOG(INFO) << "Multipart upload initialization succeed. Upload id is: "
                << uploadId_;
   } else {
+    XLOG(ERR) << createMultipartUploadOutcome.GetError();
     throw AwsException{
         "Multipart upload initialization failed: " +
         createMultipartUploadOutcome.GetError().GetMessage()};
