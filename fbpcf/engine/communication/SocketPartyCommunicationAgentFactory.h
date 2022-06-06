@@ -24,8 +24,16 @@ class SocketPartyCommunicationAgentFactory final
     int portNo;
   };
 
-  // it's OK if a party with a smaller id doesn't know a party with larger id's
-  // ip address, since the party with smaller id will always be the server.
+  /** it's OK if a party with a smaller id doesn't know a party with larger id's
+  * ip address, since the party with smaller id will always be the server.
+  *@param partyInfos This is a map that contains connection information for all
+other parties, 0...n where myId is some m, 0 <= m <= n. The map contains entries
+for all parties != m. For all parties where id < m, it will contain an address
+and a port and will behave as a TCP client. For all parties where id > m, it
+will contain a port (and an address that will be ignored) and will behave as a
+TCP server. We expect the gap between port numbers are large enough to allow
+establishing multiple connections (>3) between each party pair.
+  */
   SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos)
@@ -51,8 +59,7 @@ class SocketPartyCommunicationAgentFactory final
     if (id == myId_) {
       throw std::runtime_error("No need to talk to myself!");
     } else {
-      auto serverId = id < myId_ ? id : myId_;
-      auto iter = partyInfos_.find(serverId);
+      auto iter = partyInfos_.find(id);
       if (iter == partyInfos_.end()) {
         throw std::runtime_error("Don't know how to connect to this party!");
       }
