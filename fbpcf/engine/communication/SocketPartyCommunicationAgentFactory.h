@@ -51,8 +51,7 @@ class SocketPartyCommunicationAgentFactory final
     if (id == myId_) {
       throw std::runtime_error("No need to talk to myself!");
     } else {
-      auto serverId = id < myId_ ? id : myId_;
-      auto iter = partyInfos_.find(serverId);
+      auto iter = partyInfos_.find(id);
       if (iter == partyInfos_.end()) {
         throw std::runtime_error("Don't know how to connect to this party!");
       }
