@@ -73,14 +73,16 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
    * stress runs, we get errors when trying to bind to the
    * same port multiple times.
    */
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo = {
-      {0, {"127.0.0.1", intDistro(defEngine)}},
-      {1, {"127.0.0.1", intDistro(defEngine)}}};
+  auto port = intDistro(defEngine);
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
+      {1, {"127.0.0.1", port}}};
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
+      {0, {"127.0.0.1", port}}};
 
   auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo, true, createdDir);
+      0, partyInfo0, true, createdDir);
   auto factory1 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      1, partyInfo, true, createdDir);
+      1, partyInfo1, true, createdDir);
 
   int size = 1048576; // 1024 ^ 2
   auto thread0 = std::thread(testAgentFactory, 0, size, std::move(factory0));
@@ -97,14 +99,16 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
   std::default_random_engine defEngine(rd());
   std::uniform_int_distribution<int> intDistro(10000, 25000);
 
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo = {
-      {0, {"127.0.0.1", intDistro(defEngine)}},
-      {1, {"127.0.0.1", intDistro(defEngine)}}};
+  auto port = intDistro(defEngine);
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
+      {1, {"127.0.0.1", port}}};
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
+      {0, {"127.0.0.1", port}}};
 
   auto factory0 =
-      std::make_unique<SocketPartyCommunicationAgentFactory>(0, partyInfo);
+      std::make_unique<SocketPartyCommunicationAgentFactory>(0, partyInfo0);
   auto factory1 =
-      std::make_unique<SocketPartyCommunicationAgentFactory>(1, partyInfo);
+      std::make_unique<SocketPartyCommunicationAgentFactory>(1, partyInfo1);
 
   int size = 1048576; // 1024 ^ 2
   auto thread0 = std::thread(testAgentFactory, 0, size, std::move(factory0));
