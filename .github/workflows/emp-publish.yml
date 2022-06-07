@@ -7,11 +7,11 @@ on:
         description: "Build and publish an fbpcf/emp image for a particular version"
         default: "Run"
       emp_release:
-        description: "The emp version to build and publish (e.g. 0.2.3)"
+        description: "The emp version to build and publish (e.g. 0.2.2)"
         required: true
         type: string
       emp_tool_release:
-        description: "The emp-tool version to build and publish (e.g. 0.2.2)"
+        description: "The emp-tool version to build and publish (e.g. 0.2.3)"
         required: true
         type: string
       os:
