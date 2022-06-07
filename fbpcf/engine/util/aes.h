@@ -61,6 +61,10 @@ class Aes {
 
   static __m128i getFixedKey();
 
+  static std::array<__m128i, 11> expandEncryptionKey(__m128i key);
+
+  static std::array<__m128i, 11> expandDecryptionKey(__m128i key);
+
  protected:
   static const uint8_t kRound = 10;
   std::array<__m128i, 11> roundKey_;
