@@ -44,18 +44,22 @@ getSocketAgents() {
   auto retries = 5;
   while (retries--) {
     try {
+      auto port = intDistro(e);
       std::map<
           int,
           communication::SocketPartyCommunicationAgentFactory::PartyInfo>
-          partyInfo = {
-              {0, {"127.0.0.1", intDistro(e)}},
-              {1, {"127.0.0.1", intDistro(e)}}};
+          partyInfo0 = {{1, {"127.0.0.1", port}}};
+      std::map<
+          int,
+          communication::SocketPartyCommunicationAgentFactory::PartyInfo>
+          partyInfo1 = {{0, {"127.0.0.1", port}}};
+
       auto factory0 =
           std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
-              0, partyInfo);
+              0, partyInfo0);
       auto factory1 =
           std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
-              1, partyInfo);
+              1, partyInfo1);
 
       auto task =
           [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>
