@@ -45,7 +45,7 @@ jobs:
         run: |
           docker build \
           --build-arg os_release=${{ github.event.inputs.os_release }} \
-          --build-arg gcp_release=${{ github.event.inputs.gcp_release }} \
+          --build-arg gcp_cpp_release=${{ github.event.inputs.gcp_release }} \
           -t "fbpcf/${{ github.event.inputs.os }}-google-cloud-cpp:${{ github.event.inputs.gcp_release }}" \
           -f "docker/google-cloud-cpp/Dockerfile.${{ github.event.inputs.os }}" .
 
