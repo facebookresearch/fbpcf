@@ -12,16 +12,7 @@ namespace fbpcf::engine::util {
 
 void AesTestHelper::switchToDecrypt() {
   // convert the encryption key to the decryption key
-  int8_t j = 0;
-  int8_t i = kRound;
-  std::array<__m128i, 11> decryptionKey;
-  decryptionKey[i--] = roundKey_[j++];
-  while (i > 0) {
-    decryptionKey[i--] = _mm_aesimc_si128(roundKey_[j++]);
-  }
-  decryptionKey[i] = roundKey_[j];
-
-  roundKey_ = decryptionKey;
+  roundKey_ = Aes::expandDecryptionKey(key_);
 }
 
 void AesTestHelper::decryptInPlace(std::vector<__m128i>& ciphertext) const {

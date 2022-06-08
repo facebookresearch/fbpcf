@@ -6,13 +6,14 @@
  */
 
 #pragma once
+#include <emmintrin.h>
 #include "fbpcf/engine/util/aes.h"
 
 namespace fbpcf::engine::util {
 
 class AesTestHelper final : public Aes {
  public:
-  explicit AesTestHelper(__m128i key) : Aes(key) {}
+  explicit AesTestHelper(__m128i key) : Aes(key), key_(key) {}
 
   /**
    * Switch the cipher to decryption mode
@@ -20,6 +21,9 @@ class AesTestHelper final : public Aes {
   void switchToDecrypt();
 
   void decryptInPlace(std::vector<__m128i>& ciphertext) const;
+
+ private:
+  __m128i key_;
 };
 
 } // namespace fbpcf::engine::util

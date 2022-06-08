@@ -15,41 +15,59 @@ __m128i Aes::getFixedKey() {
 }
 
 Aes::Aes(__m128i key) {
+  roundKey_ = expandEncryptionKey(key);
+}
+
+std::array<__m128i, 11> Aes::expandEncryptionKey(__m128i key) {
   __m128i temp1;
   __m128i temp2;
-
-  roundKey_[0] = key;
+  std::array<__m128i, 11> roundKey;
+  roundKey[0] = key;
   temp1 = key;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x1);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[1] = temp1;
+  roundKey[1] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x2);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[2] = temp1;
+  roundKey[2] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x4);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[3] = temp1;
+  roundKey[3] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x8);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[4] = temp1;
+  roundKey[4] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x10);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[5] = temp1;
+  roundKey[5] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x20);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[6] = temp1;
+  roundKey[6] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x40);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[7] = temp1;
+  roundKey[7] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x80);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[8] = temp1;
+  roundKey[8] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x1b);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[9] = temp1;
+  roundKey[9] = temp1;
   temp2 = _mm_aeskeygenassist_si128(temp1, 0x36);
   temp1 = aes128KeyExpandAssist(temp1, temp2);
-  roundKey_[kRound] = temp1;
+  roundKey[kRound] = temp1;
+  return roundKey;
+}
+
+std::array<__m128i, 11> Aes::expandDecryptionKey(__m128i key) {
+  auto roundKey = expandEncryptionKey(key);
+  int8_t j = 0;
+  int8_t i = kRound;
+  std::array<__m128i, 11> decryptionKey;
+  decryptionKey[i--] = roundKey[j++];
+  while (i > 0) {
+    decryptionKey[i--] = _mm_aesimc_si128(roundKey[j++]);
+  }
+  decryptionKey[i] = roundKey[j];
+  return decryptionKey;
 }
 
 void Aes::encryptInPlace(std::vector<__m128i>& plaintext) const {
