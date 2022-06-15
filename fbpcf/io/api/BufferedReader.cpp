@@ -15,7 +15,7 @@
 namespace fbpcf::io {
 
 int BufferedReader::close() {
-  return baseReader_.close();
+  return baseReader_->close();
 }
 
 size_t BufferedReader::read(std::vector<char>& buf) {
@@ -48,7 +48,7 @@ size_t BufferedReader::read(std::vector<char>& buf) {
     remaining = buf.size() - filledUp;
     currentPosition_ = lastPosition_;
 
-    if (baseReader_.eof()) {
+    if (baseReader_->eof()) {
       // that's all the data that exists in the file
       return filledUp;
     }
@@ -64,7 +64,7 @@ size_t BufferedReader::read(std::vector<char>& buf) {
 
 bool BufferedReader::eof() {
   // The base file is exhausted and the buffer is exhausted
-  return baseReader_.eof() && (currentPosition_ == lastPosition_);
+  return baseReader_->eof() && (currentPosition_ == lastPosition_);
 }
 
 BufferedReader::~BufferedReader() {}
@@ -85,7 +85,7 @@ std::string BufferedReader::readLine() {
 
     if (currentPosition_ == lastPosition_) {
       // we've run out of data, try to get the next chunk
-      if (baseReader_.eof()) {
+      if (baseReader_->eof()) {
         // no more data in the file, return what we have
         break;
       }
@@ -109,7 +109,7 @@ std::string BufferedReader::readLine() {
 }
 
 void BufferedReader::loadNextChunk() {
-  auto bytesRead = baseReader_.read(buffer_);
+  auto bytesRead = baseReader_->read(buffer_);
 
   lastPosition_ = bytesRead;
   currentPosition_ = 0;
