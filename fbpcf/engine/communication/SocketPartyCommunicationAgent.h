@@ -25,6 +25,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
    * Create as socket server, optionally with TLS.
    */
   explicit SocketPartyCommunicationAgent(
+      int sockFd,
       int portNo,
       bool useTls,
       std::string tlsDir);
@@ -62,10 +63,10 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   void sendImpl(const void* data, int nBytes) override;
 
  private:
-  void openServerPort(int portNo);
+  void openServerPort(int sockFd, int portNo);
   void openClientPort(const std::string& serverAddress, int portNo);
 
-  void openServerPortWithTls(int portNo, std::string tlsDir);
+  void openServerPortWithTls(int sockFd, int portNo, std::string tlsDir);
   void openClientPortWithTls(
       const std::string& serverAddress,
       int portNo,

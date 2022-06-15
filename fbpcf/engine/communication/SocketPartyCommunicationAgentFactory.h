@@ -8,6 +8,15 @@
 #pragma once
 #include <map>
 
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cerrno>
+#include <stdexcept>
+
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgent.h"
 
@@ -37,48 +46,39 @@ establishing multiple connections (>3) between each party pair.
   SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos)
-      : myId_(myId),
-        partyInfos_(std::move(partyInfos)),
-        useTls_(false),
-        tlsDir_("") {}
+      : myId_(myId), useTls_(false), tlsDir_("") {
+    setupInitialConnection(partyInfos);
+  }
 
   SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
       bool useTls,
       std::string tlsDir)
-      : myId_(myId),
-        partyInfos_(std::move(partyInfos)),
-        useTls_(useTls),
-        tlsDir_(tlsDir) {}
+      : myId_(myId), useTls_(useTls), tlsDir_(tlsDir) {
+    setupInitialConnection(partyInfos);
+  }
 
   /**
    * create an agent that talks to a certain party
    */
-  std::unique_ptr<IPartyCommunicationAgent> create(int id) override {
-    if (id == myId_) {
-      throw std::runtime_error("No need to talk to myself!");
-    } else {
-      auto iter = partyInfos_.find(id);
-      if (iter == partyInfos_.end()) {
-        throw std::runtime_error("Don't know how to connect to this party!");
-      }
-      // increasing port number since each connection will exclusively occupy a
-      // port number. Need to use a new one for next new connection.
-      auto portNo = iter->second.portNo++;
-      if (id > myId_) {
-        return std::make_unique<SocketPartyCommunicationAgent>(
-            portNo, useTls_, tlsDir_);
-      } else {
-        return std::make_unique<SocketPartyCommunicationAgent>(
-            iter->second.address, portNo, useTls_, tlsDir_);
-      }
-    }
-  }
+  std::unique_ptr<IPartyCommunicationAgent> create(int id) override;
 
  private:
+  /**
+   * @param portNo intended port number for the socket. If portNo=0, a random
+   * free port number will be used instead
+   * @return a {socket, port number} pair.
+   */
+  std::pair<int, int> createSocketFromMaybeFreePort(int portNo);
+
+  void setupInitialConnection(const std::map<int, PartyInfo>& partyInfos);
+
   int myId_;
-  std::map<int, PartyInfo> partyInfos_;
+  std::map<
+      int,
+      std::pair<PartyInfo, std::unique_ptr<SocketPartyCommunicationAgent>>>
+      initialConnections_;
 
   /*
     useTls_ and tlsDir_ need to be different because

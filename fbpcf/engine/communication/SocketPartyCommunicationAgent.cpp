@@ -53,14 +53,15 @@ static int callbackToSkipVerificationOfSelfSignedCert_UNSAFE(
 }
 
 SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
+    int sockFd,
     int portNo,
     bool useTls,
     std::string tlsDir)
     : sentData_(0), receivedData_(0), ssl_(nullptr) {
   if (useTls) {
-    openServerPortWithTls(portNo, tlsDir);
+    openServerPortWithTls(sockFd, portNo, tlsDir);
   } else {
-    openServerPort(portNo);
+    openServerPort(sockFd, portNo);
   }
 }
 
@@ -133,10 +134,10 @@ std::vector<unsigned char> SocketPartyCommunicationAgent::receive(size_t size) {
   return rst;
 }
 
-void SocketPartyCommunicationAgent::openServerPort(int portNo) {
+void SocketPartyCommunicationAgent::openServerPort(int sockFd, int portNo) {
   XLOG(INFO) << "try to connect as server at port " << portNo;
 
-  auto acceptedConnection = receiveFromClient(portNo);
+  auto acceptedConnection = receiveFromClient(sockFd);
 
   auto duplicatedConnection = dup(acceptedConnection);
   if (duplicatedConnection < 0) {
@@ -171,6 +172,7 @@ void SocketPartyCommunicationAgent::openClientPort(
 }
 
 void SocketPartyCommunicationAgent::openServerPortWithTls(
+    int sockFd,
     int portNo,
     std::string tlsDir) {
   LOG(INFO) << "try to connect as server at port " << portNo << " with TLS";
@@ -210,7 +212,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
     throw std::runtime_error("Error using private key file");
   }
 
-  auto acceptedConnection = receiveFromClient(portNo);
+  auto acceptedConnection = receiveFromClient(sockFd);
 
   const auto ssl = SSL_new(ctx);
   SSL_set_fd(ssl, acceptedConnection);
@@ -322,33 +324,7 @@ int SocketPartyCommunicationAgent::connectToHost(
   return sockfd;
 }
 
-int SocketPartyCommunicationAgent::receiveFromClient(int portNo) {
-  auto sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0) {
-    throw std::runtime_error("error opening socket");
-  }
-  int enable = 1;
-
-  if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-    XLOG(INFO) << "setsockopt(SO_REUSEADDR) failed";
-  }
-
-  struct sockaddr_in servAddr;
-
-  memset((char*)&servAddr, 0, sizeof(servAddr));
-  servAddr.sin_family = AF_INET;
-  servAddr.sin_addr.s_addr = INADDR_ANY;
-  servAddr.sin_port = htons(portNo);
-
-  // throw an exception if binding to socket failed
-  if (::bind(sockfd, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in)) <
-      0) {
-    throw std::runtime_error("error on binding");
-  }
-
-  // only expect 1 client to connect
-  listen(sockfd, 1);
-
+int SocketPartyCommunicationAgent::receiveFromClient(int sockfd) {
   struct sockaddr_in cli_addr;
   socklen_t clilen = sizeof(struct sockaddr_in);
   auto acceptedConnection =
