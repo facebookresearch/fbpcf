@@ -16,11 +16,11 @@ namespace fbpcf::io {
 
 inline void runBufferedReaderTestForReadLineOnly(size_t chunkSize) {
   // this more accurately resembles a production style usage
-  auto fileReader = fbpcf::io::FileReader(
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
       IOTestHelper::getBaseDirFromPath(__FILE__) +
       "data/buffered_reader_test_file.txt");
-  auto bufferedReader =
-      std::make_unique<fbpcf::io::BufferedReader>(fileReader, chunkSize);
+  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std::move(fileReader), chunkSize);
 
   auto expectedLines = std::vector<std::string>{
       "this is a simple first line",
@@ -51,11 +51,11 @@ inline void runBufferedReaderTestForReadLineOnly(size_t chunkSize) {
 }
 
 inline void runBufferedReaderTestForReadAndReadLine(size_t chunkSize) {
-  auto fileReader = fbpcf::io::FileReader(
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
       IOTestHelper::getBaseDirFromPath(__FILE__) +
       "data/buffered_reader_test_file.txt");
-  auto bufferedReader =
-      std::make_unique<fbpcf::io::BufferedReader>(fileReader, chunkSize);
+  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std ::move(fileReader), chunkSize);
 
   auto firstLine = bufferedReader->readLine();
 

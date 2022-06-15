@@ -26,11 +26,11 @@ constexpr size_t defaultReaderChunkSize = 4096;
 class BufferedReader : public IReaderCloser {
  public:
   explicit BufferedReader(
-      IReaderCloser& baseReader,
+      std::unique_ptr<IReaderCloser> baseReader,
       const size_t chunkSize = defaultReaderChunkSize)
       : buffer_{std::vector<char>(chunkSize)},
         currentPosition_{0},
-        baseReader_{baseReader},
+        baseReader_{std::move(baseReader)},
         lastPosition_{0} {}
 
   int close() override;
@@ -45,7 +45,7 @@ class BufferedReader : public IReaderCloser {
 
   std::vector<char> buffer_;
   size_t currentPosition_;
-  IReaderCloser& baseReader_;
+  std::unique_ptr<IReaderCloser> baseReader_;
   size_t lastPosition_;
 };
 
