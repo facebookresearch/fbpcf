@@ -13,6 +13,7 @@
 
 #include "fbpcf/engine/util/AesPrg.h"
 #include "fbpcf/engine/util/aes.h"
+#include "fbpcf/engine/util/test/benchmarks/LocalBenchmark.h"
 #include "folly/BenchmarkUtil.h"
 
 namespace fbpcf::engine::util {
@@ -45,71 +46,100 @@ std::vector<__m128i> generateData() {
   return data;
 }
 
-BENCHMARK(Aes_encryptInPlace, n) {
-  folly::BenchmarkSuspender braces;
-  auto seed = getRandomSeed();
-  auto data = generateData();
-  braces.dismiss();
-
-  Aes cipher(seed);
-
-  while (n--) {
-    cipher.encryptInPlace(data);
+class AesBenchmark : public LocalBenchmark {
+ public:
+  void setup() override {
+    seed = getRandomSeed();
+    data = generateData();
+    cipher = std::make_unique<Aes>(seed);
+    prg = std::make_unique<AesPrg>(seed);
   }
-  folly::doNotOptimizeAway(data);
+
+  void teardown() override {
+    folly::doNotOptimizeAway(data);
+  }
+
+ protected:
+  __m128i seed;
+  std::vector<__m128i> data;
+  std::unique_ptr<Aes> cipher;
+  std::unique_ptr<AesPrg> prg;
+};
+
+class AesEncryptInPlaceBenchmark final : public AesBenchmark {
+ public:
+  void run(unsigned int n) override {
+    while (n--) {
+      cipher->encryptInPlace(data);
+    }
+  }
+};
+
+BENCHMARK(Aes_encryptInPlace, n) {
+  AesEncryptInPlaceBenchmark benchmark;
+  benchmark.runBenchmark(n);
 }
+
+class AesInPlaceHashBenchmark final : public AesBenchmark {
+ public:
+  void run(unsigned int n) override {
+    while (n--) {
+      cipher->inPlaceHash(data);
+    }
+  }
+};
 
 BENCHMARK(Aes_inPlaceHash, n) {
-  folly::BenchmarkSuspender braces;
-  auto seed = getRandomSeed();
-  auto data = generateData();
-  braces.dismiss();
-
-  Aes cipher(seed);
-
-  while (n--) {
-    cipher.inPlaceHash(data);
-  }
-  folly::doNotOptimizeAway(data);
+  AesInPlaceHashBenchmark benchmark;
+  benchmark.runBenchmark(n);
 }
+
+class AesPrgGetRandomBitsBenchmark final : public AesBenchmark {
+ public:
+  void run(unsigned int n) override {
+    while (n--) {
+      // Initialize the prg within the loop to ensure that the initial buffer
+      // generation is measured.
+      AesPrg prg(seed, FLAGS_AES_Benchmark_Size);
+      prg.getRandomBits(FLAGS_AES_Benchmark_Size * 32);
+    }
+  }
+};
 
 BENCHMARK(AesPrg_getRandomBits, n) {
-  folly::BenchmarkSuspender braces;
-  auto seed = getRandomSeed();
-  braces.dismiss();
-
-  while (n--) {
-    // Initialize the prg within the loop to ensure that the initial buffer
-    // generation is measured.
-    AesPrg prg(seed, FLAGS_AES_Benchmark_Size);
-    prg.getRandomBits(FLAGS_AES_Benchmark_Size * 32);
-  }
+  AesPrgGetRandomBitsBenchmark benchmark;
+  benchmark.runBenchmark(n);
 }
+
+class AesPrgGetRandomBytesBenchmark final : public AesBenchmark {
+ public:
+  void run(unsigned int n) override {
+    while (n--) {
+      // Initialize the prg within the loop to ensure that the initial buffer
+      // generation is measured.
+      AesPrg prg(seed, FLAGS_AES_Benchmark_Size);
+      prg.getRandomBytes(FLAGS_AES_Benchmark_Size * 4);
+    }
+  }
+};
 
 BENCHMARK(AesPrg_getRandomBytes, n) {
-  folly::BenchmarkSuspender braces;
-  auto seed = getRandomSeed();
-  braces.dismiss();
-
-  while (n--) {
-    // Initialize the prg within the loop to ensure that the initial buffer
-    // generation is measured.
-    AesPrg prg(seed, FLAGS_AES_Benchmark_Size);
-    prg.getRandomBytes(FLAGS_AES_Benchmark_Size * 4);
-  }
+  AesPrgGetRandomBytesBenchmark benchmark;
+  benchmark.runBenchmark(n);
 }
 
-BENCHMARK(AesPrg_getRandomDataInPlace, n) {
-  folly::BenchmarkSuspender braces;
-  auto seed = getRandomSeed();
-  auto data = generateData();
-  braces.dismiss();
-
-  AesPrg prg(seed);
-  while (n--) {
-    prg.getRandomDataInPlace(data);
+class AesPrgGetRandomDataInPlaceBenchmark final : public AesBenchmark {
+ public:
+  void run(unsigned int n) override {
+    while (n--) {
+      prg->getRandomDataInPlace(data);
+    }
   }
-  folly::doNotOptimizeAway(data);
+};
+
+BENCHMARK(AesPrg_getRandomDataInPlace, n) {
+  AesPrgGetRandomDataInPlaceBenchmark benchmark;
+  benchmark.runBenchmark(n);
 }
 } // namespace fbpcf::engine::util
 
