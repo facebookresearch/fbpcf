@@ -54,12 +54,14 @@ getSocketAgents() {
           communication::SocketPartyCommunicationAgentFactory::PartyInfo>
           partyInfo1 = {{0, {"127.0.0.1", port}}};
 
+      auto factory1Future = std::async([&partyInfo1]() {
+        return std::make_unique<
+            communication::SocketPartyCommunicationAgentFactory>(1, partyInfo1);
+      });
       auto factory0 =
           std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
               0, partyInfo0);
-      auto factory1 =
-          std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
-              1, partyInfo1);
+      auto factory1 = factory1Future.get();
 
       auto task =
           [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>
