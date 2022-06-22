@@ -50,6 +50,7 @@ See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
 PCF and private RCT are [MIT](LICENSE) licensed, as found in the LICENSE file.
 
 ## Additional Resources on Private Computation at Meta
+* [Private Computation Framework 2.0 Whitepaper](https://research.facebook.com/publications/private-computation-framework-2-0/)
 * [The Value of Secure Multi-Party Computation](https://privacytech.fb.com/multi-party-computation/)
 * [Building the Next Era of Personalized Experiences](https://www.facebook.com/business/news/building-the-next-era-of-personalized-experiences)
 * [Privacy-Enhancing Technologies and Building for the Future](https://www.facebook.com/business/news/building-for-the-future)
