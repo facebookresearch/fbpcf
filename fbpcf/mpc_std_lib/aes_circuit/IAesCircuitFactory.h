@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <memory>
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuit.h"
 
 namespace fbpcf::mpc_std_lib::aes_circuit {

@@ -8,6 +8,8 @@
 #pragma once
 
 #include <vector>
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
+
 namespace fbpcf::mpc_std_lib::aes_circuit {
 
 template <typename BitType>
@@ -25,7 +27,7 @@ std::vector<BitType> AesCircuit<BitType>::decrypt_impl(
 }
 
 template <typename BitType>
-std::vector<std::array<AesCircuit<BitType>::WordType, 4>>
+std::vector<std::array<typename AesCircuit<BitType>::WordType, 4>>
 AesCircuit<BitType>::convertToWords(const std::vector<BitType>& src) const {
   throw std::runtime_error("Not implemented!");
 }
