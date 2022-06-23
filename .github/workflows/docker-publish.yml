@@ -87,10 +87,10 @@ jobs:
         docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
 
     - name: End to end testing
-        timeout-minutes: 60
-        run: |
-          docker run --rm -v "instances":"/instances" -v "$(realpath fbpcf_e2e_aws.yml):/home/pcs/pl_coordinator_env/fbpcf_e2e_aws.yml" -v "$(realpath bolt_config.yml):/home/pcs/pl_coordinator_env/bolt_config.yml" ${{ env.COORDINATOR_IMAGE }}:${{ github.event.inputs.new_tag }} python3.8 -m fbpcs.private_computation_cli.private_computation_cli bolt_e2e --bolt_config="bolt_config.yml"
-        working-directory: ./fbpcf/tests/github/
+      timeout-minutes: 60
+      run: |
+        docker run --rm -v "instances":"/instances" -v "$(realpath fbpcf_e2e_aws.yml):/home/pcs/pl_coordinator_env/fbpcf_e2e_aws.yml" -v "$(realpath bolt_config.yml):/home/pcs/pl_coordinator_env/bolt_config.yml" ${{ env.COORDINATOR_IMAGE }}:${{ github.event.inputs.new_tag }} python3.8 -m fbpcs.private_computation_cli.private_computation_cli bolt_e2e --bolt_config="bolt_config.yml"
+      working-directory: ./fbpcf/tests/github/
 
     - name: Create version string
       id: create_version
