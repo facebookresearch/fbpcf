@@ -106,6 +106,10 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
   }
 
  protected:
+  size_t size_ = 10000000;
+  std::unique_ptr<ITupleGenerator> sender_;
+  std::unique_ptr<ITupleGenerator> receiver_;
+
   void initSender() override {
     sender_ = senderFactory_->create();
   }
@@ -133,8 +137,6 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
   size_t bufferSize_ = 1600000;
 
  private:
-  size_t size_ = 10000000;
-
   std::unique_ptr<communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
   std::unique_ptr<communication::IPartyCommunicationAgentFactory>
@@ -142,9 +144,6 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
 
   std::unique_ptr<ITupleGeneratorFactory> senderFactory_;
   std::unique_ptr<ITupleGeneratorFactory> receiverFactory_;
-
-  std::unique_ptr<ITupleGenerator> sender_;
-  std::unique_ptr<ITupleGenerator> receiver_;
 };
 
 class TupleGeneratorBenchmark final : public BaseTupleGeneratorBenchmark {
@@ -191,6 +190,60 @@ BENCHMARK_COUNTERS(TwoPartyTupleGenerator, counters) {
   TwoPartyTupleGeneratorBenchmark benchmark;
   benchmark.runBenchmark(counters);
 }
+
+class TwoPartyCompositeTupleGeneratorBenchmark
+    : public BaseTupleGeneratorBenchmark {
+ public:
+  explicit TwoPartyCompositeTupleGeneratorBenchmark(size_t compositeTupleSize) {
+    tupleSizes_ = std::map<size_t, uint32_t>{{compositeTupleSize, size_}};
+  }
+
+ protected:
+  std::unique_ptr<ITupleGeneratorFactory> getTupleGeneratorFactory(
+      int myId,
+      communication::IPartyCommunicationAgentFactory& agentFactory) override {
+    return std::make_unique<TwoPartyTupleGeneratorFactory>(
+        oblivious_transfer::createFerretRcotFactory(),
+        agentFactory,
+        myId,
+        bufferSize_);
+  }
+  void runSender() override {
+    sender_->getCompositeTuple(tupleSizes_);
+  }
+  void runReceiver() override {
+    receiver_->getCompositeTuple(tupleSizes_);
+  }
+
+ private:
+  std::map<size_t, uint32_t> tupleSizes_;
+};
+
+BENCHMARK_COUNTERS(TwoPartyCompositeTupleGeneratorForSize8, counters) {
+  TwoPartyCompositeTupleGeneratorBenchmark benchmark(8);
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(TwoPartyCompositeTupleGeneratorForSize16, counters) {
+  TwoPartyCompositeTupleGeneratorBenchmark benchmark(16);
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(TwoPartyCompositeTupleGeneratorForSize32, counters) {
+  TwoPartyCompositeTupleGeneratorBenchmark benchmark(32);
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(TwoPartyCompositeTupleGeneratorForSize64, counters) {
+  TwoPartyCompositeTupleGeneratorBenchmark benchmark(64);
+  benchmark.runBenchmark(counters);
+}
+
+BENCHMARK_COUNTERS(TwoPartyCompositeTupleGeneratorForSize128, counters) {
+  TwoPartyCompositeTupleGeneratorBenchmark benchmark(128);
+  benchmark.runBenchmark(counters);
+}
+
 } // namespace fbpcf::engine::tuple_generator
 
 int main(int argc, char* argv[]) {
