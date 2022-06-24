@@ -52,7 +52,9 @@ size_t BufferedWriter::writeString(std::string& line) {
   return write(vec);
 }
 
-BufferedWriter::~BufferedWriter() {}
+BufferedWriter::~BufferedWriter() {
+  close();
+}
 
 void BufferedWriter::flush() {
   if (currentPosition_ == 0) {

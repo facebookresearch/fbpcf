@@ -15,6 +15,10 @@
 namespace fbpcf::io {
 
 int CloudFileReader::close() {
+  if (isClosed_) {
+    return 0;
+  }
+  isClosed_ = true;
   return 0;
 }
 

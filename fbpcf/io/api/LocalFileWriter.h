@@ -31,6 +31,7 @@ class LocalFileWriter : public IWriterCloser {
 
  private:
   std::unique_ptr<std::ofstream> outputStream_;
+  bool isClosed_;
 };
 
 } // namespace fbpcf::io

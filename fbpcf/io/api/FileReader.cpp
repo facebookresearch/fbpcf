@@ -24,7 +24,9 @@ FileReader::FileReader(std::string filePath) {
   }
 }
 
-FileReader::~FileReader() {}
+FileReader::~FileReader() {
+  close();
+}
 
 size_t FileReader::read(std::vector<char>& buf) {
   return childReader_->read(buf);

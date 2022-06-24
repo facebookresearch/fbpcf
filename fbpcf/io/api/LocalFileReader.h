@@ -32,6 +32,7 @@ class LocalFileReader : public IReaderCloser {
 
  private:
   std::unique_ptr<std::ifstream> inputStream_;
+  bool isClosed_;
 };
 
 } // namespace fbpcf::io
