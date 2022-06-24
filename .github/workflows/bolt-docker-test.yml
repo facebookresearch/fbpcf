@@ -1,8 +1,11 @@
-name: Publish Docker image
+name: Bolt publish docker
 
 on:
-  push:
-    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Manually running this workflow will skip "Check New Commits" step and build image directly'
+        default: "Run"
 
 env:
   DISTRO: ubuntu
