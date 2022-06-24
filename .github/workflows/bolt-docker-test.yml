@@ -70,7 +70,7 @@ jobs:
 
     - name: Tag fbpcf docker image
       run: |
-        docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+        docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:bolt_test_image
 
     - name: Push fbpcf image to registry
       run: |
@@ -78,7 +78,7 @@ jobs:
 
     - name: Tag fbpcs docker image
       run: |
-        docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+        docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:bolt_test_image
         docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:test_image
 
     - name: Push fbpcs image to test registry
