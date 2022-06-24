@@ -1,11 +1,8 @@
-name: Bolt publish docker
+name: Publish Docker image
 
 on:
-  workflow_dispatch:
-    inputs:
-      name:
-        description: 'Manually running this workflow will skip "Check New Commits" step and build image directly'
-        default: "Run"
+  push:
+    branches: [ main ]
 
 env:
   DISTRO: ubuntu
@@ -34,7 +31,6 @@ jobs:
     - name: Build fbpcf docker image
       run: |
         ./build-docker.sh -u
-
     - name: Sanity check fbpcf library (v1)
       timeout-minutes: 3
       run: |
@@ -62,35 +58,317 @@ jobs:
         --header 'content-type: application/json' \
         "https://api.github.com/repos/facebookresearch/fbpcs/actions/workflows/12965519/runs?per_page=1&status=success" | jq \
         ".workflow_runs[0] .head_sha" | tr -d '"')
-
     - name: Build fbpcs image (this uses the locally built fbpcf image as a dependency)
       run: |
         cd fbpcs
         ./build-docker.sh onedocker -t ${{ env.VERSION_TAG }}
-
     - name: Tag fbpcf docker image
       run: |
-        docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:bolt_test_image
-
+        docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
     - name: Push fbpcf image to registry
       run: |
         docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
-
     - name: Tag fbpcs docker image
       run: |
-        docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:bolt_test_image
+        docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:${{ github.sha }}
         docker tag ${{ env.FBPCS_LOCAL_IMAGE_NAME }}:${{ env.VERSION_TAG }} ${{ env.TEST_REGISTRY_IMAGE_NAME }}:test_image
-
     - name: Push fbpcs image to test registry
       run: |
         docker push --all-tags ${{ env.TEST_REGISTRY_IMAGE_NAME }}
-
     - name: Pull coordinator image
       run: |
         docker pull ${{ env.COORDINATOR_IMAGE_DEV }}
-
-    - name: End to end testing
-      timeout-minutes: 60
+    - name: Start container
       run: |
-        docker run --rm -v "instances":"/instances" -v "$(realpath fbpcf_e2e_aws.yml):/home/pcs/pl_coordinator_env/fbpcf_e2e_aws.yml" -v "$(realpath bolt_config.yml):/home/pcs/pl_coordinator_env/bolt_config.yml" ${{ env.COORDINATOR_IMAGE_DEV }} python3.8 -m fbpcs.private_computation_cli.private_computation_cli bolt_e2e --bolt_config="bolt_config.yml"
+        ./start_container.sh ${{ env.PA_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE_DEV }}
       working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Create Instance
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} create_instance
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Data validation
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} data_validation
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - PID shard
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} pid_shard
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - PID prepare
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} pid_prepare
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Id Match
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - PID export metrics
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} pid_metric_export
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Prepare Compute Input - Id Spine combine
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} id_spine_combiner
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Prepare Compute Input - ReSharding
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} reshard
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - PCF2 Attribution
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - PCF2 Aggregation
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Aggregate Shards
+      run: |
+        ./attribution_run_stages.sh ${{ env.PA_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PA_CONTAINER_NAME }} attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Attribution - Validate Result
+      run: |
+        ./validate_result.sh attribution
+      working-directory: fbpcf/tests/github/
+
+    - name: Cleanup
+      run: |
+        docker stop ${{ env.PA_CONTAINER_NAME }}
+        docker rm ${{ env.PA_CONTAINER_NAME }}
+    - name: Start container
+      run: |
+        ./start_container.sh ${{ env.PL_CONTAINER_NAME }} ${{ env.COORDINATOR_IMAGE_DEV }}
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Create Instance
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} create_instance
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Data validation
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} data_validation
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Pid shard
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} pid_shard
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Pid prepare
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} pid_prepare
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Id Match
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - PID export metrics
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} pid_metric_export
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Prepare Compute Input - Id Spine combine
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} id_spine_combiner
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Prepare Compute Input - ReSharding
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} reshard
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Compute Metrics
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Aggregate Shards
+      run: |
+        ./lift_run_stages.sh ${{ env.PL_CONTAINER_NAME }} run_next
+      working-directory: fbpcf/tests/github/
+
+    - name: Check Status
+      timeout-minutes: 5
+      run: |
+        ./check_status.sh ${{ env.PL_CONTAINER_NAME }} lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Lift - Validate Results
+      run: |
+        ./validate_result.sh lift
+      working-directory: fbpcf/tests/github/
+
+    - name: Cleanup
+      run: |
+        docker stop ${{ env.PL_CONTAINER_NAME }}
+        docker rm ${{ env.PL_CONTAINER_NAME }}
+    - name: Create version string
+      id: create_version
+      uses: paulhatch/semantic-version@v4.0.2
+      with:
+        tag_prefix: "v"
+        major_pattern: "((MAJOR))"
+        minor_pattern: "((MINOR))"
+        format: "${major}.${minor}.${patch}-pre${increment}"
+
+    - name: Add tag to commit
+      id: tag_version
+      uses: mathieudutour/github-tag-action@v6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        custom_tag: ${{ steps.create_version.outputs.version_tag }}
+        tag_prefix: ""
+
+    - name: Set output
+      id: vars
+      run: echo ::set-output name=ref::${GITHUB_REF##*/}
+
+    - name: Pull image for this commit from registry
+      run: |
+        docker pull ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+    - name: Tag Docker image
+      run: |
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.version_tag }}
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
+    - name: Push Docker image
+      run: |
+        docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
+    - name: Create release
+      uses: "actions/create-release@v1"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        release_name: ${{ steps.create_version.outputs.version_tag }}
+        tag_name: ${{ steps.create_version.outputs.version_tag }}
+
+    - name: Cleanup
+      run: |
+        # remove all images
+        docker image prune -af
+        # stop and remove all containers
+        docker kill $(docker ps -q) || echo "No running containers to stop."
+        docker rm $(docker ps -a -q) || echo "No containers to delete."
