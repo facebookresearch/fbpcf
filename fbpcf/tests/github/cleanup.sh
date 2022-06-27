@@ -7,8 +7,9 @@
 # Usage:Remove ECS tasks and aggregation outputs in S3 bucket
 set -e
 
-# shellcheck disable=SC1091,SC1090
-source "$(dirname "${BASH_SOURCE[0]}")/config.sh" || exit 1
+E2E_CLUSTER_NAME="onedocker-cluster-fbpcf-e2e-workflow"
+LIFT_OUTPUT_PATH="s3://fbpcf-e2e-github-workflow/lift/outputs"
+ATTRIBUTION_OUTPUT_PATH="s3://fbpcf-e2e-github-workflow/attribution/outputs"
 
 # Remove ECS tasks
 RUNNING_TASKS=$(aws ecs list-tasks --cluster "$E2E_CLUSTER_NAME" --desired-status RUNNING --region us-west-2 | grep -E "task/" | sed -E "s/.*task\/(.*)\"/\1/" | sed -z 's/\n/ /g')

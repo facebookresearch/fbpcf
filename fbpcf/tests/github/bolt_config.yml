@@ -14,10 +14,10 @@ jobs:
     # partner player args
     partner:
       # required args #
-      input_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/lift/inputs/publisher_e2e_input.csv
+      input_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/lift/inputs/partner_e2e_input.csv
       # optional args #
       output_dir: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/lift/outputs
-      expected_result_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/lift/results/publisher_expected_result.json
+      expected_result_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/lift/results/partner_expected_result.json
     # args shared by both publisher and partner
     shared:
       # required args #
@@ -38,10 +38,10 @@ jobs:
     # partner player args
     partner:
       # required args #
-      input_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/attribution/inputs/publisher_e2e_input.csv
+      input_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/attribution/inputs/partner_e2e_input.csv
       # optional args #
       output_dir: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/attribution/outputs
-      expected_result_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/attribution/results/publisher_expected_result.json
+      expected_result_path: https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/attribution/results/partner_expected_result.json
     # args shared by both publisher and partner
     shared:
       # required args #
