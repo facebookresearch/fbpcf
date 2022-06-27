@@ -14,6 +14,10 @@
 namespace fbpcf::io {
 
 int CloudFileWriter::close() {
+  if (isClosed_) {
+    return 0;
+  }
+  isClosed_ = true;
   return cloudFileUploader_->complete();
 }
 
@@ -21,5 +25,7 @@ size_t CloudFileWriter::write(std::vector<char>& buf) {
   return cloudFileUploader_->upload(buf);
 }
 
-CloudFileWriter::~CloudFileWriter() {}
+CloudFileWriter::~CloudFileWriter() {
+  close();
+}
 } // namespace fbpcf::io

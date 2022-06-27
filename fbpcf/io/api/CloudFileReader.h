@@ -25,6 +25,7 @@ cannot be a local file.
 class CloudFileReader : public IReaderCloser {
  public:
   explicit CloudFileReader(const std::string& filePath) : filePath_{filePath} {
+    isClosed_ = false;
     cloudFileReader_ = fbpcf::cloudio::getCloudFileReader(filePath);
     if (cloudFileReader_ == nullptr) {
       throw fbpcf::PcfException("Unsupported cloud file reader.");
@@ -43,6 +44,7 @@ class CloudFileReader : public IReaderCloser {
   std::size_t currentPosition_ = 0;
   std::size_t fileLength_ = 0;
   std::unique_ptr<fbpcf::cloudio::IFileReader> cloudFileReader_;
+  bool isClosed_;
 };
 
 } // namespace fbpcf::io

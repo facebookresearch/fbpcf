@@ -14,9 +14,14 @@ namespace fbpcf::io {
 
 LocalFileReader::LocalFileReader(std::string filePath) {
   inputStream_ = std::make_unique<std::ifstream>(filePath);
+  isClosed_ = false;
 }
 
 int LocalFileReader::close() {
+  if (isClosed_) {
+    return 0;
+  }
+  isClosed_ = true;
   inputStream_->close();
 
   return inputStream_->fail() ? -1 : 0;

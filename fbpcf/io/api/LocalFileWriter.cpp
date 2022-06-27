@@ -12,11 +12,17 @@
 #include <vector>
 
 namespace fbpcf::io {
+
 LocalFileWriter::LocalFileWriter(std::string filePath) {
+  isClosed_ = false;
   outputStream_ = std::make_unique<std::ofstream>(filePath);
 }
 
 int LocalFileWriter::close() {
+  if (isClosed_) {
+    return 0;
+  }
+  isClosed_ = true;
   outputStream_->close();
 
   return outputStream_->fail() ? -1 : 0;
