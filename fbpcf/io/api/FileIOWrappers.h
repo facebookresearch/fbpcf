@@ -31,7 +31,9 @@ constexpr size_t kBufferedWriterChunkSize = 5'242'880;
 class FileIOWrappers {
  public:
   static std::string readFile(const std::string& srcPath);
-  static void writeFile(const std::string& destPath, std::string& content);
+  static void writeFile(
+      const std::string& destPath,
+      const std::string& content);
   static void transferFileInParts(
       const std::string& srcPath,
       const std::string& destPath);

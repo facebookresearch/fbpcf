@@ -33,7 +33,7 @@ class BufferedWriter : public IWriterCloser {
 
   int close() override;
   size_t write(std::vector<char>& buf) override;
-  size_t writeString(std::string& line);
+  size_t writeString(const std::string& line);
   ~BufferedWriter() override;
 
   void flush();

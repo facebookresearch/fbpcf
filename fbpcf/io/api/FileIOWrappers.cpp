@@ -32,7 +32,7 @@ std::string FileIOWrappers::readFile(const std::string& srcPath) {
 
 void FileIOWrappers::writeFile(
     const std::string& destPath,
-    std::string& content) {
+    const std::string& content) {
   auto fileWriter = std::make_unique<fbpcf::io::FileWriter>(destPath);
   auto bufferedWriter = std::make_unique<fbpcf::io::BufferedWriter>(
       std::move(fileWriter), kBufferedWriterChunkSize);
