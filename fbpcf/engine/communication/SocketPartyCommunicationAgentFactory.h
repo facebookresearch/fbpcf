@@ -16,7 +16,9 @@
 #include <unistd.h>
 #include <cerrno>
 #include <stdexcept>
+#include <string>
 
+#include <fbpcf/util/MetricCollector.h>
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgent.h"
 
@@ -45,8 +47,12 @@ establishing multiple connections (>3) between each party pair.
   */
   SocketPartyCommunicationAgentFactory(
       int myId,
-      std::map<int, PartyInfo> partyInfos)
-      : myId_(myId), useTls_(false), tlsDir_("") {
+      std::map<int, PartyInfo> partyInfos,
+      std::string myname = "unnamed_traffic_factory")
+      : IPartyCommunicationAgentFactory(myname),
+        myId_(myId),
+        useTls_(false),
+        tlsDir_("") {
     setupInitialConnection(partyInfos);
   }
 
@@ -54,15 +60,20 @@ establishing multiple connections (>3) between each party pair.
       int myId,
       std::map<int, PartyInfo> partyInfos,
       bool useTls,
-      std::string tlsDir)
-      : myId_(myId), useTls_(useTls), tlsDir_(tlsDir) {
+      std::string tlsDir,
+      std::string myname = "unnamed_traffic_factory")
+      : IPartyCommunicationAgentFactory(myname),
+        myId_(myId),
+        useTls_(useTls),
+        tlsDir_(tlsDir) {
     setupInitialConnection(partyInfos);
   }
 
   /**
    * create an agent that talks to a certain party
    */
-  std::unique_ptr<IPartyCommunicationAgent> create(int id) override;
+  std::unique_ptr<IPartyCommunicationAgent> create(int id, std::string name)
+      override;
 
  private:
   /**

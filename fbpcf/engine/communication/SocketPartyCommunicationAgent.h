@@ -28,7 +28,8 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
       int sockFd,
       int portNo,
       bool useTls,
-      std::string tlsDir);
+      std::string tlsDir,
+      std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder);
 
   /**
    * Created as socket client, optionally with TLS.
@@ -37,7 +38,8 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
       const std::string& serverAddress,
       int portNo,
       bool useTls,
-      std::string tlsDir);
+      std::string tlsDir,
+      std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder);
 
   ~SocketPartyCommunicationAgent() override;
 
@@ -55,7 +57,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
    * @inherit doc
    */
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
-    return {sentData_, receivedData_};
+    return recorder_->getTrafficStatistics();
   }
 
   void recvImpl(void* data, int nBytes) override;
@@ -80,8 +82,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   FILE* incomingPort_;
   FILE* outgoingPort_;
 
-  uint64_t sentData_;
-  uint64_t receivedData_;
+  std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder_;
 
   SSL* ssl_;
 };
