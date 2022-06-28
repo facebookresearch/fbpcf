@@ -40,7 +40,7 @@ class WriteOnlyOramFactory final : public IWriteOnlyOramFactory<T> {
     return std::make_unique<WriteOnlyOram<T>>(
         myRole_,
         size,
-        factory_.create(peerId_),
+        factory_.create(peerId_, "write_only_oram_traffic"),
         singlePointArrayFactory_->create(),
         differenceCalculatorFactory_->create());
   }

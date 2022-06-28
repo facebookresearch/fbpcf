@@ -30,7 +30,7 @@ class IPartyCommunicationAgentFactory {
    */
   virtual std::unique_ptr<IPartyCommunicationAgent> create(
       int id,
-      std::string name = "unnamed_traffic") = 0;
+      std::string name) = 0;
 
   std::shared_ptr<fbpcf::util::MetricCollector> getMetricsCollector() const {
     return metricCollector_;

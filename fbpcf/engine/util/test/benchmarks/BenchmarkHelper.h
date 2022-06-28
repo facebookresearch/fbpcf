@@ -66,7 +66,9 @@ getSocketAgents() {
       auto task =
           [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>
                  factory,
-             int myId) { return factory->create(1 - myId); };
+             int myId) {
+            return factory->create(1 - myId, "benchmark_traffic");
+          };
 
       auto createSocketAgent0 = std::async(task, std::move(factory0), 0);
       auto createSocketAgent1 = std::async(task, std::move(factory1), 1);

@@ -38,15 +38,19 @@ class RcotBasedBidirectionObliviousTransferFactory final
     std::unique_ptr<IRandomCorrelatedObliviousTransfer> receiverRcot;
 
     if (id < myid_) {
-      senderRcot = rcotFactory_->create(delta, agentFactory_.create(id));
-      receiverRcot = rcotFactory_->create(agentFactory_.create(id));
+      senderRcot = rcotFactory_->create(
+          delta, agentFactory_.create(id, "rcot_sender_traffic"));
+      receiverRcot = rcotFactory_->create(
+          agentFactory_.create(id, "rcot_receiver_traffic"));
     } else {
-      receiverRcot = rcotFactory_->create(agentFactory_.create(id));
-      senderRcot = rcotFactory_->create(delta, agentFactory_.create(id));
+      receiverRcot = rcotFactory_->create(
+          agentFactory_.create(id, "rcot_receiver_traffic"));
+      senderRcot = rcotFactory_->create(
+          delta, agentFactory_.create(id, "rcot_sender_traffic"));
     }
 
     return std::make_unique<RcotBasedBidirectionObliviousTransfer<T>>(
-        agentFactory_.create(id),
+        agentFactory_.create(id, "bidirection_ot_traffic"),
         delta,
         std::move(senderRcot),
         std::move(receiverRcot));

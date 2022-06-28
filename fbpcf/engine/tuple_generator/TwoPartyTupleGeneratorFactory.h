@@ -46,11 +46,19 @@ class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
     auto otherId = 1 - myId_;
 
     if (myId_ == 0) {
-      senderRcot = rcotFactory_->create(delta, agentFactory_.create(otherId));
-      receiverRcot = rcotFactory_->create(agentFactory_.create(otherId));
+      senderRcot = rcotFactory_->create(
+          delta,
+          agentFactory_.create(
+              otherId, "two_party_tuple_generator_traffic_as_ot_sender"));
+      receiverRcot = rcotFactory_->create(agentFactory_.create(
+          otherId, "two_party_tuple_generator_traffic_as_ot_receiver"));
     } else {
-      receiverRcot = rcotFactory_->create(agentFactory_.create(otherId));
-      senderRcot = rcotFactory_->create(delta, agentFactory_.create(otherId));
+      receiverRcot = rcotFactory_->create(agentFactory_.create(
+          otherId, "two_party_tuple_generator_traffic_as_ot_receiver"));
+      senderRcot = rcotFactory_->create(
+          delta,
+          agentFactory_.create(
+              otherId, "two_party_tuple_generator_traffic_as_ot_sender"));
     }
 
     return std::make_unique<TwoPartyTupleGenerator>(
