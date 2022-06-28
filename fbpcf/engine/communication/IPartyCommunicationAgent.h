@@ -10,7 +10,9 @@
 #include <emmintrin.h>
 #include <stdint.h>
 #include <string.h>
+#include <atomic>
 #include <vector>
+#include "fbpcf/util/IMetricRecorder.h"
 
 #if __BYTE_ORDER != __LITTLE_ENDIAN
 #error "Machine must be little endian"
@@ -21,6 +23,38 @@ class EmpNetworkAdapter;
 }
 
 namespace fbpcf::engine::communication {
+
+/**
+ * This object is a metric recorder
+ */
+class PartyCommunicationAgentTrafficRecorder final
+    : public fbpcf::util::IMetricRecorder {
+ public:
+  PartyCommunicationAgentTrafficRecorder() : sentData_(0), receivedData_(0) {}
+
+  folly::dynamic getMetrics() const override {
+    return folly::dynamic::object("sent_data", sentData_.load())(
+        "received_data", receivedData_.load());
+  }
+
+  void addSentData(uint64_t size) {
+    sentData_ += size;
+  }
+
+
+  void addReceivedData(uint64_t size) {
+    receivedData_ += size;
+  }
+
+  std::pair<uint64_t, uint64_t> getTrafficStatistics() const {
+    return {sentData_, receivedData_};
+  }
+
+ private:
+  std::atomic_uint64_t sentData_;
+  std::atomic_uint64_t receivedData_;
+};
+
 /**
  * This is the network API between two parties.
  * NOTE: sendT/receiveT only work when the two parties have the same endianness

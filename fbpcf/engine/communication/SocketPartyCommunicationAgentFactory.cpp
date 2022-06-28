@@ -7,13 +7,14 @@
 
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include <stdexcept>
+#include <string>
 
 #include "folly/logging/xlog.h"
 
 namespace fbpcf::engine::communication {
 
 std::unique_ptr<IPartyCommunicationAgent>
-SocketPartyCommunicationAgentFactory::create(int id) {
+SocketPartyCommunicationAgentFactory::create(int id, std::string name) {
   if (id == myId_) {
     throw std::runtime_error("No need to talk to myself!");
   } else {
@@ -21,6 +22,8 @@ SocketPartyCommunicationAgentFactory::create(int id) {
     if (iter == initialConnections_.end()) {
       throw std::runtime_error("Don't know how to connect to this party!");
     }
+    auto recorder = std::make_shared<PartyCommunicationAgentTrafficRecorder>();
+    metricCollector_->addNewRecorder(name, recorder);
 
     if (id > myId_) {
       // We first try to bind on the assigned port number (and its nexts). If
@@ -30,11 +33,11 @@ SocketPartyCommunicationAgentFactory::create(int id) {
       auto [socket, portNo] = createSocketFromMaybeFreePort(assignedPortNo);
       iter->second.second->sendSingleT<int>(portNo);
       return std::make_unique<SocketPartyCommunicationAgent>(
-          socket, portNo, useTls_, tlsDir_);
+          socket, portNo, useTls_, tlsDir_, recorder);
     } else {
       auto portNo = iter->second.second->receiveSingleT<int>();
       return std::make_unique<SocketPartyCommunicationAgent>(
-          iter->second.first.address, portNo, useTls_, tlsDir_);
+          iter->second.first.address, portNo, useTls_, tlsDir_, recorder);
     }
   }
 }
@@ -98,15 +101,25 @@ void SocketPartyCommunicationAgentFactory::setupInitialConnection(
     const std::map<int, PartyInfo>& partyInfos) {
   for (auto& item : partyInfos) {
     if (myId_ < item.first) {
+      auto recorder =
+          std::make_shared<PartyCommunicationAgentTrafficRecorder>();
+      metricCollector_->addNewRecorder(
+          "Port_number_sync_traffic_with_party_" + std::to_string(item.first),
+          recorder);
       auto [socket, _] = createSocketFromMaybeFreePort(item.second.portNo);
       initialConnections_.insert(
           {item.first,
            std::make_pair(
                item.second,
                std::make_unique<SocketPartyCommunicationAgent>(
-                   socket, item.second.portNo, useTls_, tlsDir_))});
+                   socket, item.second.portNo, useTls_, tlsDir_, recorder))});
 
     } else if (myId_ > item.first) {
+      auto recorder =
+          std::make_shared<PartyCommunicationAgentTrafficRecorder>();
+      metricCollector_->addNewRecorder(
+          "Port_number_sync_traffic_with_party_" + std::to_string(item.first),
+          recorder);
       initialConnections_.insert(
           {item.first,
            std::make_pair(
@@ -115,7 +128,8 @@ void SocketPartyCommunicationAgentFactory::setupInitialConnection(
                    item.second.address,
                    item.second.portNo,
                    useTls_,
-                   tlsDir_))});
+                   tlsDir_,
+                   recorder))});
     }
   }
 }

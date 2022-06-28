@@ -110,7 +110,8 @@ class BenchmarkSocketAgentFactory final
   // NOTE: This API is not thread-safe if one party is creating new agents in
   // multiple threads.
   std::unique_ptr<communication::IPartyCommunicationAgent> create(
-      int id) override {
+      int id,
+      std::string) override {
     std::lock_guard<std::mutex> lock(*agentsByParty_->mutex);
 
     if (agentsByParty_->agents.at(myId_).empty()) {

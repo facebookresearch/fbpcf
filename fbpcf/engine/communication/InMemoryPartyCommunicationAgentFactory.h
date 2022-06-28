@@ -42,7 +42,8 @@ class InMemoryPartyCommunicationAgentFactory final
   /**
    * @inherit doc
    */
-  std::unique_ptr<IPartyCommunicationAgent> create(int id) override {
+  std::unique_ptr<IPartyCommunicationAgent> create(int id, std::string)
+      override {
     if (sharedHosts_.find(id) == sharedHosts_.end() ||
         createdAgentCount_.find(id) == createdAgentCount_.end()) {
       throw std::runtime_error(" can't connect to this party!");

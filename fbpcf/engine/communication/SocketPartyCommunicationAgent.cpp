@@ -56,8 +56,9 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     int sockFd,
     int portNo,
     bool useTls,
-    std::string tlsDir)
-    : sentData_(0), receivedData_(0), ssl_(nullptr) {
+    std::string tlsDir,
+    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
+    : recorder_(recorder), ssl_(nullptr) {
   if (useTls) {
     openServerPortWithTls(sockFd, portNo, tlsDir);
   } else {
@@ -69,8 +70,9 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     const std::string& serverAddress,
     int portNo,
     bool useTls,
-    std::string tlsDir)
-    : sentData_(0), receivedData_(0), ssl_(nullptr) {
+    std::string tlsDir,
+    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
+    : recorder_(recorder), ssl_(nullptr) {
   if (useTls) {
     openClientPortWithTls(serverAddress, portNo, tlsDir);
   } else {
@@ -96,7 +98,7 @@ void SocketPartyCommunicationAgent::sendImpl(const void* data, int nBytes) {
     bytesWritten = SSL_write(ssl_, data, nBytes);
   }
   assert(bytesWritten == nBytes);
-  sentData_ += bytesWritten;
+  recorder_->addSentData(bytesWritten);
   if (!ssl_) {
     fflush(outgoingPort_);
   }
@@ -125,7 +127,7 @@ void SocketPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
     }
   }
   assert(bytesRead == nBytes);
-  receivedData_ += bytesRead;
+  recorder_->addReceivedData(bytesRead);
 }
 
 std::vector<unsigned char> SocketPartyCommunicationAgent::receive(size_t size) {

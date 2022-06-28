@@ -8,7 +8,9 @@
 #pragma once
 #include <memory>
 
+#include <folly/dynamic.h>
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::engine::communication {
 
@@ -17,12 +19,25 @@ namespace fbpcf::engine::communication {
  */
 class IPartyCommunicationAgentFactory {
  public:
+  IPartyCommunicationAgentFactory(std::string name = "unnamed_traffic")
+      : metricCollector_(std::make_shared<fbpcf::util::MetricCollector>(name)) {
+  }
+
   virtual ~IPartyCommunicationAgentFactory() = default;
 
   /**
    * create an agent that talks to a certain party.
    */
-  virtual std::unique_ptr<IPartyCommunicationAgent> create(int id) = 0;
+  virtual std::unique_ptr<IPartyCommunicationAgent> create(
+      int id,
+      std::string name = "unnamed_traffic") = 0;
+
+  std::shared_ptr<fbpcf::util::MetricCollector> getMetricsCollector() const {
+    return metricCollector_;
+  }
+
+ protected:
+  std::shared_ptr<fbpcf::util::MetricCollector> metricCollector_;
 };
 
 } // namespace fbpcf::engine::communication
