@@ -45,7 +45,7 @@ size_t BufferedWriter::write(std::vector<char>& buf) {
   return written;
 }
 
-size_t BufferedWriter::writeString(std::string& line) {
+size_t BufferedWriter::writeString(const std::string& line) {
   auto vec = std::vector<char>(line.size());
   std::copy(line.begin(), line.end(), vec.begin());
 
