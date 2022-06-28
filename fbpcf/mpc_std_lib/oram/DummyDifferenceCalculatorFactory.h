@@ -28,7 +28,8 @@ class DummyDifferenceCalculatorFactory final
 
   std::unique_ptr<IDifferenceCalculator<T>> create() override {
     return std::make_unique<DummyDifferenceCalculator<T, indicatorSumWidth>>(
-        thisPartyToSetDifference_, factory_.create(peerId_));
+        thisPartyToSetDifference_,
+        factory_.create(peerId_, "Dummy_Difference_Calculator_Traffic"));
   }
 
  private:

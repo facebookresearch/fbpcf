@@ -24,7 +24,7 @@ class DummyObliviousDeltaCalculatorFactory final
 
   std::unique_ptr<IObliviousDeltaCalculator> create() override {
     return std::make_unique<DummyObliviousDeltaCalculator>(
-        factory_.create(peerId_));
+        factory_.create(peerId_, "Dummy_Oblivious_Delta_Calculator_Traffic"));
   }
 
  private:

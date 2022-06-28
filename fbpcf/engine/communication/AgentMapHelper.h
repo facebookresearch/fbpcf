@@ -27,7 +27,10 @@ inline std::map<int, std::unique_ptr<IPartyCommunicationAgent>> getAgentMap(
       agentMap;
   for (int i = 0; i < numberOfParties; i++) {
     if (i != myId) {
-      agentMap.emplace(i, agentFactory.create(i));
+      agentMap.emplace(
+          i,
+          agentFactory.create(
+              i, "Secret_Share_Engine_Traffic_to_Party " + std::to_string(i)));
     }
   }
   return agentMap;

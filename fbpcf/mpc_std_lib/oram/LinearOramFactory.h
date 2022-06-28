@@ -41,7 +41,7 @@ class LinearOramFactory final : public IWriteOnlyOramFactory<T> {
         myRole_,
         party0Id_,
         party1Id_,
-        agentFactory_.create(peerId_),
+        agentFactory_.create(peerId_, "Linear_ORAM_Traffic"),
         prgFactory_->create(engine::util::getRandomM128iFromSystemNoise()));
   }
 

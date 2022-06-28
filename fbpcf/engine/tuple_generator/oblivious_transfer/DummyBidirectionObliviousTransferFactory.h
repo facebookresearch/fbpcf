@@ -24,7 +24,7 @@ class DummyBidirectionObliviousTransferFactory final
 
   std::unique_ptr<IBidirectionObliviousTransfer<T>> create(int id) override {
     return std::make_unique<DummyBidirectionObliviousTransfer<T>>(
-        factory_.create(id));
+        factory_.create(id, "Dummy_Bidirection_OT_traffic"));
   }
 
  private:
