@@ -13,9 +13,11 @@
 #include <memory>
 #include <mutex>
 #include <random>
+#include <string>
 #include <thread>
 #include <vector>
 
+#include <folly/dynamic.h>
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
@@ -47,19 +49,39 @@ void testAgentFactory(
     int myId,
     int totalParty,
     int size,
-    std::unique_ptr<IPartyCommunicationAgentFactory> factory) {
+    std::unique_ptr<IPartyCommunicationAgentFactory> factory,
+    std::string testname) {
   // repeat the process multiple times
   for (int t = 0; t < 3; t++) {
+    folly::dynamic expectMetrics = folly::dynamic::object;
     for (int i = 0; i < totalParty; i++) {
       std::vector<std::thread> testThreads(0);
       if (i != myId) {
-        auto agent = factory->create(i);
+        auto agent =
+            factory->create(i, "traffic_to_party_" + std::to_string(i));
         testThreads.push_back(
             std::thread(sendAndReceive, std::move(agent), size));
+
+        expectMetrics.insert(
+            testname + "." + "traffic_to_party_" + std::to_string(i),
+            folly::dynamic::object("sent_data", size * 10)(
+                "received_data", size * 10));
+        // the port for syncing new port number is shared across different
+        // iterations.
+        expectMetrics.insert(
+            testname + "." + "Port_number_sync_traffic_with_party_" +
+                std::to_string(i),
+            folly::dynamic::object(
+                "sent_data", myId < i ? sizeof(int) * (t + 1) : 0)(
+                "received_data", myId > i ? sizeof(int) * (t + 1) : 0));
       }
       for (auto& thread : testThreads) {
         thread.join();
       }
+    }
+    if (testname != "") {
+      auto metrics = factory->getMetricsCollector()->collectMetrics();
+      EXPECT_EQ(metrics, expectMetrics);
     }
   }
 }
@@ -69,9 +91,9 @@ TEST(InMemoryPartyCommunicationAgentTest, testSendAndReceive) {
 
   int size = 1024;
   auto thread0 =
-      std::thread(testAgentFactory, 0, 2, size, std::move(factorys[0]));
+      std::thread(testAgentFactory, 0, 2, size, std::move(factorys[0]), "");
   auto thread1 =
-      std::thread(testAgentFactory, 1, 2, size, std::move(factorys[1]));
+      std::thread(testAgentFactory, 1, 2, size, std::move(factorys[1]), "");
 
   thread1.join();
   thread0.join();
@@ -102,21 +124,24 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
 
   auto factory1 = std::async([&partyInfo1, &createdDir]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, true, createdDir);
+        1, partyInfo1, true, createdDir, "Party_1");
   });
 
   auto factory2 = std::async([&partyInfo2, &createdDir]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, true, createdDir);
+        2, partyInfo2, true, createdDir, "Party_2");
   });
 
   auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, true, createdDir);
+      0, partyInfo0, true, createdDir, "Party_0");
 
   int size = 1048576; // 1024 ^ 2
-  auto thread0 = std::thread(testAgentFactory, 0, 3, size, std::move(factory0));
-  auto thread1 = std::thread(testAgentFactory, 1, 3, size, factory1.get());
-  auto thread2 = std::thread(testAgentFactory, 2, 3, size, factory2.get());
+  auto thread0 =
+      std::thread(testAgentFactory, 0, 3, size, std::move(factory0), "Party_0");
+  auto thread1 =
+      std::thread(testAgentFactory, 1, 3, size, factory1.get(), "Party_1");
+  auto thread2 =
+      std::thread(testAgentFactory, 2, 3, size, factory2.get(), "Party_2");
 
   thread2.join();
   thread1.join();
@@ -143,22 +168,25 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
 
   auto factory1 = std::async([&partyInfo1]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1);
+        1, partyInfo1, "Party_1");
   });
 
   auto factory2 = std::async([&partyInfo2]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2);
+        2, partyInfo2, "Party_2");
   });
 
-  auto factory0 =
-      std::make_unique<SocketPartyCommunicationAgentFactory>(0, partyInfo0);
+  auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
+      0, partyInfo0, "Party_0");
 
   int size = 1048576; // 1024 ^ 2
 
-  auto thread0 = std::thread(testAgentFactory, 0, 3, size, std::move(factory0));
-  auto thread1 = std::thread(testAgentFactory, 1, 3, size, factory1.get());
-  auto thread2 = std::thread(testAgentFactory, 2, 3, size, factory2.get());
+  auto thread0 =
+      std::thread(testAgentFactory, 0, 3, size, std::move(factory0), "Party_0");
+  auto thread1 =
+      std::thread(testAgentFactory, 1, 3, size, factory1.get(), "Party_1");
+  auto thread2 =
+      std::thread(testAgentFactory, 2, 3, size, factory2.get(), "Party_2");
 
   thread2.join();
   thread1.join();
@@ -204,21 +232,24 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithJammedPort) {
 
   auto factory1 = std::async([&partyInfo1]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1);
+        1, partyInfo1, "Party_1");
   });
 
   auto factory2 = std::async([&partyInfo2]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2);
+        2, partyInfo2, "Party_2");
   });
 
-  auto factory0 =
-      std::make_unique<SocketPartyCommunicationAgentFactory>(0, partyInfo0);
+  auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
+      0, partyInfo0, "Party_0");
 
   int size = 1048576; // 1024 ^ 2
-  auto thread0 = std::thread(testAgentFactory, 0, 3, size, std::move(factory0));
-  auto thread1 = std::thread(testAgentFactory, 1, 3, size, factory1.get());
-  auto thread2 = std::thread(testAgentFactory, 2, 3, size, factory2.get());
+  auto thread0 =
+      std::thread(testAgentFactory, 0, 3, size, std::move(factory0), "Party_0");
+  auto thread1 =
+      std::thread(testAgentFactory, 1, 3, size, factory1.get(), "Party_1");
+  auto thread2 =
+      std::thread(testAgentFactory, 2, 3, size, factory2.get(), "Party_2");
 
   thread2.join();
   thread1.join();
