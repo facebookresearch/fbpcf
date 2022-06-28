@@ -25,7 +25,8 @@ class DummyProductShareGeneratorFactory final
       : factory_(factory) {}
 
   std::unique_ptr<IProductShareGenerator> create(int id) override {
-    return std::make_unique<DummyProductShareGenerator>(factory_.create(id));
+    return std::make_unique<DummyProductShareGenerator>(
+        factory_.create(id, "dummy_product_generator_traffic"));
   }
 
  private:

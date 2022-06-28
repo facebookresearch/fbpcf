@@ -27,7 +27,8 @@ class DummySinglePointArrayGeneratorFactory final
 
   std::unique_ptr<ISinglePointArrayGenerator> create() override {
     return std::make_unique<DummySinglePointArrayGenerator>(
-        thisPartyToSetIndicator_, factory_.create(peerId_));
+        thisPartyToSetIndicator_,
+        factory_.create(peerId_, "dummy_single_point_array_generator_traffic"));
   }
 
  private:
