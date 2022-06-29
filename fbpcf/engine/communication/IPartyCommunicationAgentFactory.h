@@ -19,7 +19,7 @@ namespace fbpcf::engine::communication {
  */
 class IPartyCommunicationAgentFactory {
  public:
-  explicit IPartyCommunicationAgentFactory(std::string name)
+  IPartyCommunicationAgentFactory(std::string name = "unnamed_traffic")
       : metricCollector_(std::make_shared<fbpcf::util::MetricCollector>(name)) {
   }
 

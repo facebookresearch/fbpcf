@@ -33,9 +33,7 @@ class InMemoryPartyCommunicationAgentFactory final
   InMemoryPartyCommunicationAgentFactory(
       int myId,
       std::map<int, std::shared_ptr<HostInfo>>&& sharedHosts)
-      : IPartyCommunicationAgentFactory("in_memory_traffic"),
-        myId_(myId),
-        sharedHosts_(sharedHosts) {
+      : myId_(myId), sharedHosts_(sharedHosts) {
     for (auto& item : sharedHosts_) {
       createdAgentCount_.emplace(item.first, 0);
     }
