@@ -19,8 +19,9 @@ namespace fbpcf::mpc_std_lib::compactor {
  */
 /**
  * A type T corresponds to a set of values (i.e., a batch) to be
- * compactified, e.g. std::vector
- * A type LabelT corresponds to a binary label, e.g., bool, Bit
+ * compactified, e.g. std::vector.
+ * Similarly, a type LabelT corresponds to a set of binary labels (i.e., a
+ * batch), e.g. std::vector.
  */
 template <typename T, typename LabelT>
 class ICompactor {
@@ -28,19 +29,19 @@ class ICompactor {
   virtual ~ICompactor() = default;
 
   /**
-   * Perform a compaction on a set of batches based on specified binary labels.
-   * @param batches: a set of batches, where every batch is composed of
-   * n values to be compactified
-   * @param labels: a binary vector of size n where 1 indicates the
-   * corresponding items in the input are considered as necessary data;
+   * Perform a compaction on a set of secret values based on given binary
+   * labels.
+   * @param src: a set of n values to be compactified
+   * @param label: a set of n binary labels, where 1 indicates the
+   * corresponding items in the src are considered as necessary data;
    * otherwise they are considered as unimportant data
    * @param shouldRevealSize: whether it is okay to reveal the size of 1s items
-   * @return the resulting compactified metadata and labels
+   * @return the resulting compactified src and label
    */
 
-  virtual std::tuple<std::vector<T>, std::vector<LabelT>> compaction(
-      const std::vector<T>& batches,
-      const std::vector<LabelT>& labels,
+  virtual std::pair<T, LabelT> compaction(
+      const T& src,
+      const LabelT& label,
       bool shouldRevealSize) const = 0;
 };
 
