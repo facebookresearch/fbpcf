@@ -102,7 +102,9 @@ class BenchmarkSocketAgentFactory final
   BenchmarkSocketAgentFactory(
       int myId,
       std::shared_ptr<AgentsByParty> agentsByParty)
-      : myId_(myId), agentsByParty_(agentsByParty) {}
+      : communication::IPartyCommunicationAgentFactory("benchmark_traffic"),
+        myId_(myId),
+        agentsByParty_(agentsByParty) {}
 
   // The socket agents are stored in a queue.
   // If a party calls create() and the queue is empty, create a new pair of

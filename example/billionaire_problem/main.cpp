@@ -5,6 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <folly/json.h>
+
 #include <gflags/gflags.h>
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "folly/init/Init.h"
@@ -34,7 +36,7 @@ int main(int argc, char* argv[]) {
            {1, {FLAGS_server_ip, FLAGS_port}}});
   auto factory = std::make_unique<
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory>(
-      FLAGS_party, partyInfos);
+      FLAGS_party, partyInfos, "billionaire_problem_traffic");
 
   auto game = std::make_unique<
       fbpcf::billionaire_problem::BillionaireProblemGame<0, true>>(
@@ -79,4 +81,7 @@ int main(int argc, char* argv[]) {
     XLOG(FATAL, "Failed to execute the game!");
   }
   XLOG(INFO, "Game executed successfully!");
+  XLOG(
+      INFO,
+      folly::toPrettyJson(factory->getMetricsCollector()->collectMetrics()));
 }
