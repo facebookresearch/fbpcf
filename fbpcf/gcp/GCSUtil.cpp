@@ -18,7 +18,9 @@
 namespace fbpcf::gcp {
 // Format:
 // 1. https://storage.cloud.google.com/bucket-name/key-name
-// 2. gs://bucket-name/key-name
+// 2. https://bucket-name.storage.googleapis.com/key-name
+// 3. https://storage.googleapis.com/bucket-name/key-name
+// 4. gs://bucket-name/key-name
 GCSObjectReference uriToObjectReference(std::string url) {
   std::string bucket;
   std::string key;
@@ -37,6 +39,8 @@ GCSObjectReference uriToObjectReference(std::string url) {
 
   if (boost::iequals(scheme, "gs")) {
     bucket = host;
+  } else if (host.find(".storage.googleapis.com") != std::string::npos) {
+    bucket = host.substr(0, host.find_first_of("."));
   } else {
     // Remove the first character '/' in path
     path = path.substr(1);

@@ -17,6 +17,8 @@ namespace fbpcf::aws {
 // referencee of environment variables:
 // https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-envvars.html
 struct S3ClientOption {
+  // AWS_ENDPOINT_OVERRIDE
+  std::optional<std::string> endpointOverride;
   // AWS_DEFAULT_REGION
   std::optional<std::string> region;
   // AWS_ACCESS_KEY_ID
