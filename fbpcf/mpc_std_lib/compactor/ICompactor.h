@@ -6,7 +6,7 @@
  */
 
 #pragma once
-
+#include "fbpcf/mpc_std_lib/util/util.h"
 namespace fbpcf::mpc_std_lib::compactor {
 
 /*
