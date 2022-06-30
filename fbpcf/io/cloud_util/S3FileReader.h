@@ -16,8 +16,8 @@ namespace fbpcf::cloudio {
 
 class S3FileReader : public IFileReader {
  public:
-  explicit S3FileReader(std::unique_ptr<Aws::S3::S3Client> client)
-      : s3Client_{std::move(client)} {}
+  explicit S3FileReader(std::shared_ptr<Aws::S3::S3Client> client)
+      : s3Client_{client} {}
 
   std::string readBytes(
       const std::string& filePath,
@@ -27,7 +27,7 @@ class S3FileReader : public IFileReader {
   size_t getFileContentLength(const std::string& filePath) override;
 
  private:
-  std::unique_ptr<Aws::S3::S3Client> s3Client_;
+  std::shared_ptr<Aws::S3::S3Client> s3Client_;
 };
 
 } // namespace fbpcf::cloudio
