@@ -172,6 +172,10 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
       array<frontend::Int<true, 8, isSecret, schedulerId, usingBatch>, maxWidth>
           data_;
   SizeType knownSize_;
+
+  std::vector<char> convertLongsToChar(std::vector<int64_t> values) const;
+
+  friend class AsciiString<maxWidth, !isSecret, schedulerId, usingBatch>;
 };
 
 } // namespace fbpcf::edit_distance
