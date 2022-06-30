@@ -22,6 +22,7 @@
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/communication/test/SocketInTestHelper.h"
 #include "fbpcf/engine/communication/test/TlsCommunicationUtils.h"
 
 namespace fbpcf::engine::communication {
@@ -102,16 +103,7 @@ TEST(InMemoryPartyCommunicationAgentTest, testSendAndReceive) {
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
   auto createdDir = setUpTlsFiles();
 
-  std::random_device rd;
-  std::default_random_engine defEngine(rd());
-  std::uniform_int_distribution<int> intDistro(10000, 25000);
-
-  /*
-   * We use random ports rather than constants because, during
-   * stress runs, we get errors when trying to bind to the
-   * same port multiple times.
-   */
-  auto port01 = intDistro(defEngine);
+  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
   auto port02 = port01 + 4;
   auto port12 = port01 + 8;
 
@@ -151,11 +143,7 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
 }
 
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
-  std::random_device rd;
-  std::default_random_engine defEngine(rd());
-  std::uniform_int_distribution<int> intDistro(10000, 25000);
-
-  auto port01 = intDistro(defEngine);
+  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
   auto port02 = port01 + 4;
   auto port12 = port01 + 8;
 
@@ -194,11 +182,23 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
 }
 
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithJammedPort) {
-  std::random_device rd;
-  std::default_random_engine defEngine(rd());
-  std::uniform_int_distribution<int> intDistro(10000, 25000);
+  {
+    // jam port 5000
+    struct sockaddr_in servAddr;
 
-  auto port01 = intDistro(defEngine);
+    memset((char*)&servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    servAddr.sin_addr.s_addr = INADDR_ANY;
+
+    servAddr.sin_port = htons(5000);
+    auto sockfd1 = socket(AF_INET, SOCK_STREAM, 0);
+    ::bind(sockfd1, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in));
+  }
+
+  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
+  // make sure a port larger than 5000 is found.
+  ASSERT_GE(port01, 5000);
+
   auto port02 = port01 + 4;
   auto port12 = port01 + 8;
 
