@@ -18,6 +18,7 @@
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
+#include "fbpcf/engine/communication/test/SocketInTestHelper.h"
 #include "folly/Random.h"
 #include "folly/logging/xlog.h"
 
@@ -39,51 +40,35 @@ getSocketAgents() {
   std::mt19937_64 e(rd());
   std::uniform_int_distribution<int> intDistro(10000, 25000);
 
-  // Since we're using random port numbers, there's a chance we'll encounter a
-  // bind error. Add some retries to reduce the flakiness.
-  auto retries = 5;
-  while (retries--) {
-    try {
-      auto port = intDistro(e);
-      std::map<
-          int,
-          communication::SocketPartyCommunicationAgentFactory::PartyInfo>
-          partyInfo0 = {{1, {"127.0.0.1", port}}};
-      std::map<
-          int,
-          communication::SocketPartyCommunicationAgentFactory::PartyInfo>
-          partyInfo1 = {{0, {"127.0.0.1", port}}};
+  auto port = communication::SocketInTestHelper::findNextOpenPort(5000);
+  std::map<int, communication::SocketPartyCommunicationAgentFactory::PartyInfo>
+      partyInfo0 = {{1, {"127.0.0.1", port}}};
+  std::map<int, communication::SocketPartyCommunicationAgentFactory::PartyInfo>
+      partyInfo1 = {{0, {"127.0.0.1", port}}};
 
-      auto factory1Future = std::async([&partyInfo1]() {
-        return std::make_unique<
-            communication::SocketPartyCommunicationAgentFactory>(1, partyInfo1);
-      });
-      auto factory0 =
-          std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
-              0, partyInfo0);
-      auto factory1 = factory1Future.get();
+  auto factory1Future = std::async([&partyInfo1]() {
+    return std::make_unique<
+        communication::SocketPartyCommunicationAgentFactory>(
+        1, partyInfo1, "party_1_unit_test_traffic");
+  });
+  auto factory0 =
+      std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
+          0, partyInfo0, "party_0_unit_test_traffic");
+  auto factory1 = factory1Future.get();
 
-      auto task =
-          [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>
-                 factory,
-             int myId) {
-            return factory->create(1 - myId, "benchmark_traffic");
-          };
+  auto task = [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>
+                     factory,
+                 int myId) {
+    return factory->create(1 - myId, "benchmark_traffic");
+  };
 
-      auto createSocketAgent0 = std::async(task, std::move(factory0), 0);
-      auto createSocketAgent1 = std::async(task, std::move(factory1), 1);
+  auto createSocketAgent0 = std::async(task, std::move(factory0), 0);
+  auto createSocketAgent1 = std::async(task, std::move(factory1), 1);
 
-      auto agent0 = createSocketAgent0.get();
-      auto agent1 = createSocketAgent1.get();
+  auto agent0 = createSocketAgent0.get();
+  auto agent1 = createSocketAgent1.get();
 
-      return {std::move(agent0), std::move(agent1)};
-    } catch (...) {
-      XLOG(INFO) << "Failed to create socket agents. " << retries
-                 << " retries remaining.";
-    }
-  }
-
-  throw std::runtime_error("Failed to create socket agents. Out of retries.");
+  return {std::move(agent0), std::move(agent1)};
 }
 
 // A wrapper class around the existing SocketPartyCommunicationAgentFactory,
