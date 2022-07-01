@@ -61,8 +61,8 @@ void NpBaseObliviousTransfer::sendPoint(const EC_POINT& point) const {
     throw std::runtime_error("Failed to convert point to hex.");
   }
   agent_->sendSingleT<size_t>(size);
-  std::vector<unsigned char> tmp(buf.get(), buf.get() + size);
-  agent_->send(tmp);
+  std::vector<char> tmp(buf.get(), buf.get() + size);
+  agent_->sendT(tmp);
 }
 
 NpBaseObliviousTransfer::PointPointer NpBaseObliviousTransfer::receivePoint()
@@ -74,7 +74,9 @@ NpBaseObliviousTransfer::PointPointer NpBaseObliviousTransfer::receivePoint()
   }
 
   size_t size = agent_->receiveSingleT<size_t>();
-  auto tmp = agent_->receive(size);
+  auto tmp = agent_->receiveT<char>(size);
+  tmp.resize(size + 1);
+  tmp[size] = ('\n');
   // Create a CTX variable. CTX variables are used as temporary variable for
   // many Openssl functions.
   std::unique_ptr<BN_CTX, std::function<void(BN_CTX*)>> ctx(
@@ -84,11 +86,8 @@ NpBaseObliviousTransfer::PointPointer NpBaseObliviousTransfer::receivePoint()
     throw std::runtime_error("Failed to create BN_CTX.");
   }
 
-  if (EC_POINT_hex2point(
-          group_.get(),
-          reinterpret_cast<const char*>(tmp.data()),
-          rst.get(),
-          ctx.get()) == nullptr) {
+  if (EC_POINT_hex2point(group_.get(), tmp.data(), rst.get(), ctx.get()) ==
+      nullptr) {
     throw std::runtime_error("Failed to convert hex to point.");
   }
   return rst;
