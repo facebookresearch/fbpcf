@@ -15,8 +15,9 @@
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/DummyBidirectionObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/DummyRandomCorrelatedObliviousTransferFactory.h"
-#include "fbpcf/engine/tuple_generator/oblivious_transfer/EmpShRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ExtenderBasedRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/IknpShRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/NpBaseObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransfer.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/DummyMatrixMultiplierFactory.h"
@@ -292,8 +293,10 @@ TEST(
     testBiDirectionOTWithBootstrappedExtenderBasedRcotPoweredByFerretExtenderPoweredByMpcotWithRealSpcotAnd10LocalLinearMatrixMultipler) {
   testRcotBasedBidirectionObliviousTransfer(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
-          std::make_unique<EmpShRandomCorrelatedObliviousTransferFactory>(
-              std::make_unique<util::AesPrgFactory>(1024)),
+          std::make_unique<tuple_generator::oblivious_transfer::
+                               IknpShRandomCorrelatedObliviousTransferFactory>(
+              std::make_unique<tuple_generator::oblivious_transfer::
+                                   NpBaseObliviousTransferFactory>()),
           std::make_unique<ferret::RcotExtenderFactory>(
               std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
               std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
@@ -302,8 +305,10 @@ TEST(
           ferret::kBaseSize,
           ferret::kWeight),
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
-          std::make_unique<EmpShRandomCorrelatedObliviousTransferFactory>(
-              std::make_unique<util::AesPrgFactory>(1024)),
+          std::make_unique<tuple_generator::oblivious_transfer::
+                               IknpShRandomCorrelatedObliviousTransferFactory>(
+              std::make_unique<tuple_generator::oblivious_transfer::
+                                   NpBaseObliviousTransferFactory>()),
           std::make_unique<ferret::RcotExtenderFactory>(
               std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
               std::make_unique<ferret::RegularErrorMultiPointCotFactory>(

@@ -12,6 +12,8 @@
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/EmpShRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ExtenderBasedRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/IknpShRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/NpBaseObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RcotExtenderFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCot.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCotFactory.h"
@@ -24,8 +26,9 @@ namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 inline std::unique_ptr<IFlexibleRandomCorrelatedObliviousTransferFactory>
 createClassicRcotFactory() {
   return std::make_unique<tuple_generator::oblivious_transfer::
-                              EmpShRandomCorrelatedObliviousTransferFactory>(
-      std::make_unique<util::AesPrgFactory>());
+                              IknpShRandomCorrelatedObliviousTransferFactory>(
+      std::make_unique<tuple_generator::oblivious_transfer::
+                           NpBaseObliviousTransferFactory>());
 }
 
 inline std::unique_ptr<IRandomCorrelatedObliviousTransferFactory>
