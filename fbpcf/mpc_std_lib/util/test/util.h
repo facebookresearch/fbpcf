@@ -27,6 +27,18 @@ inline std::vector<uint32_t> generateRandomPermutation(size_t size) {
   return rst;
 }
 
+inline std::vector<bool> generateRandomBinary(size_t size) {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint32_t> randomBit(0, 1);
+
+  std::vector<bool> rst(size);
+  for (size_t i = 0; i < size; i++) {
+    rst[i] = randomBit(e);
+  }
+  return rst;
+}
+
 // the 3 returned valeus are: true value, first share, second share
 template <typename T>
 std::tuple<T, T, T> getRandomData(std::mt19937_64& e);
