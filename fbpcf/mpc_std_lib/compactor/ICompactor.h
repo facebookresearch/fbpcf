@@ -35,6 +35,7 @@ class ICompactor {
    * @param label: a set of n binary labels, where 1 indicates the
    * corresponding items in the src are considered as necessary data;
    * otherwise they are considered as unimportant data
+   * @param size: the size of the batch
    * @param shouldRevealSize: whether it is okay to reveal the size of 1s items
    * @return the resulting compactified src and label
    */
@@ -42,6 +43,7 @@ class ICompactor {
   virtual std::pair<T, LabelT> compaction(
       const T& src,
       const LabelT& label,
+      size_t size,
       bool shouldRevealSize) const = 0;
 };
 
