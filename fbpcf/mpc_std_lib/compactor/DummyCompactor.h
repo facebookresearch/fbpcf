@@ -30,6 +30,7 @@ class DummyCompactor final : public ICompactor<T, LabelT> {
   std::pair<T, LabelT> compaction(
       const T& src,
       const LabelT& label,
+      size_t size,
       bool /*shouldRevealSize*/) const override {
     auto party0 =
         (myId_ < partnerId_) ? myId_ : partnerId_; // a party with a smaller id
@@ -50,9 +51,8 @@ class DummyCompactor final : public ICompactor<T, LabelT> {
     // select items whose labels are 1.
     auto compactifiedSrc = plaintextSrc;
     auto compactifiedLabel = plaintextLabel;
-    size_t inputSize = plaintextLabel.size();
     size_t outputSize = 0;
-    for (size_t j = 0; j < inputSize; j++) {
+    for (size_t j = 0; j < size; j++) {
       if (plaintextLabel[j]) {
         compactifiedSrc[outputSize] = std::move(compactifiedSrc.at(j));
         compactifiedLabel[outputSize] = std::move(plaintextLabel.at(j));

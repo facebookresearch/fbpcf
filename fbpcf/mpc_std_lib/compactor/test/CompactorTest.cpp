@@ -84,6 +84,7 @@ std::tuple<std::vector<T>, std::vector<bool>> task(
         compactor,
     const std::vector<T>& src,
     const std::vector<bool>& label,
+    size_t size,
     bool shouldRevealSize) {
   // generate secret values
   auto secSrc = SecUnsignedIntBatch<schedulerId>(src, 0);
@@ -91,7 +92,7 @@ std::tuple<std::vector<T>, std::vector<bool>> task(
 
   // run a compaction algorithm
   auto [compactifiedSrc, compactifiedLabel] =
-      compactor->compaction(secSrc, secLabel, shouldRevealSize);
+      compactor->compaction(secSrc, secLabel, size, shouldRevealSize);
 
   // get plaintext results
   auto rstSrc = compactifiedSrc.openToParty(0).getValue();
@@ -123,12 +124,14 @@ TEST(compactorTest, testDummyCompactor) {
       std::move(compactor0),
       testData,
       testLabel,
+      batchSize,
       shouldRevealSize);
   auto future1 = std::async(
       task<1, uint64_t>,
       std::move(compactor1),
       testData,
       testLabel,
+      batchSize,
       shouldRevealSize);
   auto [rstData0, rstLabel0] = future0.get();
   future1.get();
