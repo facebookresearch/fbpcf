@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <fbpcf/mpc_std_lib/util/util.h>
 namespace fbpcf::mpc_std_lib::permuter {
 
 template <typename T, int schedulerId>
@@ -97,7 +98,8 @@ AsWaksmanPermuter<T, schedulerId>::preSubPermutationSwap(
   if ((size & 1) == 1) {
     (*unbatchSize)[2] = 1;
   }
-  auto batches = src.unbatching(unbatchSize);
+  auto batches =
+      util::MpcAdapters<T, schedulerId>::unbatching(src, unbatchSize);
   if ((size & 1) == 0) {
     return util::MpcAdapters<T, schedulerId>::obliviousSwap(
         std::move(batches[0]),
@@ -108,7 +110,8 @@ AsWaksmanPermuter<T, schedulerId>::preSubPermutationSwap(
         std::move(batches[0]),
         std::move(batches[1]),
         std::move(firstSwapConditions));
-    auto fullSecond = std::move(second).batchingWith({std::move(batches[2])});
+    auto fullSecond = util::MpcAdapters<T, schedulerId>::batchingWith(
+        std::move(second), {std::move(batches[2])});
     return {first, fullSecond};
   }
 }
@@ -123,14 +126,17 @@ AsWaksmanPermuter<T, schedulerId>::postSubPermutationSwap(
   auto unbatchSize = std::make_shared<std::vector<uint32_t>>(2);
   (*unbatchSize)[0] = (size - 1) / 2;
   (*unbatchSize)[1] = 1;
-  auto secondBatches = src1.unbatching(unbatchSize);
+  auto secondBatches =
+      util::MpcAdapters<T, schedulerId>::unbatching(src1, unbatchSize);
   if ((size & 1) == 0) {
-    auto firstBatches = src0.unbatching(unbatchSize);
+    auto firstBatches =
+        util::MpcAdapters<T, schedulerId>::unbatching(src0, unbatchSize);
     auto [first, second] = util::MpcAdapters<T, schedulerId>::obliviousSwap(
         std::move(firstBatches[0]),
         std::move(secondBatches[0]),
         std::move(secondSwapConditions));
-    return first.batchingWith(
+    return util::MpcAdapters<T, schedulerId>::batchingWith(
+        first,
         {std::move(firstBatches[1]),
          std::move(second),
          std::move(secondBatches[1])});
@@ -139,7 +145,8 @@ AsWaksmanPermuter<T, schedulerId>::postSubPermutationSwap(
         std::move(src0),
         std::move(secondBatches[0]),
         std::move(secondSwapConditions));
-    return first.batchingWith({std::move(second), std::move(secondBatches[1])});
+    return util::MpcAdapters<T, schedulerId>::batchingWith(
+        first, {std::move(second), std::move(secondBatches[1])});
   }
 }
 
@@ -151,12 +158,13 @@ AsWaksmanPermuter<T, schedulerId>::processTwoElements(
   auto unbatchSize = std::make_shared<std::vector<uint32_t>>(2);
   (*unbatchSize)[0] = 1;
   (*unbatchSize)[1] = 1;
-  auto batches = src.unbatching(unbatchSize);
-
+  auto batches =
+      util::MpcAdapters<T, schedulerId>::unbatching(src, unbatchSize);
   auto [first, second] = util::MpcAdapters<T, schedulerId>::obliviousSwap(
       std::move(batches[0]), std::move(batches[1]), swapConditions);
 
-  return first.batchingWith({std::move(second)});
+  return util::MpcAdapters<T, schedulerId>::batchingWith(
+      first, {std::move(second)});
 }
 
 } // namespace fbpcf::mpc_std_lib::permuter
