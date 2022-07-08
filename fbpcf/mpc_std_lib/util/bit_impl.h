@@ -22,7 +22,9 @@ class MpcAdapters<bool, schedulerId> {
   using SecBatchType = typename SecBatchType<bool, schedulerId>::type;
   static SecBatchType processSecretInputs(
       const std::vector<bool>& secrets,
-      int secretOwnerPartyId);
+      int secretOwnerPartyId) {
+    return SecBatchType(secrets, secretOwnerPartyId);
+  }
 
   static SecBatchType recoverBatchSharedSecrets(const std::vector<bool>& src);
 
@@ -35,7 +37,9 @@ class MpcAdapters<bool, schedulerId> {
     return {rst1, rst2};
   }
 
-  static std::vector<bool> openToParty(const SecBatchType& src, int partyId);
+  static std::vector<bool> openToParty(const SecBatchType& src, int partyId) {
+    return src.openToParty(partyId).getValue();
+  }
 };
 
 } // namespace fbpcf::mpc_std_lib::util
