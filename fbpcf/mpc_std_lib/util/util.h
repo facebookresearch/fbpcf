@@ -79,3 +79,6 @@ std::vector<__m128i> convertFromBits(const std::vector<std::vector<bool>>& src);
 #include "fbpcf/mpc_std_lib/util/bitstring_impl.h"
 
 #include "fbpcf/mpc_std_lib/util/bit_impl.h"
+
+#include "fbpcf/mpc_std_lib/util/pairUtil.h"
+#include "fbpcf/mpc_std_lib/util/pair_impl.h"
