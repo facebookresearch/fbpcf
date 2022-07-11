@@ -6,6 +6,8 @@
  */
 
 #include "fbpcf/io/api/LocalFileReader.h"
+#include <folly/logging/xlog.h>
+#include <cerrno>
 #include <cstddef>
 #include <fstream>
 #include <vector>
@@ -14,6 +16,10 @@ namespace fbpcf::io {
 
 LocalFileReader::LocalFileReader(std::string filePath) {
   inputStream_ = std::make_unique<std::ifstream>(filePath);
+  if (inputStream_->fail()) {
+    XLOGF(ERR, "Error when opening file: {}", strerror(errno));
+    throw std::runtime_error("Couldn't open local file.");
+  }
   isClosed_ = false;
 }
 
@@ -46,5 +52,7 @@ bool LocalFileReader::eof() {
   return inputStream_->eof();
 }
 
-LocalFileReader::~LocalFileReader() {}
+LocalFileReader::~LocalFileReader() {
+  close();
+}
 } // namespace fbpcf::io

@@ -94,4 +94,21 @@ TEST(LocalFileWriterTest, testLocalFileWriterThroughFileWriter) {
   runBaseWriterTests(writer, fileToWriteTo, expectedFile);
 }
 
+TEST(LocalFileWriterTest, testLocalFileWriterWithMissingDirectory) {
+  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
+  std::random_device rd;
+  std::default_random_engine defEngine(rd());
+  std::uniform_int_distribution<int> intDistro(1, 25000);
+  auto randint = intDistro(defEngine);
+  std::string fileToWriteTo = baseDir + "data/" + std::to_string(randint) +
+      "/local_file_writer_test_file" + std::to_string(randint) + ".txt";
+  std::string expectedFile =
+      baseDir + "data/expected_local_file_writer_test_file.txt";
+
+  auto writer = fbpcf::io::FileWriter(fileToWriteTo);
+  EXPECT_NO_THROW(runBaseWriterTests(writer, fileToWriteTo, expectedFile));
+
+  std::filesystem::remove("data/" + std::to_string(randint));
+}
+
 } // namespace fbpcf::io
