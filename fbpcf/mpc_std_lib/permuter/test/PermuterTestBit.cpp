@@ -78,8 +78,8 @@ void permuterTest(
 }
 
 TEST(permuterTestBit, testDummyPermuter) {
-  insecure::DummyPermuterFactory<frontend::Bit<true, 0, true>> factory0(0, 1);
-  insecure::DummyPermuterFactory<frontend::Bit<true, 1, true>> factory1(1, 0);
+  insecure::DummyPermuterFactory<bool, 0> factory0(0, 1);
+  insecure::DummyPermuterFactory<bool, 1> factory1(1, 0);
 
   permuterTest(factory0, factory1);
 }
