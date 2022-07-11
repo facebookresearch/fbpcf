@@ -40,6 +40,17 @@ class MpcAdapters<bool, schedulerId> {
   static std::vector<bool> openToParty(const SecBatchType& src, int partyId) {
     return src.openToParty(partyId).getValue();
   }
+  static SecBatchType batchingWith(
+      const SecBatchType& src,
+      const std::vector<SecBatchType>& others) {
+    return src.batchingWith(others);
+  }
+
+  static std::vector<SecBatchType> unbatching(
+      const SecBatchType& src,
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
+    return src.unbatching(unbatchingStrategy);
+  }
 };
 
 } // namespace fbpcf::mpc_std_lib::util

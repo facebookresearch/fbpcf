@@ -55,6 +55,14 @@ class MpcAdapters {
       frontend::Bit<true, schedulerId, true> indicator);
 
   static std::vector<T> openToParty(const SecBatchType& src, int partyId);
+
+  static SecBatchType batchingWith(
+      const SecBatchType& src,
+      const std::vector<SecBatchType>& others);
+
+  static std::vector<SecBatchType> unbatching(
+      const SecBatchType& src,
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy);
 };
 
 std::vector<std::vector<bool>> convertToBits(const std::vector<__m128i>& src);
