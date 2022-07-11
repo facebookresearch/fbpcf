@@ -6,8 +6,10 @@
  */
 
 #pragma once
+#include <re2/re2.h>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace fbpcf::io {
 
@@ -37,6 +39,25 @@ class FileIOWrappers {
   static void transferFileInParts(
       const std::string& srcPath,
       const std::string& destPath);
+
+  // Reads a csv from the given file, calling the given function for each line
+  // Returns true on success, false on failure
+  static bool readCsv(
+      const std::string& srcPath,
+      std::function<void(
+          const std::vector<std::string>& header,
+          const std::vector<std::string>& parts)> readLine,
+      std::function<void(const std::vector<std::string>&)> processHeader =
+          [](auto) {});
+
+ private:
+  // Split an input string into component pieces given a delimiter
+  static const std::vector<std::string> split(
+      std::string& str,
+      const std::string& delim);
+
+  // Same as split, but specifically for comma delimiters.
+  static const std::vector<std::string> splitByComma(std::string& str);
 };
 
 } // namespace fbpcf::io
