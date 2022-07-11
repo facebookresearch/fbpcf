@@ -12,14 +12,17 @@
 
 namespace fbpcf::mpc_std_lib::permuter::insecure {
 
-template <typename T>
-class DummyPermuterFactory final : public IPermuterFactory<T> {
+template <typename T, int schedulerId>
+class DummyPermuterFactory final
+    : public IPermuterFactory<
+          typename util::SecBatchType<T, schedulerId>::type> {
  public:
   DummyPermuterFactory(int myId, int partnerId)
       : myId_(myId), partnerId_(partnerId) {}
 
-  std::unique_ptr<IPermuter<T>> create() override {
-    return std::make_unique<DummyPermuter<T>>(myId_, partnerId_);
+  std::unique_ptr<IPermuter<typename util::SecBatchType<T, schedulerId>::type>>
+  create() override {
+    return std::make_unique<DummyPermuter<T, schedulerId>>(myId_, partnerId_);
   }
 
  private:

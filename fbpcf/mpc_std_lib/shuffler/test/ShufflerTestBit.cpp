@@ -82,14 +82,12 @@ TEST(shufflerTestBit, testPermuteBasedShufflerWithDummyPermuter) {
   PermuteBasedShufflerFactory<frontend::Bit<true, 0, true>> factory0(
       0,
       1,
-      std::make_unique<permuter::insecure::DummyPermuterFactory<
-          frontend::Bit<true, 0, true>>>(0, 1),
+      std::make_unique<permuter::insecure::DummyPermuterFactory<bool, 0>>(0, 1),
       std::make_unique<engine::util::AesPrgFactory>());
   PermuteBasedShufflerFactory<frontend::Bit<true, 1, true>> factory1(
       1,
       0,
-      std::make_unique<permuter::insecure::DummyPermuterFactory<
-          frontend::Bit<true, 1, true>>>(1, 0),
+      std::make_unique<permuter::insecure::DummyPermuterFactory<bool, 1>>(1, 0),
       std::make_unique<engine::util::AesPrgFactory>());
 
   shufflerTest(factory0, factory1);
