@@ -73,4 +73,12 @@ TEST(LocalFileReaderTest, testLocalFileReaderThroughFileReader) {
   runBaseReaderTests(reader);
 }
 
+TEST(LocalFileReaderTest, testLocalFileReaderWithMissingFile) {
+  EXPECT_THROW(
+      fbpcf::io::FileReader(
+          IOTestHelper::getBaseDirFromPath(__FILE__) +
+          "data/nonexistent_file.txt"),
+      std::runtime_error);
+}
+
 } // namespace fbpcf::io
