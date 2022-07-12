@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <fbpcf/mpc_std_lib/util/util.h>
 #include "fbpcf/mpc_std_lib/compactor/ICompactor.h"
 
 namespace fbpcf::mpc_std_lib::compactor::insecure {
@@ -22,14 +23,21 @@ namespace fbpcf::mpc_std_lib::compactor::insecure {
  * smaller id is assigned to party0 and the other party is assigned to party1.
  */
 
-template <typename T, typename LabelT>
-class DummyCompactor final : public ICompactor<T, LabelT> {
+template <typename T, typename LabelT, int schedulerId>
+class DummyCompactor final
+    : public ICompactor<
+          typename util::SecBatchType<T, schedulerId>::type,
+          typename util::SecBatchType<LabelT, schedulerId>::type> {
  public:
+  using SecBatchType = typename util::SecBatchType<T, schedulerId>::type;
+  using SecBatchLabelType =
+      typename util::SecBatchType<LabelT, schedulerId>::type;
+
   explicit DummyCompactor(int myId, int partnerId)
       : myId_(myId), partnerId_(partnerId) {}
-  std::pair<T, LabelT> compaction(
-      const T& src,
-      const LabelT& label,
+  std::pair<SecBatchType, SecBatchLabelType> compaction(
+      const SecBatchType& src,
+      const SecBatchLabelType& label,
       size_t size,
       bool /*shouldRevealSize*/) const override {
     auto party0 =
@@ -38,14 +46,16 @@ class DummyCompactor final : public ICompactor<T, LabelT> {
         (myId_ < partnerId_) ? partnerId_ : myId_; // a party with a larger id
 
     // reveal labels and src to both parties
-    auto revealedLabel0 =
-        label.openToParty(party0).getValue(); // reveal to Party0
-    auto revealedLabel1 =
-        label.openToParty(party1).getValue(); // reveal to Party1
+    auto revealedLabel0 = util::MpcAdapters<LabelT, schedulerId>::openToParty(
+        label, party0); // reveal to Party0
+    auto revealedLabel1 = util::MpcAdapters<LabelT, schedulerId>::openToParty(
+        label, party1); // reveal to Party1
     auto plaintextLabel = (myId_ == party0) ? revealedLabel0 : revealedLabel1;
 
-    auto revealedSrc0 = src.openToParty(party0).getValue(); // reveal to Party0
-    auto revealedSrc1 = src.openToParty(party1).getValue(); // reveal to Party1
+    auto revealedSrc0 = util::MpcAdapters<T, schedulerId>::openToParty(
+        src, party0); // reveal to Party0
+    auto revealedSrc1 = util::MpcAdapters<T, schedulerId>::openToParty(
+        src, party1); // reveal to Party1
     auto plaintextSrc = (myId_ == party0) ? revealedSrc0 : revealedSrc1;
 
     // select items whose labels are 1.
@@ -63,7 +73,10 @@ class DummyCompactor final : public ICompactor<T, LabelT> {
     compactifiedLabel.resize(outputSize); // compactify
 
     return std::make_pair(
-        T(compactifiedSrc, party0), LabelT(compactifiedLabel, party0));
+        util::MpcAdapters<T, schedulerId>::processSecretInputs(
+            compactifiedSrc, party0),
+        util::MpcAdapters<LabelT, schedulerId>::processSecretInputs(
+            compactifiedLabel, party0));
   }
 
  private:

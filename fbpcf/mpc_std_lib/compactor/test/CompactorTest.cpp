@@ -27,11 +27,10 @@
 
 namespace fbpcf::mpc_std_lib::compactor {
 
-const int8_t width = 63;
+const int8_t width = 32;
 template <int schedulerId>
-using SecUnsignedIntBatch = frontend::Integer<
-    frontend::Secret<frontend::Batch<frontend::Unsigned<width>>>,
-    schedulerId>;
+using SecUnsignedIntBatch =
+    frontend::Int<false, width, true, schedulerId, true>;
 template <int schedulerId>
 using SecBitBatch = frontend::Bit<true, schedulerId, true>;
 
@@ -51,10 +50,10 @@ std::vector<bool> generateRandomBinaryVector(size_t size) {
  * Given a vector, an element i is attributed to a
  * binary label 0/1. Return only elements that are labeled as 1.
  */
-std::vector<uint64_t> getOnesValues(
-    const std::vector<uint64_t>& src,
+std::vector<uint32_t> getOnesValues(
+    const std::vector<uint32_t>& src,
     const std::vector<bool>& label) {
-  std::vector<uint64_t> rst;
+  std::vector<uint32_t> rst;
   for (size_t i = 0; i < src.size(); i++) {
     if (label.at(i)) {
       rst.push_back(src[i]);
@@ -67,9 +66,9 @@ std::vector<uint64_t> getOnesValues(
  * It generates metadata and binary labels for inputs to a compaction algorithm
  * and obtain expected results of metadata.
  */
-std::tuple<std::vector<uint64_t>, std::vector<bool>, std::vector<uint64_t>>
+std::tuple<std::vector<uint32_t>, std::vector<bool>, std::vector<uint32_t>>
 generateTestData(size_t batchSize) {
-  std::vector<uint64_t> testData(batchSize);
+  std::vector<uint32_t> testData(batchSize);
   std::iota(testData.begin(), testData.end(), 1);
   auto testLabel = generateRandomBinaryVector(batchSize);
   auto expectedData = getOnesValues(testData, testLabel);
@@ -87,16 +86,19 @@ std::tuple<std::vector<T>, std::vector<bool>> task(
     size_t size,
     bool shouldRevealSize) {
   // generate secret values
-  auto secSrc = SecUnsignedIntBatch<schedulerId>(src, 0);
-  auto secLabel = SecBitBatch<schedulerId>(label, 0);
+  auto secSrc = util::MpcAdapters<T, schedulerId>::processSecretInputs(src, 0);
+  auto secLabel =
+      util::MpcAdapters<bool, schedulerId>::processSecretInputs(label, 0);
 
   // run a compaction algorithm
   auto [compactifiedSrc, compactifiedLabel] =
       compactor->compaction(secSrc, secLabel, size, shouldRevealSize);
 
   // get plaintext results
-  auto rstSrc = compactifiedSrc.openToParty(0).getValue();
-  auto rstLabel = compactifiedLabel.openToParty(0).getValue();
+  auto rstSrc =
+      util::MpcAdapters<T, schedulerId>::openToParty(compactifiedSrc, 0);
+  auto rstLabel =
+      util::MpcAdapters<bool, schedulerId>::openToParty(compactifiedLabel, 0);
 
   return {rstSrc, rstLabel};
 }
@@ -105,10 +107,8 @@ TEST(compactorTest, testDummyCompactor) {
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
 
-  insecure::DummyCompactorFactory<SecUnsignedIntBatch<0>, SecBitBatch<0>>
-      factory0(0, 1);
-  insecure::DummyCompactorFactory<SecUnsignedIntBatch<1>, SecBitBatch<1>>
-      factory1(1, 0);
+  insecure::DummyCompactorFactory<uint32_t, bool, 0> factory0(0, 1);
+  insecure::DummyCompactorFactory<uint32_t, bool, 1> factory1(1, 0);
 
   auto compactor0 = factory0.create();
   auto compactor1 = factory1.create();
@@ -120,14 +120,14 @@ TEST(compactorTest, testDummyCompactor) {
   size_t expectedOutputSize = expectedData.size();
 
   auto future0 = std::async(
-      task<0, uint64_t>,
+      task<0, uint32_t>,
       std::move(compactor0),
       testData,
       testLabel,
       batchSize,
       shouldRevealSize);
   auto future1 = std::async(
-      task<1, uint64_t>,
+      task<1, uint32_t>,
       std::move(compactor1),
       testData,
       testLabel,

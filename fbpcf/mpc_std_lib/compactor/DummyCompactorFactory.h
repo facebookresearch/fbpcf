@@ -12,14 +12,22 @@
 
 namespace fbpcf::mpc_std_lib::compactor::insecure {
 
-template <typename T, typename LabelT>
-class DummyCompactorFactory final : public ICompactorFactory<T, LabelT> {
+template <typename T, typename LabelT, int schedulerId>
+class DummyCompactorFactory final
+    : public ICompactorFactory<
+          typename util::SecBatchType<T, schedulerId>::type,
+          typename util::SecBatchType<LabelT, schedulerId>::type> {
  public:
+  using SecBatchType = typename util::SecBatchType<T, schedulerId>::type;
+  using SecBatchLabelType =
+      typename util::SecBatchType<LabelT, schedulerId>::type;
   explicit DummyCompactorFactory(int myId, int partnerId)
       : myId_(myId), partnerId_(partnerId) {}
 
-  std::unique_ptr<ICompactor<T, LabelT>> create() override {
-    return std::make_unique<DummyCompactor<T, LabelT>>(myId_, partnerId_);
+  std::unique_ptr<ICompactor<SecBatchType, SecBatchLabelType>> create()
+      override {
+    return std::make_unique<DummyCompactor<T, LabelT, schedulerId>>(
+        myId_, partnerId_);
   }
 
  private:
