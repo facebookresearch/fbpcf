@@ -118,4 +118,35 @@ void setupRealBackend(
   future1.get();
 }
 
+template <int schedulerId0, int schedulerId1>
+void setupRealBackendWithLazyScheduler(
+    engine::communication::IPartyCommunicationAgentFactory& factory0,
+    engine::communication::IPartyCommunicationAgentFactory& factory1) {
+  auto task0 =
+      [](std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory> factory) {
+        scheduler::SchedulerKeeper<schedulerId0>::setScheduler(
+            scheduler::createLazySchedulerWithInsecureEngine<unsafe>(
+                0, factory));
+      };
+  auto task1 =
+      [](std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory> factory) {
+        scheduler::SchedulerKeeper<schedulerId1>::setScheduler(
+            scheduler::createLazySchedulerWithInsecureEngine<unsafe>(
+                1, factory));
+      };
+
+  auto future0 = std::async(
+      task0,
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(factory0));
+  auto future1 = std::async(
+      task1,
+      std::reference_wrapper<
+          engine::communication::IPartyCommunicationAgentFactory>(factory1));
+  future0.get();
+  future1.get();
+}
+
 } // namespace fbpcf
