@@ -16,10 +16,15 @@
 #include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/util/AesPrgFactory.h"
 #include "fbpcf/mpc_std_lib/compactor/DummyCompactor.h"
 #include "fbpcf/mpc_std_lib/compactor/DummyCompactorFactory.h"
 #include "fbpcf/mpc_std_lib/compactor/ICompactor.h"
 #include "fbpcf/mpc_std_lib/compactor/ICompactorFactory.h"
+#include "fbpcf/mpc_std_lib/compactor/ShuffleBasedCompactor.h"
+#include "fbpcf/mpc_std_lib/compactor/ShuffleBasedCompactorFactory.h"
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuterFactory.h"
+#include "fbpcf/mpc_std_lib/shuffler/PermuteBasedShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_std_lib/util/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -27,119 +32,132 @@
 
 namespace fbpcf::mpc_std_lib::compactor {
 
-const int8_t width = 32;
 template <int schedulerId>
-using SecUnsignedIntBatch =
-    frontend::Int<false, width, true, schedulerId, true>;
+using SecUnsignedIntBatch = frontend::Int<false, 32, true, schedulerId, true>;
 template <int schedulerId>
 using SecBitBatch = frontend::Bit<true, schedulerId, true>;
 
-std::vector<bool> generateRandomBinaryVector(size_t size) {
-  std::random_device rd;
-  std::mt19937_64 e(rd());
-  std::uniform_int_distribution<int32_t> randomBit(0, 1);
+/* Generate metadata (unsigned int 32-bits values) and binary labels; then
+ * compute expected metadata output  */
+std::tuple<std::vector<uint32_t>, std::vector<bool>, std::vector<uint32_t>>
+generateData(size_t size) {
+  std::vector<uint32_t> data(size);
+  std::iota(
+      data.begin(), data.end(), 0); // assign unique values starting from 0.
 
-  std::vector<bool> rst(size);
+  auto label = util::generateRandomBinary(size);
+
+  std::vector<uint32_t> expectedData;
   for (size_t i = 0; i < size; i++) {
-    rst[i] = randomBit(e);
-  }
-  return rst;
-}
-
-/*
- * Given a vector, an element i is attributed to a
- * binary label 0/1. Return only elements that are labeled as 1.
- */
-std::vector<uint32_t> getOnesValues(
-    const std::vector<uint32_t>& src,
-    const std::vector<bool>& label) {
-  std::vector<uint32_t> rst;
-  for (size_t i = 0; i < src.size(); i++) {
     if (label.at(i)) {
-      rst.push_back(src[i]);
+      expectedData.push_back(data.at(i));
     }
   }
-  return rst;
+  return {data, label, expectedData};
 }
 
-/*
- * It generates metadata and binary labels for inputs to a compaction algorithm
- * and obtain expected results of metadata.
- */
-std::tuple<std::vector<uint32_t>, std::vector<bool>, std::vector<uint32_t>>
-generateTestData(size_t batchSize) {
-  std::vector<uint32_t> testData(batchSize);
-  std::iota(testData.begin(), testData.end(), 1);
-  auto testLabel = generateRandomBinaryVector(batchSize);
-  auto expectedData = getOnesValues(testData, testLabel);
-
-  return {testData, testLabel, expectedData};
-}
-
-template <int schedulerId, typename T>
-std::tuple<std::vector<T>, std::vector<bool>> task(
+template <int schedulerId>
+std::pair<std::vector<uint32_t>, std::vector<bool>> task(
     std::unique_ptr<
         ICompactor<SecUnsignedIntBatch<schedulerId>, SecBitBatch<schedulerId>>>
         compactor,
-    const std::vector<T>& src,
+    const std::vector<uint32_t>& value,
     const std::vector<bool>& label,
     size_t size,
     bool shouldRevealSize) {
-  // generate secret values
-  auto secSrc = util::MpcAdapters<T, schedulerId>::processSecretInputs(src, 0);
+  auto secValue =
+      util::MpcAdapters<uint32_t, schedulerId>::processSecretInputs(value, 0);
   auto secLabel =
       util::MpcAdapters<bool, schedulerId>::processSecretInputs(label, 0);
-
-  // run a compaction algorithm
-  auto [compactifiedSrc, compactifiedLabel] =
-      compactor->compaction(secSrc, secLabel, size, shouldRevealSize);
-
-  // get plaintext results
-  auto rstSrc =
-      util::MpcAdapters<T, schedulerId>::openToParty(compactifiedSrc, 0);
+  auto [compactifiedValue, compactifiedLabel] =
+      compactor->compaction(secValue, secLabel, size, shouldRevealSize);
   auto rstLabel =
       util::MpcAdapters<bool, schedulerId>::openToParty(compactifiedLabel, 0);
+  auto rstValue = util::MpcAdapters<uint32_t, schedulerId>::openToParty(
+      compactifiedValue, 0);
 
-  return {rstSrc, rstLabel};
+  return {rstValue, rstLabel};
 }
 
-TEST(compactorTest, testDummyCompactor) {
+void compactorTest(
+    ICompactorFactory<
+        frontend::Int<false, 32, true, 0, true>,
+        frontend::Bit<true, 0, true>>& compactorFactory0,
+    ICompactorFactory<
+        frontend::Int<false, 32, true, 1, true>,
+        frontend::Bit<true, 1, true>>& compactorFactory1) {
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
+  auto compactor0 = compactorFactory0.create();
+  auto compactor1 = compactorFactory1.create();
 
-  insecure::DummyCompactorFactory<uint32_t, bool, 0> factory0(0, 1);
-  insecure::DummyCompactorFactory<uint32_t, bool, 1> factory1(1, 0);
-
-  auto compactor0 = factory0.create();
-  auto compactor1 = factory1.create();
-
-  size_t batchSize = 5;
+  size_t batchSize = 11;
   bool shouldRevealSize = true;
 
-  auto [testData, testLabel, expectedData] = generateTestData(batchSize);
+  // Generate test data
+  auto [testData, testLabel, expectedData] = generateData(batchSize);
   size_t expectedOutputSize = expectedData.size();
 
   auto future0 = std::async(
-      task<0, uint32_t>,
+      task<0>,
       std::move(compactor0),
       testData,
       testLabel,
       batchSize,
       shouldRevealSize);
   auto future1 = std::async(
-      task<1, uint32_t>,
+      task<1>,
       std::move(compactor1),
       testData,
       testLabel,
       batchSize,
       shouldRevealSize);
   auto [rstData0, rstLabel0] = future0.get();
-  future1.get();
 
   ASSERT_EQ(rstLabel0.size(), expectedOutputSize);
   testVectorEq(rstLabel0, std::vector<bool>(expectedOutputSize, true));
   ASSERT_EQ(rstData0.size(), expectedOutputSize);
-  testVectorEq(rstData0, expectedData);
+
+  for (size_t j = 0; j < expectedOutputSize; j++) {
+    /* check consistency of each record */
+    auto index = rstData0.at(j);
+    ASSERT_EQ(rstData0.at(j), testData.at(index));
+  }
+}
+
+TEST(compactorTest, testDummyCompactor) {
+  insecure::DummyCompactorFactory<uint32_t, bool, 0> factory0(0, 1);
+  insecure::DummyCompactorFactory<uint32_t, bool, 1> factory1(1, 0);
+  compactorTest(factory0, factory1);
+}
+
+TEST(compactorTest, testShuffleBasedCompactor) {
+  ShuffleBasedCompactorFactory<uint32_t, bool, 0> factory0(
+      0,
+      1,
+      std::make_unique<shuffler::PermuteBasedShufflerFactory<std::pair<
+          frontend::Int<false, 32, true, 0, true>,
+          frontend::Bit<true, 0, true>>>>(
+          0,
+          1,
+          std::make_unique<
+              permuter::AsWaksmanPermuterFactory<std::pair<uint32_t, bool>, 0>>(
+              0, 1),
+          std::make_unique<engine::util::AesPrgFactory>()));
+  ShuffleBasedCompactorFactory<uint32_t, bool, 1> factory1(
+      1,
+      0,
+      std::make_unique<shuffler::PermuteBasedShufflerFactory<std::pair<
+          frontend::Int<false, 32, true, 1, true>,
+          frontend::Bit<true, 1, true>>>>(
+          1,
+          0,
+          std::make_unique<
+              permuter::AsWaksmanPermuterFactory<std::pair<uint32_t, bool>, 1>>(
+              1, 0),
+          std::make_unique<engine::util::AesPrgFactory>()));
+
+  compactorTest(factory0, factory1);
 }
 
 } // namespace fbpcf::mpc_std_lib::compactor
