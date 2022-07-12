@@ -24,6 +24,7 @@
 #include "fbpcf/mpc_std_lib/compactor/ShuffleBasedCompactor.h"
 #include "fbpcf/mpc_std_lib/compactor/ShuffleBasedCompactorFactory.h"
 #include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuterFactory.h"
+#include "fbpcf/mpc_std_lib/shuffler/NonShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/shuffler/PermuteBasedShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_std_lib/util/util.h"
@@ -128,6 +129,23 @@ void compactorTest(
 TEST(compactorTest, testDummyCompactor) {
   insecure::DummyCompactorFactory<uint32_t, bool, 0> factory0(0, 1);
   insecure::DummyCompactorFactory<uint32_t, bool, 1> factory1(1, 0);
+  compactorTest(factory0, factory1);
+}
+
+TEST(compactorTest, testNonShufflerBasedCompactor) {
+  ShuffleBasedCompactorFactory<uint32_t, bool, 0> factory0(
+      0,
+      1,
+      std::make_unique<shuffler::insecure::NonShufflerFactory<std::pair<
+          frontend::Int<false, 32, true, 0, true>,
+          frontend::Bit<true, 0, true>>>>());
+  ShuffleBasedCompactorFactory<uint32_t, bool, 1> factory1(
+      1,
+      0,
+      std::make_unique<shuffler::insecure::NonShufflerFactory<std::pair<
+          frontend::Int<false, 32, true, 1, true>,
+          frontend::Bit<true, 1, true>>>>());
+
   compactorTest(factory0, factory1);
 }
 
