@@ -40,7 +40,12 @@ class RebatchingBooleanGate : public IGate {
       : gateType_(GateType::Batching),
         individualWireIDs_(individualWireIDs),
         batchWireID_(batchWireID),
-        wireKeeper_(wireKeeper) {}
+        wireKeeper_(wireKeeper) {
+    increaseBatchReferenceCount(batchWireID_);
+    for (auto& wire : individualWireIDs_) {
+      increaseBatchReferenceCount(wire);
+    }
+  }
 
   // this contructor will create a "unbatching" gate. The caller is responsible
   // to make sure the unbatching is doable - e.g. you can't unbatch a vector of
@@ -55,7 +60,19 @@ class RebatchingBooleanGate : public IGate {
         individualWireIDs_(individualWireIDs),
         batchWireID_(batchWireID),
         wireKeeper_(wireKeeper),
-        unbatchingStrategy_(unbatchingStrategy) {}
+        unbatchingStrategy_(unbatchingStrategy) {
+    increaseBatchReferenceCount(batchWireID_);
+    for (auto& wire : individualWireIDs_) {
+      increaseBatchReferenceCount(wire);
+    }
+  }
+
+  ~RebatchingBooleanGate() {
+    decreaseBatchReferenceCount(batchWireID_);
+    for (auto& i : individualWireIDs_) {
+      decreaseBatchReferenceCount(i);
+    }
+  }
 
   void compute(
       engine::ISecretShareEngine&,
@@ -92,6 +109,20 @@ class RebatchingBooleanGate : public IGate {
   }
 
  private:
+  void increaseBatchReferenceCount(
+      IScheduler::WireId<IScheduler::Boolean> wire) {
+    if (!wire.isEmpty()) {
+      wireKeeper_.increaseBatchReferenceCount(wire);
+    }
+  }
+
+  void decreaseBatchReferenceCount(
+      IScheduler::WireId<IScheduler::Boolean> wire) {
+    if (!wire.isEmpty()) {
+      wireKeeper_.decreaseBatchReferenceCount(wire);
+    }
+  }
+
   void executeBatchingGate() const {
     size_t batchIndex = 0;
     size_t totalSize = 0;
