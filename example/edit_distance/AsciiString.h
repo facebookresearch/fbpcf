@@ -172,6 +172,7 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
       array<frontend::Int<true, 8, isSecret, schedulerId, usingBatch>, maxWidth>
           data_;
   SizeType knownSize_;
+  size_t batchSize_ = 1;
 
   std::vector<char> convertLongsToChar(std::vector<int64_t> values) const;
 

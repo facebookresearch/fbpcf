@@ -84,6 +84,62 @@ std::string randomString(
   return rst;
 }
 
+TEST(AsciiStringTest, testToUpperCase) {
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using SecAsciiString = AsciiString<15, true, 0>;
+  using PubAsciiString = AsciiString<15, false, 0>;
+  using SecBatchAsciiString = AsciiString<15, true, 0, true>;
+  using PubBatchAsciiString = AsciiString<15, false, 0, true>;
+
+  size_t batchSize = 9;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<char> dist('a', 'z');
+
+  for (size_t i = 0; i < 100; i++) {
+    std::string s1 = randomString(dist, e, 12);
+    std::string s2 = randomString(dist, e, 12);
+    std::string s1ToUpper = s1;
+    std::string s2ToUpper = s2;
+    std::transform(
+        s1ToUpper.begin(), s1ToUpper.end(), s1ToUpper.begin(), ::toupper);
+    std::transform(
+        s2ToUpper.begin(), s2ToUpper.end(), s2ToUpper.begin(), ::toupper);
+
+    PubAsciiString pubStr1(s1);
+    SecAsciiString secStr1(s2, 0);
+
+    ASSERT_EQ(pubStr1.toUpperCase().getValue(), s1ToUpper);
+    ASSERT_EQ(secStr1.toUpperCase().openToParty(0).getValue(), s2ToUpper);
+  }
+
+  for (size_t i = 0; i < 100; i++) {
+    std::vector<std::string> s3(batchSize);
+    std::vector<std::string> s4(batchSize);
+    std::vector<std::string> s3ToUpper;
+    std::vector<std::string> s4ToUpper;
+    for (size_t j = 0; j < batchSize; j++) {
+      s3[j] = randomString(dist, e, 12);
+      s4[j] = randomString(dist, e, 12);
+      auto str1 = s3[j];
+      auto str2 = s4[j];
+      std::transform(str1.begin(), str1.end(), str1.begin(), ::toupper);
+      std::transform(str2.begin(), str2.end(), str2.begin(), ::toupper);
+      s3ToUpper.push_back(str1);
+      s4ToUpper.push_back(str2);
+    }
+
+    PubBatchAsciiString pubStr2(s3);
+    SecBatchAsciiString secStr2(s4, 0);
+
+    testVectorEq(pubStr2.toUpperCase().getValue(), s3ToUpper);
+    testVectorEq(secStr2.toUpperCase().openToParty(0).getValue(), s4ToUpper);
+  }
+}
+
 TEST(AsciiStringTest, testMux) {
   scheduler::SchedulerKeeper<0>::setScheduler(
       std::make_unique<scheduler::PlaintextScheduler>(
