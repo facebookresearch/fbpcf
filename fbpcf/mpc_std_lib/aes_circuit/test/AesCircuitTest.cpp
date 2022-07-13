@@ -7,6 +7,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <array>
 #include <cmath>
 #include <future>
 #include <memory>
@@ -23,6 +24,31 @@
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::aes_circuit {
+
+template <typename BitType>
+class AesCircuitTests : public AesCircuit<BitType> {
+ public:
+  void testShiftRowInPlace(std::vector<bool> plaintext) {
+    std::random_device rd;
+    std::mt19937_64 e(rd());
+    std::uniform_int_distribution<uint8_t> dist(0, 3);
+    int row = dist(e);
+
+    std::array<std::array<bool, 8>, 4> word;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 8; j++) {
+        word[i][j] = plaintext[32 * i + 8 * row + j];
+      }
+    }
+
+    AesCircuit<bool>::shiftRowInPlace(word, row);
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 8; j++) {
+        EXPECT_EQ(word[i][j], plaintext[32 * ((i + row) % 4) + 8 * row + j]);
+      }
+    }
+  }
+};
 
 std::vector<bool> generateRandomPlaintext(int size = 128) {
   std::random_device rd;
@@ -51,6 +77,12 @@ void testDummyAesCircuitInPlaintext(
 TEST(AesCircuitTest, testDummyAesCircuit) {
   testDummyAesCircuitInPlaintext(
       std::make_unique<insecure::DummyAesCircuitFactory<bool>>());
+}
+
+TEST(AesCircuitTest, testShiftRowInPlace) {
+  auto plaintext = generateRandomPlaintext();
+  AesCircuitTests<bool> test;
+  test.testShiftRowInPlace(plaintext);
 }
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit

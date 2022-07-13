@@ -48,3 +48,5 @@ class AesCircuit : public IAesCircuit<BitType> {
 };
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
+
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit_impl.h"

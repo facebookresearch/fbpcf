@@ -7,8 +7,8 @@
 
 #pragma once
 
+#include <algorithm>
 #include <vector>
-#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
 
 namespace fbpcf::mpc_std_lib::aes_circuit {
 
@@ -60,7 +60,18 @@ void AesCircuit<BitType>::inverseMixColumnsInPlace(WordType& src) const {
 
 template <typename BitType>
 void AesCircuit<BitType>::shiftRowInPlace(WordType& src, int8_t offset) {
-  throw std::runtime_error("Not implemented!");
+  if (offset == 1) {
+    std::swap(src[0], src[1]);
+    std::swap(src[1], src[2]);
+    std::swap(src[2], src[3]);
+  } else if (offset == 2) {
+    std::swap(src[0], src[2]);
+    std::swap(src[1], src[3]);
+  } else if (offset == 3) {
+    std::swap(src[3], src[2]);
+    std::swap(src[2], src[1]);
+    std::swap(src[1], src[0]);
+  }
 }
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
