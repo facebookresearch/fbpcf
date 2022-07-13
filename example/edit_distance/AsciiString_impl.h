@@ -18,9 +18,9 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
     const StringType& data) {
   static_assert(!isSecret, "Private value must not be created public input");
   if constexpr (usingBatch) {
-    size_t batchSize = data.size();
-    knownSize_.reserve(batchSize);
-    for (size_t i = 0; i < batchSize; i++) {
+    batchSize_ = data.size();
+    knownSize_.reserve(batchSize_);
+    for (size_t i = 0; i < batchSize_; i++) {
       if (data[i].size() > maxWidth) {
         throw std::runtime_error(fmt::format(
             "Input value is too large. Maximum string width is %d, was  given %d",
@@ -30,8 +30,8 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
       knownSize_.push_back(data[i].size());
     }
     for (size_t i = 0; i < maxWidth; i++) {
-      std::vector<char> chars(batchSize);
-      for (size_t j = 0; j < batchSize; j++) {
+      std::vector<char> chars(batchSize_);
+      for (size_t j = 0; j < batchSize_; j++) {
         chars[j] = i < data[j].size() ? data[j][i] : 0;
       }
       data_[i] = frontend::Int<true, 8, false, schedulerId, usingBatch>(chars);
@@ -62,8 +62,8 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
     int partyId) {
   static_assert(isSecret, "Public value must not be created secret input");
   if constexpr (usingBatch) {
-    size_t batchSize = data.size();
-    for (size_t j = 0; j < batchSize; j++) {
+    batchSize_ = data.size();
+    for (size_t j = 0; j < batchSize_; j++) {
       if (data[j].size() > maxWidth) {
         throw std::runtime_error(fmt::format(
             "Input value is too large. Maximum string width is %d, was  given %d",
@@ -72,8 +72,8 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
       }
     }
     for (size_t i = 0; i < maxWidth; i++) {
-      std::vector<char> chars(batchSize);
-      for (size_t j = 0; j < batchSize; j++) {
+      std::vector<char> chars(batchSize_);
+      for (size_t j = 0; j < batchSize_; j++) {
         chars[j] = i < data[j].size() ? data[j][i] : 0;
       }
       data_[i] =
@@ -211,7 +211,35 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::privateSize() const {
 template <int maxWidth, bool isSecret, int schedulerId, bool usingBatch>
 AsciiString<maxWidth, isSecret, schedulerId, usingBatch>
 AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::toUpperCase() const {
-  throw std::runtime_error("Unimplemented");
+  if constexpr (usingBatch) {
+    AsciiString<maxWidth, isSecret, schedulerId, usingBatch> rst;
+    std::vector<int64_t> v1(batchSize_, 'a');
+    std::vector<int64_t> v2(batchSize_, 'z');
+    std::vector<int64_t> v3(batchSize_, 0);
+    std::vector<int64_t> v4(batchSize_, 'A' - 'a');
+    frontend::Int<true, 8, false, schedulerId, usingBatch> a(v1);
+    frontend::Int<true, 8, false, schedulerId, usingBatch> z(v2);
+    frontend::Int<true, 8, false, schedulerId, usingBatch> zero(v3);
+    frontend::Int<true, 8, false, schedulerId, usingBatch> upper(v4);
+    for (int i = 0; i < maxWidth; i++) {
+      auto isLower = data_[i] >= a & data_[i] <= z;
+      rst.data_[i] = data_[i] + zero.mux(isLower, upper);
+    }
+    return rst;
+  } else {
+    AsciiString<maxWidth, isSecret, schedulerId, usingBatch> rst;
+
+    frontend::Int<true, 8, false, schedulerId, usingBatch> a('a');
+    frontend::Int<true, 8, false, schedulerId, usingBatch> z('z');
+    frontend::Int<true, 8, false, schedulerId, usingBatch> zero(0);
+    frontend::Int<true, 8, false, schedulerId, usingBatch> upper('A' - 'a');
+
+    for (size_t i = 0; i < maxWidth; i++) {
+      auto isLower = data_[i] >= a & data_[i] <= z;
+      rst.data_[i] = data_[i] + zero.mux(isLower, upper);
+    }
+    return rst;
+  }
 }
 
 template <int maxWidth, bool isSecret, int schedulerId, bool usingBatch>
