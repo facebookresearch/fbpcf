@@ -17,12 +17,14 @@ namespace fbpcf::cloudio {
 
 CloudFileType getCloudFileType(const std::string& filePath) {
   // S3 file format:
-  // 1. https://bucket-name.s3.Region.amazonaws.com/key-name
-  // 2. https://bucket-name.s3-Region.amazonaws.com/key-name
+  // 1. https://bucket-name.s3.region.amazonaws.com/key-name
+  // 2. https://bucket-name.s3-region.amazonaws.com/key-name
   // 3. s3://bucket-name/key-name
   // GCS file format:
   // 1. https://storage.cloud.google.com/bucket-name/key-name
-  // 2. gs://bucket-name/key-name
+  // 2. https://bucket-name.storage.googleapis.com/key-name
+  // 3. https://storage.googleapis.com/bucket-name/key-name
+  // 4. gs://bucket-name/key-name
   static const re2::RE2 s3Regex1(
       "https://[a-z0-9.-]+.s3.[a-z0-9-]+.amazonaws.com/.+");
   static const re2::RE2 s3Regex2(
@@ -34,9 +36,14 @@ CloudFileType getCloudFileType(const std::string& filePath) {
     return CloudFileType::S3;
   }
 
-  static const re2::RE2 gcsRegex("https://storage.cloud.google.com/.*");
-  bool isGCSFile =
-      re2::RE2::FullMatch(filePath, gcsRegex) || filePath.find("gs://", 0) == 0;
+  static const re2::RE2 gcsRegex1("https://storage.cloud.google.com/.*");
+  static const re2::RE2 gcsRegex2(
+      "https://[a-z0-9.-]+.storage.googleapis.com/.+");
+  static const re2::RE2 gcsRegex3("https://storage.googleapis.com/.*");
+  bool isGCSFile = re2::RE2::FullMatch(filePath, gcsRegex1) ||
+      re2::RE2::FullMatch(filePath, gcsRegex2) ||
+      re2::RE2::FullMatch(filePath, gcsRegex3) ||
+      filePath.find("gs://", 0) == 0;
   if (isGCSFile) {
     return CloudFileType::GCS;
   }

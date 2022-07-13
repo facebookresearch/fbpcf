@@ -23,6 +23,22 @@ TEST(GCSUtil, uriToObjectReference) {
   EXPECT_EQ("key", ref.key);
 }
 
+TEST(GCSUtil, uriToObjectReference_virtualHostStyle) {
+  auto uri = "https://bucket-name.storage.googleapis.com/key-name";
+  auto ref = fbpcf::gcp::uriToObjectReference(uri);
+
+  EXPECT_EQ("bucket-name", ref.bucket);
+  EXPECT_EQ("key-name", ref.key);
+}
+
+TEST(GCSUtil, uriToObjectReference_pathStyle) {
+  auto uri = "https://storage.googleapis.com/bucket-name/key-name";
+  auto ref = fbpcf::gcp::uriToObjectReference(uri);
+
+  EXPECT_EQ("bucket-name", ref.bucket);
+  EXPECT_EQ("key-name", ref.key);
+}
+
 TEST(GCSUtil, uriToObjectReference_Subfolder) {
   auto uri = "https://storage.cloud.google.com/bucket/folder/key";
   auto ref = fbpcf::gcp::uriToObjectReference(uri);

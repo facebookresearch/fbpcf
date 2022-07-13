@@ -26,8 +26,16 @@ TEST(FileManagerUtilTest, TestGetCloudFileType) {
       getCloudFileType("https://storage.cloud.google.com/bucket-name/key-name");
   EXPECT_EQ(CloudFileType::GCS, gcsType1);
 
-  auto gcsType2 = getCloudFileType("gs://bucket-name/key-name");
+  auto gcsType2 =
+      getCloudFileType("https://bucket-name.storage.googleapis.com/key-name");
   EXPECT_EQ(CloudFileType::GCS, gcsType2);
+
+  auto gcsType3 =
+      getCloudFileType("https://storage.googleapis.com/bucket-name/key-name");
+  EXPECT_EQ(CloudFileType::GCS, gcsType3);
+
+  auto gcsType4 = getCloudFileType("gs://bucket-name/key-name");
+  EXPECT_EQ(CloudFileType::GCS, gcsType4);
 
   auto unkonwnType =
       getCloudFileType("https://storage.test.com/bucket-name/key-name");
