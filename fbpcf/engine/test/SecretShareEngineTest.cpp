@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+#include "fbpcf/engine/DummySecretShareEngine.h"
+#include "fbpcf/engine/DummySecretShareEngineFactory.h"
 #include "fbpcf/engine/ISecretShareEngine.h"
 #include "fbpcf/engine/SecretShareEngine.h"
 #include "fbpcf/engine/SecretShareEngineFactory.h"
@@ -31,7 +33,7 @@ T testHelper(
         T(std::unique_ptr<ISecretShareEngine> engine,
           int myId,
           int numberOfParty)> test,
-    std::function<std::unique_ptr<SecretShareEngineFactory>(
+    std::function<std::unique_ptr<ISecretShareEngineFactory>(
         int myId,
         int numberOfParty,
         communication::IPartyCommunicationAgentFactory& agentFactory)>
@@ -729,6 +731,226 @@ TEST(SecretShareEngineTest, TestBatchFreeANDWithDummyComponents) {
   for (int i = 0; i < size / 2; i++) {
     EXPECT_EQ(rst1[i], inputs1[i].first & inputs1[i + size / 2].first);
     EXPECT_EQ(rst2[i], inputs2[i].first & inputs2[i + size / 2].first);
+  }
+}
+
+TEST(DummySecretShareEngineTest, TestInputAndOutput) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs = generateRandomInputs(numberOfParty, size, size);
+
+  auto rst = testHelper(
+      numberOfParty,
+      testTemplate(inputs, inputAndOutputTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  ASSERT_EQ(rst.size(), size);
+}
+
+TEST(DummySecretShareEngineTest, TestNOTAndXORAndFreeAND) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs1 = generateRandomInputs(numberOfParty, size, 0);
+  auto inputs2 = generateRandomInputs(numberOfParty, size, size);
+  auto inputs3 = generateRandomInputs(numberOfParty, size, size / 2);
+
+  // Test NOT
+  auto rst1NOT = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, symmetricNOTTestBody, false),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst2NOT = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, asymmetricNOTTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1NOT.size(), size);
+  EXPECT_EQ(rst2NOT.size(), size);
+
+  // Test XOR
+  auto rst1XOR = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, symmetricXORTestBody, false),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst2XOR = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, symmetricXORTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst3XOR = testHelper(
+      numberOfParty,
+      testTemplate(inputs3, asymmetricXORTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1XOR.size(), size / 2);
+  EXPECT_EQ(rst2XOR.size(), size / 2);
+  EXPECT_EQ(rst3XOR.size(), size / 2);
+
+  // Test FreeAND
+  auto rst1FreeAND = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, FreeANDTestBody, false),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst3FreeAND = testHelper(
+      numberOfParty,
+      testTemplate(inputs3, FreeANDTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1FreeAND.size(), size / 2);
+  EXPECT_EQ(rst3FreeAND.size(), size / 2);
+}
+
+TEST(DummySecretShareEngineTest, TestBatchNOTAndBatchXORAndBatchFreeAnd) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs1 = generateRandomInputs(numberOfParty, size, 0);
+  auto inputs2 = generateRandomInputs(numberOfParty, size, size);
+  auto inputs3 = generateRandomInputs(numberOfParty, size, size / 2);
+
+  // Test BatchNOT
+  auto rst1NOT = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, batchSymmetricNOTTestBody, false),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst2NOT = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, batchAsymmetricNOTTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1NOT.size(), size);
+  EXPECT_EQ(rst2NOT.size(), size);
+
+  // Test BatchXOR
+  auto rst1XOR = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, batchSymmetricXORTestBody, false),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst2XOR = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, batchSymmetricXORTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst3XOR = testHelper(
+      numberOfParty,
+      testTemplate(inputs3, batchAsymmetricXORTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1XOR.size(), size / 2);
+  EXPECT_EQ(rst2XOR.size(), size / 2);
+  EXPECT_EQ(rst3XOR.size(), size / 2);
+
+  // Test BatchFreeAND
+  auto rst1FreeAND = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, BatchFreeANDTestBody, false),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  auto rst3FreeAND = testHelper(
+      numberOfParty,
+      testTemplate(inputs3, BatchFreeANDTestBody),
+      getDummyEngineFactory,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1FreeAND.size(), size / 2);
+  EXPECT_EQ(rst3FreeAND.size(), size / 2);
+}
+
+class DummyNonFreeAndTestFixture
+    : public ::testing::TestWithParam<std::tuple<
+          std::string, // Human readable name
+          size_t, // number of parties
+          std::function<std::unique_ptr<DummySecretShareEngineFactory>(
+              int myId,
+              int numberOfParty,
+              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    DummySecretShareEngineTest,
+    DummyNonFreeAndTestFixture,
+    ::testing::Values(
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<DummySecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "DummyEngine",
+            2,
+            getDummyEngineFactory),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<DummySecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "DummyEngine",
+            5,
+            getDummyEngineFactory)),
+    [](const testing::TestParamInfo<DummyNonFreeAndTestFixture::ParamType>&
+           info) {
+      return std::get<0>(info.param) + '_' +
+          std::to_string(std::get<1>(info.param)) + "Party";
+    });
+
+TEST_P(DummyNonFreeAndTestFixture, TestNonFreeAnd) {
+  size_t numberOfParty = std::get<1>(GetParam());
+  size_t size = 16384;
+  auto inputs = generateRandomInputs(numberOfParty, size, size);
+
+  auto rst = testHelper(
+      numberOfParty,
+      testTemplate(inputs, ANDTestBody),
+      std::get<2>(GetParam()),
+      assertPartyResultsConsistent);
+  auto andResult = std::get<0>(rst);
+  auto compositeAndResult = std::get<1>(rst);
+  ASSERT_EQ(andResult.size(), 2 * size);
+
+  // Ordering of composite results
+  // First size / 16 vectors is 1:15 runs (size 15)
+  // Next size / 8 vectors is 1:7 runs (size 7)
+  // Next size / 4 vectors is 1:3 runs (size 3)
+  // Next 15 vectors is batch 1:15 run (batch size = size / 16)
+  // Next 7 vectors is batch 1:7 run (batch size = size / 8)
+  // Next 3 vectors is batch 1:3 run (batch size = size / 4)
+
+  int composite15EndIndex = size / 16;
+  int composite7EndIndex = composite15EndIndex + size / 8;
+  int composite3EndIndex = composite7EndIndex + size / 4;
+  int batchComposite15EndIndex = composite3EndIndex + 15;
+  int batchComposite7EndIndex = batchComposite15EndIndex + 7;
+
+  // First check 1:15 runs
+  for (int i = 0; i < size / 16; i++) {
+    EXPECT_EQ(compositeAndResult[i].size(), 15);
+    for (int j = 0; j < 15; j++) {
+      EXPECT_EQ(compositeAndResult[j + composite3EndIndex].size(), size / 16);
+    }
+  }
+
+  // check 1:7 runs
+  for (int i = 0; i < size / 8; i++) {
+    EXPECT_EQ(compositeAndResult[i + composite15EndIndex].size(), 7);
+    for (int j = 0; j < 7; j++) {
+      EXPECT_EQ(
+          compositeAndResult[j + batchComposite15EndIndex].size(), size / 8);
+    }
+  }
+
+  // check 1:3 runs
+  for (int i = 0; i < size / 4; i++) {
+    EXPECT_EQ(compositeAndResult[i + composite7EndIndex].size(), 3);
+    for (int j = 0; j < 3; j++) {
+      EXPECT_EQ(
+          compositeAndResult[j + batchComposite7EndIndex].size(), size / 4);
+    }
   }
 }
 
