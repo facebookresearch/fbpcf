@@ -25,6 +25,18 @@ EditDistanceInputReader::EditDistanceInputReader(
     return addFromCSV(header, parts);
   };
   io::FileIOWrappers::readCsv(paramsFilePath, readParams);
+
+  if (words_.empty()) {
+    words_ = std::vector<std::string>(numRows_, "");
+  }
+
+  if (guesses_.empty()) {
+    guesses_ = std::vector<std::string>(numRows_, "");
+  }
+
+  if (senderMessages_.empty()) {
+    senderMessages_ = std::vector<std::string>(numRows_, "");
+  }
 }
 
 void EditDistanceInputReader::addFromCSV(
