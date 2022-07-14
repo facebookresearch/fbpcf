@@ -91,7 +91,7 @@ class MpcAdapters<std::pair<T, bool>, schedulerId> {
 
   static std::vector<SecBatchType> unbatching(
       const SecBatchType& src,
-      std::shared_ptr<std::vector<T>> unbatchingStrategy) {
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
     auto rst1 =
         MpcAdapters<T, schedulerId>::unbatching(src.first, unbatchingStrategy);
     auto rst2 = MpcAdapters<bool, schedulerId>::unbatching(
