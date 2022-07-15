@@ -5,10 +5,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "fbpcf/io/cloud_util/CloudFileUtil.h"
+#include <aws/s3/S3Client.h>
+#include <google/cloud/storage/client.h>
 #include <re2/re2.h>
+
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/PcfException.h"
+#include "fbpcf/gcp/GCSUtil.h"
+#include "fbpcf/io/cloud_util/CloudFileUtil.h"
+#include "fbpcf/io/cloud_util/GCSClient.h"
+#include "fbpcf/io/cloud_util/GCSFileReader.h"
+#include "fbpcf/io/cloud_util/GCSFileUploader.h"
 #include "fbpcf/io/cloud_util/S3Client.h"
 #include "fbpcf/io/cloud_util/S3FileReader.h"
 #include "fbpcf/io/cloud_util/S3FileUploader.h"
@@ -16,15 +23,17 @@
 namespace fbpcf::cloudio {
 
 CloudFileType getCloudFileType(const std::string& filePath) {
-  // S3 file format:
-  // 1. https://bucket-name.s3.region.amazonaws.com/key-name
-  // 2. https://bucket-name.s3-region.amazonaws.com/key-name
-  // 3. s3://bucket-name/key-name
-  // GCS file format:
-  // 1. https://storage.cloud.google.com/bucket-name/key-name
-  // 2. https://bucket-name.storage.googleapis.com/key-name
-  // 3. https://storage.googleapis.com/bucket-name/key-name
-  // 4. gs://bucket-name/key-name
+  /*
+   * S3 file format:
+   *   1. https://bucket-name.s3.region.amazonaws.com/key-name
+   *   2. https://bucket-name.s3-region.amazonaws.com/key-name
+   *   3. s3://bucket-name/key-name
+   * GCS file format:
+   *   1. https://storage.cloud.google.com/bucket-name/key-name
+   *   2. https://bucket-name.storage.googleapis.com/key-name
+   *   3. https://storage.googleapis.com/bucket-name/key-name
+   *   4. gs://bucket-name/key-name
+   */
   static const re2::RE2 s3Regex1(
       "https://[a-z0-9.-]+.s3.[a-z0-9-]+.amazonaws.com/.+");
   static const re2::RE2 s3Regex2(
@@ -58,8 +67,12 @@ std::unique_ptr<IFileReader> getCloudFileReader(const std::string& filePath) {
         fbpcf::cloudio::S3Client::getInstance(
             fbpcf::aws::S3ClientOption{.region = ref.region})
             .getS3Client());
+  } else if (fileType == CloudFileType::GCS) {
+    return std::make_unique<GCSFileReader>(
+        fbpcf::cloudio::GCSClient::getInstance(fbpcf::gcp::GCSClientOption{})
+            .getGCSClient());
   } else {
-    return nullptr;
+    throw fbpcf::PcfException("Not supported yet.");
   }
 }
 
@@ -72,6 +85,11 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
         fbpcf::cloudio::S3Client::getInstance(
             fbpcf::aws::S3ClientOption{.region = ref.region})
             .getS3Client(),
+        filePath);
+  } else if (fileType == CloudFileType::GCS) {
+    return std::make_unique<GCSFileUploader>(
+        fbpcf::cloudio::GCSClient::getInstance(fbpcf::gcp::GCSClientOption{})
+            .getGCSClient(),
         filePath);
   } else {
     throw fbpcf::PcfException("Not supported yet.");
