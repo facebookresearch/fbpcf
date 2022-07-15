@@ -6,9 +6,12 @@
  */
 
 #include "fbpcf/io/cloud_util/CloudFileUtil.h"
+#include <aws/s3/S3Client.h>
 #include <re2/re2.h>
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/PcfException.h"
+#include "fbpcf/gcp/GCSUtil.h"
+#include "fbpcf/io/cloud_util/GCSFileUploader.h"
 #include "fbpcf/io/cloud_util/S3Client.h"
 #include "fbpcf/io/cloud_util/S3FileReader.h"
 #include "fbpcf/io/cloud_util/S3FileUploader.h"
@@ -71,6 +74,13 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
     return std::make_unique<S3FileUploader>(
         fbpcf::cloudio::S3Client::getInstance(
             fbpcf::aws::S3ClientOption{.region = ref.region})
+            .getS3Client(),
+        filePath);
+  } else if (fileType == CloudFileType::GCS) {
+    return std::make_unique<GCSFileUploader>(
+        fbpcf::cloudio::S3Client::getInstance(
+            fbpcf::aws::S3ClientOption{
+                .endpointOverride = "https://storage.googleapis.com/"})
             .getS3Client(),
         filePath);
   } else {

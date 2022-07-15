@@ -84,6 +84,12 @@ std::unique_ptr<Aws::S3::S3Client> createS3Client(
     const S3ClientOption& option) {
   Aws::Client::ClientConfiguration config;
 
+  if (option.endpointOverride.has_value()) {
+    config.endpointOverride = option.endpointOverride.value();
+  } else if (std::getenv("AWS_ENDPOINT_OVERRIDE")) {
+    config.endpointOverride = std::getenv("AWS_ENDPOINT_OVERRIDE");
+  }
+
   if (option.region.has_value()) {
     config.region = option.region.value();
   } else if (std::getenv("AWS_DEFAULT_REGION")) {
