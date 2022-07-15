@@ -22,6 +22,5 @@ struct GCSObjectReference {
 };
 
 GCSObjectReference uriToObjectReference(std::string url);
-std::unique_ptr<google::cloud::storage::Client> createGCSClient(
-    const GCSClientOption& option);
+std::unique_ptr<google::cloud::storage::Client> createGCSClient();
 } // namespace fbpcf::gcp

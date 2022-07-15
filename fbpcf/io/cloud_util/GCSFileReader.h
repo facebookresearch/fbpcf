@@ -14,10 +14,9 @@
 #include "fbpcf/io/cloud_util/IFileReader.h"
 
 namespace fbpcf::cloudio {
-template <class ClientCls>
 class GCSFileReader : public IFileReader {
  public:
-  explicit GCSFileReader(std::shared_ptr<ClientCls> client)
+  explicit GCSFileReader(std::shared_ptr<google::cloud::storage::Client> client)
       : GCSClient_{std::move(client)} {}
 
   std::string readBytes(
@@ -28,7 +27,7 @@ class GCSFileReader : public IFileReader {
   size_t getFileContentLength(const std::string& filePath) override;
 
  private:
-  std::shared_ptr<ClientCls> GCSClient_;
+  std::shared_ptr<google::cloud::storage::Client> GCSClient_;
 };
 
 } // namespace fbpcf::cloudio
