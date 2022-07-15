@@ -374,7 +374,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::batchingUp(
 std::vector<IScheduler::WireId<IScheduler::Boolean>> EagerScheduler::unbatching(
     WireId<Boolean> src,
     std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
-  auto& batch = wireKeeper_->getBatchBooleanValue(src);
+  auto batch = wireKeeper_->getBatchBooleanValue(src);
   size_t index = 0;
   std::vector<IScheduler::WireId<IScheduler::Boolean>> rst(
       unbatchingStrategy->size());
