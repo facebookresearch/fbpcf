@@ -8,6 +8,7 @@
 #include <fmt/format.h>
 #include <stdexcept>
 #include "./AsciiString.h" // @manual
+#include "./Util.h" // @manual
 
 #pragma once
 
@@ -205,7 +206,38 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::privateSize() const {
   static_assert(
       maxWidth >> (sizeWidth - 1) == 0,
       "Private int width must be large enough for string width");
-  throw std::runtime_error("Unimplemented");
+  static_assert(maxWidth > 0, "String can not be always empty");
+
+  frontend::Int<false, sizeWidth, true, schedulerId, usingBatch> rst;
+  if constexpr (usingBatch) {
+    frontend::Int<false, sizeWidth, false, schedulerId, usingBatch> zeroIndex =
+        createPublicBatchConstant<
+            frontend::Int<false, sizeWidth, false, schedulerId, usingBatch>,
+            uint64_t>(0, batchSize_);
+    frontend::Int<false, sizeWidth, false, schedulerId, usingBatch> one =
+        createPublicBatchConstant<
+            frontend::Int<false, sizeWidth, false, schedulerId, usingBatch>,
+            uint64_t>(1, batchSize_);
+    frontend::Int<true, 8, false, schedulerId, usingBatch> zeroChar =
+        createPublicBatchConstant<
+            frontend::Int<true, 8, false, schedulerId, usingBatch>,
+            int64_t>(0, batchSize_);
+    rst = one.mux(data_[0] == zeroChar, zeroIndex);
+    for (size_t i = 1; i < maxWidth; i++) {
+      rst = (rst + one).mux(data_[i] == zeroChar, rst);
+    }
+  } else {
+    frontend::Int<false, sizeWidth, false, schedulerId, usingBatch> zeroIndex(
+        0U);
+    frontend::Int<false, sizeWidth, false, schedulerId, usingBatch> one(1U);
+    frontend::Int<true, 8, false, schedulerId, usingBatch> zeroChar(0);
+    rst = one.mux(data_[0] == zeroChar, zeroIndex);
+    for (size_t i = 1; i < maxWidth; i++) {
+      rst = (rst + one).mux(data_[i] == zeroChar, rst);
+    }
+  }
+
+  return rst;
 }
 
 template <int maxWidth, bool isSecret, int schedulerId, bool usingBatch>

@@ -119,6 +119,11 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
     return knownSize_;
   }
 
+  size_t getBatchSize() const {
+    static_assert(usingBatch, "Only batch types have batch size");
+    return batchSize_;
+  }
+
   // returns the length of the string as a secret integer. Template specifies
   // the width of the Int and must be enough to store the width.
   template <int sizeWidth>
