@@ -251,64 +251,29 @@ TEST(AsciiStringTest, testMuxBatch) {
   }
 }
 
-TEST(AsciiStringTest, testPrivateSize) {
+TEST(AsciiStringTest, testObliviousIndex) {
   scheduler::SchedulerKeeper<0>::setScheduler(
       std::make_unique<scheduler::PlaintextScheduler>(
           scheduler::WireKeeper::createWithUnorderedMap()));
   using SecAsciiString = AsciiString<15, true, 0>;
+  using PubAsciiString = AsciiString<15, false, 0>;
 
-  int partyId = 0;
+  std::string s1 = "Foo";
+  std::string s2 = "Testing";
 
-  std::random_device rd;
-  std::mt19937_64 e(rd());
-  std::uniform_int_distribution<char> dist1('a', 'z');
-  std::uniform_int_distribution<size_t> strLength(1, 15);
+  PubAsciiString v1(s1);
+  SecAsciiString v2(s2, 1);
 
-  for (size_t i = 0; i < 100; i++) {
-    auto len = strLength(e);
-    std::string v1 = randomString(dist1, e, len);
-
-    SecAsciiString secStr1(v1, partyId);
-
-    auto r1 = secStr1.privateSize<16>();
-
-    EXPECT_EQ(r1.openToParty(partyId).getValue(), v1.size());
+  for (size_t i = 0; i < 15; i++) {
+    frontend::Int<false, 15, true, 0> privateIndex(i, 0);
+    if (i < s1.size())
+      EXPECT_EQ((int64_t)s1[i], v1[privateIndex].openToParty(0).getValue());
+    else
+      EXPECT_EQ(0, v1[privateIndex].openToParty(0).getValue());
+    if (i < s2.size())
+      EXPECT_EQ((int64_t)s2[i], v2[privateIndex].openToParty(1).getValue());
+    else
+      EXPECT_EQ(0, v2[privateIndex].openToParty(1).getValue());
   }
 }
-
-TEST(AsciiStringTest, testPrivateSizeBatch) {
-  scheduler::SchedulerKeeper<0>::setScheduler(
-      std::make_unique<scheduler::PlaintextScheduler>(
-          scheduler::WireKeeper::createWithUnorderedMap()));
-  using SecBatchAsciiString = AsciiString<15, true, 0, true>;
-
-  int partyId = 0;
-  size_t batchSize = 9;
-
-  std::random_device rd;
-  std::mt19937_64 e(rd());
-  std::uniform_int_distribution<char> dist1('a', 'z');
-  std::uniform_int_distribution<size_t> strLength(1, 15);
-
-  for (size_t i = 0; i < 100; i++) {
-    std::vector<std::string> v1(batchSize);
-
-    for (size_t j = 0; j < batchSize; j++) {
-      auto len = strLength(e);
-      v1[j] = randomString(dist1, e, len);
-    }
-
-    SecBatchAsciiString secStr1(v1, partyId);
-
-    auto r1 = secStr1.privateSize<16>();
-
-    std::vector<size_t> expectedValue(batchSize);
-    for (size_t j = 0; j < batchSize; j++) {
-      expectedValue[j] = v1[j].size();
-    }
-
-    testVectorEq(r1.openToParty(partyId).getValue(), expectedValue);
-  }
-}
-
 } // namespace fbpcf::edit_distance

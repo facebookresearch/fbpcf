@@ -289,9 +289,7 @@ AsciiString<
     usingBatch>
 AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::concat(
     const AsciiString<otherMaxWidth, isSecretOther, schedulerId, usingBatch>&
-        other) const {
-  throw std::runtime_error("Unimplemented");
-}
+        other) const {}
 
 template <int maxWidth, bool isSecret, int schedulerId, bool usingBatch>
 template <bool isSecretChoice, bool isSecretOther>
