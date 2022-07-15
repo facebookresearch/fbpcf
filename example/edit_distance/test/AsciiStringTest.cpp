@@ -251,4 +251,64 @@ TEST(AsciiStringTest, testMuxBatch) {
   }
 }
 
+TEST(AsciiStringTest, testPrivateSize) {
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using SecAsciiString = AsciiString<15, true, 0>;
+
+  int partyId = 0;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<char> dist1('a', 'z');
+  std::uniform_int_distribution<size_t> strLength(1, 15);
+
+  for (size_t i = 0; i < 100; i++) {
+    auto len = strLength(e);
+    std::string v1 = randomString(dist1, e, len);
+
+    SecAsciiString secStr1(v1, partyId);
+
+    auto r1 = secStr1.privateSize<16>();
+
+    EXPECT_EQ(r1.openToParty(partyId).getValue(), v1.size());
+  }
+}
+
+TEST(AsciiStringTest, testPrivateSizeBatch) {
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using SecBatchAsciiString = AsciiString<15, true, 0, true>;
+
+  int partyId = 0;
+  size_t batchSize = 9;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<char> dist1('a', 'z');
+  std::uniform_int_distribution<size_t> strLength(1, 15);
+
+  for (size_t i = 0; i < 100; i++) {
+    std::vector<std::string> v1(batchSize);
+
+    for (size_t j = 0; j < batchSize; j++) {
+      auto len = strLength(e);
+      v1[j] = randomString(dist1, e, len);
+    }
+
+    SecBatchAsciiString secStr1(v1, partyId);
+
+    auto r1 = secStr1.privateSize<16>();
+
+    std::vector<size_t> expectedValue(batchSize);
+    for (size_t j = 0; j < batchSize; j++) {
+      expectedValue[j] = v1[j].size();
+    }
+
+    testVectorEq(r1.openToParty(partyId).getValue(), expectedValue);
+  }
+}
+
 } // namespace fbpcf::edit_distance
