@@ -12,8 +12,7 @@
 
 namespace fbpcf::cloudio {
 
-template <class ClientCls>
-std::string GCSFileReader<ClientCls>::readBytes(
+std::string GCSFileReader::readBytes(
     const std::string& filePath,
     std::size_t start,
     std::size_t end) {
@@ -29,15 +28,15 @@ std::string GCSFileReader<ClientCls>::readBytes(
   return ss.str();
 }
 
-template <class ClientCls>
-size_t GCSFileReader<ClientCls>::getFileContentLength(
-    const std::string& filePath) {
+size_t GCSFileReader::getFileContentLength(const std::string& filePath) {
   const auto& ref = fbpcf::gcp::uriToObjectReference(filePath);
   auto outcome = GCSClient_->GetObjectMetadata(ref.bucket, ref.key);
   if (!outcome) {
-    throw GcpException{"Error getting object metadata for object " + ref.key};
+    throw GcpException{
+        "Error getting object metadata for object " + ref.key +
+        " Reason: " + outcome.status().message()};
   }
-  return outcome.size();
+  return outcome->size();
 }
 
 } // namespace fbpcf::cloudio

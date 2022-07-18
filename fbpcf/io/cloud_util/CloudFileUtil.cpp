@@ -9,6 +9,8 @@
 #include <re2/re2.h>
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/PcfException.h"
+#include "fbpcf/gcp/GCSUtil.h"
+#include "fbpcf/io/cloud_util/GCSFileReader.h"
 #include "fbpcf/io/cloud_util/S3Client.h"
 #include "fbpcf/io/cloud_util/S3FileReader.h"
 #include "fbpcf/io/cloud_util/S3FileUploader.h"
@@ -58,8 +60,10 @@ std::unique_ptr<IFileReader> getCloudFileReader(const std::string& filePath) {
         fbpcf::cloudio::S3Client::getInstance(
             fbpcf::aws::S3ClientOption{.region = ref.region})
             .getS3Client());
+  } else if (fileType == CloudFileType::GCS) {
+    return std::make_unique<GCSFileReader>(fbpcf::gcp::createGCSClient());
   } else {
-    return nullptr;
+    throw fbpcf::PcfException("Not supported yet.");
   }
 }
 
