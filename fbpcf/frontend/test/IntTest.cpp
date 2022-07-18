@@ -1079,6 +1079,315 @@ TEST(IntTest, testEqualBatch) {
   }
 }
 
+template <typename From, typename To>
+From castSingle(From val) {
+  return (From)(To)val;
+}
+
+template <
+    bool isSecretType,
+    typename MpcBatchType,
+    typename OriginalType,
+    typename T8,
+    typename T16,
+    typename T32,
+    typename T64>
+void runCastTest(MpcBatchType val, OriginalType expected) {
+  if constexpr (isSecretType) {
+    EXPECT_EQ(
+        val.template cast<8>().openToParty(0).getValue(),
+        (castSingle<OriginalType, T8>(expected)));
+    EXPECT_EQ(
+        val.template cast<16>().openToParty(0).getValue(),
+        (castSingle<OriginalType, T16>(expected)));
+    EXPECT_EQ(
+        val.template cast<32>().openToParty(0).getValue(),
+        (castSingle<OriginalType, T32>(expected)));
+    EXPECT_EQ(
+        val.template cast<64>().openToParty(0).getValue(),
+        (castSingle<OriginalType, T64>(expected)));
+  } else {
+    EXPECT_EQ(
+        val.template cast<8>().getValue(),
+        (castSingle<OriginalType, T8>(expected)));
+    EXPECT_EQ(
+        val.template cast<16>().getValue(),
+        (castSingle<OriginalType, T16>(expected)));
+    EXPECT_EQ(
+        val.template cast<32>().getValue(),
+        (castSingle<OriginalType, T32>(expected)));
+    EXPECT_EQ(
+        val.template cast<64>().getValue(),
+        (castSingle<OriginalType, T64>(expected)));
+  }
+}
+
+TEST(IntTest, testCast) {
+  int64_t largestSigned64 = std::numeric_limits<int64_t>().max();
+  int64_t smallestSigned64 = std::numeric_limits<int64_t>().min();
+  uint64_t largestUnsigned64 = std::numeric_limits<uint64_t>().max();
+
+  int32_t largestSigned32 = std::numeric_limits<int32_t>().max();
+  int32_t smallestSigned32 = std::numeric_limits<int32_t>().min();
+  uint32_t largestUnsigned32 = std::numeric_limits<uint32_t>().max();
+
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+
+  using secSigned64Int = Integer<Secret<Signed<64>>, 0>;
+  using pubSigned64Int = Integer<Public<Signed<64>>, 0>;
+  using secUnsigned64Int = Integer<Secret<Unsigned<64>>, 0>;
+  using pubUnsigned64Int = Integer<Public<Unsigned<64>>, 0>;
+  using secSigned32Int = Integer<Secret<Signed<32>>, 0>;
+  using pubSigned32Int = Integer<Public<Signed<32>>, 0>;
+  using secUnsigned32Int = Integer<Secret<Unsigned<32>>, 0>;
+  using pubUnsigned32Int = Integer<Public<Unsigned<32>>, 0>;
+
+  int partyId = 2;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+
+  std::uniform_int_distribution<int64_t> signed64(
+      smallestSigned64, largestSigned64);
+  std::uniform_int_distribution<int32_t> signed32(
+      smallestSigned32, largestSigned32);
+  std::uniform_int_distribution<uint64_t> unsigned64(0, largestUnsigned64);
+  std::uniform_int_distribution<uint32_t> unsigned32(0, largestUnsigned32);
+
+  for (int i = 0; i < 100; i++) {
+    int64_t v1 = signed64(e);
+    int64_t v2 = signed32(e);
+    uint64_t v3 = unsigned64(e);
+    uint64_t v4 = unsigned32(e);
+
+    secSigned64Int int1(v1, partyId);
+    secSigned32Int int2(v2, partyId);
+    pubSigned64Int int3(v1);
+    pubSigned32Int int4(v2);
+    secUnsigned64Int int5(v3, partyId);
+    secUnsigned32Int int6(v4, partyId);
+    pubUnsigned64Int int7(v3);
+    pubUnsigned32Int int8(v4);
+
+    runCastTest<true, secSigned64Int, int64_t, char, short, int32_t, int64_t>(
+        int1, v1);
+    runCastTest<true, secSigned32Int, int64_t, char, short, int32_t, int64_t>(
+        int2, v2);
+    runCastTest<false, pubSigned64Int, int64_t, char, short, int32_t, int64_t>(
+        int3, v1);
+    runCastTest<false, pubSigned32Int, int64_t, char, short, int32_t, int64_t>(
+        int4, v2);
+    runCastTest<
+        true,
+        secUnsigned64Int,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int5, v3);
+    // broken on casting 32 bit -> 64 bit
+    runCastTest<
+        true,
+        secUnsigned32Int,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int6, v4);
+    runCastTest<
+        false,
+        pubUnsigned64Int,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int7, v3);
+    runCastTest<
+        false,
+        pubUnsigned32Int,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int8, v4);
+  }
+}
+
+template <typename From, typename To>
+std::vector<From> castVector(std::vector<From>& vec) {
+  std::vector<From> rst(vec.size());
+  for (size_t i = 0; i < vec.size(); i++) {
+    rst[i] = (From)(To)vec[i];
+  }
+  return rst;
+}
+
+template <
+    bool isSecretType,
+    typename MpcBatchType,
+    typename OriginalType,
+    typename T8,
+    typename T16,
+    typename T32,
+    typename T64>
+void runCastBatchTest(MpcBatchType val, std::vector<OriginalType> expected) {
+  if constexpr (isSecretType) {
+    testVectorEq(
+        val.template cast<8>().openToParty(0).getValue(),
+        castVector<OriginalType, T8>(expected));
+    testVectorEq(
+        val.template cast<16>().openToParty(0).getValue(),
+        castVector<OriginalType, T16>(expected));
+    testVectorEq(
+        val.template cast<32>().openToParty(0).getValue(),
+        castVector<OriginalType, T32>(expected));
+    testVectorEq(
+        val.template cast<64>().openToParty(0).getValue(),
+        castVector<OriginalType, T64>(expected));
+  } else {
+    testVectorEq(
+        val.template cast<8>().getValue(),
+        castVector<OriginalType, T8>(expected));
+    testVectorEq(
+        val.template cast<16>().getValue(),
+        castVector<OriginalType, T16>(expected));
+    testVectorEq(
+        val.template cast<32>().getValue(),
+        castVector<OriginalType, T32>(expected));
+    testVectorEq(
+        val.template cast<64>().getValue(),
+        castVector<OriginalType, T64>(expected));
+  }
+}
+
+TEST(IntTest, testCastBatch) {
+  int64_t largestSigned64 = std::numeric_limits<int64_t>().max();
+  int64_t smallestSigned64 = std::numeric_limits<int64_t>().min();
+  uint64_t largestUnsigned64 = std::numeric_limits<uint64_t>().max();
+
+  int32_t largestSigned32 = std::numeric_limits<int32_t>().max();
+  int32_t smallestSigned32 = std::numeric_limits<int32_t>().min();
+  uint32_t largestUnsigned32 = std::numeric_limits<uint32_t>().max();
+
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+
+  using secSigned64IntBatch = Integer<Secret<Batch<Signed<64>>>, 0>;
+  using pubSigned64IntBatch = Integer<Public<Batch<Signed<64>>>, 0>;
+  using secUnsigned64IntBatch = Integer<Secret<Batch<Unsigned<64>>>, 0>;
+  using pubUnsigned64IntBatch = Integer<Public<Batch<Unsigned<64>>>, 0>;
+  using secSigned32IntBatch = Integer<Secret<Batch<Signed<32>>>, 0>;
+  using pubSigned32IntBatch = Integer<Public<Batch<Signed<32>>>, 0>;
+  using secUnsigned32IntBatch = Integer<Secret<Batch<Unsigned<32>>>, 0>;
+  using pubUnsigned32IntBatch = Integer<Public<Batch<Unsigned<32>>>, 0>;
+
+  size_t batchSize = 21;
+
+  int partyId = 2;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+
+  std::uniform_int_distribution<int64_t> signed64(
+      smallestSigned64, largestSigned64);
+  std::uniform_int_distribution<int32_t> signed32(
+      smallestSigned32, largestSigned32);
+  std::uniform_int_distribution<uint64_t> unsigned64(0, largestUnsigned64);
+  std::uniform_int_distribution<uint32_t> unsigned32(0, largestUnsigned32);
+
+  for (int i = 0; i < 100; i++) {
+    std::vector<int64_t> v1(batchSize);
+    std::vector<int64_t> v2(batchSize);
+    std::vector<uint64_t> v3(batchSize);
+    std::vector<uint64_t> v4(batchSize);
+
+    for (size_t j = 0; j < batchSize; j++) {
+      v1[j] = signed64(e);
+      v2[j] = signed32(e);
+      v3[j] = unsigned64(e);
+      v4[j] = unsigned32(e);
+    }
+
+    secSigned64IntBatch int1(v1, partyId);
+    secSigned32IntBatch int2(v2, partyId);
+    pubSigned64IntBatch int3(v1);
+    pubSigned32IntBatch int4(v2);
+    secUnsigned64IntBatch int5(v3, partyId);
+    secUnsigned32IntBatch int6(v4, partyId);
+    pubUnsigned64IntBatch int7(v3);
+    pubUnsigned32IntBatch int8(v4);
+
+    runCastBatchTest<
+        true,
+        secSigned64IntBatch,
+        int64_t,
+        char,
+        short,
+        int32_t,
+        int64_t>(int1, v1);
+    runCastBatchTest<
+        true,
+        secSigned32IntBatch,
+        int64_t,
+        char,
+        short,
+        int32_t,
+        int64_t>(int2, v2);
+    runCastBatchTest<
+        false,
+        pubSigned64IntBatch,
+        int64_t,
+        char,
+        short,
+        int32_t,
+        int64_t>(int3, v1);
+    runCastBatchTest<
+        false,
+        pubSigned32IntBatch,
+        int64_t,
+        char,
+        short,
+        int32_t,
+        int64_t>(int4, v2);
+    runCastBatchTest<
+        true,
+        secUnsigned64IntBatch,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int5, v3);
+    // broken on casting 32 bit -> 64 bit
+    runCastBatchTest<
+        true,
+        secUnsigned32IntBatch,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int6, v4);
+    runCastBatchTest<
+        false,
+        pubUnsigned64IntBatch,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int7, v3);
+    runCastBatchTest<
+        false,
+        pubUnsigned32IntBatch,
+        uint64_t,
+        unsigned char,
+        unsigned short,
+        uint32_t,
+        uint64_t>(int8, v4);
+  }
+}
+
 TEST(IntTest, testMux) {
   const int8_t width = 64;
 
@@ -1699,9 +2008,9 @@ TEST(IntTest, testAbs) {
     EXPECT_EQ(r2.getValue(), std::abs(v));
   }
 
-  // Because we use 2's complement to represent a signed integer, given width X,
-  // the lower bound of the integer is -2^(X - 1) while the upper bound
-  // is 2^(X - 1) - 1. Therefore, for the smallest negative number, we cannot
+  // Because we use 2's complement to represent a signed integer, given width
+  // X, the lower bound of the integer is -2^(X - 1) while the upper bound is
+  // 2^(X - 1) - 1. Therefore, for the smallest negative number, we cannot
   // convert it to positive due to overflow. The following test case proves
   // that.
   int v = -32;

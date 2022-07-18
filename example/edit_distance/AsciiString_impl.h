@@ -116,6 +116,7 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::openToParty(
     int partyId) const {
   static_assert(isSecret, "No need to open a public value");
   AsciiString<maxWidth, false, schedulerId, usingBatch> rst;
+  rst.batchSize_ = batchSize_;
   for (size_t i = 0; i < maxWidth; i++) {
     rst.data_[i] = data_.at(i).openToParty(partyId);
   }
@@ -245,6 +246,7 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>
 AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::toUpperCase() const {
   if constexpr (usingBatch) {
     AsciiString<maxWidth, isSecret, schedulerId, usingBatch> rst;
+    rst.batchSize_ = batchSize_;
     std::vector<int64_t> v1(batchSize_, 'a');
     std::vector<int64_t> v2(batchSize_, 'z');
     std::vector<int64_t> v3(batchSize_, 0);
