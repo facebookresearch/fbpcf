@@ -187,6 +187,9 @@ class Int {
     return data_[index];
   }
 
+  template <int8_t newWidth>
+  Int<isSigned, newWidth, isSecret, schedulerId, usingBatch> cast() const;
+
   /**
    * Create a new integer that will carry the plaintext signal of this bit.
    * However only party with partyId will receive the actual value, other
@@ -273,11 +276,14 @@ class Int {
 
   std::array<Bit<isSecret, schedulerId, usingBatch>, width> data_;
 
+  size_t batchSize_;
+
   // a uint64_t integer such that the last width bits are 1. Written in this
   // format to prevent overflow when width = 64
   static const uint64_t kMask = ((((uint64_t)1 << (width - 1)) - 1) << 1) + 1;
 
-  friend class Int<isSigned, width, !isSecret, schedulerId, usingBatch>;
+  template <bool, int8_t, bool, int, bool>
+  friend class Int;
 };
 
 // this struct works as a helper to build a more readable frontend
