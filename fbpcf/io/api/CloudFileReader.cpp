@@ -6,11 +6,15 @@
  */
 
 #include "fbpcf/io/api/CloudFileReader.h"
+
 #include <cstddef>
 #include <string>
 #include <vector>
+
+#include <folly/Format.h>
+
 #include "fbpcf/exception/AwsException.h"
-#include "folly/Format.h"
+#include "fbpcf/exception/GcpException.h"
 
 namespace fbpcf::io {
 
@@ -23,8 +27,9 @@ int CloudFileReader::close() {
 }
 
 size_t CloudFileReader::read(std::vector<char>& buf) {
+  auto storage = cloudio::getCloudStorageServiceString(filePath_);
   try {
-    XLOG(INFO) << "Start reading bytes from S3.\n"
+    XLOG(INFO) << "Start reading bytes from " << storage << ".\n"
                << "Current position/file length: " << currentPosition_ << "/"
                << fileLength_ << "\n"
                << "The buf size: " << buf.size();
@@ -44,6 +49,11 @@ size_t CloudFileReader::read(std::vector<char>& buf) {
     // we will throw AwsException (e.g. "InvalidRange").
     throw fbpcf::PcfException(
         folly::sformat("Exception from AWS: {}", e.what()));
+  } catch (GcpException& e) {
+    // If it fails to get object from GCS,
+    // we will throw GcsException (e.g. "InvalidRange").
+    throw fbpcf::PcfException(
+        folly::sformat("Exception from GCP: {}", e.what()));
   } catch (std::exception& e) {
     throw fbpcf::PcfException(folly::sformat("Exception: {}", e.what()));
   }

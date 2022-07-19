@@ -6,7 +6,11 @@
  */
 
 #include "fbpcf/io/cloud_util/CloudFileUtil.h"
+
+#include <string>
+
 #include <re2/re2.h>
+
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/PcfException.h"
 #include "fbpcf/gcp/GCSUtil.h"
@@ -82,4 +86,27 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
   }
 }
 
+std::string getCloudProviderString(const std::string& filePath) {
+  std::string provider = "";
+  if (getCloudFileType(filePath) == CloudFileType::S3) {
+    provider = "AWS";
+  }
+
+  if (getCloudFileType(filePath) == CloudFileType::GCS) {
+    provider = "GCP";
+  }
+  return provider;
+}
+
+std::string getCloudStorageServiceString(const std::string& filePath) {
+  std::string filetype = "";
+  if (getCloudFileType(filePath) == CloudFileType::S3) {
+    filetype = "S3";
+  }
+
+  if (getCloudFileType(filePath) == CloudFileType::GCS) {
+    filetype = "GCS";
+  }
+  return filetype;
+}
 } // namespace fbpcf::cloudio
