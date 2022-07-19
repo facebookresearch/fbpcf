@@ -25,7 +25,16 @@ inline void testVectorEq(
     const std::vector<T>& right) {
   ASSERT_EQ(left.size(), right.size());
   for (size_t i = 0; i < left.size(); i++) {
-    EXPECT_EQ(left.at(i), right.at(i));
+    EXPECT_EQ(left.at(i), right.at(i)) << "at position: " << i;
+  }
+}
+
+template <typename T, size_t size>
+inline void testArrayEq(
+    const std::array<T, size>& left,
+    const std::array<T, size>& right) {
+  for (size_t i = 0; i < left.size(); i++) {
+    EXPECT_EQ(left.at(i), right.at(i)) << "at position: " << i;
   }
 }
 
