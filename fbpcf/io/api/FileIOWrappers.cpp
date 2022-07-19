@@ -13,6 +13,7 @@
 #include "fbpcf/io/api/FileIOWrappers.h"
 #include "fbpcf/io/api/FileReader.h"
 #include "fbpcf/io/api/FileWriter.h"
+#include "fbpcf/io/api/IOUtils.h"
 
 namespace fbpcf::io {
 
@@ -73,42 +74,16 @@ bool FileIOWrappers::readCsv(
       std::move(inlineReader), kBufferedReaderChunkSize);
 
   std::string line = inlineBufferedReader->readLine();
-  auto header = splitByComma(line);
+  auto header = IOUtils::splitByComma(line);
   processHeader(header);
 
   while (!inlineBufferedReader->eof()) {
-    // Split on commas, but if it looks like we're reading an array
-    // like `[1, 2, 3]`, take the whole array
     line = inlineBufferedReader->readLine();
-    auto parts = splitByComma(line);
+    auto parts = IOUtils::splitByComma(line);
     readLine(header, parts);
   }
   inlineBufferedReader->close();
   return true;
-}
-
-const std::vector<std::string> FileIOWrappers::split(
-    std::string& str,
-    const std::string& delim) {
-  // Preprocessing step: Remove spaces if any
-  str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
-  std::vector<std::string> tokens;
-  re2::RE2 rgx{delim};
-  re2::StringPiece input{str}; // Wrap a StringPiece around it
-
-  std::string token;
-  while (RE2::Consume(&input, rgx, &token)) {
-    tokens.push_back(token);
-  }
-  return tokens;
-}
-
-const std::vector<std::string> FileIOWrappers::splitByComma(std::string& str) {
-  // split internally uses RE2 which relies on
-  // consuming patterns. The pattern here indicates
-  // it will get all the non commas [^,]. The surrounding () makes it
-  // a capture group. ,? means there may or may not be a comma
-  return split(str, "([^,]+),?");
 }
 
 } // namespace fbpcf::io

@@ -49,15 +49,6 @@ class FileIOWrappers {
           const std::vector<std::string>& parts)> readLine,
       std::function<void(const std::vector<std::string>&)> processHeader =
           [](auto) {});
-
- private:
-  // Split an input string into component pieces given a delimiter
-  static const std::vector<std::string> split(
-      std::string& str,
-      const std::string& delim);
-
-  // Same as split, but specifically for comma delimiters.
-  static const std::vector<std::string> splitByComma(std::string& str);
 };
 
 } // namespace fbpcf::io
