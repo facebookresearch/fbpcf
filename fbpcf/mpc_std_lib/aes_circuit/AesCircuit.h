@@ -21,6 +21,10 @@ class AesCircuit : public IAesCircuit<BitType> {
   std::vector<BitType> encrypt_impl(
       const std::vector<BitType>& plaintext,
       const std::vector<BitType>& expandedEncKey) const;
+  void sharedSBoxInPlace(
+      const std::array<BitType, 28>& T,
+      const BitType& D,
+      std::array<BitType, 64>& M) const;
 
   using ByteType = std::array<BitType, 8>;
   using WordType = std::array<ByteType, 4>;
@@ -45,8 +49,10 @@ class AesCircuit : public IAesCircuit<BitType> {
   void inverseMixColumnsInPlace(WordType& src) const;
 
   void shiftRowInPlace(WordType& src, int8_t offset);
+
+#ifdef AES_CIRCUIT_TEST_FRIENDS
+  AES_CIRCUIT_TEST_FRIENDS;
+#endif
 };
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
-
-#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit_impl.h"

@@ -9,13 +9,20 @@
 #include <gtest/gtest.h>
 #include <array>
 #include <cmath>
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <random>
 #include <unordered_map>
 
+#define AES_CIRCUIT_TEST_FRIENDS                         \
+  friend class AesCircuitSBoxTestSuite;                  \
+  FRIEND_TEST(AesCircuitSBoxTestSuite, SBoxInplaceTest); \
+  FRIEND_TEST(AesCircuitSBoxTestSuite, InverseSBoxInplaceTest);
+
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit_impl.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/DummyAesCircuitFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuit.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
@@ -49,6 +56,13 @@ class AesCircuitTests : public AesCircuit<BitType> {
     }
   }
 };
+
+void intToBinaryArray(unsigned int n, std::array<bool, 8>& array) {
+  for (unsigned int i = 0; i != 8; ++i) {
+    array[7 - i] = n & 1;
+    n = n >> 1;
+  }
+}
 
 std::vector<bool> generateRandomPlaintext(int size = 128) {
   std::random_device rd;
@@ -84,5 +98,57 @@ TEST(AesCircuitTest, testShiftRowInPlace) {
   AesCircuitTests<bool> test;
   test.testShiftRowInPlace(plaintext);
 }
+
+class AesCircuitSBoxTestSuite
+    : public ::testing::TestWithParam<std::tuple<uint8_t, uint8_t>> {};
+
+TEST_P(AesCircuitSBoxTestSuite, SBoxInplaceTest) {
+  AesCircuit<bool> aes;
+  std::array<bool, 8> result;
+  std::array<bool, 8> expectedResult;
+  uint8_t input = std::get<0>(GetParam());
+  uint8_t expectedOutput = std::get<1>(GetParam());
+  intToBinaryArray(input, result);
+  intToBinaryArray(expectedOutput, expectedResult);
+
+  aes.sBoxInPlace(result);
+
+  testArrayEq(expectedResult, result);
+}
+
+TEST_P(AesCircuitSBoxTestSuite, InverseSBoxInplaceTest) {
+  AesCircuit<bool> aes;
+  std::array<bool, 8> result;
+  std::array<bool, 8> expectedResult;
+  uint8_t input = std::get<1>(GetParam());
+  uint8_t expectedOutput = std::get<0>(GetParam());
+  intToBinaryArray(input, result);
+  intToBinaryArray(expectedOutput, expectedResult);
+
+  aes.inverseSBoxInPlace(result);
+
+  testArrayEq(expectedResult, result);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    SBoxTests,
+    AesCircuitSBoxTestSuite,
+    ::testing::Values(
+        std::make_tuple(0x00, 0x63),
+        std::make_tuple(0x11, 0x82),
+        std::make_tuple(0x22, 0x93),
+        std::make_tuple(0x33, 0xC3),
+        std::make_tuple(0x44, 0x1B),
+        std::make_tuple(0x55, 0xFC),
+        std::make_tuple(0x66, 0x33),
+        std::make_tuple(0x77, 0xF5),
+        std::make_tuple(0x88, 0xC4),
+        std::make_tuple(0x99, 0xEE),
+        std::make_tuple(0xAA, 0xAC),
+        std::make_tuple(0xBB, 0xEA),
+        std::make_tuple(0xCC, 0x4B),
+        std::make_tuple(0xDD, 0xC1),
+        std::make_tuple(0xEE, 0x28),
+        std::make_tuple(0xFF, 0x16)));
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
