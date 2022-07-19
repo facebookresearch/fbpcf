@@ -17,4 +17,6 @@ CloudFileType getCloudFileType(const std::string& filePath);
 std::unique_ptr<IFileReader> getCloudFileReader(const std::string& filePath);
 std::unique_ptr<IFileUploader> getCloudFileUploader(
     const std::string& filePath);
+std::string getCloudProviderString(const std::string& filePath);
+std::string getCloudStorageServiceString(const std::string& filePath);
 } // namespace fbpcf::cloudio
