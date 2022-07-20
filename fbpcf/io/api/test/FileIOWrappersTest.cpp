@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/io/api/FileIOWrappers.h"
+#include <fbpcf/test/TestHelper.h>
 #include <folly/Format.h>
 #include <gtest/gtest.h>
 #include <stdio.h>
@@ -66,6 +67,33 @@ TEST(FileIOWrappersTest, testReadFile) {
       "\n"
       "last line here, don't miss me ~~\n";
   EXPECT_EQ(content, expectedContent);
+}
+
+TEST(FileIOWrappersTest, testReadCSV) {
+  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
+  std::string fileToRead = baseDir + "data/file_io_wrappers_read_csv_test.csv";
+
+  std::vector<std::vector<std::string>> csvContents;
+
+  fbpcf::io::FileIOWrappers::readCsv(
+      fileToRead,
+      [&csvContents](
+          const std::vector<std::string>& header,
+          const std::vector<std::string>& values) {
+        csvContents.push_back(values);
+      });
+
+  std::vector<std::vector<std::string>> expected = {
+      {"Paul", "35", "Programmer"},
+      {"", "13", ""},
+      {""},
+      {"Bill", "", "Lawyer"}};
+
+  EXPECT_EQ(csvContents.size(), expected.size());
+
+  for (int i = 0; i < csvContents.size(); i++) {
+    testVectorEq(csvContents[i], expected[i]);
+  }
 }
 
 } // namespace fbpcf::io
