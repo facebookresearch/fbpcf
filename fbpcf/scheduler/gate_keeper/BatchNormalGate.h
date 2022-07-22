@@ -10,31 +10,31 @@
 #include <cstdint>
 #include <map>
 
-#include "fbpcf/scheduler/gate_keeper/INormalGate.h"
+#include <fbpcf/scheduler/IScheduler.h>
+#include <fbpcf/scheduler/gate_keeper/INormalGate.h>
 
 namespace fbpcf::scheduler {
 
-template <IScheduler::WireType T>
-class BatchNormalGate final : public INormalGate<T> {
+class BatchNormalGate final : public INormalGate {
  public:
-  using typename INormalGate<T>::GateType;
-  using INormalGate<T>::gateType_;
-  using INormalGate<T>::wireID_;
-  using INormalGate<T>::left_;
-  using INormalGate<T>::right_;
-  using INormalGate<T>::partyID_;
-  using INormalGate<T>::scheduledResultIndex_;
-  using INormalGate<T>::numberOfResults_;
-  using INormalGate<T>::wireKeeper_;
+  using INormalGate::gateType_;
+  using INormalGate::left_;
+  using INormalGate::numberOfResults_;
+  using INormalGate::partyID_;
+  using INormalGate::right_;
+  using INormalGate::scheduledResultIndex_;
+  using INormalGate::wireID_;
+  using INormalGate::wireKeeper_;
+  using typename INormalGate::GateType;
   BatchNormalGate(
       GateType gateType,
-      IScheduler::WireId<T> wireID,
-      IScheduler::WireId<T> left,
-      IScheduler::WireId<T> right,
+      IScheduler::WireId<IScheduler::Boolean> wireID,
+      IScheduler::WireId<IScheduler::Boolean> left,
+      IScheduler::WireId<IScheduler::Boolean> right,
       int partyID,
       uint32_t numberOfResults,
       IWireKeeper& wireKeeper)
-      : INormalGate<T>{
+      : INormalGate{
             gateType,
             wireID,
             left,
@@ -159,13 +159,15 @@ class BatchNormalGate final : public INormalGate<T> {
     }
   }
 
-  void increaseReferenceCount(IScheduler::WireId<T> wire) override {
+  void increaseReferenceCount(
+      IScheduler::WireId<IScheduler::Boolean> wire) override {
     if (!wire.isEmpty()) {
       wireKeeper_.increaseBatchReferenceCount(wire);
     }
   }
 
-  void decreaseReferenceCount(IScheduler::WireId<T> wire) override {
+  void decreaseReferenceCount(
+      IScheduler::WireId<IScheduler::Boolean> wire) override {
     if (!wire.isEmpty()) {
       wireKeeper_.decreaseBatchReferenceCount(wire);
     }

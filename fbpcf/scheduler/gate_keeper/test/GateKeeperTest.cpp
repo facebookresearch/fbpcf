@@ -39,8 +39,7 @@ void testLevel(
   int rebatchingGateIndex = 0;
   for (auto i = 0; i < level.size(); ++i) {
     IGate* gate = level.at(i).get();
-    INormalGate<IScheduler::Boolean>* normalGate =
-        dynamic_cast<INormalGate<IScheduler::Boolean>*>(gate);
+    INormalGate* normalGate = dynamic_cast<INormalGate*>(gate);
     ICompositeGate* compositeGate = dynamic_cast<ICompositeGate*>(gate);
     RebatchingBooleanGate* rebatchingBooleanGate =
         dynamic_cast<RebatchingBooleanGate*>(gate);
@@ -93,8 +92,8 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
   auto wire2 = gateKeeper->inputGate(false);
 
   // Level 1
-  auto wire3 = gateKeeper->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, wire1, wire2);
+  auto wire3 =
+      gateKeeper->normalGate(INormalGate::GateType::NonFreeAnd, wire1, wire2);
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 0);
 
@@ -103,20 +102,20 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   // Level 2
   auto wire4 = gateKeeper->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR, wire1, wire2);
+      INormalGate::GateType::AsymmetricXOR, wire1, wire2);
 
   // Level 3
   auto wire5 = gateKeeper->outputGate(wire4, 0);
   auto wire6 = gateKeeper->outputGate(wire3, 1);
 
   // Level 5
-  auto wire7 = gateKeeper->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, wire3, wire6);
+  auto wire7 =
+      gateKeeper->normalGate(INormalGate::GateType::NonFreeAnd, wire3, wire6);
 
   // Level 2
   auto wire8 = gateKeeper->inputGate(true);
-  auto wire9 = gateKeeper->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricNot, wire4);
+  auto wire9 =
+      gateKeeper->normalGate(INormalGate::GateType::AsymmetricNot, wire4);
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 2);
 
@@ -139,7 +138,7 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   // Level 7
   wire3 = gateKeeper->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, wire1, wire2);
+      INormalGate::GateType::NonFreeAnd, wire1, wire2);
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 6);
 
@@ -152,7 +151,7 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   // Level 8
   wire4 = gateKeeper->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR, wire1, wire2);
+      INormalGate::GateType::AsymmetricXOR, wire1, wire2);
 
   // Level 9
   wire5 = gateKeeper->outputGateBatch(wire4, 0);
@@ -160,12 +159,12 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
 
   // Level 11
   wire7 = gateKeeper->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd, wire3, wire6);
+      INormalGate::GateType::NonFreeAnd, wire3, wire6);
 
   // Level 8
   wire8 = gateKeeper->inputGateBatch({true, true});
-  wire9 = gateKeeper->normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricNot, wire4);
+  wire9 =
+      gateKeeper->normalGateBatch(INormalGate::GateType::AsymmetricNot, wire4);
 
   EXPECT_EQ(gateKeeper->getFirstUnexecutedLevel(), 8);
 
@@ -207,9 +206,7 @@ TEST(GateKeeperTest, TestCompositeGates) {
 
   // level 2
   auto leftWire2 = gateKeeper->normalGate(
-      INormalGate<IScheduler::Boolean>::GateType::AsymmetricXOR,
-      leftWire,
-      wires2[0]);
+      INormalGate::GateType::AsymmetricXOR, leftWire, wires2[0]);
 
   std::vector<IScheduler::WireId<IScheduler::Boolean>> rightWires2;
   auto lastLevelNotInput = leftWire;
@@ -217,13 +214,10 @@ TEST(GateKeeperTest, TestCompositeGates) {
   for (int i = 0; i < 64; ++i) {
     // level 2i + 2
     auto notGateWire = gateKeeper->normalGate(
-        INormalGate<IScheduler::Boolean>::GateType::SymmetricNot,
-        lastLevelNotInput);
+        INormalGate::GateType::SymmetricNot, lastLevelNotInput);
     // level 2i + 3
     auto andGateWire = gateKeeper->normalGate(
-        INormalGate<IScheduler::Boolean>::GateType::NonFreeAnd,
-        leftWire2,
-        notGateWire);
+        INormalGate::GateType::NonFreeAnd, leftWire2, notGateWire);
 
     lastLevelNotInput = andGateWire;
     rightWires2.push_back(notGateWire);

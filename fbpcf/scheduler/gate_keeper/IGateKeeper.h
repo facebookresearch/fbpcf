@@ -47,7 +47,7 @@ class IGateKeeper {
   // Create a unary/binary gate (e.g. AND, XOR, NOT) and return its output wire
   // ID.
   virtual IScheduler::WireId<IScheduler::Boolean> normalGate(
-      INormalGate<IScheduler::Boolean>::GateType gateType,
+      INormalGate::GateType gateType,
       IScheduler::WireId<IScheduler::Boolean> left,
       IScheduler::WireId<IScheduler::Boolean> right =
           IScheduler::WireId<IScheduler::Boolean>()) = 0;
@@ -55,7 +55,7 @@ class IGateKeeper {
   // Create a batch unary/binary gate (e.g. AND, XOR, NOT) and return its output
   // wire ID.
   virtual IScheduler::WireId<IScheduler::Boolean> normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType gateType,
+      INormalGate::GateType gateType,
       IScheduler::WireId<IScheduler::Boolean> left,
       IScheduler::WireId<IScheduler::Boolean> right =
           IScheduler::WireId<IScheduler::Boolean>()) = 0;
