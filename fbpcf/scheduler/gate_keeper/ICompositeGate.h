@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <exception>
 #include <map>
 #include <stdexcept>
@@ -82,14 +83,13 @@ class ICompositeGate : public IGate {
   // Run or schedule the computation for this gate.
   virtual void compute(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& secretSharesByParty) override = 0;
+      std::map<int64_t, IGate::Secrets>& secretSharesByParty) override = 0;
 
   // For non-free gates, get the result of the computation that was scheduled
   // and store it on the appropriate wire.
   virtual void collectScheduledResult(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& revealedSecretsByParty)
-      override = 0;
+      std::map<int64_t, IGate::Secrets>& revealedSecretsByParty) override = 0;
 
   uint32_t getNumberOfResults() const override {
     return numberOfResults_;
