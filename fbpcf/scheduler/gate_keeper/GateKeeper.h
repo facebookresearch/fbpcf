@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <stdexcept>
 
+#include <fbpcf/scheduler/IScheduler.h>
 #include <fbpcf/scheduler/gate_keeper/INormalGate.h>
 #include "fbpcf/scheduler/gate_keeper/IGateKeeper.h"
 
@@ -29,8 +31,20 @@ class GateKeeper : public IGateKeeper {
   /**
    * @inherit doc
    */
+  IScheduler::WireId<IScheduler::Arithmetic> inputGate(
+      IntType<false> initialValue) override;
+
+  /**
+   * @inherit doc
+   */
   IScheduler::WireId<IScheduler::Boolean> inputGateBatch(
       BoolType<true> initialValue) override;
+
+  /**
+   * @inherit doc
+   */
+  IScheduler::WireId<IScheduler::Arithmetic> inputGateBatch(
+      IntType<true> initialValue) override;
 
   /**
    * @inherit doc
@@ -42,8 +56,22 @@ class GateKeeper : public IGateKeeper {
   /**
    * @inherit doc
    */
+  IScheduler::WireId<IScheduler::Arithmetic> outputGate(
+      IScheduler::WireId<IScheduler::Arithmetic> src,
+      int partyID) override;
+
+  /**
+   * @inherit doc
+   */
   IScheduler::WireId<IScheduler::Boolean> outputGateBatch(
       IScheduler::WireId<IScheduler::Boolean> src,
+      int partyID) override;
+
+  /**
+   * @inherit doc
+   */
+  IScheduler::WireId<IScheduler::Arithmetic> outputGateBatch(
+      IScheduler::WireId<IScheduler::Arithmetic> src,
       int partyID) override;
 
   /**
@@ -67,6 +95,24 @@ class GateKeeper : public IGateKeeper {
   /**
    * @inherit doc
    */
+  IScheduler::WireId<IScheduler::Arithmetic> arithmeticGate(
+      IArithmeticGate::GateType gateType,
+      IScheduler::WireId<IScheduler::Arithmetic> left,
+      IScheduler::WireId<IScheduler::Arithmetic> right =
+          IScheduler::WireId<IScheduler::Arithmetic>()) override;
+
+  /**
+   * @inherit doc
+   */
+  IScheduler::WireId<IScheduler::Arithmetic> arithmeticGateBatch(
+      IArithmeticGate::GateType gateType,
+      IScheduler::WireId<IScheduler::Arithmetic> left,
+      IScheduler::WireId<IScheduler::Arithmetic> right =
+          IScheduler::WireId<IScheduler::Arithmetic>()) override;
+
+  /**
+   * @inherit doc
+   */
   std::vector<IScheduler::WireId<IScheduler::Boolean>> compositeGate(
       ICompositeGate::GateType gateType,
       IScheduler::WireId<IScheduler::Boolean> left,
@@ -80,11 +126,11 @@ class GateKeeper : public IGateKeeper {
       IScheduler::WireId<IScheduler::Boolean> left,
       std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) override;
 
-  // band a number of batches into one batch.
+  // band a number of boolean batches into one batch.
   IScheduler::WireId<IScheduler::Boolean> batchingUp(
       std::vector<IScheduler::WireId<IScheduler::Boolean>> src) override;
 
-  // decompose a batch of values into several smaller batches.
+  // decompose a batch of boolean values into several smaller batches.
   std::vector<IScheduler::WireId<IScheduler::Boolean>> unbatching(
       IScheduler::WireId<IScheduler::Boolean> src,
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) override;
@@ -106,10 +152,8 @@ class GateKeeper : public IGateKeeper {
 
  private:
   template <bool isCompositeWire>
-  using GateClass = typename std::conditional<
-      isCompositeWire,
-      ICompositeGate,
-      INormalGate>::type;
+  using GateClass = typename std::
+      conditional<isCompositeWire, ICompositeGate, INormalGate>::type;
 
   template <bool isCompositeWire>
   using GateType = typename std::conditional<
