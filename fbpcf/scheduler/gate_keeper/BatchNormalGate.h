@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
 
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
@@ -54,7 +55,7 @@ class BatchNormalGate final : public INormalGate<T> {
 
   void compute(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& secretSharesByParty) override {
+      std::map<int64_t, IGate::Secrets>& secretSharesByParty) override {
     switch (gateType_) {
         // Free gates
       case GateType::AsymmetricNot: {
@@ -106,9 +107,11 @@ class BatchNormalGate final : public INormalGate<T> {
       // Non-free gates
       case GateType::Output: {
         if (secretSharesByParty.find(partyID_) == secretSharesByParty.end()) {
-          secretSharesByParty.emplace(partyID_, std::vector<bool>());
+          secretSharesByParty.emplace(
+              partyID_,
+              IGate::Secrets(std::vector<bool>(), std::vector<uint64_t>()));
         }
-        auto& secretShares = secretSharesByParty.at(partyID_);
+        auto& secretShares = secretSharesByParty.at(partyID_).booleanSecrets;
         scheduledResultIndex_ = secretShares.size();
 
         auto values = wireKeeper_.getBatchBooleanValue(left_);
@@ -134,7 +137,7 @@ class BatchNormalGate final : public INormalGate<T> {
 
   void collectScheduledResult(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& revealedSecretsByParty) override {
+      std::map<int64_t, IGate::Secrets>& revealedSecretsByParty) override {
     switch (gateType_) {
       case GateType::NonFreeAnd: {
         wireKeeper_.setBatchBooleanValue(
@@ -144,7 +147,8 @@ class BatchNormalGate final : public INormalGate<T> {
 
       case GateType::Output: {
         auto iterator =
-            revealedSecretsByParty.at(partyID_).begin() + scheduledResultIndex_;
+            revealedSecretsByParty.at(partyID_).booleanSecrets.begin() +
+            scheduledResultIndex_;
         std::vector<bool> results(iterator, iterator + numberOfResults_);
         wireKeeper_.setBatchBooleanValue(wireID_, results);
         break;

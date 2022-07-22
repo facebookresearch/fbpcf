@@ -7,6 +7,7 @@
 
 #include "fbpcf/scheduler/LazyScheduler.h"
 
+#include <cstdint>
 #include <exception>
 #include <map>
 #include <stdexcept>
@@ -376,7 +377,7 @@ void LazyScheduler::executeOneLevel() {
   auto isLevelFree = IGateKeeper::isLevelFree(level);
 
   // Compute free or non-free gates
-  std::map<int64_t, std::vector<bool>> secretSharesByParty;
+  std::map<int64_t, IGate::Secrets> secretSharesByParty;
   for (auto& gate : gates) {
     gate->compute(*engine_, secretSharesByParty);
 
@@ -391,10 +392,13 @@ void LazyScheduler::executeOneLevel() {
     // Execute AND gates and share secrets
     engine_->executeScheduledAND();
 
-    std::map<int64_t, std::vector<bool>> revealedSecretsByParty;
+    std::map<int64_t, IGate::Secrets> revealedSecretsByParty;
     for (auto [party, secretShares] : secretSharesByParty) {
       revealedSecretsByParty.emplace(
-          party, engine_->revealToParty(party, secretShares));
+          party,
+          IGate::Secrets(
+              engine_->revealToParty(party, secretShares.booleanSecrets),
+              std::vector<uint64_t>()));
     }
 
     // Update non-free gates

@@ -45,7 +45,7 @@ class BatchCompositeGate final : public ICompositeGate {
 
   void compute(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& /*secretSharesByParty*/) override {
+      std::map<int64_t, IGate::Secrets>& /*secretSharesByParty*/) override {
     switch (gateType_) {
         // Free gates
       case GateType::FreeAnd: {
@@ -76,8 +76,7 @@ class BatchCompositeGate final : public ICompositeGate {
 
   void collectScheduledResult(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& /*revealedSecretsByParty*/)
-      override {
+      std::map<int64_t, IGate::Secrets>& /*revealedSecretsByParty*/) override {
     std::vector<std::vector<bool>> result;
     switch (gateType_) {
       case GateType::NonFreeAnd: {
