@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <stdexcept>
 #include <string>
@@ -74,9 +75,8 @@ class RebatchingBooleanGate : public IGate {
     }
   }
 
-  void compute(
-      engine::ISecretShareEngine&,
-      std::map<int64_t, std::vector<bool>>&) override {
+  void compute(engine::ISecretShareEngine&, std::map<int64_t, IGate::Secrets>&)
+      override {
     switch (gateType_) {
       case GateType::Batching:
         executeBatchingGate();
@@ -89,7 +89,7 @@ class RebatchingBooleanGate : public IGate {
 
   void collectScheduledResult(
       engine::ISecretShareEngine&,
-      std::map<int64_t, std::vector<bool>>&) override {}
+      std::map<int64_t, IGate::Secrets>&) override {}
 
   uint32_t getNumberOfResults() const override {
     return 0;

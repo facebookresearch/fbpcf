@@ -7,10 +7,12 @@
 
 #pragma once
 
+#include <cstdint>
 #include <exception>
 #include <map>
 #include <stdexcept>
 
+#include <fbpcf/scheduler/gate_keeper/IGate.h>
 #include "fbpcf/scheduler/gate_keeper/ICompositeGate.h"
 
 namespace fbpcf::scheduler {
@@ -51,7 +53,7 @@ class CompositeGate final : public ICompositeGate {
 
   void compute(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& /*secretSharesByParty*/) override {
+      std::map<int64_t, IGate::Secrets>& /*secretSharesByParty*/) override {
     switch (gateType_) {
         // Free gates
       case GateType::FreeAnd:
@@ -78,8 +80,7 @@ class CompositeGate final : public ICompositeGate {
 
   void collectScheduledResult(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& /*revealedSecretsByParty*/)
-      override {
+      std::map<int64_t, IGate::Secrets>& /*revealedSecretsByParty*/) override {
     std::vector<bool> result;
     switch (gateType_) {
       case GateType::NonFreeAnd:
