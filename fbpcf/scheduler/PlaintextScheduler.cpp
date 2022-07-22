@@ -333,7 +333,7 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>>
 PlaintextScheduler::unbatching(
     WireId<Boolean> src,
     std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
-  auto& batch = wireKeeper_->getBatchBooleanValue(src);
+  auto batch = wireKeeper_->getBatchBooleanValue(src);
   size_t index = 0;
   std::vector<IScheduler::WireId<IScheduler::Boolean>> rst(
       unbatchingStrategy->size());
@@ -356,7 +356,7 @@ PlaintextScheduler::validateAndComputeBatchCompositeAND(
     IScheduler::WireId<IScheduler::Boolean> left,
     std::vector<IScheduler::WireId<IScheduler::Boolean>> rights,
     uint64_t& gateCounter) {
-  auto& leftValue = wireKeeper_->getBatchBooleanValue(left);
+  auto leftValue = wireKeeper_->getBatchBooleanValue(left);
   std::vector<IScheduler::WireId<IScheduler::Boolean>> returnWires;
   for (auto rightWire : rights) {
     auto& rightValue = wireKeeper_->getBatchBooleanValue(rightWire);
