@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/scheduler/gate_keeper/GateKeeper.h"
+#include <fbpcf/scheduler/gate_keeper/INormalGate.h>
 #include <cstddef>
 #include <memory>
 #include "fbpcf/scheduler/IScheduler.h"
@@ -22,13 +23,12 @@ GateKeeper::GateKeeper(std::shared_ptr<IWireKeeper> wireKeeper)
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::inputGate(
     BoolType<false> initialValue) {
   auto level = getOutputLevel(
-      GateClass<false>::isFree(
-          INormalGate<IScheduler::Boolean>::GateType::Input),
+      GateClass<false>::isFree(INormalGate::GateType::Input),
       firstUnexecutedLevel_);
   auto outputWire = allocateNewWire(initialValue, level);
   addGate(
-      std::make_unique<NormalGate<IScheduler::Boolean>>(
-          INormalGate<IScheduler::Boolean>::GateType::Input,
+      std::make_unique<NormalGate>(
+          INormalGate::GateType::Input,
           outputWire,
           IScheduler::WireId<IScheduler::Boolean>(),
           IScheduler::WireId<IScheduler::Boolean>(),
@@ -42,14 +42,13 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::inputGateBatch(
     BoolType<true> initialValue) {
   auto size = initialValue.size();
   auto level = getOutputLevel(
-      GateClass<false>::isFree(
-          INormalGate<IScheduler::Boolean>::GateType::Input),
+      GateClass<false>::isFree(INormalGate::GateType::Input),
       firstUnexecutedLevel_);
 
   auto outputWire = allocateNewWire(initialValue, level);
   addGate(
-      std::make_unique<BatchNormalGate<IScheduler::Boolean>>(
-          INormalGate<IScheduler::Boolean>::GateType::Input,
+      std::make_unique<BatchNormalGate>(
+          INormalGate::GateType::Input,
           outputWire,
           IScheduler::WireId<IScheduler::Boolean>(),
           IScheduler::WireId<IScheduler::Boolean>(),
@@ -64,14 +63,13 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGate(
     IScheduler::WireId<IScheduler::Boolean> src,
     int partyID) {
   auto level = getOutputLevel(
-      GateClass<false>::isFree(
-          INormalGate<IScheduler::Boolean>::GateType::Output),
+      GateClass<false>::isFree(INormalGate::GateType::Output),
       getMaxLevel<false>(src));
   auto outputWire = allocateNewWire(false, level);
 
   addGate(
-      std::make_unique<NormalGate<IScheduler::Boolean>>(
-          INormalGate<IScheduler::Boolean>::GateType::Output,
+      std::make_unique<NormalGate>(
+          INormalGate::GateType::Output,
           outputWire,
           src,
           IScheduler::WireId<IScheduler::Boolean>(),
@@ -86,14 +84,13 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGateBatch(
     IScheduler::WireId<IScheduler::Boolean> src,
     int partyID) {
   auto level = getOutputLevel(
-      GateClass<false>::isFree(
-          INormalGate<IScheduler::Boolean>::GateType::Output),
+      GateClass<false>::isFree(INormalGate::GateType::Output),
       getMaxLevel<true>(src));
   auto outputWire = allocateNewWire(std::vector<bool>(), level);
 
   addGate(
-      std::make_unique<BatchNormalGate<IScheduler::Boolean>>(
-          INormalGate<IScheduler::Boolean>::GateType::Output,
+      std::make_unique<BatchNormalGate>(
+          INormalGate::GateType::Output,
           outputWire,
           src,
           IScheduler::WireId<IScheduler::Boolean>(),
@@ -106,7 +103,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGateBatch(
 }
 
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGate(
-    INormalGate<IScheduler::Boolean>::GateType gateType,
+    INormalGate::GateType gateType,
     IScheduler::WireId<IScheduler::Boolean> left,
     IScheduler::WireId<IScheduler::Boolean> right) {
   auto level = getOutputLevel(
@@ -115,7 +112,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGate(
   auto outputWire = allocateNewWire(false, level);
 
   addGate(
-      std::make_unique<NormalGate<IScheduler::Boolean>>(
+      std::make_unique<NormalGate>(
           gateType, outputWire, left, right, 0, *wireKeeper_),
       level);
 
@@ -123,7 +120,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGate(
 }
 
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGateBatch(
-    INormalGate<IScheduler::Boolean>::GateType gateType,
+    INormalGate::GateType gateType,
     IScheduler::WireId<IScheduler::Boolean> left,
     IScheduler::WireId<IScheduler::Boolean> right) {
   auto level = getOutputLevel(
@@ -132,7 +129,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGateBatch(
   auto outputWire = allocateNewWire(std::vector<bool>(), level);
 
   addGate(
-      std::make_unique<BatchNormalGate<IScheduler::Boolean>>(
+      std::make_unique<BatchNormalGate>(
           gateType, outputWire, left, right, 0, 0, *wireKeeper_),
       level);
 

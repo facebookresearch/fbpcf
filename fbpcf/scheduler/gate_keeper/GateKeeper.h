@@ -11,6 +11,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include <fbpcf/scheduler/gate_keeper/INormalGate.h>
 #include "fbpcf/scheduler/gate_keeper/IGateKeeper.h"
 
 namespace fbpcf::scheduler {
@@ -49,7 +50,7 @@ class GateKeeper : public IGateKeeper {
    * @inherit doc
    */
   IScheduler::WireId<IScheduler::Boolean> normalGate(
-      INormalGate<IScheduler::Boolean>::GateType gateType,
+      INormalGate::GateType gateType,
       IScheduler::WireId<IScheduler::Boolean> left,
       IScheduler::WireId<IScheduler::Boolean> right =
           IScheduler::WireId<IScheduler::Boolean>()) override;
@@ -58,7 +59,7 @@ class GateKeeper : public IGateKeeper {
    * @inherit doc
    */
   IScheduler::WireId<IScheduler::Boolean> normalGateBatch(
-      INormalGate<IScheduler::Boolean>::GateType gateType,
+      INormalGate::GateType gateType,
       IScheduler::WireId<IScheduler::Boolean> left,
       IScheduler::WireId<IScheduler::Boolean> right =
           IScheduler::WireId<IScheduler::Boolean>()) override;
@@ -108,13 +109,13 @@ class GateKeeper : public IGateKeeper {
   using GateClass = typename std::conditional<
       isCompositeWire,
       ICompositeGate,
-      INormalGate<IScheduler::Boolean>>::type;
+      INormalGate>::type;
 
   template <bool isCompositeWire>
   using GateType = typename std::conditional<
       isCompositeWire,
       ICompositeGate::GateType,
-      INormalGate<IScheduler::Boolean>::GateType>::type;
+      INormalGate::GateType>::type;
 
   template <bool isCompositeWire>
   using RightWireType = typename std::conditional<

@@ -20,7 +20,6 @@ namespace fbpcf::scheduler {
  * This class executes gates in a circuit. There are subclasses for batched and
  * non-batched gates.
  */
-template <IScheduler::WireType T>
 class INormalGate : public IGate {
  public:
   enum class GateType {
@@ -36,9 +35,9 @@ class INormalGate : public IGate {
 
   INormalGate(
       GateType gateType,
-      IScheduler::WireId<T> wireID,
-      IScheduler::WireId<T> left,
-      IScheduler::WireId<T> right,
+      IScheduler::WireId<IScheduler::Boolean> wireID,
+      IScheduler::WireId<IScheduler::Boolean> left,
+      IScheduler::WireId<IScheduler::Boolean> right,
       int partyID,
       uint32_t numberOfResults,
       IWireKeeper& wireKeeper)
@@ -84,7 +83,7 @@ class INormalGate : public IGate {
     }
   }
 
-  IScheduler::WireId<T> getWireId() const {
+  IScheduler::WireId<IScheduler::Boolean> getWireId() const {
     return wireID_;
   }
 
@@ -95,15 +94,15 @@ class INormalGate : public IGate {
 
  protected:
   GateType gateType_;
-  IScheduler::WireId<T> wireID_;
-  IScheduler::WireId<T> left_;
-  IScheduler::WireId<T> right_;
+  IScheduler::WireId<IScheduler::Boolean> wireID_;
+  IScheduler::WireId<IScheduler::Boolean> left_;
+  IScheduler::WireId<IScheduler::Boolean> right_;
   int partyID_;
   uint32_t scheduledResultIndex_;
   uint32_t numberOfResults_;
   IWireKeeper& wireKeeper_;
 
-  void copy(const INormalGate<T>& src) {
+  void copy(const INormalGate& src) {
     decreaseReferenceCount(wireID_);
     decreaseReferenceCount(left_);
     decreaseReferenceCount(right_);
@@ -119,7 +118,7 @@ class INormalGate : public IGate {
     increaseReferenceCount(right_);
   }
 
-  void move(INormalGate<T>&& src) {
+  void move(INormalGate&& src) {
     decreaseReferenceCount(wireID_);
     decreaseReferenceCount(left_);
     decreaseReferenceCount(right_);
@@ -131,12 +130,15 @@ class INormalGate : public IGate {
     scheduledResultIndex_ = src.scheduledResultIndex_;
     numberOfResults_ = src.numberOfResults_;
 
-    src.wireID_ = src.left_ = src.right_ = IScheduler::WireId<T>();
+    src.wireID_ = src.left_ = src.right_ =
+        IScheduler::WireId<IScheduler::Boolean>();
   }
 
-  virtual void increaseReferenceCount(IScheduler::WireId<T> wire) = 0;
+  virtual void increaseReferenceCount(
+      IScheduler::WireId<IScheduler::Boolean> wire) = 0;
 
-  virtual void decreaseReferenceCount(IScheduler::WireId<T> wire) = 0;
+  virtual void decreaseReferenceCount(
+      IScheduler::WireId<IScheduler::Boolean> wire) = 0;
 };
 
 } // namespace fbpcf::scheduler
