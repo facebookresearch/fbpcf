@@ -35,7 +35,8 @@ class FrontendBenchmark : public engine::util::NetworkedBenchmark {
  protected:
   void initSender() override {
     sender_ = std::make_unique<Game0>(
-        scheduler::createPlaintextScheduler<unsafe>(0, *agentFactory0_));
+        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+    // scheduler::createPlaintextScheduler<unsafe>(0, *agentFactory0_));
   }
 
   void runSender() override {
@@ -44,7 +45,8 @@ class FrontendBenchmark : public engine::util::NetworkedBenchmark {
 
   void initReceiver() override {
     receiver_ = std::make_unique<Game1>(
-        scheduler::createPlaintextScheduler<unsafe>(1, *agentFactory1_));
+        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+    // scheduler::createPlaintextScheduler<unsafe>(1, *agentFactory1_));
   }
 
   void runReceiver() override {

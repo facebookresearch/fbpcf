@@ -218,34 +218,6 @@ class Int {
   unbatching(std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
 
  private:
-  /**
-   * Traditional multiplexer algorithm.
-   */
-  template <bool isSecretChoice, bool isSecretOther>
-  Int<isSigned,
-      width,
-      isSecret || isSecretChoice || isSecretOther,
-      schedulerId,
-      usingBatch>
-  slowMux(
-      const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
-      const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>& other)
-      const;
-
-  /**
-   * Alternate version of multiplexer which uses composite AND to compute result
-   */
-  template <bool isSecretChoice, bool isSecretOther>
-  Int<isSigned,
-      width,
-      isSecret || isSecretChoice || isSecretOther,
-      schedulerId,
-      usingBatch>
-  fastMux(
-      const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
-      const Int<isSigned, width, isSecretOther, schedulerId, usingBatch>& other)
-      const;
-
   template <typename T>
   std::vector<UnitIntType> convertTo64BitIntVector(
       const std::vector<T>& src) const;

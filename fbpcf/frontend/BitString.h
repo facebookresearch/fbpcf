@@ -152,30 +152,6 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
 
   friend class BitString<!isSecret, schedulerId, usingBatch>;
 
-  /**
-   * Traditional multiplexer algorithm.
-   */
-  template <bool isSecretChoice, bool isSecretOther>
-  BitString<
-      isSecret || isSecretChoice || isSecretOther,
-      schedulerId,
-      usingBatch>
-  slowMux(
-      const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
-      const BitString<isSecretOther, schedulerId, usingBatch>& other) const;
-
-  /**
-   * Alternate version of multiplexer which uses composite AND to compute result
-   */
-  template <bool isSecretChoice, bool isSecretOther>
-  BitString<
-      isSecret || isSecretChoice || isSecretOther,
-      schedulerId,
-      usingBatch>
-  fastMux(
-      const Bit<isSecretChoice, schedulerId, usingBatch>& choice,
-      const BitString<isSecretOther, schedulerId, usingBatch>& other) const;
-
   static std::vector<std::vector<bool>> transposeVector(
       const std::vector<std::vector<bool>>& src);
 };
