@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
 
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
@@ -54,7 +55,7 @@ class NormalGate final : public INormalGate<T> {
 
   void compute(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& secretSharesByParty) override {
+      std::map<int64_t, IGate::Secrets>& secretSharesByParty) override {
     switch (gateType_) {
         // Free gates
       case GateType::AsymmetricNot:
@@ -99,9 +100,11 @@ class NormalGate final : public INormalGate<T> {
       // Non-free gates
       case GateType::Output: {
         if (secretSharesByParty.find(partyID_) == secretSharesByParty.end()) {
-          secretSharesByParty.emplace(partyID_, std::vector<bool>());
+          secretSharesByParty.emplace(
+              partyID_,
+              IGate::Secrets(std::vector<bool>(), std::vector<uint64_t>()));
         }
-        auto& secretShares = secretSharesByParty.at(partyID_);
+        auto& secretShares = secretSharesByParty.at(partyID_).booleanSecrets;
         scheduledResultIndex_ = secretShares.size();
         secretShares.push_back(wireKeeper_.getBooleanValue(left_));
         break;
@@ -117,7 +120,7 @@ class NormalGate final : public INormalGate<T> {
 
   void collectScheduledResult(
       engine::ISecretShareEngine& engine,
-      std::map<int64_t, std::vector<bool>>& revealedSecretsByParty) override {
+      std::map<int64_t, IGate::Secrets>& revealedSecretsByParty) override {
     switch (gateType_) {
       case GateType::NonFreeAnd:
         wireKeeper_.setBooleanValue(
@@ -127,7 +130,8 @@ class NormalGate final : public INormalGate<T> {
       case GateType::Output:
         wireKeeper_.setBooleanValue(
             wireID_,
-            revealedSecretsByParty.at(partyID_).at(scheduledResultIndex_));
+            revealedSecretsByParty.at(partyID_).booleanSecrets.at(
+                scheduledResultIndex_));
         break;
 
       default:
