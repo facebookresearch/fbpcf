@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <fbpcf/scheduler/gate_keeper/IGate.h>
+#include <vector>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/WireKeeper.h"
 #include "fbpcf/scheduler/gate_keeper/GateKeeper.h"
@@ -128,8 +129,10 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
   // Batching API
 
   // Level 6
-  wire1 = gateKeeper->inputGateBatch({true, false});
-  wire2 = gateKeeper->inputGateBatch({false, true});
+  auto w1 = std::vector<bool>(true, false);
+  auto w2 = std::vector<bool>(false, true);
+  wire1 = gateKeeper->inputGateBatch(w1);
+  wire2 = gateKeeper->inputGateBatch(w2);
 
   auto wire12 = gateKeeper->batchingUp({wire1, wire2});
   auto wire1And2 = gateKeeper->unbatching(
@@ -162,7 +165,8 @@ TEST(GateKeeperTest, TestAddAndRemoveGates) {
       INormalGate::GateType::NonFreeAnd, wire3, wire6);
 
   // Level 8
-  wire8 = gateKeeper->inputGateBatch({true, true});
+  auto w8 = std::vector<bool>(true, true);
+  wire8 = gateKeeper->inputGateBatch(w8);
   wire9 =
       gateKeeper->normalGateBatch(INormalGate::GateType::AsymmetricNot, wire4);
 

@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <cstdint>
 #include "fbpcf/scheduler/IScheduler.h"
+#include "fbpcf/scheduler/gate_keeper/IArithmeticGate.h"
 #include "fbpcf/scheduler/gate_keeper/ICompositeGate.h"
 #include "fbpcf/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
@@ -23,25 +25,46 @@ class IGateKeeper {
   template <bool usingBatch>
   using BoolType = typename std::
       conditional<usingBatch, const std::vector<bool>&, bool>::type;
+  template <bool usingBatch>
+  using IntType = typename std::
+      conditional<usingBatch, const std::vector<uint64_t>&, uint64_t>::type;
 
   virtual ~IGateKeeper() = default;
 
-  // Create an input gate and return its output wire ID.
+  // Create a boolean input gate and return its output wire ID.
   virtual IScheduler::WireId<IScheduler::Boolean> inputGate(
       BoolType<false> initialValue) = 0;
 
-  // Create a batch input gate and return its output wire ID.
+  // Create an arithmetic input gate and return its output wire ID.
+  virtual IScheduler::WireId<IScheduler::Arithmetic> inputGate(
+      IntType<false> initialValue) = 0;
+
+  // Create a batch boolean input gate and return its output wire ID.
   virtual IScheduler::WireId<IScheduler::Boolean> inputGateBatch(
       BoolType<true> initialValue) = 0;
 
-  // Create an output gate and return its output wire ID.
+  // Create a batch arithmetic input gate and return its output wire ID.
+  virtual IScheduler::WireId<IScheduler::Arithmetic> inputGateBatch(
+      IntType<true> initialValue) = 0;
+
+  // Create a boolean output gate and return its output wire ID.
   virtual IScheduler::WireId<IScheduler::Boolean> outputGate(
       IScheduler::WireId<IScheduler::Boolean> src,
       int partyID) = 0;
 
-  // Create a batch output gate and return its output wire ID.
+  // Create an arithmetic output gate and return its output wire ID.
+  virtual IScheduler::WireId<IScheduler::Arithmetic> outputGate(
+      IScheduler::WireId<IScheduler::Arithmetic> src,
+      int partyID) = 0;
+
+  // Create a batch boolean output gate and return its output wire ID.
   virtual IScheduler::WireId<IScheduler::Boolean> outputGateBatch(
       IScheduler::WireId<IScheduler::Boolean> src,
+      int partyID) = 0;
+
+  // Create a batch arithmetic output gate and return its output wire ID.
+  virtual IScheduler::WireId<IScheduler::Arithmetic> outputGateBatch(
+      IScheduler::WireId<IScheduler::Arithmetic> src,
       int partyID) = 0;
 
   // Create a unary/binary gate (e.g. AND, XOR, NOT) and return its output wire
@@ -60,6 +83,22 @@ class IGateKeeper {
       IScheduler::WireId<IScheduler::Boolean> right =
           IScheduler::WireId<IScheduler::Boolean>()) = 0;
 
+  // Create an integer gate (e.g. MULT, ADD, NEG) and return its output wire
+  // ID.
+  virtual IScheduler::WireId<IScheduler::Arithmetic> arithmeticGate(
+      IArithmeticGate::GateType gateType,
+      IScheduler::WireId<IScheduler::Arithmetic> left,
+      IScheduler::WireId<IScheduler::Arithmetic> right =
+          IScheduler::WireId<IScheduler::Arithmetic>()) = 0;
+
+  // Create a batch integer gate (e.g. MULT, ADD, NEG) and return its output
+  // wire ID.
+  virtual IScheduler::WireId<IScheduler::Arithmetic> arithmeticGateBatch(
+      IArithmeticGate::GateType gateType,
+      IScheduler::WireId<IScheduler::Arithmetic> left,
+      IScheduler::WireId<IScheduler::Arithmetic> right =
+          IScheduler::WireId<IScheduler::Arithmetic>()) = 0;
+
   // Create a binary composite gate (e.g. AND, XOR) from a single left input and
   // multiple right inputs. Returns its output wire ID's
   virtual std::vector<IScheduler::WireId<IScheduler::Boolean>> compositeGate(
@@ -75,11 +114,11 @@ class IGateKeeper {
       IScheduler::WireId<IScheduler::Boolean> left,
       std::vector<IScheduler::WireId<IScheduler::Boolean>> rights) = 0;
 
-  // band a number of batches into one batch.
+  // band a number of boolean batches into one batch.
   virtual IScheduler::WireId<IScheduler::Boolean> batchingUp(
       std::vector<IScheduler::WireId<IScheduler::Boolean>> src) = 0;
 
-  // decompose a batch of values into several smaller batches.
+  // decompose a batch of boolean values into several smaller batches.
   virtual std::vector<IScheduler::WireId<IScheduler::Boolean>> unbatching(
       IScheduler::WireId<IScheduler::Boolean> src,
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) = 0;

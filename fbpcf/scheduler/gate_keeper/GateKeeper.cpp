@@ -9,6 +9,7 @@
 #include <fbpcf/scheduler/gate_keeper/INormalGate.h>
 #include <cstddef>
 #include <memory>
+#include <stdexcept>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/gate_keeper/BatchCompositeGate.h"
 #include "fbpcf/scheduler/gate_keeper/BatchNormalGate.h"
@@ -38,6 +39,11 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::inputGate(
   return outputWire;
 }
 
+IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::inputGate(
+    IntType<false> initialValue) {
+  throw std::runtime_error("Unimplemented");
+}
+
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::inputGateBatch(
     BoolType<true> initialValue) {
   auto size = initialValue.size();
@@ -57,6 +63,11 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::inputGateBatch(
           *wireKeeper_),
       level);
   return outputWire;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::inputGateBatch(
+    IntType<true> initialValue) {
+  throw std::runtime_error("Unimplemented");
 }
 
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGate(
@@ -80,6 +91,12 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGate(
   return outputWire;
 }
 
+IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::outputGate(
+    IScheduler::WireId<IScheduler::Arithmetic> src,
+    int partyID) {
+  throw std::runtime_error("Unimplemented");
+}
+
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGateBatch(
     IScheduler::WireId<IScheduler::Boolean> src,
     int partyID) {
@@ -100,6 +117,12 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGateBatch(
       level);
 
   return outputWire;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::outputGateBatch(
+    IScheduler::WireId<IScheduler::Arithmetic> src,
+    int partyID) {
+  throw std::runtime_error("Unimplemented");
 }
 
 IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGate(
@@ -134,6 +157,20 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGateBatch(
       level);
 
   return outputWire;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::arithmeticGate(
+    IArithmeticGate::GateType gateType,
+    IScheduler::WireId<IScheduler::Arithmetic> left,
+    IScheduler::WireId<IScheduler::Arithmetic> right) {
+  throw std::runtime_error("Unimplemented");
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::arithmeticGateBatch(
+    IArithmeticGate::GateType gateType,
+    IScheduler::WireId<IScheduler::Arithmetic> left,
+    IScheduler::WireId<IScheduler::Arithmetic> right) {
+  throw std::runtime_error("Unimplemented");
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>> GateKeeper::compositeGate(
