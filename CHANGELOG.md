@@ -1,6 +1,11 @@
 # Change log
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2022-06-30
+- Each socket connection and socket connection factory now need a dedicated name.
+- The traffic on each socket connection will be monitored separately.
+
+
 ## [2.0.0] - 2022-05-05
 - New features and APIs are explained in the README
 - Removed dependence on EMP-toolkit
