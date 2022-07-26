@@ -225,6 +225,18 @@ class MpcAdapters<Intp<isSigned, width>, schedulerId> {
         buf.begin(), buf.end(), rst.begin(), [](auto v) { return v; });
     return rst;
   }
+
+  static SecBatchType batchingWith(
+      const SecBatchType& src,
+      const std::vector<SecBatchType>& others) {
+    return src.batchingWith(others);
+  }
+
+  static std::vector<SecBatchType> unbatching(
+      const SecBatchType& src,
+      std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) {
+    return src.unbatching(unbatchingStrategy);
+  }
 };
 
 } // namespace fbpcf::mpc_std_lib::util
