@@ -48,7 +48,7 @@ establishing multiple connections (>3) between each party pair.
   SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
-      std::string myname = "unnamed_traffic_factory")
+      std::string myname)
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
         useTls_(false),
@@ -61,7 +61,7 @@ establishing multiple connections (>3) between each party pair.
       std::map<int, PartyInfo> partyInfos,
       bool useTls,
       std::string tlsDir,
-      std::string myname = "unnamed_traffic_factory")
+      std::string myname)
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
         useTls_(useTls),
