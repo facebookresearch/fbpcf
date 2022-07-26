@@ -14,9 +14,6 @@
 
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/PcfException.h"
-#include "fbpcf/gcp/GCSUtil.h"
-#include "fbpcf/io/cloud_util/GCSFileReader.h"
-#include "fbpcf/io/cloud_util/GCSFileUploader.h"
 #include "fbpcf/io/cloud_util/S3Client.h"
 #include "fbpcf/io/cloud_util/S3FileReader.h"
 #include "fbpcf/io/cloud_util/S3FileUploader.h"
@@ -66,8 +63,6 @@ std::unique_ptr<IFileReader> getCloudFileReader(const std::string& filePath) {
     const auto& ref = fbpcf::aws::uriToObjectReference(filePath);
     return std::make_unique<S3FileReader>(fbpcf::aws::createS3Client(
         fbpcf::aws::S3ClientOption{.region = ref.region}));
-  } else if (fileType == CloudFileType::GCS) {
-    return std::make_unique<GCSFileReader>(fbpcf::gcp::createGCSClient());
   } else {
     throw fbpcf::PcfException("Not supported yet.");
   }
@@ -83,9 +78,6 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
             fbpcf::aws::S3ClientOption{.region = ref.region})
             .getS3Client(),
         filePath);
-  } else if (fileType == CloudFileType::GCS) {
-    return std::make_unique<GCSFileUploader>(
-        fbpcf::gcp::createGCSClient(), filePath);
   } else {
     throw fbpcf::PcfException("Not supported yet.");
   }
