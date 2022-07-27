@@ -267,14 +267,128 @@ void AesCircuit<BitType>::sharedSBoxInPlace(
   M[63] = M[41] & T[2];
 }
 
+// implemented as per eprint.iacr.org/2019/833
 template <typename BitType>
 void AesCircuit<BitType>::mixColumnsInPlace(WordType& src) const {
-  throw std::runtime_error("Not implemented!");
+  std::array<BitType, 60> T;
+  std::array<BitType, 32> Y;
+  std::array<BitType, 32> X;
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 8; j++) {
+      X[7 - j + (8 * i)] = src[i][j];
+    }
+  }
+
+  T[0] = X[0] ^ X[8];
+  T[1] = X[16] ^ X[24];
+  T[2] = X[1] ^ X[9];
+  T[3] = X[17] ^ X[25];
+  T[4] = X[2] ^ X[10];
+  T[5] = X[18] ^ X[26];
+  T[6] = X[3] ^ X[11];
+  T[7] = X[19] ^ X[27];
+  T[8] = X[4] ^ X[12];
+  T[9] = X[20] ^ X[28];
+  T[10] = X[5] ^ X[13];
+  T[11] = X[21] ^ X[29];
+  T[12] = X[6] ^ X[14];
+  T[13] = X[22] ^ X[30];
+  T[14] = X[23] ^ X[31];
+  T[15] = X[7] ^ X[15];
+  T[16] = X[8] ^ T[1];
+  Y[0] = T[15] ^ T[16];
+  T[17] = X[7] ^ X[23];
+
+  T[18] = X[24] ^ T[0];
+  Y[16] = T[14] ^ T[18];
+  T[19] = T[1] ^ Y[16];
+  Y[24] = T[17] ^ T[19];
+  T[20] = X[27] ^ T[14];
+  T[21] = T[0] ^ Y[0];
+  Y[8] = T[17] ^ T[21];
+  T[22] = T[5] ^ T[20];
+  Y[19] = T[6] ^ T[22];
+  T[23] = X[11] ^ T[15];
+  T[24] = T[7] ^ T[23];
+  Y[3] = T[4] ^ T[24];
+  T[25] = X[2] ^ X[18];
+  T[26] = T[17] ^ T[25];
+  T[27] = T[9] ^ T[23];
+  T[28] = T[8] ^ T[20];
+  T[29] = X[10] ^ T[2];
+  Y[2] = T[5] ^ T[29];
+  T[30] = X[26] ^ T[3];
+
+  Y[18] = T[4] ^ T[30];
+  T[31] = X[9] ^ X[25];
+  T[32] = T[25] ^ T[31];
+  Y[10] = T[30] ^ T[32];
+  Y[26] = T[29] ^ T[32];
+  T[33] = X[1] ^ T[18];
+  T[34] = X[30] ^ T[11];
+  Y[22] = T[12] ^ T[34];
+  T[35] = X[14] ^ T[13];
+  Y[6] = T[10] ^ T[35];
+  T[36] = X[5] ^ X[21];
+  T[37] = X[30] ^ T[17];
+  T[38] = X[17] ^ T[16];
+  T[39] = X[13] ^ T[8];
+  Y[5] = T[11] ^ T[39];
+  T[40] = X[12] ^ T[36];
+  T[41] = X[29] ^ T[9];
+  Y[21] = T[10] ^ T[41];
+  T[42] = X[28] ^ T[40];
+
+  Y[13] = T[41] ^ T[42];
+  Y[29] = T[39] ^ T[42];
+  T[43] = X[15] ^ T[12];
+  Y[7] = T[14] ^ T[43];
+  T[44] = X[14] ^ T[37];
+  Y[31] = T[43] ^ T[44];
+  T[45] = X[31] ^ T[13];
+  Y[15] = T[44] ^ T[45];
+  Y[23] = T[15] ^ T[45];
+  T[46] = T[12] ^ T[36];
+  Y[14] = Y[6] ^ T[46];
+  T[47] = T[31] ^ T[33];
+  Y[17] = T[19] ^ T[47];
+  T[48] = T[6] ^ Y[3];
+  Y[11] = T[26] ^ T[48];
+  T[49] = T[2] ^ T[38];
+  Y[25] = Y[24] ^ T[49];
+  T[50] = T[7] ^ Y[19];
+  Y[27] = T[26] ^ T[50];
+
+  T[51] = X[22] ^ T[46];
+  Y[30] = T[11] ^ T[51];
+  T[52] = X[19] ^ T[28];
+  Y[20] = X[28] ^ T[52];
+  T[53] = X[3] ^ T[27];
+  Y[4] = X[12] ^ T[53];
+  T[54] = T[3] ^ T[33];
+  Y[9] = Y[8] ^ T[54];
+  T[55] = T[21] ^ T[31];
+  Y[1] = T[38] ^ T[55];
+  T[56] = X[4] ^ T[17];
+  T[57] = X[19] ^ T[56];
+  Y[12] = T[27] ^ T[57];
+  T[58] = X[3] ^ T[28];
+  T[59] = T[17] ^ T[58];
+  Y[28] = X[20] ^ T[59];
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 8; j++) {
+      src[i][j] = Y[7 - j + (8 * i)];
+    }
+  }
 }
 
 template <typename BitType>
 void AesCircuit<BitType>::inverseMixColumnsInPlace(WordType& src) const {
-  throw std::runtime_error("Not implemented!");
+  for (int i = 1; i < 4; i++) {
+    mixColumnsInPlace(src);
+  }
 }
 
 template <typename BitType>
