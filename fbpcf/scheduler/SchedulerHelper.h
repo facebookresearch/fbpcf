@@ -22,7 +22,7 @@
 namespace fbpcf::scheduler {
 
 template <bool unsafe>
-inline std::unique_ptr<IScheduler> createPlaintextScheduler(
+inline std::unique_ptr<IArithmeticScheduler> createPlaintextScheduler(
     int /*myId*/,
     engine::communication::IPartyCommunicationAgentFactory&
     /*communicationAgentFactory*/) {
@@ -31,7 +31,7 @@ inline std::unique_ptr<IScheduler> createPlaintextScheduler(
 }
 
 template <bool unsafe>
-inline std::unique_ptr<IScheduler> createNetworkPlaintextScheduler(
+inline std::unique_ptr<IArithmeticScheduler> createNetworkPlaintextScheduler(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {

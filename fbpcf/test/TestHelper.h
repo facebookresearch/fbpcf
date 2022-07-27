@@ -11,6 +11,7 @@
 
 #include <emmintrin.h>
 #include <smmintrin.h>
+#include <stdexcept>
 
 #include "fbpcf/engine/SecretShareEngineFactory.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
@@ -91,6 +92,27 @@ inline SchedulerCreator getSchedulerCreator(SchedulerType schedulerType) {
       return scheduler::createEagerSchedulerWithInsecureEngine<unsafe>;
     case SchedulerType::Lazy:
       return scheduler::createLazySchedulerWithInsecureEngine<unsafe>;
+  }
+}
+
+using ArithmeticSchedulerCreator =
+    std::function<std::unique_ptr<scheduler::IArithmeticScheduler>(
+        int myId,
+        engine::communication::IPartyCommunicationAgentFactory&
+            communicationAgentFactory)>;
+
+template <bool unsafe>
+inline ArithmeticSchedulerCreator getArithmeticSchedulerCreator(
+    SchedulerType schedulerType) {
+  switch (schedulerType) {
+    case SchedulerType::Plaintext:
+      return scheduler::createPlaintextScheduler<unsafe>;
+    case SchedulerType::NetworkPlaintext:
+      return scheduler::createNetworkPlaintextScheduler<unsafe>;
+    case SchedulerType::Eager:
+      throw std::runtime_error("unimplemented");
+    case SchedulerType::Lazy:
+      throw std::runtime_error("unimplemented");
   }
 }
 
