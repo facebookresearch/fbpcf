@@ -16,11 +16,6 @@ void InMemoryPartyCommunicationAgent::sendImpl(const void* data, int nBytes) {
   sentData_ += nBytes;
 }
 
-void InMemoryPartyCommunicationAgent::send(
-    const std::vector<unsigned char>& data) {
-  sendImpl(static_cast<const void*>(data.data()), data.size());
-}
-
 void InMemoryPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
   auto result = host_.receive(myId_, nBytes);
 
@@ -29,13 +24,6 @@ void InMemoryPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
   }
   memcpy(data, result.data(), nBytes);
   receivedData_ += nBytes;
-}
-
-std::vector<unsigned char> InMemoryPartyCommunicationAgent::receive(
-    size_t size) {
-  std::vector<unsigned char> v(size);
-  recvImpl(static_cast<void*>(v.data()), size);
-  return v;
 }
 
 InMemoryPartyCommunicationAgentHost::InMemoryPartyCommunicationAgentHost() {
