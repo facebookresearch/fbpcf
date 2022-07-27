@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <atomic>
+#include <cstdint>
 #include <vector>
 #include "fbpcf/util/IMetricRecorder.h"
 
@@ -85,6 +86,14 @@ class IPartyCommunicationAgent {
   }
 
   /**
+   * send a byte string to the partner
+   * @param data the data to be sent
+   */
+  void sendInt64(const std::vector<uint64_t>& data) {
+    sendImpl(static_cast<const void*>(data.data()), data.size() * 8);
+  }
+
+  /**
    * receive a byte string from the partner
    * @param size the expected size;
    * @return the received content
@@ -95,6 +104,17 @@ class IPartyCommunicationAgent {
     auto decompressed = decompressToBits(std::move(compressed));
     decompressed.erase(decompressed.begin() + size, decompressed.end());
     return decompressed;
+  }
+
+  /**
+   * receive a byte string from the partner
+   * @param size the expected size of the returned vector;
+   * @return the received content
+   */
+  std::vector<uint64_t> receiveInt64(size_t size) {
+    std::vector<uint64_t> rst(size);
+    recvImpl(static_cast<void*>(rst.data()), size * 8);
+    return rst;
   }
 
   template <typename T>

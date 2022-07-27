@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <memory>
 
@@ -57,6 +58,30 @@ class NetworkPlaintextScheduler final : public PlaintextScheduler {
   WireId<IScheduler::Boolean> recoverBooleanWireBatch(
       const std::vector<bool>& v) override;
 
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateIntegerInput(uint64_t v, int partyId)
+      override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateIntegerInputBatch(
+      const std::vector<uint64_t>& v,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> recoverIntegerWire(uint64_t v) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> recoverIntegerWireBatch(
+      const std::vector<uint64_t>& v) override;
+
   //======== Below are output processing APIs: ========
 
   /**
@@ -69,6 +94,18 @@ class NetworkPlaintextScheduler final : public PlaintextScheduler {
    */
   std::vector<bool> extractBooleanSecretShareBatch(
       WireId<IScheduler::Boolean> id) override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t extractIntegerSecretShare(
+      WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> extractIntegerSecretShareBatch(
+      WireId<IScheduler::Arithmetic> id) override;
 
   //======== Below are miscellaneous APIs: ========
 
