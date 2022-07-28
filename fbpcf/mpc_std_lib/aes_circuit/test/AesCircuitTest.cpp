@@ -15,10 +15,13 @@
 #include <random>
 #include <unordered_map>
 
-#define AES_CIRCUIT_TEST_FRIENDS                         \
-  friend class AesCircuitSBoxTestSuite;                  \
-  FRIEND_TEST(AesCircuitSBoxTestSuite, SBoxInplaceTest); \
-  FRIEND_TEST(AesCircuitSBoxTestSuite, InverseSBoxInplaceTest);
+#define AES_CIRCUIT_TEST_FRIENDS                                     \
+  friend class AesCircuitSBoxTestSuite;                              \
+  FRIEND_TEST(AesCircuitSBoxTestSuite, SBoxInplaceTest);             \
+  FRIEND_TEST(AesCircuitSBoxTestSuite, InverseSBoxInplaceTest);      \
+  friend class AesCircuitMixColumnsTestSuite;                        \
+  FRIEND_TEST(AesCircuitMixColumnsTestSuite, MixColumnsInplaceTest); \
+  FRIEND_TEST(AesCircuitMixColumnsTestSuite, InverseMixColumnsInplaceTest);
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
@@ -150,5 +153,81 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(0xDD, 0xC1),
         std::make_tuple(0xEE, 0x28),
         std::make_tuple(0xFF, 0x16)));
+
+class AesCircuitMixColumnsTestSuite
+    : public ::testing::TestWithParam<std::tuple<
+          uint8_t,
+          uint8_t,
+          uint8_t,
+          uint8_t,
+          uint8_t,
+          uint8_t,
+          uint8_t,
+          uint8_t>> {};
+
+TEST_P(AesCircuitMixColumnsTestSuite, MixColumnsInplaceTest) {
+  AesCircuit<bool> aes;
+  std::array<std::array<bool, 8>, 4> result;
+  std::array<std::uint8_t, 4> input;
+  std::array<std::array<bool, 8>, 4> expectedResult;
+  std::array<std::uint8_t, 4> expectedOutput;
+
+  input[0] = std::get<0>(GetParam());
+  input[1] = std::get<1>(GetParam());
+  input[2] = std::get<2>(GetParam());
+  input[3] = std::get<3>(GetParam());
+
+  expectedOutput[0] = std::get<4>(GetParam());
+  expectedOutput[1] = std::get<5>(GetParam());
+  expectedOutput[2] = std::get<6>(GetParam());
+  expectedOutput[3] = std::get<7>(GetParam());
+
+  for (unsigned int i = 0; i < 4; i++) {
+    intToBinaryArray(input[i], result[i]);
+    intToBinaryArray(expectedOutput[i], expectedResult[i]);
+  }
+
+  aes.mixColumnsInPlace(result);
+
+  testArrayEq(expectedResult, result);
+}
+
+TEST_P(AesCircuitMixColumnsTestSuite, InverseMixColumnsInplaceTest) {
+  AesCircuit<bool> aes;
+  std::array<std::array<bool, 8>, 4> result;
+  std::array<std::uint8_t, 4> input;
+  std::array<std::array<bool, 8>, 4> expectedResult;
+  std::array<std::uint8_t, 4> expectedOutput;
+
+  input[0] = std::get<4>(GetParam());
+  input[1] = std::get<5>(GetParam());
+  input[2] = std::get<6>(GetParam());
+  input[3] = std::get<7>(GetParam());
+
+  expectedOutput[0] = std::get<0>(GetParam());
+  expectedOutput[1] = std::get<1>(GetParam());
+  expectedOutput[2] = std::get<2>(GetParam());
+  expectedOutput[3] = std::get<3>(GetParam());
+
+  for (unsigned int i = 0; i < 4; i++) {
+    intToBinaryArray(input[i], result[i]);
+    intToBinaryArray(expectedOutput[i], expectedResult[i]);
+  }
+
+  aes.inverseMixColumnsInPlace(result);
+
+  testArrayEq(expectedResult, result);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    MixColumnsTests,
+    AesCircuitMixColumnsTestSuite,
+    ::testing::Values(
+        std::make_tuple(0xdb, 0x13, 0x53, 0x45, 0x8e, 0x4d, 0xa1, 0xbc),
+        std::make_tuple(0xF2, 0x0A, 0x22, 0x5C, 0x9F, 0xDC, 0x58, 0x9D),
+        std::make_tuple(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01),
+        std::make_tuple(0xc6, 0xc6, 0xc6, 0xc6, 0xc6, 0xc6, 0xc6, 0xc6),
+        std::make_tuple(0xd4, 0xd4, 0xd4, 0xd5, 0xd5, 0xd5, 0xd7, 0xd6),
+        std::make_tuple(0x2d, 0x26, 0x31, 0x4c, 0x4d, 0x7e, 0xbd, 0xf8)));
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
