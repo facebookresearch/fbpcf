@@ -78,6 +78,37 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
       return data_[index];
     }
 
+    StringType getValue() const {
+      if constexpr (usingBatch) {
+        std::vector<char> chars = convertLongsToChar(data_[0].getValue());
+        size_t batchSize = chars.size();
+        std::vector<std::string> rst(batchSize);
+        for (size_t i = 0; i < batchSize; i++) {
+          rst[i].reserve(maxWidth);
+          if (chars[i] != 0) {
+            rst[i].push_back(chars[i]);
+          }
+        }
+        for (size_t j = 1; j < maxWidth; j++) {
+          chars = convertLongsToChar(data_[j].getValue());
+          for (size_t i = 0; i < batchSize; i++) {
+            if (chars[i] != 0) {
+              rst[i].push_back(chars[i]);
+            }
+          }
+        }
+        return rst;
+      } else {
+        std::string rst = "";
+        rst.reserve(maxWidth);
+        for (size_t i = 0; i < maxWidth; i++) {
+          rst.push_back(data_[i].getValue());
+        }
+
+        return rst;
+      }
+    }
+
     size_t width() const {
       return maxWidth;
     }
@@ -179,7 +210,7 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
   SizeType knownSize_;
   size_t batchSize_ = 1;
 
-  std::vector<char> convertLongsToChar(std::vector<int64_t> values) const;
+  static std::vector<char> convertLongsToChar(std::vector<int64_t> values);
 
   friend class AsciiString<maxWidth, !isSecret, schedulerId, usingBatch>;
 };

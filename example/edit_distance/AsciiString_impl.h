@@ -323,7 +323,7 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::mux(
 template <int maxWidth, bool isSecret, int schedulerId, bool usingBatch>
 std::vector<char>
 AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::convertLongsToChar(
-    std::vector<int64_t> values) const {
+    std::vector<int64_t> values) {
   std::vector<char> rst(values.size());
   for (size_t i = 0; i < values.size(); i++) {
     rst[i] = values[i];
