@@ -59,8 +59,6 @@ std::pair<std::vector<int64_t>, std::vector<std::string>> revealOutputs(
 }
 
 TEST(EditDistanceCalculatorTest, testEditDistanceCalculator) {
-  using namespace fbcpf::edit_distance;
-
   boost::filesystem::path dataFilepath1 =
       build::getResourcePath(std::getenv("DATA_FILE_PATH_1"));
 
@@ -120,8 +118,6 @@ TEST(EditDistanceCalculatorTest, testEditDistanceCalculator) {
 }
 
 TEST(EditDistanceCalculatorTest, testToJson) {
-  using namespace fbcpf::edit_distance;
-
   boost::filesystem::path dataFilepath1 =
       build::getResourcePath(std::getenv("DATA_FILE_PATH_1"));
 

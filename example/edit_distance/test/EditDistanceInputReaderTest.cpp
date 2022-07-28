@@ -15,8 +15,6 @@
 namespace fbpcf::edit_distance {
 
 TEST(EditDistanceInputReaderTest, testInputReaderPlayer1) {
-  using namespace fbcpf::edit_distance;
-
   boost::filesystem::path dataFilepath =
       build::getResourcePath(std::getenv("DATA_FILE_PATH_1"));
   boost::filesystem::path paramsFilePath =
@@ -34,8 +32,6 @@ TEST(EditDistanceInputReaderTest, testInputReaderPlayer1) {
 }
 
 TEST(EditDistanceInputReaderTest, testInputReaderPlayer2) {
-  using namespace fbcpf::edit_distance;
-
   boost::filesystem::path dataFilepath =
       build::getResourcePath(std::getenv("DATA_FILE_PATH_2"));
 

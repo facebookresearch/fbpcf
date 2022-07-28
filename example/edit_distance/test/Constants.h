@@ -9,7 +9,7 @@
 
 #include <string>
 #include <vector>
-namespace fbcpf::edit_distance {
+namespace fbpcf::edit_distance {
 
 inline const std::vector<std::string> kExpectedWords = {
     "temporary",
@@ -55,4 +55,4 @@ inline const std::vector<int64_t> kExpectedInsertBatch = {
     kExpectedInsertCost,
     kExpectedInsertCost};
 
-} // namespace fbcpf::edit_distance
+} // namespace fbpcf::edit_distance
