@@ -62,8 +62,6 @@ revealOutputs(int myRole, InputProcessor<schedulerId>& inputProcessor) {
 }
 
 TEST(InputProcessorTest, testInputProcessor) {
-  using namespace fbcpf::edit_distance;
-
   boost::filesystem::path dataFilepath1 =
       build::getResourcePath(std::getenv("DATA_FILE_PATH_1"));
 
