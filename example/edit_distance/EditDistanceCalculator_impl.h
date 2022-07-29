@@ -7,7 +7,10 @@
 
 #pragma once
 
+#include <folly/json.h>
+#include <stdexcept>
 #include "./EditDistanceCalculator.h" // @manual
+#include "folly/dynamic.h"
 
 namespace fbpcf::edit_distance {
 
@@ -86,6 +89,9 @@ void EditDistanceCalculator<schedulerId>::calculateEditDistances() {
   }
 
   editDistances_ = distances[maxStringLength][maxStringLength];
+
+  // force computation of result in this class
+  editDistances_.extractIntShare();
 }
 
 template <int schedulerId>
@@ -116,5 +122,21 @@ void EditDistanceCalculator<schedulerId>::calculateMessages() {
   receiverMessages_ =
       emptyMessage.mux(editDistances_ <= threshold + threshold, halfMessage)
           .mux(editDistances_ < threshold, senderMessage);
+  // force calculation of results in this class
+  receiverMessages_.extractAsciiStringShare();
+}
+
+template <int schedulerId>
+std::string EditDistanceCalculator<schedulerId>::toJson() const {
+  folly::dynamic output = folly::dynamic::object;
+  std::vector<int64_t> editDistanceShares =
+      editDistances_.extractIntShare().getValue();
+  std::vector<std::string> receiverMessageShares =
+      receiverMessages_.extractAsciiStringShare().getValue();
+  output["editDistanceShares"] =
+      folly::dynamic(editDistanceShares.begin(), editDistanceShares.end());
+  output["receiverMessageShares"] = folly::dynamic::array(
+      receiverMessageShares.begin(), receiverMessageShares.end());
+  return folly::toJson(output);
 }
 } // namespace fbpcf::edit_distance

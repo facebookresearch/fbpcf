@@ -24,17 +24,19 @@ class EditDistanceCalculator {
     calculateMessages();
   }
 
-  InputProcessor<schedulerId>& getInputProcessor() {
+  const InputProcessor<schedulerId>& getInputProcessor() const {
     return inputProcessor_;
   }
 
-  SecString<schedulerId>& getReceiverMessages() {
+  const SecString<schedulerId>& getReceiverMessages() const {
     return receiverMessages_;
   }
 
-  Sec32Int<schedulerId> getEditDistances() {
+  const Sec32Int<schedulerId> getEditDistances() const {
     return editDistances_;
   }
+
+  std::string toJson() const;
 
  private:
   void calculateEditDistances();
