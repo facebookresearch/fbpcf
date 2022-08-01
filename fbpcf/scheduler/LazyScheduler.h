@@ -12,6 +12,7 @@
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/IWireKeeper.h"
 #include "fbpcf/scheduler/gate_keeper/IGateKeeper.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::scheduler {
 
@@ -26,7 +27,9 @@ class LazyScheduler final : public IScheduler {
   explicit LazyScheduler(
       std::unique_ptr<engine::ISecretShareEngine> engine,
       std::shared_ptr<IWireKeeper> wireKeeper,
-      std::unique_ptr<IGateKeeper> gateKeeper);
+      std::unique_ptr<IGateKeeper> gateKeeper,
+      std::shared_ptr<util::MetricCollector> collector =
+          std::make_shared<util::MetricCollector>("lazy_scheduler"));
 
   //======== Below are input processing APIs: ========
 
@@ -311,6 +314,7 @@ class LazyScheduler final : public IScheduler {
   std::unique_ptr<engine::ISecretShareEngine> engine_;
   std::shared_ptr<IWireKeeper> wireKeeper_;
   std::unique_ptr<IGateKeeper> gateKeeper_;
+  std::shared_ptr<util::MetricCollector> collector_;
 
   // Compute the value for the given wire if it hasn't been set already.
   template <bool usingBatch>

@@ -10,6 +10,7 @@
 #include <memory>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/IWireKeeper.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::scheduler {
 /**
@@ -26,7 +27,10 @@ namespace fbpcf::scheduler {
 
 class PlaintextScheduler : public IScheduler {
  public:
-  explicit PlaintextScheduler(std::unique_ptr<IWireKeeper> wireKeeper);
+  explicit PlaintextScheduler(
+      std::unique_ptr<IWireKeeper> wireKeeper,
+      std::shared_ptr<util::MetricCollector> collector =
+          std::make_shared<util::MetricCollector>("plaintext_scheduler"));
 
   //======== Below are input processing APIs: ========
 
@@ -311,6 +315,7 @@ class PlaintextScheduler : public IScheduler {
 
  protected:
   std::unique_ptr<IWireKeeper> wireKeeper_;
+  std::shared_ptr<util::MetricCollector> collector_;
 
  private:
   std::vector<IScheduler::WireId<IScheduler::Boolean>> computeCompositeAND(
