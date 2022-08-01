@@ -8,13 +8,17 @@
 #include "fbpcf/scheduler/EagerScheduler.h"
 #include <stdexcept>
 #include <string>
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::scheduler {
 
 EagerScheduler::EagerScheduler(
     std::unique_ptr<engine::ISecretShareEngine> engine,
-    std::unique_ptr<IWireKeeper> wireKeeper)
-    : engine_{std::move(engine)}, wireKeeper_{std::move(wireKeeper)} {}
+    std::unique_ptr<IWireKeeper> wireKeeper,
+    std::shared_ptr<util::MetricCollector> collector)
+    : engine_{std::move(engine)},
+      wireKeeper_{std::move(wireKeeper)},
+      collector_{collector} {}
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateBooleanInput(
     bool v,
