@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <atomic>
+#include <cstdint>
 #include <vector>
 #include "fbpcf/util/IMetricRecorder.h"
 
@@ -66,14 +67,20 @@ class IPartyCommunicationAgent {
    * send a byte string to the partner
    * @param data the data to be sent
    */
-  virtual void send(const std::vector<unsigned char>& data) = 0;
+  void send(const std::vector<unsigned char>& data) {
+    sendImpl(static_cast<const void*>(data.data()), data.size());
+  }
 
   /**
    * receive a byte string from the partner
    * @param size the expected size;
    * @return the received content
    */
-  virtual std::vector<unsigned char> receive(size_t size) = 0;
+  std::vector<unsigned char> receive(size_t size) {
+    std::vector<unsigned char> rst(size);
+    recvImpl(static_cast<void*>(rst.data()), size);
+    return rst;
+  }
 
   /**
    * send a byte string to the partner
@@ -82,6 +89,14 @@ class IPartyCommunicationAgent {
   void sendBool(const std::vector<bool>& data) {
     auto compressed = compressToBytes(data);
     send(compressed);
+  }
+
+  /**
+   * send a byte string to the partner
+   * @param data the data to be sent
+   */
+  void sendInt64(const std::vector<uint64_t>& data) {
+    sendImpl(static_cast<const void*>(data.data()), data.size() * 8);
   }
 
   /**
@@ -95,6 +110,17 @@ class IPartyCommunicationAgent {
     auto decompressed = decompressToBits(std::move(compressed));
     decompressed.erase(decompressed.begin() + size, decompressed.end());
     return decompressed;
+  }
+
+  /**
+   * receive a byte string from the partner
+   * @param size the expected size of the returned vector;
+   * @return the received content
+   */
+  std::vector<uint64_t> receiveInt64(size_t size) {
+    std::vector<uint64_t> rst(size);
+    recvImpl(static_cast<void*>(rst.data()), size * 8);
+    return rst;
   }
 
   template <typename T>

@@ -28,15 +28,6 @@ class InMemoryPartyCommunicationAgent final : public IPartyCommunicationAgent {
       InMemoryPartyCommunicationAgentHost& host,
       int myId)
       : host_{host}, myId_(myId), sentData_(0), receivedData_(0) {}
-  /**
-   * @inherit doc
-   */
-  void send(const std::vector<unsigned char>& data) override;
-
-  /**
-   * @inherit doc
-   */
-  std::vector<unsigned char> receive(size_t size) override;
 
   /**
    * @inherit doc
