@@ -30,7 +30,7 @@ class PlaintextScheduler : public IScheduler {
   explicit PlaintextScheduler(
       std::unique_ptr<IWireKeeper> wireKeeper,
       std::shared_ptr<util::MetricCollector> collector =
-          std::make_shared<util::MetricCollector>("scheduler"));
+          std::make_shared<util::MetricCollector>("plaintext_scheduler"));
 
   //======== Below are input processing APIs: ========
 

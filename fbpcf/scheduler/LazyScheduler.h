@@ -29,7 +29,7 @@ class LazyScheduler final : public IScheduler {
       std::shared_ptr<IWireKeeper> wireKeeper,
       std::unique_ptr<IGateKeeper> gateKeeper,
       std::shared_ptr<util::MetricCollector> collector =
-          std::make_shared<util::MetricCollector>("scheduler"));
+          std::make_shared<util::MetricCollector>("lazy_scheduler"));
 
   //======== Below are input processing APIs: ========
 

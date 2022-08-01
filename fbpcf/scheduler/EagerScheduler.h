@@ -26,7 +26,7 @@ class EagerScheduler final : public IScheduler {
       std::unique_ptr<engine::ISecretShareEngine> engine,
       std::unique_ptr<IWireKeeper> wireKeeper,
       std::shared_ptr<util::MetricCollector> collector =
-          std::make_shared<util::MetricCollector>("scheduler"));
+          std::make_shared<util::MetricCollector>("eager_scheduler"));
 
   //======== Below are input processing APIs: ========
 
