@@ -7,9 +7,11 @@
 
 #pragma once
 
+#include <memory>
 #include "fbpcf/engine/ISecretShareEngine.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/IWireKeeper.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::scheduler {
 
@@ -22,7 +24,9 @@ class EagerScheduler final : public IScheduler {
  public:
   explicit EagerScheduler(
       std::unique_ptr<engine::ISecretShareEngine> engine,
-      std::unique_ptr<IWireKeeper> wireKeeper);
+      std::unique_ptr<IWireKeeper> wireKeeper,
+      std::shared_ptr<util::MetricCollector> collector =
+          std::make_shared<util::MetricCollector>("scheduler"));
 
   //======== Below are input processing APIs: ========
 
@@ -306,6 +310,7 @@ class EagerScheduler final : public IScheduler {
  private:
   std::unique_ptr<engine::ISecretShareEngine> engine_;
   std::unique_ptr<IWireKeeper> wireKeeper_;
+  std::shared_ptr<util::MetricCollector> collector_;
 };
 
 } // namespace fbpcf::scheduler

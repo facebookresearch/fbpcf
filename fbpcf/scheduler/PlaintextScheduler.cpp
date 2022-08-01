@@ -13,8 +13,10 @@
 
 namespace fbpcf::scheduler {
 
-PlaintextScheduler::PlaintextScheduler(std::unique_ptr<IWireKeeper> wireKeeper)
-    : wireKeeper_{std::move(wireKeeper)} {}
+PlaintextScheduler::PlaintextScheduler(
+    std::unique_ptr<IWireKeeper> wireKeeper,
+    std::shared_ptr<util::MetricCollector> collector)
+    : wireKeeper_{std::move(wireKeeper)}, collector_{collector} {}
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateBooleanInput(
     bool v,
