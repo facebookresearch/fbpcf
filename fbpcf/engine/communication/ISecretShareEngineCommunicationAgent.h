@@ -7,6 +7,7 @@
 
 #pragma once
 #include <emmintrin.h>
+#include <cstdint>
 #include <map>
 #include <vector>
 
@@ -40,6 +41,14 @@ class ISecretShareEngineCommunicationAgent {
       const std::vector<bool>& secretShares) = 0;
 
   /**
+   * Jointly open a vector of secrets to every party.
+   * @param secretShares my share of the secrets
+   * @return the revealed secrets
+   */
+  virtual std::vector<uint64_t> openSecretsToAll(
+      const std::vector<uint64_t>& secretShares) = 0;
+
+  /**
    * Jointly open a vector of secrets to a particular party.
    * @param id the the party to revcvevive the secrets.
    * @param secretShares my share of the secrets
@@ -49,6 +58,17 @@ class ISecretShareEngineCommunicationAgent {
   virtual std::vector<bool> openSecretsToParty(
       int id,
       const std::vector<bool>& secretShares) = 0;
+
+  /**
+   * Jointly open a vector of secrets to a particular party.
+   * @param id the the party to revcvevive the secrets.
+   * @param secretShares my share of the secrets
+   * @return the revealed secrets if this party is designed to received them;
+   * otherwise an array of dummy values
+   */
+  virtual std::vector<uint64_t> openSecretsToParty(
+      int id,
+      const std::vector<uint64_t>& secretShares) = 0;
 
   /**
    * Get the total amount of traffic transmitted.

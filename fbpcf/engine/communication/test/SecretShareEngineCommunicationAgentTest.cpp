@@ -160,4 +160,59 @@ TEST(secretShareEngineCommunicationAgentTest, testOpenToParty) {
   }
 }
 
+void openIntegerSecretToPartyTest(
+    std::unique_ptr<SecretShareEngineCommunicationAgent> agent,
+    int myId,
+    int numberOfParty,
+    int receivingParty,
+    const std::vector<uint64_t>& secrets,
+    const std::vector<uint64_t>& expections) {
+  auto openedSecrets = agent->openSecretsToParty(receivingParty, secrets);
+  ASSERT_EQ(openedSecrets.size(), secrets.size());
+  if (receivingParty == myId) {
+    for (int i = 0; i < secrets.size(); i++) {
+      EXPECT_EQ(openedSecrets[i], expections[i]);
+    }
+  } else {
+    for (int i = 0; i < secrets.size(); i++) {
+      EXPECT_EQ(openedSecrets[i], 0);
+    }
+  }
+}
+
+TEST(secretShareEngineCommunicationAgentTest, testOpenToPartyForIntegers) {
+  SecretShareEngineCommunicationAgentTestHelper helper;
+  int numberOfParty = 4;
+  int size = 131;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint64_t> dist;
+
+  std::vector<std::vector<uint64_t>> secrets(numberOfParty);
+  std::vector<uint64_t> plaintext;
+  for (int i = 0; i < size; i++) {
+    plaintext.push_back(0);
+    for (int j = 0; j < numberOfParty; j++) {
+      secrets[j].push_back(dist(e));
+      plaintext[i] = plaintext[i] + secrets[j][i];
+    }
+  }
+
+  auto agents = helper.createAgents(numberOfParty);
+  std::vector<std::thread> threads;
+  for (int i = 0; i < numberOfParty; i++) {
+    threads.push_back(std::thread(
+        openIntegerSecretToPartyTest,
+        std::move(agents[i]),
+        i,
+        numberOfParty,
+        0,
+        secrets[i],
+        plaintext));
+  }
+  for (int i = 0; i < numberOfParty; i++) {
+    threads[i].join();
+  }
+}
 } // namespace fbpcf::engine::communication
