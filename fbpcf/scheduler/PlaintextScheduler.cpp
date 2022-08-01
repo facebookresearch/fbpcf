@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <vector>
 
+#include <fbpcf/scheduler/IScheduler.h>
 #include "fbpcf/scheduler/PlaintextScheduler.h"
 
 namespace fbpcf::scheduler {
@@ -89,6 +90,81 @@ bool PlaintextScheduler::getBooleanValue(WireId<IScheduler::Boolean> id) {
 std::vector<bool> PlaintextScheduler::getBooleanValueBatch(
     WireId<IScheduler::Boolean> id) {
   return wireKeeper_->getBatchBooleanValue(id);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privateIntegerInput(uint64_t v, int /*partyId*/) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privateIntegerInputBatch(
+    const std::vector<uint64_t>& v,
+    int /*partyId*/) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::publicIntegerInput(uint64_t v) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::publicIntegerInputBatch(const std::vector<uint64_t>& v) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::recoverIntegerWire(uint64_t v) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::recoverIntegerWireBatch(const std::vector<uint64_t>& v) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::openIntegerValueToParty(
+    WireId<IScheduler::Arithmetic> src,
+    int /*partyId*/) {
+  nonFreeGates_++;
+  return wireKeeper_->allocateIntegerValue(wireKeeper_->getIntegerValue(src));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::openIntegerValueToPartyBatch(
+    WireId<IScheduler::Arithmetic> src,
+    int /*partyId*/) {
+  auto& v = wireKeeper_->getBatchIntegerValue(src);
+  nonFreeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(v);
+}
+
+uint64_t PlaintextScheduler::extractIntegerSecretShare(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getIntegerValue(id);
+}
+
+std::vector<uint64_t> PlaintextScheduler::extractIntegerSecretShareBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getBatchIntegerValue(id);
+}
+
+uint64_t PlaintextScheduler::getIntegerValue(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getIntegerValue(id);
+}
+
+std::vector<uint64_t> PlaintextScheduler::getIntegerValueBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getBatchIntegerValue(id);
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateAndPrivate(
@@ -274,6 +350,151 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPublicBatch(
   return notPrivateBatch(src);
 }
 
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privatePlusPrivate(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(
+      wireKeeper_->getIntegerValue(left) + wireKeeper_->getIntegerValue(right));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privatePlusPrivateBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto& leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto& rightValue = wireKeeper_->getBatchIntegerValue(right);
+  if (leftValue.size() != rightValue.size()) {
+    throw std::invalid_argument("invalid inputs!");
+  }
+  freeGates_ += leftValue.size();
+  std::vector<uint64_t> rst(leftValue.size());
+  for (size_t i = 0; i < leftValue.size(); i++) {
+    rst.at(i) = leftValue.at(i) + rightValue.at(i);
+  }
+  return wireKeeper_->allocateBatchIntegerValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privatePlusPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  return privatePlusPrivate(left, right);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privatePlusPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  return privatePlusPrivateBatch(left, right);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::publicPlusPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  return privatePlusPrivate(left, right);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::publicPlusPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  return privatePlusPrivateBatch(left, right);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privateMultPrivate(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  nonFreeGates_++;
+  return wireKeeper_->allocateIntegerValue(
+      wireKeeper_->getIntegerValue(left) * wireKeeper_->getIntegerValue(right));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privateMultPrivateBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto& leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto& rightValue = wireKeeper_->getBatchIntegerValue(right);
+  if (leftValue.size() != rightValue.size()) {
+    throw std::invalid_argument("invalid inputs!");
+  }
+  nonFreeGates_ += leftValue.size();
+  std::vector<uint64_t> rst(leftValue.size());
+  for (size_t i = 0; i < leftValue.size(); i++) {
+    rst.at(i) = leftValue.at(i) * rightValue.at(i);
+  }
+  return wireKeeper_->allocateBatchIntegerValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privateMultPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(
+      wireKeeper_->getIntegerValue(left) * wireKeeper_->getIntegerValue(right));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::privateMultPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto& leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto& rightValue = wireKeeper_->getBatchIntegerValue(right);
+  if (leftValue.size() != rightValue.size()) {
+    throw std::invalid_argument("invalid inputs!");
+  }
+  freeGates_ += leftValue.size();
+  std::vector<uint64_t> rst(leftValue.size());
+  for (size_t i = 0; i < leftValue.size(); i++) {
+    rst.at(i) = leftValue.at(i) * rightValue.at(i);
+  }
+  return wireKeeper_->allocateBatchIntegerValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::publicMultPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  return privateMultPublic(left, right);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+PlaintextScheduler::publicMultPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  return privateMultPublicBatch(left, right);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::negPrivate(
+    WireId<IScheduler::Arithmetic> src) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(-wireKeeper_->getIntegerValue(src));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::negPrivateBatch(
+    WireId<IScheduler::Arithmetic> src) {
+  auto& value = wireKeeper_->getBatchIntegerValue(src);
+  freeGates_ += value.size();
+  std::vector<uint64_t> rst(value.size());
+  for (size_t i = 0; i < value.size(); i++) {
+    rst.at(i) = -value.at(i);
+  }
+  return wireKeeper_->allocateBatchIntegerValue(rst);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::negPublic(
+    WireId<IScheduler::Arithmetic> src) {
+  return negPrivate(src);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::negPublicBatch(
+    WireId<IScheduler::Arithmetic> src) {
+  return negPrivateBatch(src);
+}
+
 void PlaintextScheduler::increaseReferenceCount(
     WireId<IScheduler::Boolean> id) {
   wireKeeper_->increaseReferenceCount(id);
@@ -291,6 +512,26 @@ void PlaintextScheduler::decreaseReferenceCount(
 
 void PlaintextScheduler::decreaseReferenceCountBatch(
     WireId<IScheduler::Boolean> id) {
+  wireKeeper_->decreaseBatchReferenceCount(id);
+}
+
+void PlaintextScheduler::increaseReferenceCount(
+    WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->increaseReferenceCount(id);
+}
+
+void PlaintextScheduler::increaseReferenceCountBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->increaseBatchReferenceCount(id);
+}
+
+void PlaintextScheduler::decreaseReferenceCount(
+    WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->decreaseReferenceCount(id);
+}
+
+void PlaintextScheduler::decreaseReferenceCountBatch(
+    WireId<IScheduler::Arithmetic> id) {
   wireKeeper_->decreaseBatchReferenceCount(id);
 }
 

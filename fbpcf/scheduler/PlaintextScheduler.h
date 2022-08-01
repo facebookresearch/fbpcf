@@ -7,7 +7,10 @@
 
 #pragma once
 
+#include <sys/types.h>
+#include <cstdint>
 #include <memory>
+#include "fbpcf/scheduler/IArithmeticScheduler.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/IWireKeeper.h"
 
@@ -24,7 +27,7 @@ namespace fbpcf::scheduler {
  * cryptographically secure computations).
  */
 
-class PlaintextScheduler : public IScheduler {
+class PlaintextScheduler : public IArithmeticScheduler {
  public:
   explicit PlaintextScheduler(std::unique_ptr<IWireKeeper> wireKeeper);
 
@@ -38,8 +41,21 @@ class PlaintextScheduler : public IScheduler {
   /**
    * @inherit doc
    */
+  WireId<IScheduler::Arithmetic> privateIntegerInput(uint64_t v, int partyId)
+      override;
+
+  /**
+   * @inherit doc
+   */
   WireId<IScheduler::Boolean> privateBooleanInputBatch(
       const std::vector<bool>& v,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateIntegerInputBatch(
+      const std::vector<uint64_t>& v,
       int partyId) override;
 
   /**
@@ -50,8 +66,19 @@ class PlaintextScheduler : public IScheduler {
   /**
    * @inherit doc
    */
+  WireId<IScheduler::Arithmetic> publicIntegerInput(uint64_t v) override;
+
+  /**
+   * @inherit doc
+   */
   WireId<IScheduler::Boolean> publicBooleanInputBatch(
       const std::vector<bool>& v) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicIntegerInputBatch(
+      const std::vector<uint64_t>& v) override;
 
   /**
    * @inherit doc
@@ -61,8 +88,19 @@ class PlaintextScheduler : public IScheduler {
   /**
    * @inherit doc
    */
+  WireId<IScheduler::Arithmetic> recoverIntegerWire(uint64_t v) override;
+
+  /**
+   * @inherit doc
+   */
   WireId<IScheduler::Boolean> recoverBooleanWireBatch(
       const std::vector<bool>& v) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> recoverIntegerWireBatch(
+      const std::vector<uint64_t>& v) override;
 
   //======== Below are output processing APIs: ========
   /**
@@ -75,8 +113,22 @@ class PlaintextScheduler : public IScheduler {
   /**
    * @inherit doc
    */
+  WireId<IScheduler::Arithmetic> openIntegerValueToParty(
+      WireId<IScheduler::Arithmetic> src,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
   WireId<IScheduler::Boolean> openBooleanValueToPartyBatch(
       WireId<IScheduler::Boolean> src,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> openIntegerValueToPartyBatch(
+      WireId<IScheduler::Arithmetic> src,
       int partyId) override;
 
   /**
@@ -87,8 +139,20 @@ class PlaintextScheduler : public IScheduler {
   /**
    * @inherit doc
    */
+  uint64_t extractIntegerSecretShare(
+      WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
   std::vector<bool> extractBooleanSecretShareBatch(
       WireId<IScheduler::Boolean> id) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> extractIntegerSecretShareBatch(
+      WireId<IScheduler::Arithmetic> id) override;
 
   /**
    * @inherit doc
@@ -98,8 +162,19 @@ class PlaintextScheduler : public IScheduler {
   /**
    * @inherit doc
    */
+  uint64_t getIntegerValue(WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
   std::vector<bool> getBooleanValueBatch(
       WireId<IScheduler::Boolean> id) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> getIntegerValueBatch(
+      WireId<IScheduler::Arithmetic> id) override;
 
   //======== Below are computation APIs: ========
 
@@ -261,6 +336,120 @@ class PlaintextScheduler : public IScheduler {
   WireId<IScheduler::Boolean> notPublicBatch(
       WireId<IScheduler::Boolean> src) override;
 
+  // ------ Plus gates ------
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPrivate(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPrivateBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicPlusPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicPlusPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  // ------ Mult gates ------
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPrivate(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPrivateBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicMultPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicMultPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  // ------ Neg gates ------
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPrivate(
+      WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPrivateBatch(
+      WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPublic(
+      WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPublicBatch(
+      WireId<IScheduler::Arithmetic> src) override;
+
   //======== Below are wire management APIs: ========
 
   /**
@@ -282,6 +471,26 @@ class PlaintextScheduler : public IScheduler {
    * @inherit doc
    */
   void decreaseReferenceCountBatch(WireId<IScheduler::Boolean> id) override;
+
+  /**
+   * @inherit doc
+   */
+  void increaseReferenceCount(WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  void increaseReferenceCountBatch(WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  void decreaseReferenceCount(WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
+  void decreaseReferenceCountBatch(WireId<IScheduler::Arithmetic> id) override;
 
   //======== Below are rebatching APIs: ========
 
