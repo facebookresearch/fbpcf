@@ -46,16 +46,6 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   /**
    * @inherit doc
    */
-  void send(const std::vector<unsigned char>& data) override;
-
-  /**
-   * @inherit doc
-   */
-  std::vector<unsigned char> receive(size_t size) override;
-
-  /**
-   * @inherit doc
-   */
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return recorder_->getTrafficStatistics();
   }

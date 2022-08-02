@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
@@ -120,6 +121,106 @@ std::vector<bool> NetworkPlaintextScheduler::extractBooleanSecretShareBatch(
     return result;
   } else {
     return std::vector<bool>(result.size(), false);
+  }
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+NetworkPlaintextScheduler::privateIntegerInput(uint64_t v, int partyId) {
+  freeGates_++;
+  if (partyId == myId_) {
+    // Send my input to all other parties
+    for (auto& iter : agentMap_) {
+      iter.second->sendInt64({v});
+    }
+    return wireKeeper_->allocateIntegerValue(v);
+  }
+  auto otherV = agentMap_.at(partyId)->receiveInt64(1)[0];
+  return wireKeeper_->allocateIntegerValue(otherV);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+NetworkPlaintextScheduler::privateIntegerInputBatch(
+    const std::vector<uint64_t>& v,
+    int partyId) {
+  freeGates_ += v.size();
+  if (partyId == myId_) {
+    // Send my input to all other parties
+    for (auto& iter : agentMap_) {
+      iter.second->sendInt64(v);
+    }
+    return wireKeeper_->allocateBatchIntegerValue(v);
+  }
+  auto otherV = agentMap_.at(partyId)->receiveInt64(v.size());
+  return wireKeeper_->allocateBatchIntegerValue(otherV);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+NetworkPlaintextScheduler::recoverIntegerWire(uint64_t v) {
+  freeGates_++;
+
+  uint64_t result = v;
+  uint64_t receivedShare;
+
+  // XOR the shares from all parties to recover the true value
+  for (auto& iter : agentMap_) {
+    if (iter.first < myId_) {
+      iter.second->sendInt64({v});
+      receivedShare = iter.second->receiveInt64(1)[0];
+    } else {
+      receivedShare = iter.second->receiveInt64(1)[0];
+      iter.second->sendInt64({v});
+    }
+    result += receivedShare;
+  }
+
+  return wireKeeper_->allocateIntegerValue(result);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+NetworkPlaintextScheduler::recoverIntegerWireBatch(
+    const std::vector<uint64_t>& v) {
+  freeGates_ += v.size();
+
+  std::vector<uint64_t> result = v;
+  std::vector<uint64_t> receivedShares;
+
+  // XOR the shares from all parties to recover the true value
+  for (auto& iter : agentMap_) {
+    if (iter.first < myId_) {
+      iter.second->sendInt64(v);
+      receivedShares = iter.second->receiveInt64(v.size());
+    } else {
+      receivedShares = iter.second->receiveInt64(v.size());
+      iter.second->sendInt64(v);
+    }
+    for (size_t i = 0; i < result.size(); i++) {
+      result[i] = result.at(i) + receivedShares.at(i);
+    }
+  }
+
+  return wireKeeper_->allocateBatchIntegerValue(result);
+}
+
+uint64_t NetworkPlaintextScheduler::extractIntegerSecretShare(
+    WireId<IScheduler::Arithmetic> id) {
+  // Party 0 gets the actual value.
+  // Other parties get false, so all parties' shares XOR to the actual value.
+  if (myId_ == 0) {
+    return wireKeeper_->getIntegerValue(id);
+  } else {
+    return 0;
+  }
+}
+
+std::vector<uint64_t> NetworkPlaintextScheduler::extractIntegerSecretShareBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  // Party 0 gets the actual value.
+  // Other parties get false, so all parties' shares XOR to the actual value.
+  auto result = wireKeeper_->getBatchIntegerValue(id);
+  if (myId_ == 0) {
+    return result;
+  } else {
+    return std::vector<uint64_t>(result.size(), 0);
   }
 }
 

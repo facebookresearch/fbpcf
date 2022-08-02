@@ -104,11 +104,6 @@ void SocketPartyCommunicationAgent::sendImpl(const void* data, int nBytes) {
   }
 }
 
-void SocketPartyCommunicationAgent::send(
-    const std::vector<unsigned char>& data) {
-  sendImpl(static_cast<const void*>(data.data()), data.size());
-}
-
 void SocketPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
   size_t bytesRead = 0;
 
@@ -128,12 +123,6 @@ void SocketPartyCommunicationAgent::recvImpl(void* data, int nBytes) {
   }
   assert(bytesRead == nBytes);
   recorder_->addReceivedData(bytesRead);
-}
-
-std::vector<unsigned char> SocketPartyCommunicationAgent::receive(size_t size) {
-  std::vector<unsigned char> rst(size);
-  recvImpl(static_cast<void*>(rst.data()), size);
-  return rst;
 }
 
 void SocketPartyCommunicationAgent::openServerPort(int sockFd, int portNo) {
