@@ -24,10 +24,12 @@ namespace fbpcf::scheduler {
 LazyScheduler::LazyScheduler(
     std::unique_ptr<engine::ISecretShareEngine> engine,
     std::shared_ptr<IWireKeeper> wireKeeper,
-    std::unique_ptr<IGateKeeper> gateKeeper)
+    std::unique_ptr<IGateKeeper> gateKeeper,
+    std::shared_ptr<util::MetricCollector> collector)
     : engine_{std::move(engine)},
       wireKeeper_{std::move(wireKeeper)},
-      gateKeeper_{std::move(gateKeeper)} {}
+      gateKeeper_{std::move(gateKeeper)},
+      collector_{collector} {}
 
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::privateBooleanInput(
     bool v,
