@@ -85,16 +85,11 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
         std::vector<std::string> rst(batchSize);
         for (size_t i = 0; i < batchSize; i++) {
           rst[i].reserve(maxWidth);
-          if (chars[i] != 0) {
-            rst[i].push_back(chars[i]);
-          }
         }
-        for (size_t j = 1; j < maxWidth; j++) {
+        for (size_t j = 0; j < maxWidth; j++) {
           chars = convertLongsToChar(data_[j].getValue());
           for (size_t i = 0; i < batchSize; i++) {
-            if (chars[i] != 0) {
-              rst[i].push_back(chars[i]);
-            }
+            rst[i].push_back(chars[i]);
           }
         }
         return rst;
