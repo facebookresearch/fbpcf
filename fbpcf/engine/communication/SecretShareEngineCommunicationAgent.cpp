@@ -43,6 +43,27 @@ std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToAll(
   return rst;
 }
 
+std::vector<uint64_t> SecretShareEngineCommunicationAgent::openSecretsToAll(
+    const std::vector<uint64_t>& secretShares) {
+  std::vector<uint64_t> rst = secretShares;
+  std::vector<uint64_t> receivedShares;
+
+  // exchange the share with all the peers
+  for (auto& iter : agentMap_) {
+    if (iter.first < myId_) {
+      iter.second->sendInt64(secretShares);
+      receivedShares = iter.second->receiveInt64(secretShares.size());
+    } else {
+      receivedShares = iter.second->receiveInt64(secretShares.size());
+      iter.second->sendInt64(secretShares);
+    }
+    for (size_t i = 0; i < rst.size(); i++) {
+      rst[i] = rst[i] + receivedShares[i];
+    }
+  }
+  return rst;
+}
+
 std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToParty(
     int id,
     const std::vector<bool>& secretShares) {
@@ -58,6 +79,24 @@ std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToParty(
   } else {
     agentMap_.at(id)->sendBool(secretShares);
     return std::vector<bool>(secretShares.size());
+  }
+}
+
+std::vector<uint64_t> SecretShareEngineCommunicationAgent::openSecretsToParty(
+    int id,
+    const std::vector<uint64_t>& secretShares) {
+  if (id == myId_) {
+    std::vector<uint64_t> rst = secretShares;
+    for (auto& iter : agentMap_) {
+      auto receivedShares = iter.second->receiveInt64(secretShares.size());
+      for (size_t i = 0; i < rst.size(); i++) {
+        rst[i] = rst.at(i) + receivedShares.at(i);
+      }
+    }
+    return rst;
+  } else {
+    agentMap_.at(id)->sendInt64(secretShares);
+    return std::vector<uint64_t>(secretShares.size());
   }
 }
 
