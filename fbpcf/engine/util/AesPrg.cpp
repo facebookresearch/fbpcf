@@ -7,6 +7,7 @@
 
 #include "fbpcf/engine/util/AesPrg.h"
 #include <string.h>
+#include <cstdint>
 #include <stdexcept>
 
 namespace fbpcf::engine::util {
@@ -43,6 +44,22 @@ std::vector<unsigned char> AesPrg::getRandomBytes(uint32_t size) {
     throw std::runtime_error("Can only generate random numbers in place!");
   }
   return asyncBuffer_->getData(size);
+}
+
+std::vector<uint64_t> AesPrg::getRandomUInt64(uint32_t size) {
+  if (!asyncBuffer_) {
+    throw std::runtime_error("Can only generate random numbers in place!");
+  }
+  auto randomBytes = asyncBuffer_->getData(size * 8);
+
+  std::vector<uint64_t> rst(size);
+  for (size_t i = 0; i < size; ++i) { // put random bytes into groups of 8 bytes
+    for (size_t j = 0; j < 8; j++) {
+      // add each byte to the end of the current numbers
+      rst.at(i) = rst.at(i) << 8 ^ randomBytes.at((i << 3) ^ j);
+    }
+  }
+  return rst;
 }
 
 std::vector<unsigned char> AesPrg::generateRandomData(uint64_t numBytes) {

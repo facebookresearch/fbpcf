@@ -26,7 +26,19 @@ class IPrg {
 
   virtual std::vector<bool> getRandomBits(uint32_t size) = 0;
 
+  /**
+   * Generate random bytes from async buffer
+   * @param size the number of random bytes being generated
+   * @return each element in the vector is a random byte
+   */
   virtual std::vector<unsigned char> getRandomBytes(uint32_t size) = 0;
+
+  /**
+   * Generate random unsigned 64 bit integers from random bytes
+   * @param size the number of random unsigned 64 bit integers being generated
+   * @return each element in the vector is a random unsigned 64 bit integer
+   */
+  virtual std::vector<uint64_t> getRandomUInt64(uint32_t size) = 0;
 };
 
 } // namespace fbpcf::engine::util
