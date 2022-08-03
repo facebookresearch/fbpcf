@@ -6,6 +6,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <cstdint>
 
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
@@ -51,7 +52,38 @@ void runWithScheduler(
   }
 }
 
+void runWithArithmeticScheduler(
+    SchedulerType schedulerType,
+    std::function<
+        void(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID)>
+        testBody) {
+  auto schedulerCreator = getArithmeticSchedulerCreator<unsafe>(schedulerType);
+  auto agentFactories =
+      engine::communication::getInMemoryAgentFactory(numberOfParties);
+
+  std::vector<std::future<void>> futures;
+
+  for (auto i = 0; i < numberOfParties; ++i) {
+    futures.push_back(std::async(
+        [i, schedulerCreator, testBody](
+            std::reference_wrapper<
+                engine::communication::IPartyCommunicationAgentFactory>
+                agentFactory) {
+          testBody(schedulerCreator(i, agentFactory), i);
+        },
+        std::reference_wrapper<
+            engine::communication::IPartyCommunicationAgentFactory>(
+            *agentFactories.at(i))));
+  }
+
+  for (auto i = 0; i < numberOfParties; ++i) {
+    futures.at(i).get();
+  }
+}
+
 class SchedulerTestFixture : public ::testing::TestWithParam<SchedulerType> {};
+class ArithmeticSchedulerTestFixture
+    : public ::testing::TestWithParam<SchedulerType> {};
 
 INSTANTIATE_TEST_SUITE_P(
     SchedulerTest,
@@ -61,6 +93,16 @@ INSTANTIATE_TEST_SUITE_P(
         SchedulerType::NetworkPlaintext,
         SchedulerType::Eager,
         SchedulerType::Lazy),
+    [](const testing::TestParamInfo<SchedulerTestFixture::ParamType>& info) {
+      return getSchedulerName(info.param);
+    });
+
+INSTANTIATE_TEST_SUITE_P(
+    SchedulerTest,
+    ArithmeticSchedulerTestFixture,
+    ::testing::Values(
+        SchedulerType::Plaintext,
+        SchedulerType::NetworkPlaintext),
     [](const testing::TestParamInfo<SchedulerTestFixture::ParamType>& info) {
       return getSchedulerName(info.param);
     });
@@ -102,6 +144,45 @@ TEST_P(SchedulerTestFixture, testInputAndOutput) {
   runWithScheduler(GetParam(), testInputAndOutput);
 }
 
+void testIntegerInputAndOutput(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t myID) {
+  // Public inputs
+  auto wire1 = scheduler->publicIntegerInput(12);
+  EXPECT_EQ(scheduler->getIntegerValue(wire1), 12);
+
+  auto wire2 = scheduler->publicIntegerInput(((uint64_t)1 << 63) * 2);
+  EXPECT_EQ(scheduler->getIntegerValue(wire2), 0);
+
+  // Private inputs
+  auto wire3 = scheduler->privateIntegerInput(23, 0);
+  auto wire4 = scheduler->privateIntegerInput(79, 1);
+
+  // Reveal 0's input to 1
+  auto wire5 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(wire3, 1));
+  if (myID == 1) {
+    EXPECT_EQ(wire5, 23);
+  }
+
+  auto share = scheduler->extractIntegerSecretShare(wire4);
+  auto wire6 = scheduler->recoverIntegerWire(share);
+
+  // Reveal 1's input to 0
+  auto wire7 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(wire6, 0));
+  if (myID == 0) {
+    EXPECT_EQ(wire7, 79);
+  }
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 2);
+  EXPECT_EQ(gateCount.second, 5);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testInputAndOutput) {
+  runWithArithmeticScheduler(GetParam(), testIntegerInputAndOutput);
+}
+
 void testInputAndOutputBatch(
     std::unique_ptr<IScheduler> scheduler,
     int8_t myID) {
@@ -140,6 +221,47 @@ void testInputAndOutputBatch(
 
 TEST_P(SchedulerTestFixture, testInputAndOutputBatch) {
   runWithScheduler(GetParam(), testInputAndOutputBatch);
+}
+
+void testIntegerInputAndOutputBatch(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t myID) {
+  // Public inputs
+  auto wire1 = scheduler->publicIntegerInputBatch({12, 21});
+  testVectorEq(scheduler->getIntegerValueBatch(wire1), {12, 21});
+
+  auto wire2 = scheduler->publicIntegerInputBatch({13, 31});
+  testVectorEq(scheduler->getIntegerValueBatch(wire2), {13, 31});
+
+  // Private inputs
+  auto wire3 = scheduler->privateIntegerInputBatch({14, 41}, 0);
+  auto wire4 =
+      scheduler->privateIntegerInputBatch({((uint64_t)1 << 63) * 2 + 1, 51}, 1);
+
+  // Reveal 0's input to 1
+  auto wire5 = scheduler->getIntegerValueBatch(
+      scheduler->openIntegerValueToPartyBatch(wire3, 1));
+  if (myID == 1) {
+    testVectorEq(wire5, {14, 41});
+  }
+
+  auto share = scheduler->extractIntegerSecretShareBatch(wire4);
+  auto wire6 = scheduler->recoverIntegerWireBatch(share);
+
+  // Reveal 1's input to 0
+  auto wire7 = scheduler->getIntegerValueBatch(
+      scheduler->openIntegerValueToPartyBatch(wire6, 0));
+  if (myID == 0) {
+    testVectorEq(wire7, {1, 51});
+  }
+
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 4);
+  EXPECT_EQ(gateCount.second, 10);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testInputAndOutputBatch) {
+  runWithArithmeticScheduler(GetParam(), testIntegerInputAndOutputBatch);
 }
 
 void testAnd(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
@@ -485,6 +607,76 @@ void testReferenceCountBatch(
 
 TEST_P(SchedulerTestFixture, testReferenceCountBatch) {
   runWithScheduler(GetParam(), testReferenceCountBatch);
+}
+
+void testArithmeticReferenceCount(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t /*myId*/) {
+  auto wire = scheduler->privateIntegerInput(21321, 0);
+
+  for (int i = 0; i < 10; i++) {
+    if (i % 3 == 2) {
+      scheduler->decreaseReferenceCount(wire);
+    } else {
+      scheduler->increaseReferenceCount(wire);
+    }
+    EXPECT_NO_THROW(scheduler->getIntegerValue(wire));
+  }
+
+  for (int i = 0; i < 10; i++) {
+    EXPECT_NO_THROW(scheduler->getIntegerValue(wire));
+    if (i % 3 != 2) {
+      scheduler->decreaseReferenceCount(wire);
+    } else {
+      scheduler->increaseReferenceCount(wire);
+    }
+  }
+
+  testPairEq(scheduler->getWireStatistics(), {1, 0});
+
+  scheduler->decreaseReferenceCount(wire);
+  EXPECT_THROW(scheduler->getIntegerValue(wire), std::runtime_error);
+
+  testPairEq(scheduler->getWireStatistics(), {1, 1});
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testReferenceCount) {
+  runWithArithmeticScheduler(GetParam(), testArithmeticReferenceCount);
+}
+
+void testArithmeticReferenceCountBatch(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t /*myId*/) {
+  auto wire = scheduler->privateIntegerInputBatch({123, (uint64_t)-324}, 0);
+
+  for (int i = 0; i < 10; i++) {
+    if (i % 3 == 2) {
+      scheduler->decreaseReferenceCountBatch(wire);
+    } else {
+      scheduler->increaseReferenceCountBatch(wire);
+    }
+    EXPECT_NO_THROW(scheduler->getIntegerValueBatch(wire));
+  }
+
+  for (int i = 0; i < 10; i++) {
+    EXPECT_NO_THROW(scheduler->getIntegerValueBatch(wire));
+    if (i % 3 != 2) {
+      scheduler->decreaseReferenceCountBatch(wire);
+    } else {
+      scheduler->increaseReferenceCountBatch(wire);
+    }
+  }
+
+  testPairEq(scheduler->getWireStatistics(), {1, 0});
+
+  scheduler->decreaseReferenceCountBatch(wire);
+  EXPECT_THROW(scheduler->getIntegerValueBatch(wire), std::runtime_error);
+
+  testPairEq(scheduler->getWireStatistics(), {1, 1});
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testReferenceCountBatch) {
+  runWithArithmeticScheduler(GetParam(), testArithmeticReferenceCountBatch);
 }
 
 void testBatchingAndUnbatching(
