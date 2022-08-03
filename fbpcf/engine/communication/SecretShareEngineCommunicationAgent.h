@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <vector>
@@ -41,9 +42,22 @@ class SecretShareEngineCommunicationAgent final
   /**
    * @inherit doc
    */
+  std::vector<uint64_t> openSecretsToAll(
+      const std::vector<uint64_t>& secretShares) override;
+
+  /**
+   * @inherit doc
+   */
   std::vector<bool> openSecretsToParty(
       int id,
       const std::vector<bool>& secretShares) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> openSecretsToParty(
+      int id,
+      const std::vector<uint64_t>& secretShares) override;
 
   /**
    * @inherit doc
