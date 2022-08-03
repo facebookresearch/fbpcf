@@ -347,6 +347,91 @@ TEST_P(SchedulerTestFixture, testAndBatch) {
   runWithScheduler(GetParam(), testAndBatch);
 }
 
+void testMult(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
+  for (auto v1 : {(uint64_t)1 << 63, (uint64_t)332}) {
+    for (auto v2 : {(uint64_t)1 << 63, (uint64_t)13}) {
+      // Private Mult private
+      auto wire1 =
+          scheduler->getIntegerValue(scheduler->openIntegerValueToParty(
+              scheduler->privateMultPrivate(
+                  scheduler->privateIntegerInput(v1, 0),
+                  scheduler->privateIntegerInput(v2, 1)),
+              0));
+      if (myID == 0) {
+        EXPECT_EQ(wire1, v1 * v2);
+      }
+
+      // Public Mult public
+      auto wire2 = scheduler->publicMultPublic(
+          scheduler->publicIntegerInput(v1), scheduler->publicIntegerInput(v2));
+      EXPECT_EQ(scheduler->getIntegerValue(wire2), v1 * v2);
+
+      // Private Mult public
+      auto wire3 =
+          scheduler->getIntegerValue(scheduler->openIntegerValueToParty(
+              scheduler->privateMultPublic(
+                  scheduler->privateIntegerInput(v1, 0),
+                  scheduler->publicIntegerInput(v2)),
+              1));
+      if (myID == 1) {
+        EXPECT_EQ(wire3, v1 * v2);
+      }
+    }
+  }
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 12);
+  EXPECT_EQ(gateCount.second, 32);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testMult) {
+  runWithArithmeticScheduler(GetParam(), testMult);
+}
+
+void testMultBatch(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t myID) {
+  for (auto v1 : {(uint64_t)1 << 63, (uint64_t)332}) {
+    for (auto v2 : {(uint64_t)1 << 63, (uint64_t)13}) {
+      // Private Mult private
+      auto wire1 = scheduler->getIntegerValueBatch(
+          scheduler->openIntegerValueToPartyBatch(
+              scheduler->privateMultPrivateBatch(
+                  scheduler->privateIntegerInputBatch({v1, v1}, 0),
+                  scheduler->privateIntegerInputBatch({v2, v1}, 1)),
+              0));
+      if (myID == 0) {
+        testVectorEq(wire1, {v1 * v2, v1 * v1});
+      }
+
+      // Public Mult public
+      auto wire2 =
+          scheduler->getIntegerValueBatch(scheduler->publicMultPublicBatch(
+              scheduler->publicIntegerInputBatch({v1, v1}),
+              scheduler->publicIntegerInputBatch({v2, v1})));
+      testVectorEq(wire2, {v1 * v2, v1 * v1});
+
+      // Private Mult public
+      auto wire3 = scheduler->getIntegerValueBatch(
+          scheduler->openIntegerValueToPartyBatch(
+              scheduler->privateMultPublicBatch(
+                  scheduler->privateIntegerInputBatch({v1, v1}, 0),
+                  scheduler->publicIntegerInputBatch({v2, v1})),
+              1));
+      if (myID == 1) {
+        testVectorEq(wire3, {v1 * v2, v1 * v1});
+      }
+    }
+  }
+
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 24);
+  EXPECT_EQ(gateCount.second, 64);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testMultBatch) {
+  runWithArithmeticScheduler(GetParam(), testMultBatch);
+}
+
 void testXor(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
   for (auto v1 : {true, false}) {
     for (auto v2 : {true, false}) {
@@ -430,6 +515,91 @@ TEST_P(SchedulerTestFixture, testXorBatch) {
   runWithScheduler(GetParam(), testXorBatch);
 }
 
+void testPlus(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
+  for (auto v1 : {(uint64_t)1 << 63, (uint64_t)332}) {
+    for (auto v2 : {(uint64_t)1 << 63, (uint64_t)89}) {
+      // Private and private
+      auto wire1 =
+          scheduler->getIntegerValue(scheduler->openIntegerValueToParty(
+              scheduler->privatePlusPrivate(
+                  scheduler->privateIntegerInput(v1, 0),
+                  scheduler->privateIntegerInput(v2, 1)),
+              0));
+      if (myID == 0) {
+        EXPECT_EQ(wire1, (uint64_t)v1 + v2);
+      }
+
+      // Public and public
+      auto wire2 = scheduler->publicPlusPublic(
+          scheduler->publicIntegerInput(v1), scheduler->publicIntegerInput(v2));
+      EXPECT_EQ(scheduler->getIntegerValue(wire2), (uint64_t)v1 + v2);
+
+      // Private and public
+      auto wire3 =
+          scheduler->getIntegerValue(scheduler->openIntegerValueToParty(
+              scheduler->privatePlusPublic(
+                  scheduler->privateIntegerInput(v1, 0),
+                  scheduler->publicIntegerInput(v2)),
+              1));
+      if (myID == 1) {
+        EXPECT_EQ(wire3, (uint64_t)v1 + v2);
+      }
+    }
+  }
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 8);
+  EXPECT_EQ(gateCount.second, 36);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testPlus) {
+  runWithArithmeticScheduler(GetParam(), testPlus);
+}
+
+void testPlusBatch(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t myID) {
+  for (uint64_t v1 : {(uint64_t)1 << 63, (uint64_t)332}) {
+    for (uint64_t v2 : {(uint64_t)1 << 63, (uint64_t)89}) {
+      // Private and private
+      auto wire1 = scheduler->getIntegerValueBatch(
+          scheduler->openIntegerValueToPartyBatch(
+              scheduler->privatePlusPrivateBatch(
+                  scheduler->privateIntegerInputBatch({v1, v1}, 0),
+                  scheduler->privateIntegerInputBatch({v2, v1}, 1)),
+              0));
+      if (myID == 0) {
+        testVectorEq(wire1, {v1 + v2, v1 + v1});
+      }
+
+      // Public and public
+      auto wire2 =
+          scheduler->getIntegerValueBatch(scheduler->publicPlusPublicBatch(
+              scheduler->publicIntegerInputBatch({v1, v1}),
+              scheduler->publicIntegerInputBatch({v2, v1})));
+      testVectorEq(wire2, {v1 + v2, v1 + v1});
+
+      // Private and public
+      auto wire3 = scheduler->getIntegerValueBatch(
+          scheduler->openIntegerValueToPartyBatch(
+              scheduler->privatePlusPublicBatch(
+                  scheduler->privateIntegerInputBatch({v1, v1}, 0),
+                  scheduler->publicIntegerInputBatch({v2, v1})),
+              1));
+      if (myID == 1) {
+        testVectorEq(wire3, {v1 + v2, v1 + v1});
+      }
+    }
+  }
+
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 16);
+  EXPECT_EQ(gateCount.second, 72);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testPlusBatch) {
+  runWithArithmeticScheduler(GetParam(), testPlusBatch);
+}
+
 void testNot(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
   for (auto v1 : {true, false}) {
     // Not private
@@ -477,6 +647,57 @@ void testNotBatch(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
 
 TEST_P(SchedulerTestFixture, testNotBatch) {
   runWithScheduler(GetParam(), testNotBatch);
+}
+
+void testNeg(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
+  for (auto v1 : {(uint64_t)-1231, (uint64_t)5765}) {
+    // Neg private
+    auto wire1 = scheduler->getIntegerValue(scheduler->openIntegerValueToParty(
+        scheduler->negPrivate(scheduler->privateIntegerInput(v1, 1)), 0));
+    if (myID == 0) {
+      EXPECT_EQ(wire1, -v1);
+    }
+
+    // Neg public
+    auto wire2 = scheduler->negPublic(scheduler->publicIntegerInput(v1));
+    EXPECT_EQ(scheduler->getIntegerValue(wire2), -v1);
+  }
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 2);
+  EXPECT_EQ(gateCount.second, 8);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testNeg) {
+  runWithArithmeticScheduler(GetParam(), testNeg);
+}
+
+void testNegBatch(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t myID) {
+  for (auto v1 : {(uint64_t)-1231, (uint64_t)5765}) {
+    // Neg private
+    auto wire1 =
+        scheduler->getIntegerValueBatch(scheduler->openIntegerValueToPartyBatch(
+            scheduler->negPrivateBatch(
+                scheduler->privateIntegerInputBatch({v1, -v1}, 1)),
+            0));
+    if (myID == 0) {
+      testVectorEq(wire1, {-v1, v1});
+    }
+
+    // Neg public
+    auto wire2 = scheduler->negPublicBatch(
+        scheduler->publicIntegerInputBatch({v1, -v1}));
+    testVectorEq(scheduler->getIntegerValueBatch(wire2), {-v1, v1});
+  }
+
+  auto gateCount = scheduler->getGateStatistics();
+  EXPECT_EQ(gateCount.first, 4);
+  EXPECT_EQ(gateCount.second, 16);
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testNegBatch) {
+  runWithArithmeticScheduler(GetParam(), testNegBatch);
 }
 
 void testMultipleOperations(
@@ -537,6 +758,66 @@ void testMultipleOperations(
 
 TEST_P(SchedulerTestFixture, testMultipleOperations) {
   runWithScheduler(GetParam(), testMultipleOperations);
+}
+
+void testMultipleArithmeticOperations(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t myID) {
+  auto v1 = scheduler->privateIntegerInput(321, 0);
+  auto v2 = scheduler->privateIntegerInput(123, 0);
+
+  auto v3 = scheduler->privatePlusPrivate(v1, v2); // 444
+  auto v4 = scheduler->privateMultPrivate(v3, v1); // 142524
+  auto v5 = scheduler->negPrivate(v4); // -142524
+
+  auto revealed1 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(v5, 0));
+  if (myID == 0) {
+    EXPECT_EQ(revealed1, (uint64_t)-142524);
+  }
+
+  auto v6 = scheduler->publicIntegerInput(235);
+
+  auto v7 = scheduler->negPublic(v6); // -235
+  auto v8 = scheduler->privateMultPublic(v1, v7); // -75435
+  auto v9 = scheduler->privatePlusPublic(v2, v7); // -112
+
+  auto revealed2 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(v8, 1));
+  auto revealed3 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(v9, 1));
+  if (myID == 1) {
+    EXPECT_EQ(revealed2, (uint64_t)-75435);
+    EXPECT_EQ(revealed3, (uint64_t)-112);
+  }
+
+  auto v10 = scheduler->publicIntegerInput(596854);
+
+  auto v11 = scheduler->publicMultPublic(v10, v6); // 140260690
+  auto v12 = scheduler->publicPlusPublic(v11, v10); // 140857544
+  auto v13 = scheduler->publicMultPublic(v12, v7); // -235 * 140857544
+
+  EXPECT_EQ(scheduler->getIntegerValue(v13), (uint64_t)(-235) * 140857544);
+
+  auto v14 = scheduler->privateIntegerInput(888, 1);
+  auto v15 = scheduler->privateMultPrivate(v14, v1); // 285048
+  auto v16 = scheduler->negPrivate(v15); // -285048
+  auto v17 = scheduler->privatePlusPrivate(v1, v14); // 1209
+  auto v18 = scheduler->privateMultPrivate(v16, v17); // -344623032
+  auto v19 = scheduler->privatePlusPrivate(v18, v15); // -344337984
+
+  auto revealed4 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(v19, 0));
+  auto revealed5 =
+      scheduler->getIntegerValue(scheduler->openIntegerValueToParty(v18, 0));
+  if (myID == 0) {
+    EXPECT_EQ(revealed4, (uint64_t)-344337984);
+    EXPECT_EQ(revealed5, (uint64_t)-344623032);
+  }
+}
+
+TEST_P(ArithmeticSchedulerTestFixture, testMultipleOperations) {
+  runWithArithmeticScheduler(GetParam(), testMultipleArithmeticOperations);
 }
 
 void testReferenceCount(
