@@ -55,6 +55,11 @@ class AesPrg final : public IPrg {
    */
   std::vector<unsigned char> getRandomBytes(uint32_t size) override;
 
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> getRandomUInt64(uint32_t size) override;
+
   inline void getRandomDataInPlace(std::vector<__m128i>& data) {
     // this can happen only if there is about to be an overflow.
     if (prgCounter_ > 0xFFFFFFFFFFFFFFFF /* 2^ 64 - 1 */ - data.size()) {

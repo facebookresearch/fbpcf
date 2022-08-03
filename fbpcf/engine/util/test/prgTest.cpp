@@ -42,6 +42,21 @@ TEST(AesPrgTest, testGetRandomBits) {
   }
 }
 
+TEST(AesPrgTest, testGetRandomUInt64) {
+  AesPrg prg1(_mm_set_epi32(1, 2, 3, 4), 1024);
+  auto randomInt = prg1.getRandomUInt64(8);
+
+  AesPrg prg2(_mm_set_epi32(1, 2, 3, 4), 1024);
+  auto randomBytes = prg2.getRandomBytes(64);
+
+  for (auto i = 0; i < randomInt.size(); i++) {
+    for (auto j = 0; j < 8; j++) {
+      unsigned char intVal = randomInt.at(i) >> (8 * (8 - j - 1)) & 255;
+      EXPECT_EQ(intVal, randomBytes.at(i * 8 + j));
+    }
+  }
+}
+
 TEST(AesPrgTest, testInPlaceGeneration) {
   __m128i aes_key = _mm_set_epi32(1, 2, 3, 4);
   AesPrg prg1(aes_key);
