@@ -43,6 +43,29 @@ inline std::unique_ptr<IScheduler> createNetworkPlaintextScheduler(
       myId, std::move(agentMap), WireKeeper::createWithVectorArena<unsafe>());
 }
 
+template <bool unsafe>
+inline std::unique_ptr<IArithmeticScheduler> createArithmeticPlaintextScheduler(
+    int /*myId*/,
+    engine::communication::IPartyCommunicationAgentFactory&
+    /*communicationAgentFactory*/) {
+  return std::make_unique<PlaintextScheduler>(
+      WireKeeper::createWithVectorArena<unsafe>());
+}
+
+template <bool unsafe>
+inline std::unique_ptr<IArithmeticScheduler>
+createArithmeticNetworkPlaintextScheduler(
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory) {
+  auto numberOfParties = 2;
+  auto agentMap = engine::communication::getAgentMap(
+      numberOfParties, myId, communicationAgentFactory);
+
+  return std::make_unique<NetworkPlaintextScheduler>(
+      myId, std::move(agentMap), WireKeeper::createWithVectorArena<unsafe>());
+}
+
 // this function creates a eager scheduler with real secure engine
 inline std::unique_ptr<IScheduler> createEagerSchedulerWithRealEngine(
     int myId,
