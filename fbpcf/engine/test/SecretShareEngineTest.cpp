@@ -373,6 +373,53 @@ TEST(SecretShareEngineTest, TestBatchNOTWithDummyComponents) {
   }
 }
 
+std::vector<uint64_t> symmetricNegTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  std::vector<uint64_t> rst(inputs.size());
+  for (int i = 0; i < inputs.size(); i++) {
+    rst[i] = engine.computeSymmetricNeg(inputs[i]);
+  }
+  return rst;
+}
+
+TEST(SecretShareEngineTest, TestNegWithDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs = generateRandomIntegerInputs(numberOfParty, size, 0);
+  auto rst = testHelper(
+      numberOfParty,
+      testTemplate(inputs, symmetricNegTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst.size(), size);
+  for (int i = 0; i < size; i++) {
+    EXPECT_EQ(rst[i], -inputs[i].first);
+  }
+}
+
+std::vector<uint64_t> batchSymmetricNegTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  return engine.computeBatchSymmetricNeg(inputs);
+}
+
+TEST(SecretShareEngineTest, TestBatchNegWithDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs = generateRandomIntegerInputs(numberOfParty, size, 0);
+
+  auto rst = testHelper(
+      numberOfParty,
+      testTemplate(inputs, batchSymmetricNegTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst.size(), size);
+  for (int i = 0; i < size; i++) {
+    EXPECT_EQ(rst[i], -inputs[i].first);
+  }
+}
+
 std::vector<bool> symmetricXORTestBody(
     ISecretShareEngine& engine,
     const std::vector<bool>& inputs) {
@@ -488,6 +535,124 @@ TEST(SecretShareEngineTest, TestBatchXORWithDummyComponents) {
     EXPECT_EQ(rst1[i], inputs1[i].first ^ inputs1[i + size / 2].first);
     EXPECT_EQ(rst2[i], inputs2[i].first ^ inputs2[i + size / 2].first);
     EXPECT_EQ(rst3[i], inputs3[i].first ^ inputs3[i + size / 2].first);
+  }
+}
+
+std::vector<uint64_t> symmetricPlusTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  auto size = inputs.size();
+  EXPECT_EQ(size % 2, 0);
+
+  std::vector<uint64_t> rst(size / 2);
+  for (size_t i = 0; i < size / 2; i++) {
+    rst[i] = engine.computeSymmetricPlus(inputs[i], inputs[i + size / 2]);
+  }
+  return rst;
+}
+
+std::vector<uint64_t> asymmetricPlusTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  auto size = inputs.size();
+  EXPECT_EQ(size % 2, 0);
+
+  std::vector<uint64_t> rst(size / 2);
+  for (size_t i = 0; i < size / 2; i++) {
+    rst[i] = engine.computeAsymmetricPlus(inputs[i], inputs[i + size / 2]);
+  }
+  return rst;
+}
+
+TEST(SecretShareEngineTest, TestPlustWitDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs1 = generateRandomIntegerInputs(numberOfParty, size, size);
+  auto inputs2 = generateRandomIntegerInputs(numberOfParty, size, size / 2);
+  auto inputs3 = generateRandomIntegerInputs(numberOfParty, size, 0);
+  auto rst1 = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, symmetricPlusTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  auto rst2 = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, asymmetricPlusTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  auto rst3 = testHelper(
+      numberOfParty,
+      testTemplate(inputs3, symmetricPlusTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1.size(), size / 2);
+  EXPECT_EQ(rst2.size(), size / 2);
+  EXPECT_EQ(rst3.size(), size / 2);
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(rst1[i], inputs1[i].first + inputs1[i + size / 2].first);
+    EXPECT_EQ(rst2[i], inputs2[i].first + inputs2[i + size / 2].first);
+    EXPECT_EQ(rst3[i], inputs3[i].first + inputs3[i + size / 2].first);
+  }
+}
+
+std::vector<uint64_t> batchSymmetricPlusTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  EXPECT_EQ(inputs.size() % 2, 0);
+  auto size = inputs.size();
+  auto firstHalfInput =
+      std::vector<uint64_t>(inputs.begin(), inputs.begin() + size / 2);
+
+  auto secondHalfInput =
+      std::vector<uint64_t>(inputs.begin() + size / 2, inputs.end());
+
+  return engine.computeBatchSymmetricPlus(firstHalfInput, secondHalfInput);
+}
+
+std::vector<uint64_t> batchAsymmetricPlusTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  EXPECT_EQ(inputs.size() % 2, 0);
+  auto size = inputs.size();
+  auto firstHalfInput =
+      std::vector<uint64_t>(inputs.begin(), inputs.begin() + size / 2);
+
+  auto secondHalfInput =
+      std::vector<uint64_t>(inputs.begin() + size / 2, inputs.end());
+
+  return engine.computeBatchAsymmetricPlus(firstHalfInput, secondHalfInput);
+}
+
+TEST(SecretShareEngineTest, TestBatchPlusWithDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs1 = generateRandomIntegerInputs(numberOfParty, size, size);
+  auto inputs2 = generateRandomIntegerInputs(numberOfParty, size, size / 2);
+  auto inputs3 = generateRandomIntegerInputs(numberOfParty, size, 0);
+
+  auto rst1 = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, batchSymmetricPlusTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  auto rst2 = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, batchAsymmetricPlusTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  auto rst3 = testHelper(
+      numberOfParty,
+      testTemplate(inputs3, batchSymmetricPlusTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1.size(), size / 2);
+  EXPECT_EQ(rst2.size(), size / 2);
+  EXPECT_EQ(rst3.size(), size / 2);
+
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(rst1[i], inputs1[i].first + inputs1[i + size / 2].first);
+    EXPECT_EQ(rst2[i], inputs2[i].first + inputs2[i + size / 2].first);
+    EXPECT_EQ(rst3[i], inputs3[i].first + inputs3[i + size / 2].first);
   }
 }
 

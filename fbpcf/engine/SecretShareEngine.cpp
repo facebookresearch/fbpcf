@@ -176,6 +176,57 @@ std::vector<bool> SecretShareEngine::computeBatchAsymmetricXOR(
   }
 }
 
+uint64_t SecretShareEngine::computeSymmetricPlus(uint64_t left, uint64_t right)
+    const {
+  return left + right;
+}
+
+std::vector<uint64_t> SecretShareEngine::computeBatchSymmetricPlus(
+    const std::vector<uint64_t>& left,
+    const std::vector<uint64_t>& right) const {
+  if (left.size() != right.size()) {
+    throw std::invalid_argument("The input sizes are not the same.");
+  }
+  if (left.size() == 0) {
+    return std::vector<uint64_t>();
+  }
+  std::vector<uint64_t> rst(left.size());
+  for (size_t i = 0; i < left.size(); i++) {
+    rst.at(i) = left.at(i) + right.at(i);
+  }
+  return rst;
+}
+
+uint64_t SecretShareEngine::computeAsymmetricPlus(
+    uint64_t privateValue,
+    uint64_t publicValue) const {
+  if (myId_ == 0) {
+    return privateValue + publicValue;
+  } else {
+    return privateValue;
+  }
+}
+
+std::vector<uint64_t> SecretShareEngine::computeBatchAsymmetricPlus(
+    const std::vector<uint64_t>& privateValue,
+    const std::vector<uint64_t>& publicValue) const {
+  if (privateValue.size() != publicValue.size()) {
+    throw std::invalid_argument("The input sizes are not the same.");
+  }
+  if (privateValue.size() == 0) {
+    return std::vector<uint64_t>();
+  }
+  if (myId_ == 0) {
+    std::vector<uint64_t> rst(privateValue.size());
+    for (size_t i = 0; i < privateValue.size(); i++) {
+      rst.at(i) = privateValue.at(i) + publicValue.at(i);
+    }
+    return rst;
+  } else {
+    return privateValue;
+  }
+}
+
 bool SecretShareEngine::computeSymmetricNOT(bool input) const {
   return !input;
 }
@@ -211,6 +262,22 @@ std::vector<bool> SecretShareEngine::computeBatchAsymmetricNOT(
   std::vector<bool> rst(input.size());
   for (size_t i = 0; i < input.size(); i++) {
     rst[i] = !input[i];
+  }
+  return rst;
+}
+
+uint64_t SecretShareEngine::computeSymmetricNeg(uint64_t input) const {
+  return -input;
+}
+
+std::vector<uint64_t> SecretShareEngine::computeBatchSymmetricNeg(
+    const std::vector<uint64_t>& input) const {
+  if (input.size() == 0) {
+    return std::vector<uint64_t>();
+  }
+  std::vector<uint64_t> rst(input.size());
+  for (size_t i = 0; i < rst.size(); i++) {
+    rst[i] = -input[i];
   }
   return rst;
 }

@@ -184,6 +184,42 @@ class SecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
+  uint64_t computeSymmetricPlus(uint64_t left, uint64_t right) const override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchSymmetricPlus(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeAsymmetricPlus(uint64_t privateValue, uint64_t publicValue)
+      const override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchAsymmetricPlus(
+      const std::vector<uint64_t>& privateValue,
+      const std::vector<uint64_t>& publicValue) const override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeSymmetricNeg(uint64_t input) const override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchSymmetricNeg(
+      const std::vector<uint64_t>& input) const override;
+
+  /**
+   * @inherit doc
+   */
   std::vector<uint64_t> revealToParty(
       int id,
       const std::vector<uint64_t>& output) const override;
