@@ -129,6 +129,22 @@ class NotImplementedError : virtual public std::exception {
 
 /**
  * When to use:
+ *  - throw when a method/procedure is/will no longer be supported.
+ */
+class NotSupportedError : virtual public std::exception {
+ public:
+  explicit NotSupportedError(std::string msg) : msg_{msg} {}
+
+  const char* what() const throw() override {
+    return msg_.c_str();
+  }
+
+ private:
+  std::string msg_;
+};
+
+/**
+ * When to use:
  *  - When we are trying to access an illegal variable.
  *    - Example: when a AggMetric<AggMetricType::kPlaintext> object tries to
  *      access getSecValueXor().
