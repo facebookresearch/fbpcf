@@ -13,6 +13,7 @@
 #include <future>
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -54,10 +55,10 @@ T testHelper(
         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
             *agentFactories.at(i))));
   }
-  auto rst = futures[0].get();
-
+  std::cout << futures.size() << endl;
+  auto rst = futures.at(0).get();
   for (auto i = 1; i < numberOfParty; ++i) {
-    auto tmp = futures[i].get();
+    auto tmp = futures.at(i).get();
     assertPartyResultsConsistent(rst, tmp);
   }
 
@@ -914,6 +915,110 @@ TEST_P(NonFreeAndTestFixture, TestAnd) {
   }
 }
 
+std::vector<uint64_t> MultTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  auto size = inputs.size();
+  EXPECT_EQ(size % 16, 0);
+
+  // regular Mult's
+  std::vector<int> regularMultIndex(size / 2);
+  for (int i = 0; i < size / 2; i++) {
+    regularMultIndex[i] = engine.scheduleMult(inputs[i], inputs[i + size / 2]);
+  }
+
+  // batch Mult's
+
+  auto firstHalfInput =
+      std::vector<uint64_t>(inputs.begin(), inputs.begin() + size / 2);
+
+  auto secondHalfInput =
+      std::vector<uint64_t>(inputs.begin() + size / 2, inputs.end());
+
+  auto batchIndex0 = engine.scheduleBatchMult(firstHalfInput, secondHalfInput);
+  auto batchIndex1 = engine.scheduleBatchMult(firstHalfInput, secondHalfInput);
+
+  engine.executeScheduledOperations();
+
+  // Regular Mult
+  std::vector<uint64_t> multResult(size / 2);
+  for (size_t i = 0; i < size / 2; i++) {
+    multResult[i] = engine.getMultExecutionResult(regularMultIndex[i]);
+  }
+  auto tmp = engine.getBatchMultExecutionResult(batchIndex0);
+  multResult.insert(multResult.end(), tmp.begin(), tmp.end());
+
+  tmp = engine.getBatchMultExecutionResult(batchIndex1);
+  multResult.insert(multResult.end(), tmp.begin(), tmp.end());
+
+  tmp = engine.computeBatchMultImmediately(firstHalfInput, secondHalfInput);
+  multResult.insert(multResult.end(), tmp.begin(), tmp.end());
+
+  return multResult;
+}
+
+class NonFreeMultTestFixture
+    : public ::testing::TestWithParam<std::tuple<
+          std::string, // Human readable name
+          size_t, // number of parties
+          std::function<std::unique_ptr<SecretShareEngineFactory>(
+              int myId,
+              int numberOfParty,
+              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    SecretShareEngineTest,
+    NonFreeMultTestFixture,
+    ::testing::Values(
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "InsecureEngineWithDummyTupleGenerator",
+            2,
+            getInsecureEngineFactoryWithDummyTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "InsecureEngineWithDummyTupleGenerator",
+            4,
+            getInsecureEngineFactoryWithDummyTupleGenerator)),
+    [](const testing::TestParamInfo<NonFreeMultTestFixture::ParamType>& info) {
+      return std::get<0>(info.param) + '_' +
+          std::to_string(std::get<1>(info.param)) + "Party";
+    });
+
+TEST_P(NonFreeMultTestFixture, TestMult) {
+  size_t numberOfParty = std::get<1>(GetParam());
+  size_t size = 16384;
+  auto inputs = generateRandomIntegerInputs(numberOfParty, size, size);
+
+  auto multResult = testHelper(
+      numberOfParty,
+      testTemplate(inputs, MultTestBody),
+      std::get<2>(GetParam()),
+      assertPartyResultsConsistent);
+  ASSERT_EQ(multResult.size(), 2 * size);
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(multResult[i], inputs[i].first * inputs[i + size / 2].first);
+    EXPECT_EQ(
+        multResult[i + size / 2], inputs[i].first * inputs[i + size / 2].first);
+    EXPECT_EQ(
+        multResult[i + size], inputs[i].first * inputs[i + size / 2].first);
+    EXPECT_EQ(
+        multResult[i + size / 2 + size],
+        inputs[i].first * inputs[i + size / 2].first);
+  }
+}
+
 std::vector<bool> FreeANDTestBody(
     ISecretShareEngine& engine,
     const std::vector<bool>& inputs) {
@@ -984,6 +1089,79 @@ TEST(SecretShareEngineTest, TestBatchFreeANDWithDummyComponents) {
   for (int i = 0; i < size / 2; i++) {
     EXPECT_EQ(rst1[i], inputs1[i].first & inputs1[i + size / 2].first);
     EXPECT_EQ(rst2[i], inputs2[i].first & inputs2[i + size / 2].first);
+  }
+}
+
+std::vector<uint64_t> FreeMultTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  auto size = inputs.size();
+  EXPECT_EQ(size % 2, 0);
+
+  std::vector<uint64_t> rst(size / 2);
+  for (size_t i = 0; i < size / 2; i++) {
+    rst[i] = engine.computeFreeMult(inputs[i], inputs[i + size / 2]);
+  }
+  return rst;
+}
+
+TEST(SecretShareEngineTest, TestFreeMultWithDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs1 = generateRandomIntegerInputs(numberOfParty, size, size / 2);
+  auto inputs2 = generateRandomIntegerInputs(numberOfParty, size, 0);
+
+  auto rst1 = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, FreeMultTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  auto rst2 = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, FreeMultTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1.size(), size / 2);
+  EXPECT_EQ(rst2.size(), size / 2);
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(rst1[i], inputs1[i].first * inputs1[i + size / 2].first);
+    EXPECT_EQ(rst2[i], inputs2[i].first * inputs2[i + size / 2].first);
+  }
+}
+
+std::vector<uint64_t> BatchFreeMultTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<uint64_t>& inputs) {
+  EXPECT_EQ(inputs.size() % 2, 0);
+  auto size = inputs.size();
+  auto firstHalfInput =
+      std::vector<uint64_t>(inputs.begin(), inputs.begin() + size / 2);
+
+  auto secondHalfInput =
+      std::vector<uint64_t>(inputs.begin() + size / 2, inputs.end());
+
+  return engine.computeBatchFreeMult(firstHalfInput, secondHalfInput);
+}
+
+TEST(SecretShareEngineTest, TestBatchFreeMultWithDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs1 = generateRandomIntegerInputs(numberOfParty, size, size / 2);
+  auto inputs2 = generateRandomIntegerInputs(numberOfParty, size, 0);
+  auto rst1 = testHelper(
+      numberOfParty,
+      testTemplate(inputs1, BatchFreeMultTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  auto rst2 = testHelper(
+      numberOfParty,
+      testTemplate(inputs2, BatchFreeMultTestBody, false),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  EXPECT_EQ(rst1.size(), size / 2);
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(rst1[i], inputs1[i].first * inputs1[i + size / 2].first);
+    EXPECT_EQ(rst2[i], inputs2[i].first * inputs2[i + size / 2].first);
   }
 }
 
