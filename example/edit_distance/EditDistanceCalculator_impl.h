@@ -11,11 +11,13 @@
 #include <stdexcept>
 #include "./EditDistanceCalculator.h" // @manual
 #include "folly/dynamic.h"
+#include "folly/logging/xlog.h"
 
 namespace fbpcf::edit_distance {
 
 template <int schedulerId>
 void EditDistanceCalculator<schedulerId>::calculateEditDistances() {
+  XLOG(INFO, "Start edit distance calculation");
   const SecString<schedulerId>& words = inputProcessor_.getWords();
   const SecString<schedulerId>& guesses = inputProcessor_.getGuesses();
 
@@ -92,10 +94,12 @@ void EditDistanceCalculator<schedulerId>::calculateEditDistances() {
 
   // force computation of result in this class
   editDistances_.extractIntShare();
+  XLOG(INFO, "Finished Edit Distance Calculation");
 }
 
 template <int schedulerId>
 void EditDistanceCalculator<schedulerId>::calculateMessages() {
+  XLOG(INFO, "Start message calculation");
   const Pub32Int<schedulerId>& threshold = inputProcessor_.getThreshold();
   SecUChar<schedulerId> messageLength =
       inputProcessor_.getSenderMessages().template privateSize<charLength>();
@@ -124,6 +128,7 @@ void EditDistanceCalculator<schedulerId>::calculateMessages() {
           .mux(editDistances_ < threshold, senderMessage);
   // force calculation of results in this class
   receiverMessages_.extractAsciiStringShare();
+  XLOG(INFO, "Finish message calculation");
 }
 
 template <int schedulerId>
