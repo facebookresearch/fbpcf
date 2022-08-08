@@ -129,11 +129,6 @@ class SecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  void executeScheduledAND() override;
-
-  /**
-   * @inherit doc
-   */
   std::vector<bool> computeBatchANDImmediately(
       const std::vector<bool>& left,
       const std::vector<bool>& right) override;
@@ -217,12 +212,68 @@ class SecretShareEngine final : public ISecretShareEngine {
   std::vector<uint64_t> computeBatchSymmetricNeg(
       const std::vector<uint64_t>& input) const override;
 
+  //======== Below are free Mult computation API's: ========
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeFreeMult(uint64_t left, uint64_t right) const override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchFreeMult(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override;
+
+  //======== Below are API's to schedule non-free Mult's: ========
+
+  /**
+   * @inherit doc
+   */
+  uint32_t scheduleMult(uint64_t left, uint64_t right) override;
+
+  /**
+   * @inherit doc
+   */
+  uint32_t scheduleBatchMult(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) override;
+
+  //======== Below are API's to execute non free Mult's: ========
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchMultImmediately(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) override;
+
+  //======== Below are API's to retrieve non-free Mult results: ========
+
+  /**
+   * @inherit doc
+   */
+  uint64_t getMultExecutionResult(uint32_t index) const override;
+
+  /**
+   * @inherit doc
+   */
+  const std::vector<uint64_t>& getBatchMultExecutionResult(
+      uint32_t index) const override;
+
   /**
    * @inherit doc
    */
   std::vector<uint64_t> revealToParty(
       int id,
       const std::vector<uint64_t>& output) const override;
+
+  //======== Below are API's to execute non free AND's and Mult's: ========
+  /**
+   * @inherit doc
+   */
+  void executeScheduledOperations() override;
 
   /**
    * @inherit doc
@@ -241,6 +292,8 @@ class SecretShareEngine final : public ISecretShareEngine {
     std::vector<std::vector<bool>> batchANDResults;
     std::vector<std::vector<bool>> compositeANDResults;
     std::vector<std::vector<std::vector<bool>>> compositeBatchANDResults;
+    std::vector<uint64_t> multResults;
+    std::vector<std::vector<uint64_t>> batchMultResults;
   };
 
   class ScheduledAND {
@@ -341,11 +394,59 @@ class SecretShareEngine final : public ISecretShareEngine {
     std::vector<std::vector<bool>> rights_;
   };
 
-  ExecutionResults computeAllANDsFromScheduledANDs(
+  class ScheduledMult {
+   public:
+    ScheduledMult(uint64_t left, uint64_t right) : left_(left), right_(right) {}
+
+    explicit ScheduledMult(const ScheduledMult&) = default;
+    ScheduledMult(ScheduledMult&&) = default;
+    ScheduledMult& operator=(const ScheduledMult&) = delete;
+    ScheduledMult& operator=(ScheduledMult&&) = delete;
+
+    uint64_t getLeft() const {
+      return left_;
+    }
+
+    uint64_t getRight() const {
+      return right_;
+    }
+
+   private:
+    uint64_t left_, right_;
+  };
+
+  class ScheduledBatchMult {
+   public:
+    ScheduledBatchMult(
+        const std::vector<uint64_t>& left,
+        const std::vector<uint64_t>& right)
+        : left_(left), right_(right) {}
+
+    explicit ScheduledBatchMult(const ScheduledBatchMult&) = default;
+    ScheduledBatchMult(ScheduledBatchMult&&) = default;
+    ScheduledBatchMult& operator=(const ScheduledBatchMult&) = delete;
+    ScheduledBatchMult& operator=(ScheduledBatchMult&&) = delete;
+
+    std::vector<uint64_t>& getLeft() {
+      return left_;
+    }
+
+    std::vector<uint64_t>& getRight() {
+      return right_;
+    }
+
+   private:
+    std::vector<uint64_t> left_;
+    std::vector<uint64_t> right_;
+  };
+
+  ExecutionResults computeAllScheduledOperations(
       std::vector<ScheduledAND>& ands,
       std::vector<ScheduledBatchAND>& batchAnds,
       std::vector<ScheduledCompositeAND>& compositeAnds,
-      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds);
+      std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<ScheduledMult>& mults,
+      std::vector<ScheduledBatchMult>& batchMults);
 
   std::vector<bool> computeSecretSharesToOpen(
       std::vector<ScheduledAND>& ands,
@@ -364,12 +465,17 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<ScheduledBatchAND>& batchAnds,
       std::vector<ScheduledCompositeAND>& compositeAnds,
       std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<ScheduledMult>& mults,
+      std::vector<ScheduledBatchMult>& batchMults,
       std::vector<bool>& openedSecrets,
+      std::vector<uint64_t>& openedIntegerSecrets,
       std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& normalTuples,
       std::map<
           size_t,
           std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
-          compositeTuples);
+          compositeTuples,
+      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+          integerTuples);
 
   std::vector<bool> computeSecretSharesToOpenLegacy(
       std::vector<ScheduledAND>& ands,
@@ -385,6 +491,12 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
       std::vector<bool>& openedSecrets,
       std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples);
+
+  std::vector<uint64_t> computeSecretSharesToOpen(
+      std::vector<ScheduledMult>& mults,
+      std::vector<ScheduledBatchMult>& batchMults,
+      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>& tuples,
+      size_t openedSecretCount);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
@@ -410,6 +522,8 @@ class SecretShareEngine final : public ISecretShareEngine {
   std::vector<ScheduledBatchAND> scheduledBatchANDGates_;
   std::vector<ScheduledCompositeAND> scheduledCompositeANDGates_;
   std::vector<ScheduledBatchCompositeAND> scheduledBatchCompositeANDGates_;
+  std::vector<ScheduledMult> scheduledMultGates_;
+  std::vector<ScheduledBatchMult> scheduledBatchMultGates_;
 
   ExecutionResults executionResults_;
 };

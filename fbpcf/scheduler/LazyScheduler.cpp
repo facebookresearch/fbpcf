@@ -391,7 +391,7 @@ void LazyScheduler::executeOneLevel() {
 
   if (!isLevelFree) {
     // Execute AND gates and share secrets
-    engine_->executeScheduledAND();
+    engine_->executeScheduledOperations();
 
     std::map<int64_t, IGate::Secrets> revealedSecretsByParty;
     for (auto [party, secretShares] : secretSharesByParty) {
