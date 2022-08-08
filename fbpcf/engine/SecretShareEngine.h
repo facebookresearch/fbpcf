@@ -489,14 +489,28 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<ScheduledBatchAND>& batchAnds,
       std::vector<ScheduledCompositeAND>& compositeAnds,
       std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+      std::vector<ScheduledMult>& mults,
+      std::vector<ScheduledBatchMult>& batchMults,
       std::vector<bool>& openedSecrets,
-      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples);
+      std::vector<uint64_t>& openedIntegerSecrets,
+      std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples,
+      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+          integerTuples);
 
   std::vector<uint64_t> computeSecretSharesToOpen(
       std::vector<ScheduledMult>& mults,
       std::vector<ScheduledBatchMult>& batchMults,
       std::vector<tuple_generator::ITupleGenerator::IntegerTuple>& tuples,
       size_t openedSecretCount);
+
+  void computeMultExecutionResultsFromOpenedShares(
+      std::vector<ScheduledMult>& mults,
+      std::vector<uint64_t>& multResults,
+      std::vector<ScheduledBatchMult>& batchMults,
+      std::vector<std::vector<uint64_t>>& batchMultResults,
+      std::vector<uint64_t>& openedIntegerSecrets,
+      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+          integerTuples);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>

@@ -310,13 +310,23 @@ std::vector<bool> SecretShareEngine::computeBatchFreeAND(
 
 uint64_t SecretShareEngine::computeFreeMult(uint64_t left, uint64_t right)
     const {
-  throw std::runtime_error("unimplemented");
+  return left * right;
 }
 
 std::vector<uint64_t> SecretShareEngine::computeBatchFreeMult(
     const std::vector<uint64_t>& left,
     const std::vector<uint64_t>& right) const {
-  throw std::runtime_error("unimplemented");
+  if (left.size() != right.size()) {
+    throw std::invalid_argument("The input sizes are not the same.");
+  }
+  if (left.size() == 0) {
+    return std::vector<uint64_t>();
+  }
+  std::vector<uint64_t> rst(left.size());
+  for (size_t i = 0; i < left.size(); i++) {
+    rst[i] = left[i] * right[i];
+  }
+  return rst;
 }
 
 //======== Below are API's to schedule non-free AND's: ========
@@ -363,13 +373,18 @@ uint32_t SecretShareEngine::scheduleBatchCompositeAND(
 //======== Below are API's to schedule non-free Mult's: ========
 
 uint32_t SecretShareEngine::scheduleMult(uint64_t left, uint64_t right) {
-  throw std::runtime_error("unimplemented");
+  scheduledMultGates_.push_back(ScheduledMult(left, right));
+  return scheduledMultGates_.size() - 1;
 }
 
 uint32_t SecretShareEngine::scheduleBatchMult(
     const std::vector<uint64_t>& left,
     const std::vector<uint64_t>& right) {
-  throw std::runtime_error("unimplemented");
+  if (left.size() != right.size()) {
+    throw std::runtime_error("Batch Mult's must have the same length");
+  }
+  scheduledBatchMultGates_.push_back(ScheduledBatchMult(left, right));
+  return scheduledBatchMultGates_.size() - 1;
 }
 
 //======== Below are API's to execute non free AND's: ========
@@ -404,7 +419,27 @@ std::vector<bool> SecretShareEngine::computeBatchANDImmediately(
 std::vector<uint64_t> SecretShareEngine::computeBatchMultImmediately(
     const std::vector<uint64_t>& left,
     const std::vector<uint64_t>& right) {
-  throw std::runtime_error("unimplemented");
+  if (left.size() != right.size()) {
+    throw std::runtime_error("Left and right must have equal length");
+  }
+  std::vector<ScheduledAND> scheduledANDs;
+  std::vector<ScheduledBatchAND> scheduledBatchANDs;
+  std::vector<ScheduledCompositeAND> scheduledCompositeANDs;
+  std::vector<ScheduledBatchCompositeAND> scheduledBatchCompositeANDs;
+  std::vector<ScheduledMult> scheduledMults;
+  scheduledMults.reserve(left.size());
+  std::vector<ScheduledBatchMult> scheduledBatchMults;
+  for (size_t i = 0; i < left.size(); i++) {
+    scheduledMults.push_back(ScheduledMult(left.at(i), right.at(i)));
+  }
+  return computeAllScheduledOperations(
+             scheduledANDs,
+             scheduledBatchANDs,
+             scheduledCompositeANDs,
+             scheduledBatchCompositeANDs,
+             scheduledMults,
+             scheduledBatchMults)
+      .multResults;
 }
 
 //======== Below are API's to execute non free AND's and Mult's: ========
@@ -460,10 +495,16 @@ SecretShareEngine::computeAllScheduledOperations(
     normalTupleCount += batchAnds[i].getLeft().size();
   }
 
+  size_t integerTupleCount = mults.size();
+
+  for (size_t i = 0; i < batchMults.size(); i++) {
+    integerTupleCount += batchMults[i].getLeft().size();
+  }
   // temporary for now until multi party case supports composite AND's
   if (tupleGenerator_->supportsCompositeTupleGeneration()) {
     std::map<size_t, uint32_t> compositeTupleCount;
     size_t openedSecretCount = normalTupleCount * 2;
+    size_t openedIntegerSecretCount = integerTupleCount * 2;
 
     for (size_t i = 0; i < compositeAnds.size(); i++) {
       size_t compositeSize = compositeAnds[i].getRights().size();
@@ -480,12 +521,15 @@ SecretShareEngine::computeAllScheduledOperations(
       openedSecretCount += batchSize * (1 + compositeSize);
     }
 
-    if (normalTupleCount == 0 && compositeTupleCount.empty()) {
+    if (normalTupleCount == 0 && compositeTupleCount.empty() &&
+        integerTupleCount == 0) {
       return {
           std::vector<bool>(),
           std::vector<std::vector<bool>>(),
           std::vector<std::vector<bool>>(),
-          std::vector<std::vector<std::vector<bool>>>()};
+          std::vector<std::vector<std::vector<bool>>>(),
+          std::vector<uint64_t>(),
+          std::vector<std::vector<uint64_t>>()};
     }
 
     auto [normalTuples, compositeTuples] =
@@ -506,8 +550,21 @@ SecretShareEngine::computeAllScheduledOperations(
       throw std::runtime_error("unexpected number of opened secrets");
     }
 
-    std::vector<uint64_t> openedIntegerSecrets;
+    // dummy tuple generation
     std::vector<tuple_generator::ITupleGenerator::IntegerTuple> integerTuples;
+    for (int i = 0; i < integerTupleCount; i++) {
+      integerTuples.push_back(
+          tuple_generator::ITupleGenerator::IntegerTuple(0, 0, 0));
+    }
+
+    auto integerSecretsToOpen = computeSecretSharesToOpen(
+        mults, batchMults, integerTuples, openedIntegerSecretCount);
+
+    auto openedIntegerSecrets =
+        communicationAgent_->openSecretsToAll(std::move(integerSecretsToOpen));
+    if (openedIntegerSecrets.size() != openedIntegerSecretCount) {
+      throw std::runtime_error("unexpected number of opened secrets");
+    }
 
     return computeExecutionResultsFromOpenedShares(
         ands,
@@ -534,12 +591,14 @@ SecretShareEngine::computeAllScheduledOperations(
       normalTupleCount += compositeSize * batchSize;
     }
 
-    if (normalTupleCount == 0) {
+    if (normalTupleCount == 0 && integerTupleCount == 0) {
       return {
           std::vector<bool>(),
           std::vector<std::vector<bool>>(),
           std::vector<std::vector<bool>>(),
-          std::vector<std::vector<std::vector<bool>>>()};
+          std::vector<std::vector<std::vector<bool>>>(),
+          std::vector<uint64_t>(),
+          std::vector<std::vector<uint64_t>>()};
     }
     auto tuples = tupleGenerator_->getBooleanTuple(normalTupleCount);
     auto secretsToOpen = computeSecretSharesToOpenLegacy(
@@ -552,13 +611,34 @@ SecretShareEngine::computeAllScheduledOperations(
       throw std::runtime_error("unexpected number of opened secrets");
     }
 
+    // dummy tuple generation
+    std::vector<tuple_generator::ITupleGenerator::IntegerTuple> integerTuples;
+    for (int i = 0; i < integerTupleCount; i++) {
+      integerTuples.push_back(
+          tuple_generator::ITupleGenerator::IntegerTuple(0, 0, 0));
+    }
+
+    size_t openedIntegerSecretCount = integerTupleCount * 2;
+    auto integerSecretsToOpen = computeSecretSharesToOpen(
+        mults, batchMults, integerTuples, openedIntegerSecretCount);
+
+    auto openedIntegerSecrets =
+        communicationAgent_->openSecretsToAll(std::move(integerSecretsToOpen));
+    if (openedIntegerSecrets.size() != openedIntegerSecretCount) {
+      throw std::runtime_error("unexpected number of opened secrets");
+    }
+
     return computeExecutionResultsFromOpenedSharesLegacy(
         ands,
         batchAnds,
         compositeAnds,
         batchCompositeAnds,
+        mults,
+        batchMults,
         openedSecrets,
-        tuples);
+        openedIntegerSecrets,
+        tuples,
+        integerTuples);
   }
 }
 
@@ -760,13 +840,26 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
     compositeBatchAndResults.push_back(std::move(compositeResult));
   }
 
+  std::vector<uint64_t> multResults;
+  multResults.reserve(mults.size());
+  std::vector<std::vector<uint64_t>> batchMultResults;
+  batchMultResults.reserve(batchMults.size());
+
+  computeMultExecutionResultsFromOpenedShares(
+      mults,
+      multResults,
+      batchMults,
+      batchMultResults,
+      openedIntegerSecrets,
+      integerTuples);
+
   return {
       std::move(andResults),
       std::move(batchAndResults),
       std::move(compositeAndResults),
       std::move(compositeBatchAndResults),
-      std::vector<uint64_t>(),
-      std::vector<std::vector<uint64_t>>()};
+      std::move(multResults),
+      std::move(batchMultResults)};
 }
 
 std::vector<bool> SecretShareEngine::computeSecretSharesToOpenLegacy(
@@ -826,8 +919,13 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
     std::vector<ScheduledBatchAND>& batchAnds,
     std::vector<ScheduledCompositeAND>& compositeAnds,
     std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<ScheduledMult>& mults,
+    std::vector<ScheduledBatchMult>& batchMults,
     std::vector<bool>& openedSecrets,
-    std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples) {
+    std::vector<uint64_t>& openedIntegerSecrets,
+    std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples,
+    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+        integerTuples) {
   std::vector<bool> andResults;
   andResults.reserve(ands.size());
   std::vector<std::vector<bool>> batchAndResults;
@@ -908,13 +1006,73 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
     compositeBatchAndResults.push_back(std::move(compositeResult));
   }
 
+  std::vector<uint64_t> multResults;
+  multResults.reserve(mults.size());
+  std::vector<std::vector<uint64_t>> batchMultResults;
+  batchMultResults.reserve(batchMults.size());
+
+  computeMultExecutionResultsFromOpenedShares(
+      mults,
+      multResults,
+      batchMults,
+      batchMultResults,
+      openedIntegerSecrets,
+      integerTuples);
+
   return {
       andResults,
       batchAndResults,
       compositeAndResults,
       compositeBatchAndResults,
-      std::vector<uint64_t>(),
-      std::vector<std::vector<uint64_t>>()};
+      multResults,
+      batchMultResults};
+}
+
+void SecretShareEngine::computeMultExecutionResultsFromOpenedShares(
+    std::vector<ScheduledMult>& mults,
+    std::vector<uint64_t>& multResults,
+    std::vector<ScheduledBatchMult>& batchMults,
+    std::vector<std::vector<uint64_t>>& batchMultResults,
+    std::vector<uint64_t>& openedIntegerSecrets,
+    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+        integerTuples) {
+  size_t integerTupleIndex = 0;
+
+  for (size_t i = 0; i < mults.size(); i++) {
+    uint64_t val = integerTuples.at(integerTupleIndex).getC() -
+        (openedIntegerSecrets.at(2 * integerTupleIndex) *
+         integerTuples.at(integerTupleIndex).getB()) -
+        (openedIntegerSecrets.at(2 * integerTupleIndex + 1) *
+         integerTuples.at(integerTupleIndex).getA());
+    if (myId_ == 0) {
+      val = val +
+          (openedIntegerSecrets.at(2 * integerTupleIndex) *
+           openedIntegerSecrets.at(2 * integerTupleIndex + 1));
+    }
+    multResults.push_back(val);
+    integerTupleIndex++;
+  }
+
+  for (size_t i = 0; i < batchMults.size(); i++) {
+    auto& leftValues = batchMults[i].getLeft();
+    auto batchSize = leftValues.size();
+    std::vector<uint64_t> rst(batchSize);
+    for (int j = 0; j < batchSize; j++) {
+      uint64_t val = integerTuples.at(integerTupleIndex).getC() -
+          (openedIntegerSecrets.at(2 * integerTupleIndex) *
+           integerTuples.at(integerTupleIndex).getB()) -
+          (openedIntegerSecrets.at(2 * integerTupleIndex + 1) *
+           integerTuples.at(integerTupleIndex).getA());
+      if (myId_ == 0) {
+        val = val +
+            (openedIntegerSecrets.at(2 * integerTupleIndex) *
+             openedIntegerSecrets.at(2 * integerTupleIndex + 1));
+      }
+      rst[j] = val;
+      integerTupleIndex++;
+    }
+    batchMultResults.push_back(std::move(rst));
+  }
 }
 
 std::vector<bool> SecretShareEngine::revealToParty(
@@ -926,12 +1084,12 @@ std::vector<bool> SecretShareEngine::revealToParty(
 //======== Below are API's to retrieve non-free Mult results: ========
 
 uint64_t SecretShareEngine::getMultExecutionResult(uint32_t index) const {
-  throw std::runtime_error("unimplemented");
+  return executionResults_.multResults.at(index);
 }
 
 const std::vector<uint64_t>& SecretShareEngine::getBatchMultExecutionResult(
     uint32_t index) const {
-  throw std::runtime_error("unimplemented");
+  return executionResults_.batchMultResults.at(index);
 }
 
 std::vector<uint64_t> SecretShareEngine::computeSecretSharesToOpen(
@@ -939,7 +1097,29 @@ std::vector<uint64_t> SecretShareEngine::computeSecretSharesToOpen(
     std::vector<ScheduledBatchMult>& batchMults,
     std::vector<tuple_generator::ITupleGenerator::IntegerTuple>& tuples,
     size_t openedSecretCount) {
-  throw std::runtime_error("unimplemented");
+  std::vector<uint64_t> secretsToOpen(openedSecretCount);
+
+  size_t tupleIndex = 0;
+  for (size_t i = 0; i < mults.size(); i++) {
+    secretsToOpen[tupleIndex * 2] =
+        mults.at(i).getLeft() + tuples.at(tupleIndex).getA();
+    secretsToOpen[tupleIndex * 2 + 1] =
+        mults.at(i).getRight() + tuples.at(tupleIndex).getB();
+    tupleIndex++;
+  }
+
+  for (size_t i = 0; i < batchMults.size(); i++) {
+    auto& leftValues = batchMults[i].getLeft();
+    auto& rightValues = batchMults[i].getRight();
+    for (int j = 0; j < leftValues.size(); j++) {
+      secretsToOpen[tupleIndex * 2] =
+          leftValues.at(j) + tuples.at(tupleIndex).getA();
+      secretsToOpen[tupleIndex * 2 + 1] =
+          rightValues.at(j) + tuples.at(tupleIndex).getB();
+      tupleIndex++;
+    }
+  }
+  return secretsToOpen;
 }
 
 std::vector<uint64_t> SecretShareEngine::revealToParty(

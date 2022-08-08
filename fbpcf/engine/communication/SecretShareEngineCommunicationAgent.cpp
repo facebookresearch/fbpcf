@@ -7,6 +7,7 @@
 
 #include <emmintrin.h>
 #include <string.h>
+#include <cstdint>
 #include <stdexcept>
 
 #include "fbpcf/engine/communication/SecretShareEngineCommunicationAgent.h"
@@ -24,6 +25,9 @@ std::map<int, __m128i> SecretShareEngineCommunicationAgent::exchangeKeys(
 
 std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToAll(
     const std::vector<bool>& secretShares) {
+  if (secretShares.empty()) {
+    return std::vector<bool>();
+  }
   std::vector<bool> rst = secretShares;
   std::vector<bool> receivedShares;
 
@@ -45,6 +49,9 @@ std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToAll(
 
 std::vector<uint64_t> SecretShareEngineCommunicationAgent::openSecretsToAll(
     const std::vector<uint64_t>& secretShares) {
+  if (secretShares.empty()) {
+    return std::vector<uint64_t>();
+  }
   std::vector<uint64_t> rst = secretShares;
   std::vector<uint64_t> receivedShares;
 
