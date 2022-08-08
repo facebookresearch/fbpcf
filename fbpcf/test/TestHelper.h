@@ -111,7 +111,8 @@ inline ArithmeticSchedulerCreator getArithmeticSchedulerCreator(
     case SchedulerType::NetworkPlaintext:
       return scheduler::createArithmeticNetworkPlaintextScheduler<unsafe>;
     case SchedulerType::Eager:
-      throw std::runtime_error("unimplemented");
+      return scheduler::createArithmeticEagerSchedulerWithInsecureEngine<
+          unsafe>;
     case SchedulerType::Lazy:
       throw std::runtime_error("unimplemented");
   }

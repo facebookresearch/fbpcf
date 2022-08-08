@@ -108,6 +108,98 @@ std::vector<bool> EagerScheduler::getBooleanValueBatch(
   return wireKeeper_->getBatchBooleanValue(id);
 }
 
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privateIntegerInput(
+    uint64_t v,
+    int partyId) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(
+      engine_->setIntegerInput(partyId, v));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::privateIntegerInputBatch(
+    const std::vector<uint64_t>& v,
+    int partyId) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->setBatchIntegerInput(partyId, v));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicIntegerInput(
+    uint64_t v) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::publicIntegerInputBatch(const std::vector<uint64_t>& v) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::recoverIntegerWire(
+    uint64_t v) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::recoverIntegerWireBatch(const std::vector<uint64_t>& v) {
+  freeGates_ += v.size();
+  return wireKeeper_->allocateBatchIntegerValue(v);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::openIntegerValueToParty(
+    WireId<IScheduler::Arithmetic> src,
+    int partyId) {
+  std::vector<uint64_t> secretShares{wireKeeper_->getIntegerValue(src)};
+  nonFreeGates_ += secretShares.size();
+  auto revealedSecrets = engine_->revealToParty(partyId, secretShares);
+
+  if (revealedSecrets.size() == 1) {
+    return wireKeeper_->allocateIntegerValue(revealedSecrets.at(0));
+  } else {
+    throw std::runtime_error("Unexpected number of revealed secrets");
+  }
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::openIntegerValueToPartyBatch(
+    WireId<IScheduler::Arithmetic> src,
+    int partyId) {
+  auto secretShares = wireKeeper_->getBatchIntegerValue(src);
+  nonFreeGates_ += secretShares.size();
+  auto revealedSecrets = engine_->revealToParty(partyId, secretShares);
+
+  if (revealedSecrets.size() == secretShares.size()) {
+    return wireKeeper_->allocateBatchIntegerValue(revealedSecrets);
+  } else {
+    throw std::runtime_error(
+        "Unexpected number of revealed secrets " +
+        std::to_string(revealedSecrets.size()));
+  }
+}
+
+uint64_t EagerScheduler::extractIntegerSecretShare(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getIntegerValue(id);
+}
+
+std::vector<uint64_t> EagerScheduler::extractIntegerSecretShareBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getBatchIntegerValue(id);
+}
+
+uint64_t EagerScheduler::getIntegerValue(WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getIntegerValue(id);
+}
+
+std::vector<uint64_t> EagerScheduler::getIntegerValueBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  return wireKeeper_->getBatchIntegerValue(id);
+}
+
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPrivate(
     WireId<IScheduler::Boolean> left,
     WireId<IScheduler::Boolean> right) {
@@ -337,6 +429,153 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::notPublicBatch(
       engine_->computeBatchSymmetricNOT(values));
 }
 
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privateMultPrivate(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  nonFreeGates_++;
+  auto index = engine_->scheduleMult(
+      wireKeeper_->getIntegerValue(left), wireKeeper_->getIntegerValue(right));
+  engine_->executeScheduledOperations();
+  return wireKeeper_->allocateIntegerValue(
+      engine_->getMultExecutionResult(index));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::privateMultPrivateBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto rightValue = wireKeeper_->getBatchIntegerValue(right);
+  nonFreeGates_ += leftValue.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchMultImmediately(leftValue, rightValue));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privateMultPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(engine_->computeFreeMult(
+      wireKeeper_->getIntegerValue(left), wireKeeper_->getIntegerValue(right)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::privateMultPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto rightValue = wireKeeper_->getBatchIntegerValue(right);
+  freeGates_ += leftValue.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchFreeMult(leftValue, rightValue));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicMultPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(engine_->computeFreeMult(
+      wireKeeper_->getIntegerValue(left), wireKeeper_->getIntegerValue(right)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::publicMultPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto rightValue = wireKeeper_->getBatchIntegerValue(right);
+  freeGates_ += leftValue.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchFreeMult(leftValue, rightValue));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privatePlusPrivate(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(engine_->computeSymmetricPlus(
+      wireKeeper_->getIntegerValue(left), wireKeeper_->getIntegerValue(right)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::privatePlusPrivateBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto rightValue = wireKeeper_->getBatchIntegerValue(right);
+  freeGates_ += leftValue.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchSymmetricPlus(leftValue, rightValue));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privatePlusPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(engine_->computeAsymmetricPlus(
+      wireKeeper_->getIntegerValue(left), wireKeeper_->getIntegerValue(right)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::privatePlusPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto rightValue = wireKeeper_->getBatchIntegerValue(right);
+  freeGates_ += leftValue.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchAsymmetricPlus(leftValue, rightValue));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicPlusPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(engine_->computeSymmetricPlus(
+      wireKeeper_->getIntegerValue(left), wireKeeper_->getIntegerValue(right)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+EagerScheduler::publicPlusPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto leftValue = wireKeeper_->getBatchIntegerValue(left);
+  auto rightValue = wireKeeper_->getBatchIntegerValue(right);
+  freeGates_ += leftValue.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchSymmetricPlus(leftValue, rightValue));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPrivate(
+    WireId<IScheduler::Arithmetic> src) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(
+      engine_->computeSymmetricNeg(wireKeeper_->getIntegerValue(src)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPrivateBatch(
+    WireId<IScheduler::Arithmetic> src) {
+  auto values = wireKeeper_->getBatchIntegerValue(src);
+  freeGates_ += values.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchSymmetricNeg(values));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPublic(
+    WireId<IScheduler::Arithmetic> src) {
+  freeGates_++;
+  return wireKeeper_->allocateIntegerValue(
+      engine_->computeSymmetricNeg(wireKeeper_->getIntegerValue(src)));
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPublicBatch(
+    WireId<IScheduler::Arithmetic> src) {
+  auto values = wireKeeper_->getBatchIntegerValue(src);
+  freeGates_ += values.size();
+  return wireKeeper_->allocateBatchIntegerValue(
+      engine_->computeBatchSymmetricNeg(values));
+}
+
 void EagerScheduler::increaseReferenceCount(WireId<IScheduler::Boolean> id) {
   wireKeeper_->increaseReferenceCount(id);
 }
@@ -352,6 +591,24 @@ void EagerScheduler::decreaseReferenceCount(WireId<IScheduler::Boolean> id) {
 
 void EagerScheduler::decreaseReferenceCountBatch(
     WireId<IScheduler::Boolean> id) {
+  wireKeeper_->decreaseBatchReferenceCount(id);
+}
+
+void EagerScheduler::increaseReferenceCount(WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->increaseReferenceCount(id);
+}
+
+void EagerScheduler::increaseReferenceCountBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->increaseBatchReferenceCount(id);
+}
+
+void EagerScheduler::decreaseReferenceCount(WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->decreaseReferenceCount(id);
+}
+
+void EagerScheduler::decreaseReferenceCountBatch(
+    WireId<IScheduler::Arithmetic> id) {
   wireKeeper_->decreaseBatchReferenceCount(id);
 }
 

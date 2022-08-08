@@ -102,7 +102,8 @@ INSTANTIATE_TEST_SUITE_P(
     ArithmeticSchedulerTestFixture,
     ::testing::Values(
         SchedulerType::Plaintext,
-        SchedulerType::NetworkPlaintext),
+        SchedulerType::NetworkPlaintext,
+        SchedulerType::Eager),
     [](const testing::TestParamInfo<SchedulerTestFixture::ParamType>& info) {
       return getSchedulerName(info.param);
     });
