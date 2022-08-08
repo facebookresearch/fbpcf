@@ -284,6 +284,63 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
+  uint64_t computeSymmetricPlus(
+      [[maybe_unused]] uint64_t left,
+      [[maybe_unused]] uint64_t right) const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchSymmetricPlus(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override {
+    if (left.size() != right.size()) {
+      throw std::invalid_argument("The input sizes are not the same.");
+    }
+    return left;
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeAsymmetricPlus(
+      [[maybe_unused]] uint64_t left,
+      [[maybe_unused]] uint64_t right) const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchAsymmetricPlus(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override {
+    if (left.size() != right.size()) {
+      throw std::invalid_argument("The input sizes are not the same.");
+    }
+    return left;
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeSymmetricNeg([[maybe_unused]] uint64_t input) const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchSymmetricNeg(
+      const std::vector<uint64_t>& input) const override {
+    return input;
+  }
+
+  /**
+   * @inherit doc
+   */
   std::vector<uint64_t> revealToParty(
       int /* id*/,
       const std::vector<uint64_t>& output) const override {
