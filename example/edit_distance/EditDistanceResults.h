@@ -13,7 +13,7 @@
 
 namespace fbpcf::edit_distance {
 struct EditDistanceResults {
-  EditDistanceResults() = delete;
+  EditDistanceResults() = default;
   explicit EditDistanceResults(std::vector<folly::dynamic>& individualShares) {
     if (individualShares.empty()) {
       throw common::exceptions::ConstructionError("No shares to recover.");
