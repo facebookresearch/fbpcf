@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
@@ -256,6 +257,37 @@ class DummySecretShareEngine final : public ISecretShareEngine {
    */
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return {0, 0};
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t setIntegerInput(int id, std::optional<uint64_t> v) override {
+    if (id == myId_ && (!v.has_value())) {
+      throw std::invalid_argument("needs to provide input value");
+    }
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> setBatchIntegerInput(
+      int id,
+      const std::vector<uint64_t>& v) override {
+    if (id == myId_ && v.size() == 0) {
+      throw std::invalid_argument("empty input!");
+    }
+    return v;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> revealToParty(
+      int /* id*/,
+      const std::vector<uint64_t>& output) const override {
+    return output;
   }
 
  private:
