@@ -86,6 +86,31 @@ class ISecretShareEngine {
       const std::vector<bool>& right) const = 0;
 
   /**
+   * Compute an Plus gate with two private or two public values. This operation
+   * requires all parties to Plus their shares/values (That's why it is
+   * symmetric). This computation can be done locally, without any interaction
+   * with other parties.
+   * @param left the value on left input wire
+   * @param right the value on right input wire
+   * @return the value of the result
+   */
+  virtual uint64_t computeSymmetricPlus(uint64_t left, uint64_t right)
+      const = 0;
+
+  /**
+   * Compute a batch of Plus gates with two private or two public values. This
+   * operation requires all parties to Plus their shares/values (That's why it
+   * is symmetric). This computation can be done locally, without any
+   * interaction with other parties.
+   * @param left the value on left input wire
+   * @param right the value on right input wire
+   * @return the value of the result
+   */
+  virtual std::vector<uint64_t> computeBatchSymmetricPlus(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const = 0;
+
+  /**
    * Compute an XOR gate between a private and a public value. This operation
    * requires only one party to XOR his/her share/value (That's why it is
    * asymmetric), others only needs to output left wire value. This computation
@@ -111,6 +136,33 @@ class ISecretShareEngine {
       const std::vector<bool>& right) const = 0;
 
   /**
+   * Compute an Plus gate between a private and a public value. This operation
+   * requires only one party to Plus his/her share/value (That's why it is
+   * asymmetric), others only needs to output left wire value. This computation
+   * can be done locally, without any interaction with other parties.
+   * @param privateValue the value that is private
+   * @param publicValue the value that is public
+   * @return the value of the result
+   */
+  virtual uint64_t computeAsymmetricPlus(
+      uint64_t privateValue,
+      uint64_t publicValue) const = 0;
+
+  /**
+   * Compute a batch of Plus gates with a private and a public values.  This
+   * operation requires only one party to Plus his/her share/value (That's why
+   * it is asymmetric), others only needs to output left wire value. This
+   * computation can be done locally, without any interaction with other
+   * parties.
+   * @param left the value that is private
+   * @param right the value that is public
+   * @return the value of the result
+   */
+  virtual std::vector<uint64_t> computeBatchAsymmetricPlus(
+      const std::vector<uint64_t>& privateValue,
+      const std::vector<uint64_t>& publicValue) const = 0;
+
+  /**
    * Compute a NOT gate on public values, This operation
    * requires all party to flip their shares/values (That's why it is
    * symmetric). This computation can be done locally,
@@ -130,6 +182,27 @@ class ISecretShareEngine {
    */
   virtual std::vector<bool> computeBatchSymmetricNOT(
       const std::vector<bool>& input) const = 0;
+
+  /**
+   * Compute a Neg gate on public values, This operation
+   * requires all party to flip their shares/values (That's why it is
+   * symmetric). This computation can be done locally,
+   * without any interaction with other parties.
+   * @param input the value on left input wire
+   * @return the value of the result
+   */
+  virtual uint64_t computeSymmetricNeg(uint64_t input) const = 0;
+
+  /**
+   * Compute a batch of Neg gate on public values, This operation
+   * requires all party to flip their shares/values (That's why it is
+   * symmetric). This computation can be done locally,
+   * without any interaction with other parties.
+   * @param input the value on left input wire
+   * @return the value of the result
+   */
+  virtual std::vector<uint64_t> computeBatchSymmetricNeg(
+      const std::vector<uint64_t>& input) const = 0;
 
   /**
    * Compute a NOT gate on private values, This operation
