@@ -196,11 +196,6 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  void executeScheduledAND() override {}
-
-  /**
-   * @inherit doc
-   */
   std::vector<bool> computeBatchANDImmediately(
       const std::vector<bool>& left,
       const std::vector<bool>& right) override {
@@ -338,6 +333,85 @@ class DummySecretShareEngine final : public ISecretShareEngine {
     return input;
   }
 
+  //======== Below are free Mult computation API's: ========
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeFreeMult(
+      [[maybe_unused]] uint64_t left,
+      [[maybe_unused]] uint64_t right) const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchFreeMult(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override {
+    if (left.size() != right.size()) {
+      throw std::invalid_argument("The input sizes are not the same.");
+    }
+    return left;
+  }
+
+  //======== Below are API's to schedule non-free Mult's: ========
+
+  /**
+   * @inherit doc
+   */
+  uint32_t scheduleMult(
+      [[maybe_unused]] uint64_t left,
+      [[maybe_unused]] uint64_t right) override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint32_t scheduleBatchMult(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) override {
+    if (left.size() != right.size()) {
+      throw std::runtime_error("Batch Mult's must have the same length");
+    }
+    dummyBatchMultResults_.push_back(left);
+    return dummyBatchMultResults_.size() - 1;
+  }
+
+  //======== Below are API's to execute non free Mult's: ========
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchMultImmediately(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) override {
+    if (left.size() != right.size()) {
+      throw std::runtime_error("Left and right must have equal length");
+    }
+    return left;
+  }
+
+  //======== Below are API's to retrieve non-free Mult results: ========
+
+  /**
+   * @inherit doc
+   */
+  uint64_t getMultExecutionResult(
+      [[maybe_unused]] uint32_t index) const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  const std::vector<uint64_t>& getBatchMultExecutionResult(
+      uint32_t index) const override {
+    return dummyBatchMultResults_.at(index);
+  }
+
   /**
    * @inherit doc
    */
@@ -347,10 +421,18 @@ class DummySecretShareEngine final : public ISecretShareEngine {
     return output;
   }
 
+  //======== Below are API's to execute non free AND's and Mult's: ========
+  /**
+   * @inherit doc
+   */
+  void executeScheduledOperations() override {}
+
  private:
   std::vector<std::vector<bool>> dummyBatchANDResults_;
   std::vector<std::vector<bool>> dummyCompositeANDResults_;
   std::vector<std::vector<std::vector<bool>>> dummyCompositeBatchANDResults_;
+
+  std::vector<std::vector<uint64_t>> dummyBatchMultResults_;
 
   int myId_;
 };

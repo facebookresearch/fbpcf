@@ -114,7 +114,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPrivate(
   nonFreeGates_++;
   auto index = engine_->scheduleAND(
       wireKeeper_->getBooleanValue(left), wireKeeper_->getBooleanValue(right));
-  engine_->executeScheduledAND();
+  engine_->executeScheduledOperations();
   return wireKeeper_->allocateBooleanValue(
       engine_->getANDExecutionResult(index));
 }
@@ -176,7 +176,7 @@ EagerScheduler::privateAndPrivateComposite(
   }
   auto index = engine_->scheduleCompositeAND(
       wireKeeper_->getBooleanValue(left), rightValues);
-  engine_->executeScheduledAND();
+  engine_->executeScheduledOperations();
   auto result = engine_->getCompositeANDExecutionResult(index);
   std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
       result.size());
@@ -198,7 +198,7 @@ EagerScheduler::privateAndPrivateCompositeBatch(
   }
 
   auto index = engine_->scheduleBatchCompositeAND(leftValues, rightValues);
-  engine_->executeScheduledAND();
+  engine_->executeScheduledOperations();
   auto result = engine_->getBatchCompositeANDExecutionResult(index);
   std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
       result.size());

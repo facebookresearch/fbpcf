@@ -6,12 +6,14 @@
  */
 
 #include <fmt/format.h>
+#include <sys/types.h>
 #include <cstddef>
 #include <cstdint>
 #include <exception>
 #include <iterator>
 #include <memory>
 #include <stdexcept>
+#include <vector>
 
 #include "fbpcf/engine/SecretShareEngine.h"
 #include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
@@ -304,6 +306,19 @@ std::vector<bool> SecretShareEngine::computeBatchFreeAND(
   return rst;
 }
 
+//======== Below are free Mult computation API's: ========
+
+uint64_t SecretShareEngine::computeFreeMult(uint64_t left, uint64_t right)
+    const {
+  throw std::runtime_error("unimplemented");
+}
+
+std::vector<uint64_t> SecretShareEngine::computeBatchFreeMult(
+    const std::vector<uint64_t>& left,
+    const std::vector<uint64_t>& right) const {
+  throw std::runtime_error("unimplemented");
+}
+
 //======== Below are API's to schedule non-free AND's: ========
 
 uint32_t SecretShareEngine::scheduleAND(bool left, bool right) {
@@ -345,20 +360,19 @@ uint32_t SecretShareEngine::scheduleBatchCompositeAND(
   return scheduledBatchCompositeANDGates_.size() - 1;
 }
 
-//======== Below are API's to execute non free AND's: ========
+//======== Below are API's to schedule non-free Mult's: ========
 
-void SecretShareEngine::executeScheduledAND() {
-  executionResults_ = computeAllANDsFromScheduledANDs(
-      scheduledANDGates_,
-      scheduledBatchANDGates_,
-      scheduledCompositeANDGates_,
-      scheduledBatchCompositeANDGates_);
-
-  scheduledANDGates_.clear();
-  scheduledBatchANDGates_.clear();
-  scheduledCompositeANDGates_.clear();
-  scheduledBatchCompositeANDGates_.clear();
+uint32_t SecretShareEngine::scheduleMult(uint64_t left, uint64_t right) {
+  throw std::runtime_error("unimplemented");
 }
+
+uint32_t SecretShareEngine::scheduleBatchMult(
+    const std::vector<uint64_t>& left,
+    const std::vector<uint64_t>& right) {
+  throw std::runtime_error("unimplemented");
+}
+
+//======== Below are API's to execute non free AND's: ========
 
 std::vector<bool> SecretShareEngine::computeBatchANDImmediately(
     const std::vector<bool>& left,
@@ -371,17 +385,46 @@ std::vector<bool> SecretShareEngine::computeBatchANDImmediately(
   std::vector<ScheduledBatchAND> scheduledBatchANDs;
   std::vector<ScheduledCompositeAND> scheduledCompositeANDs;
   std::vector<ScheduledBatchCompositeAND> scheduledBatchCompositeANDs;
+  std::vector<ScheduledMult> scheduledMults;
+  std::vector<ScheduledBatchMult> scheduledBatchMults;
   for (size_t i = 0; i < left.size(); i++) {
     scheduledANDs.push_back(ScheduledAND(left.at(i), right.at(i)));
   }
-  return computeAllANDsFromScheduledANDs(
+  return computeAllScheduledOperations(
              scheduledANDs,
              scheduledBatchANDs,
              scheduledCompositeANDs,
-             scheduledBatchCompositeANDs)
+             scheduledBatchCompositeANDs,
+             scheduledMults,
+             scheduledBatchMults)
       .andResults;
 }
 
+//======== Below are API's to execute non free Mult's: ========
+std::vector<uint64_t> SecretShareEngine::computeBatchMultImmediately(
+    const std::vector<uint64_t>& left,
+    const std::vector<uint64_t>& right) {
+  throw std::runtime_error("unimplemented");
+}
+
+//======== Below are API's to execute non free AND's and Mult's: ========
+
+void SecretShareEngine::executeScheduledOperations() {
+  executionResults_ = computeAllScheduledOperations(
+      scheduledANDGates_,
+      scheduledBatchANDGates_,
+      scheduledCompositeANDGates_,
+      scheduledBatchCompositeANDGates_,
+      scheduledMultGates_,
+      scheduledBatchMultGates_);
+
+  scheduledANDGates_.clear();
+  scheduledBatchANDGates_.clear();
+  scheduledCompositeANDGates_.clear();
+  scheduledBatchCompositeANDGates_.clear();
+  scheduledMultGates_.clear();
+  scheduledBatchMultGates_.clear();
+}
 //======== Below are API's to retrieve non-free AND results: ========
 
 bool SecretShareEngine::getANDExecutionResult(uint32_t index) const {
@@ -404,11 +447,13 @@ SecretShareEngine::getBatchCompositeANDExecutionResult(uint32_t index) const {
 }
 
 SecretShareEngine::ExecutionResults
-SecretShareEngine::computeAllANDsFromScheduledANDs(
+SecretShareEngine::computeAllScheduledOperations(
     std::vector<ScheduledAND>& ands,
     std::vector<ScheduledBatchAND>& batchAnds,
     std::vector<ScheduledCompositeAND>& compositeAnds,
-    std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds) {
+    std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<ScheduledMult>& mults,
+    std::vector<ScheduledBatchMult>& batchMults) {
   size_t normalTupleCount = ands.size();
 
   for (size_t i = 0; i < batchAnds.size(); i++) {
@@ -461,14 +506,21 @@ SecretShareEngine::computeAllANDsFromScheduledANDs(
       throw std::runtime_error("unexpected number of opened secrets");
     }
 
+    std::vector<uint64_t> openedIntegerSecrets;
+    std::vector<tuple_generator::ITupleGenerator::IntegerTuple> integerTuples;
+
     return computeExecutionResultsFromOpenedShares(
         ands,
         batchAnds,
         compositeAnds,
         batchCompositeAnds,
+        mults,
+        batchMults,
         openedSecrets,
+        openedIntegerSecrets,
         normalTuples,
-        compositeTuples);
+        compositeTuples,
+        integerTuples);
 
   } else {
     for (size_t i = 0; i < compositeAnds.size(); i++) {
@@ -595,12 +647,17 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
     std::vector<ScheduledBatchAND>& batchAnds,
     std::vector<ScheduledCompositeAND>& compositeAnds,
     std::vector<ScheduledBatchCompositeAND>& batchCompositeAnds,
+    std::vector<ScheduledMult>& mults,
+    std::vector<ScheduledBatchMult>& batchMults,
     std::vector<bool>& openedSecrets,
+    std::vector<uint64_t>& openedIntegerSecrets,
     std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& normalTuples,
     std::map<
         size_t,
         std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
-        compositeTuples) {
+        compositeTuples,
+    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+        integerTuples) {
   std::vector<bool> andResults;
   andResults.reserve(ands.size());
   std::vector<std::vector<bool>> batchAndResults;
@@ -707,7 +764,9 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
       std::move(andResults),
       std::move(batchAndResults),
       std::move(compositeAndResults),
-      std::move(compositeBatchAndResults)};
+      std::move(compositeBatchAndResults),
+      std::vector<uint64_t>(),
+      std::vector<std::vector<uint64_t>>()};
 }
 
 std::vector<bool> SecretShareEngine::computeSecretSharesToOpenLegacy(
@@ -853,13 +912,34 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
       andResults,
       batchAndResults,
       compositeAndResults,
-      compositeBatchAndResults};
+      compositeBatchAndResults,
+      std::vector<uint64_t>(),
+      std::vector<std::vector<uint64_t>>()};
 }
 
 std::vector<bool> SecretShareEngine::revealToParty(
     int id,
     const std::vector<bool>& output) const {
   return communicationAgent_->openSecretsToParty(id, output);
+}
+
+//======== Below are API's to retrieve non-free Mult results: ========
+
+uint64_t SecretShareEngine::getMultExecutionResult(uint32_t index) const {
+  throw std::runtime_error("unimplemented");
+}
+
+const std::vector<uint64_t>& SecretShareEngine::getBatchMultExecutionResult(
+    uint32_t index) const {
+  throw std::runtime_error("unimplemented");
+}
+
+std::vector<uint64_t> SecretShareEngine::computeSecretSharesToOpen(
+    std::vector<ScheduledMult>& mults,
+    std::vector<ScheduledBatchMult>& batchMults,
+    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>& tuples,
+    size_t openedSecretCount) {
+  throw std::runtime_error("unimplemented");
 }
 
 std::vector<uint64_t> SecretShareEngine::revealToParty(
