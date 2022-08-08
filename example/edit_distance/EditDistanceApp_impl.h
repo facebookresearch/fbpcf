@@ -16,6 +16,8 @@ template <int schedulerId>
 void EditDistanceApp<schedulerId>::run() {
   auto scheduler = fbpcf::scheduler::createLazySchedulerWithRealEngine(
       myRole_, *communicationAgentFactory_);
+
+  XLOG(INFO, "Scheduler created successfully");
   auto editDistanceGame =
       EditDistanceGame<schedulerId>(myRole_, std::move(scheduler));
 
