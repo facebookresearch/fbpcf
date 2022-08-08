@@ -137,6 +137,20 @@ inline std::unique_ptr<IScheduler> createEagerSchedulerWithInsecureEngine(
       engineFactory->create(), WireKeeper::createWithVectorArena<unsafe>());
 }
 
+// this function creates a eager scheduler with insecure engine
+template <bool unsafe>
+inline std::unique_ptr<IArithmeticScheduler>
+createArithmeticEagerSchedulerWithInsecureEngine(
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory) {
+  auto engineFactory = engine::getInsecureEngineFactoryWithDummyTupleGenerator(
+      myId, 2, communicationAgentFactory);
+
+  return std::make_unique<EagerScheduler>(
+      engineFactory->create(), WireKeeper::createWithVectorArena<unsafe>());
+}
+
 // this function creates a lazy scheduler with insecure engine
 template <bool unsafe>
 inline std::unique_ptr<IScheduler> createLazySchedulerWithInsecureEngine(
