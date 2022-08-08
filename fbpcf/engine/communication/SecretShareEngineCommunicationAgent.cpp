@@ -74,6 +74,9 @@ std::vector<uint64_t> SecretShareEngineCommunicationAgent::openSecretsToAll(
 std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToParty(
     int id,
     const std::vector<bool>& secretShares) {
+  if (!secretShares.size())
+    return std::vector<bool>();
+
   if (id == myId_) {
     std::vector<bool> rst = secretShares;
     for (auto& iter : agentMap_) {
@@ -92,6 +95,9 @@ std::vector<bool> SecretShareEngineCommunicationAgent::openSecretsToParty(
 std::vector<uint64_t> SecretShareEngineCommunicationAgent::openSecretsToParty(
     int id,
     const std::vector<uint64_t>& secretShares) {
+  if (!secretShares.size())
+    return std::vector<uint64_t>();
+
   if (id == myId_) {
     std::vector<uint64_t> rst = secretShares;
     for (auto& iter : agentMap_) {

@@ -103,7 +103,8 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         SchedulerType::Plaintext,
         SchedulerType::NetworkPlaintext,
-        SchedulerType::Eager),
+        SchedulerType::Eager,
+        SchedulerType::Lazy),
     [](const testing::TestParamInfo<SchedulerTestFixture::ParamType>& info) {
       return getSchedulerName(info.param);
     });

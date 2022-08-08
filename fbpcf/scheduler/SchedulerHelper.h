@@ -169,4 +169,23 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithInsecureEngine(
       std::make_unique<GateKeeper>(wireKeeper));
 }
 
+// this function creates a lazy scheduler with insecure engine
+template <bool unsafe>
+inline std::unique_ptr<IArithmeticScheduler>
+createArithmeticLazySchedulerWithInsecureEngine(
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory) {
+  auto engineFactory = engine::getInsecureEngineFactoryWithDummyTupleGenerator(
+      myId, 2, communicationAgentFactory);
+
+  std::shared_ptr<IWireKeeper> wireKeeper =
+      WireKeeper::createWithVectorArena<unsafe>();
+
+  return std::make_unique<LazyScheduler>(
+      engineFactory->create(),
+      wireKeeper,
+      std::make_unique<GateKeeper>(wireKeeper));
+}
+
 } // namespace fbpcf::scheduler
