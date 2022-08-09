@@ -48,7 +48,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeSymmetricXOR(bool /*left*/, bool /*right*/) const override {
+  bool computeSymmetricXOR(bool /* left*/, bool /* right*/) const override {
     return true;
   }
 
@@ -67,7 +67,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeAsymmetricXOR(bool /*left*/, bool /*right*/) const override {
+  bool computeAsymmetricXOR(bool /* left*/, bool /* right*/) const override {
     return true;
   }
 
@@ -86,7 +86,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeSymmetricNOT(bool /*input*/) const override {
+  bool computeSymmetricNOT(bool /* input*/) const override {
     return true;
   }
 
@@ -101,7 +101,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeAsymmetricNOT(bool /*input*/) const override {
+  bool computeAsymmetricNOT(bool /* input*/) const override {
     return true;
   }
 
@@ -118,7 +118,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeFreeAND(bool /*left*/, bool /*right*/) const override {
+  bool computeFreeAND(bool /* left*/, bool /* right*/) const override {
     return true;
   }
 
@@ -139,7 +139,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  uint32_t scheduleAND(bool /*left*/, bool /*right*/) override {
+  uint32_t scheduleAND(bool /* left*/, bool /* right*/) override {
     return 0;
   }
 
@@ -159,7 +159,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  uint32_t scheduleCompositeAND(bool /*left*/, std::vector<bool> rights)
+  uint32_t scheduleCompositeAND(bool /* left*/, std::vector<bool> rights)
       override {
     dummyCompositeANDResults_.push_back(rights);
     return dummyCompositeANDResults_.size() - 1;
@@ -208,7 +208,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool getANDExecutionResult(uint32_t /*index*/) const override {
+  bool getANDExecutionResult(uint32_t /* index*/) const override {
     return true;
   }
 
@@ -239,7 +239,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  std::vector<bool> revealToParty(int /*id*/, const std::vector<bool>& output)
+  std::vector<bool> revealToParty(int /* id*/, const std::vector<bool>& output)
       const override {
     return output;
   }
@@ -271,6 +271,61 @@ class DummySecretShareEngine final : public ISecretShareEngine {
       throw std::invalid_argument("empty input!");
     }
     return v;
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeSymmetricPlus(uint64_t /* left*/, uint64_t /* right*/)
+      const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchSymmetricPlus(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override {
+    if (left.size() != right.size()) {
+      throw std::invalid_argument("The input sizes are not the same.");
+    }
+    return left;
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeAsymmetricPlus(uint64_t /* left*/, uint64_t /* right*/)
+      const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchAsymmetricPlus(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const override {
+    if (left.size() != right.size()) {
+      throw std::invalid_argument("The input sizes are not the same.");
+    }
+    return left;
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t computeSymmetricNeg(uint64_t /* input*/) const override {
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> computeBatchSymmetricNeg(
+      const std::vector<uint64_t>& input) const override {
+    return input;
   }
 
   /**
