@@ -241,7 +241,7 @@ class ComputeNonFreeANDBenchmark final : public BaseSecretShareEngineBenchmark {
  protected:
   virtual void runMethod(std::unique_ptr<ISecretShareEngine>& engine) override {
     auto index = engine->scheduleAND(input0_, input1_);
-    engine->executeScheduledAND();
+    engine->executeScheduledOperations();
     engine->getANDExecutionResult(index);
   }
 };
@@ -256,7 +256,7 @@ class ComputeBatchNonFreeANDBenchmark final
  protected:
   virtual void runMethod(std::unique_ptr<ISecretShareEngine>& engine) override {
     auto index = engine->scheduleBatchAND(batchInput0_, batchInput1_);
-    engine->executeScheduledAND();
+    engine->executeScheduledOperations();
     engine->getBatchANDExecutionResult(index);
   }
 };
@@ -271,7 +271,7 @@ class ComputeCompositeANDBenchmark final
  protected:
   virtual void runMethod(std::unique_ptr<ISecretShareEngine>& engine) override {
     auto index = engine->scheduleCompositeAND(input0_, batchInput0_);
-    engine->executeScheduledAND();
+    engine->executeScheduledOperations();
     engine->getCompositeANDExecutionResult(index);
   }
 };
@@ -287,7 +287,7 @@ class ComputeBatchCompositeANDBenchmark final
   virtual void runMethod(std::unique_ptr<ISecretShareEngine>& engine) override {
     auto index = engine->scheduleBatchCompositeAND(
         batchInput0_, std::vector<std::vector<bool>>(batchSize_, batchInput1_));
-    engine->executeScheduledAND();
+    engine->executeScheduledOperations();
     engine->getBatchCompositeANDExecutionResult(index);
   }
 };

@@ -250,6 +250,31 @@ class ISecretShareEngine {
       const std::vector<bool>& left,
       const std::vector<bool>& right) const = 0;
 
+  //======== Below are free Mult computation API's: ========
+
+  /**
+   * Compute a free Mult gate: at least one of the input is a public value, thus
+   * the parties only need to multiply the secret share and the public value
+   * (or two public values) locally, without interaction with peers.
+   * @param left the value on left input wire
+   * @param right the value on right input wire
+   * @return the value of the result
+   */
+  virtual uint64_t computeFreeMult(uint64_t left, uint64_t right) const = 0;
+
+  /**
+   * Compute a batch of free Mult gate: at least one of the input is a public
+   * value, thus the parties only need to multiply the secret share and the
+   * public value (or two public values) locally, without interaction with
+   * peers.
+   * @param left the values on left input wires
+   * @param right the values on right input wires
+   * @return the values of the results
+   */
+  virtual std::vector<uint64_t> computeBatchFreeMult(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) const = 0;
+
   //======== Below are API's to schedule non-free AND's: ========
 
   /** Schedule an AND gate for computation. Since computing AND gates incurs 2
@@ -299,14 +324,31 @@ class ISecretShareEngine {
       const std::vector<bool>& left,
       const std::vector<std::vector<bool>>& rights) = 0;
 
-  //======== Below are API's to execute non free AND's: ========
+  //======== Below are API's to schedule non-free Mult's: ========
 
-  /**
-   * Execute all the scheduled AND/batch AND computation within TWO roundtrips,
-   * no matter how many AND gates are scheduled. This includes composite AND
-   * gates.
+  /** Schedule an Mult gate for computation. Since computing AND gates incurs 2
+   * roundtrips, we want to batch them together to reduce the total number of
+   * roundtrips.
+   * @param left the value on left input wire
+   * @param right the value on right input wire
+   * @return the index of the scheduled gate, i.e. how many gates has already
+   * been scheduled.
    */
-  virtual void executeScheduledAND() = 0;
+  virtual uint32_t scheduleMult(uint64_t left, uint64_t right) = 0;
+
+  /** Schedule a batch Mult gates for computation. Since computing AND gates
+   * incurs 2 roundtrips, we want to batch them together to reduce the total
+   * number of roundtrips.
+   * @param left the value on left input wire
+   * @param right the value on right input wire. Must be same length as left
+   * @return the index of the scheduled gate, i.e. how many gates has already
+   * been scheduled.
+   */
+  virtual uint32_t scheduleBatchMult(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) = 0;
+
+  //======== Below are API's to execute non free AND's: ========
 
   /**
    * Compute a batch of AND gate: all inputs are private values. This batch of
@@ -318,6 +360,27 @@ class ISecretShareEngine {
   virtual std::vector<bool> computeBatchANDImmediately(
       const std::vector<bool>& left,
       const std::vector<bool>& right) = 0;
+
+  //======== Below are API's to execute non free Mult's: ========
+
+  /**
+   * Compute a batch of Mult gate: all inputs are private values. This batch of
+   * gates will be immediately executed, incuring a roundtrip.
+   * @param left the values on left input wires
+   * @param right the values on right input wires
+   * @return the values of the results
+   */
+  virtual std::vector<uint64_t> computeBatchMultImmediately(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) = 0;
+
+  //======== Below are API's to execute non free AND's and Mult's: ========
+
+  /**
+   * Execute all the scheduled AND/batch AND and MULT/batch MULT computation
+   * within TWO roundtrips, no matter how many gates are scheduled.
+   */
+  virtual void executeScheduledOperations() = 0;
 
   //======== Below are API's to retrieve non-free AND results: ========
 
@@ -351,6 +414,23 @@ class ISecretShareEngine {
    */
   virtual const std::vector<std::vector<bool>>&
   getBatchCompositeANDExecutionResult(uint32_t index) const = 0;
+
+  //======== Below are API's to retrieve non-free Mult results: ========
+
+  /**
+   * Get the execution result of the executed Mult gate
+   * @param index the index of the Mult gate in the schedule
+   * @return the result value
+   */
+  virtual uint64_t getMultExecutionResult(uint32_t index) const = 0;
+
+  /**
+   * Get the execution result of the executed batch Mult gate
+   * @param index the index of the batch Mult gate in the schedule
+   * @return the result value
+   */
+  virtual const std::vector<uint64_t>& getBatchMultExecutionResult(
+      uint32_t index) const = 0;
 
   /**
    * reveal a vector of shared secret to a designated party

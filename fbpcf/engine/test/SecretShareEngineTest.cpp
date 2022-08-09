@@ -746,7 +746,7 @@ std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
   auto batchCompositeIndex2 =
       engine.scheduleBatchCompositeAND(leftComposite3, rightComposite3);
 
-  engine.executeScheduledAND();
+  engine.executeScheduledOperations();
 
   // Regular AND
   std::vector<bool> andResult(size / 2);
