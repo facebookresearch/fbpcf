@@ -29,6 +29,12 @@ jobs:
         ./run-sanity_check.sh -u -v 2
       working-directory: fbpcf/tests/github/
 
+    - name: Run Edit Distance E2E Test
+      timeout-minutes: 10
+      run: |
+        ./run-edit_distance_validation.sh -u
+      working-directory: fbpcf/tests/github/
+
     - name: Cleanup
       run: |
         # remove all images
