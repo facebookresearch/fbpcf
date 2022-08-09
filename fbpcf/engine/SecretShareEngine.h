@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -167,6 +168,25 @@ class SecretShareEngine final : public ISecretShareEngine {
    */
   std::vector<bool> revealToParty(int id, const std::vector<bool>& output)
       const override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t setIntegerInput(int id, std::optional<uint64_t> v) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> setBatchIntegerInput(
+      int id,
+      const std::vector<uint64_t>& v) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> revealToParty(
+      int id,
+      const std::vector<uint64_t>& output) const override;
 
   /**
    * @inherit doc
