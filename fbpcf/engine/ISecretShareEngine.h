@@ -29,6 +29,17 @@ class ISecretShareEngine {
   virtual bool setInput(int id, std::optional<bool> v = std::nullopt) = 0;
 
   /**
+   * Generate a private input wire carring party id's input
+   * @param id the party that own v
+   * @param v the plaintext input, this value can be std::nullopt if this
+   * party doesn't own v
+   * @return the ciphertext form
+   */
+  virtual uint64_t setIntegerInput(
+      int id,
+      std::optional<uint64_t> v = std::nullopt) = 0;
+
+  /**
    * Generate a batch of private input wires carring party id's inputs
    * @param id the party that own v
    * @param v the plaintext inputs, the optional bools in this vector can be
@@ -38,6 +49,17 @@ class ISecretShareEngine {
   virtual std::vector<bool> setBatchInput(
       int id,
       const std::vector<bool>& v) = 0;
+
+  /**
+   * Generate a batch of private input wires carring party id's inputs
+   * @param id the party that own v
+   * @param v the plaintext inputs, the optional integers in this vector can be
+   * any value if this party doesn't own v
+   * @return the ciphertext form
+   */
+  virtual std::vector<uint64_t> setBatchIntegerInput(
+      int id,
+      const std::vector<uint64_t>& v) = 0;
 
   /**
    * Compute an XOR gate with two private or two public values. This operation
@@ -266,6 +288,16 @@ class ISecretShareEngine {
   virtual std::vector<bool> revealToParty(
       int id,
       const std::vector<bool>& output) const = 0;
+
+  /**
+   * reveal a vector of shared secret to a designated party
+   * @param Id the identity of the plaintext receiver
+   * @param output the plaintext output, false if this party is not the
+   * receiver
+   */
+  virtual std::vector<uint64_t> revealToParty(
+      int id,
+      const std::vector<uint64_t>& output) const = 0;
 
   /**
    * Get the total amount of traffic transmitted.

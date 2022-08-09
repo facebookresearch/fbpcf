@@ -8,6 +8,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <regex.h>
+#include <cstdint>
 #include <functional>
 #include <future>
 #include <memory>
@@ -70,6 +71,12 @@ void assertPartyResultsConsistent(
 }
 
 void assertPartyResultsConsistent(
+    std::vector<uint64_t> base,
+    std::vector<uint64_t> comparison) {
+  EXPECT_EQ(comparison.size(), base.size());
+}
+
+void assertPartyResultsConsistent(
     std::pair<std::vector<bool>, std::vector<std::vector<bool>>> base,
     std::pair<std::vector<bool>, std::vector<std::vector<bool>>> comparison) {
   auto expectedAndResult = std::get<0>(base);
@@ -107,6 +114,44 @@ testTemplate(
               inputsArrangement[i].second, inputsArrangement[i].first));
         } else {
           inputs.push_back(engine->setInput(inputsArrangement[i].second));
+        }
+      } else {
+        // a public value
+        inputs.push_back(inputsArrangement[i].first);
+      }
+    }
+    auto outputs = testBody(*engine, inputs);
+    if (resultNeedsOpen) {
+      return engine->revealToParty(0, outputs);
+    } else {
+      return outputs;
+    }
+  };
+}
+
+std::function<std::vector<uint64_t>(
+    std::unique_ptr<ISecretShareEngine> engine,
+    int myId,
+    int numberOfParty)>
+testTemplate(
+    const std::vector<std::pair<uint64_t, int>>& inputsArrangement,
+    std::vector<uint64_t>
+        testBody(ISecretShareEngine& engine, const std::vector<uint64_t>&),
+    bool resultNeedsOpen = true) {
+  return [inputsArrangement, resultNeedsOpen, testBody](
+             std::unique_ptr<ISecretShareEngine> engine,
+             int myId,
+             int numberOfParty) {
+    std::vector<uint64_t> inputs;
+    for (size_t i = 0; i < inputsArrangement.size(); i++) {
+      if (inputsArrangement[i].second < numberOfParty) {
+        // a private value
+        if (myId == inputsArrangement[i].second) {
+          inputs.push_back(engine->setIntegerInput(
+              inputsArrangement[i].second, inputsArrangement[i].first));
+        } else {
+          inputs.push_back(
+              engine->setIntegerInput(inputsArrangement[i].second));
         }
       } else {
         // a public value
@@ -184,6 +229,27 @@ generateRandomInputs(int numberOfParty, int size, int startOfPublicValues) {
   return rst;
 }
 
+std::vector<std::pair<uint64_t, int>> generateRandomIntegerInputs(
+    int numberOfParty,
+    int size,
+    int startOfPublicValues) {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint64_t> dist;
+  std::uniform_int_distribution<uint8_t> partyDist(0, numberOfParty - 1);
+
+  std::vector<std::pair<uint64_t, int>> rst(size);
+  for (int i = 0; i < size; i++) {
+    rst[i] = {dist(e), partyDist(e)};
+  }
+
+  for (int i = startOfPublicValues; i < size; i++) {
+    rst[i].second = numberOfParty + 1;
+  }
+
+  return rst;
+}
+
 std::vector<bool> inputAndOutputTestBody(
     ISecretShareEngine& /*engine*/,
     const std::vector<bool>& inputs) {
@@ -194,6 +260,28 @@ TEST(SecretShareEngineTest, TestInputAndOutputWithDummyComponents) {
   int numberOfParty = 4;
   int size = 16384;
   auto inputs = generateRandomInputs(numberOfParty, size, size);
+
+  auto rst = testHelper(
+      numberOfParty,
+      testTemplate(inputs, inputAndOutputTestBody),
+      getInsecureEngineFactoryWithDummyTupleGenerator,
+      assertPartyResultsConsistent);
+  ASSERT_EQ(rst.size(), size);
+  for (int i = 0; i < size; i++) {
+    EXPECT_EQ(rst[i], inputs[i].first);
+  }
+}
+
+std::vector<uint64_t> inputAndOutputTestBody(
+    ISecretShareEngine& /*engine*/,
+    const std::vector<uint64_t>& inputs) {
+  return inputs;
+}
+
+TEST(SecretShareEngineTest, TestIntegerInputAndOutputWithDummyComponents) {
+  int numberOfParty = 4;
+  int size = 16384;
+  auto inputs = generateRandomIntegerInputs(numberOfParty, size, size);
 
   auto rst = testHelper(
       numberOfParty,

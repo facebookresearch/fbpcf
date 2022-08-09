@@ -8,6 +8,7 @@
 #pragma once
 
 #include <fmt/format.h>
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
@@ -38,7 +39,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
    * @inherit doc
    */
   std::vector<bool> setBatchInput(int id, const std::vector<bool>& v) override {
-    if (id == myId_ && v.size() == 0) {
+    if (v.size() == 0) {
       throw std::invalid_argument("empty input!");
     }
     return v;
@@ -47,9 +48,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeSymmetricXOR(
-      [[maybe_unused]] bool left,
-      [[maybe_unused]] bool right) const override {
+  bool computeSymmetricXOR(bool /*left*/, bool /*right*/) const override {
     return true;
   }
 
@@ -68,9 +67,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeAsymmetricXOR(
-      [[maybe_unused]] bool left,
-      [[maybe_unused]] bool right) const override {
+  bool computeAsymmetricXOR(bool /*left*/, bool /*right*/) const override {
     return true;
   }
 
@@ -89,7 +86,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeSymmetricNOT([[maybe_unused]] bool input) const override {
+  bool computeSymmetricNOT(bool /*input*/) const override {
     return true;
   }
 
@@ -104,7 +101,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeAsymmetricNOT([[maybe_unused]] bool input) const override {
+  bool computeAsymmetricNOT(bool /*input*/) const override {
     return true;
   }
 
@@ -121,8 +118,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool computeFreeAND([[maybe_unused]] bool left, [[maybe_unused]] bool right)
-      const override {
+  bool computeFreeAND(bool /*left*/, bool /*right*/) const override {
     return true;
   }
 
@@ -143,8 +139,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  uint32_t scheduleAND([[maybe_unused]] bool left, [[maybe_unused]] bool right)
-      override {
+  uint32_t scheduleAND(bool /*left*/, bool /*right*/) override {
     return 0;
   }
 
@@ -164,9 +159,8 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  uint32_t scheduleCompositeAND(
-      [[maybe_unused]] bool left,
-      std::vector<bool> rights) override {
+  uint32_t scheduleCompositeAND(bool /*left*/, std::vector<bool> rights)
+      override {
     dummyCompositeANDResults_.push_back(rights);
     return dummyCompositeANDResults_.size() - 1;
   }
@@ -214,7 +208,7 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  bool getANDExecutionResult([[maybe_unused]] uint32_t index) const override {
+  bool getANDExecutionResult(uint32_t /*index*/) const override {
     return true;
   }
 
@@ -245,9 +239,8 @@ class DummySecretShareEngine final : public ISecretShareEngine {
   /**
    * @inherit doc
    */
-  std::vector<bool> revealToParty(
-      [[maybe_unused]] int id,
-      const std::vector<bool>& output) const override {
+  std::vector<bool> revealToParty(int /*id*/, const std::vector<bool>& output)
+      const override {
     return output;
   }
 
@@ -256,6 +249,37 @@ class DummySecretShareEngine final : public ISecretShareEngine {
    */
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return {0, 0};
+  }
+
+  /**
+   * @inherit doc
+   */
+  uint64_t setIntegerInput(int id, std::optional<uint64_t> v) override {
+    if (id == myId_ && (!v.has_value())) {
+      throw std::invalid_argument("needs to provide input value");
+    }
+    return 0;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> setBatchIntegerInput(
+      int id,
+      const std::vector<uint64_t>& v) override {
+    if (v.size() == 0) {
+      throw std::invalid_argument("empty input!");
+    }
+    return v;
+  }
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> revealToParty(
+      int /* id*/,
+      const std::vector<uint64_t>& output) const override {
+    return output;
   }
 
  private:

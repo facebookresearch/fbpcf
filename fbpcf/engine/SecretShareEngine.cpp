@@ -7,6 +7,7 @@
 
 #include <fmt/format.h>
 #include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <iterator>
 #include <memory>
@@ -83,6 +84,47 @@ std::vector<bool> SecretShareEngine::setBatchInput(
   } else {
     assert(inputPrgs_.find(id) != inputPrgs_.end());
     return inputPrgs_.at(id).second->getRandomBits(v.size());
+  }
+}
+
+uint64_t SecretShareEngine::setIntegerInput(int id, std::optional<uint64_t> v) {
+  if (id == myId_) {
+    if (!v.has_value()) {
+      throw std::invalid_argument("needs to provide input value");
+    }
+    uint64_t rst = v.value();
+    for (auto& item : inputPrgs_) {
+      rst -= item.second.first->getRandomUInt64(1)[0];
+    }
+    return rst;
+  } else {
+    assert(inputPrgs_.find(id) != inputPrgs_.end());
+    return inputPrgs_.at(id).second->getRandomUInt64(1)[0];
+  }
+}
+
+std::vector<uint64_t> SecretShareEngine::setBatchIntegerInput(
+    int id,
+    const std::vector<uint64_t>& v) {
+  if (id == myId_) {
+    auto size = v.size();
+    std::vector<uint64_t> rst(size);
+    if (rst.size() == 0) {
+      throw std::invalid_argument("empty input!");
+    }
+    for (size_t i = 0; i < size; i++) {
+      rst[i] = v[i];
+    }
+    for (auto& item : inputPrgs_) {
+      auto mask = item.second.first->getRandomUInt64(size);
+      for (size_t i = 0; i < size; i++) {
+        rst[i] -= mask[i];
+      }
+    }
+    return rst;
+  } else {
+    assert(inputPrgs_.find(id) != inputPrgs_.end());
+    return inputPrgs_.at(id).second->getRandomUInt64(v.size());
   }
 }
 
@@ -753,4 +795,9 @@ std::vector<bool> SecretShareEngine::revealToParty(
   return communicationAgent_->openSecretsToParty(id, output);
 }
 
+std::vector<uint64_t> SecretShareEngine::revealToParty(
+    int id,
+    const std::vector<uint64_t>& output) const {
+  return communicationAgent_->openSecretsToParty(id, output);
+}
 } // namespace fbpcf::engine
