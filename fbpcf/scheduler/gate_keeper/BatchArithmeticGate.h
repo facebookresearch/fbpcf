@@ -58,34 +58,73 @@ class BatchArithmeticGate final : public IArithmeticGate {
       std::map<int64_t, IGate::Secrets>& secretSharesByParty) override {
     switch (gateType_) {
         // Free gates
-      case GateType::AsymmetricPlus:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+      case GateType::Neg: {
+        auto& values = wireKeeper_.getBatchIntegerValue(left_);
+        numberOfResults_ = values.size();
+        wireKeeper_.setBatchIntegerValue(
+            wireID_, engine.computeBatchSymmetricNeg(values));
         break;
+      }
 
-      case GateType::FreeMult:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+      case GateType::AsymmetricPlus: {
+        auto& leftValues = wireKeeper_.getBatchIntegerValue(left_);
+        auto& rightValues = wireKeeper_.getBatchIntegerValue(right_);
+        numberOfResults_ = leftValues.size();
+        wireKeeper_.setBatchIntegerValue(
+            wireID_,
+            engine.computeBatchAsymmetricPlus(leftValues, rightValues));
         break;
+      }
+
+      case GateType::FreeMult: {
+        auto& leftValues = wireKeeper_.getBatchIntegerValue(left_);
+        auto& rightValues = wireKeeper_.getBatchIntegerValue(right_);
+        numberOfResults_ = leftValues.size();
+        wireKeeper_.setBatchIntegerValue(
+            wireID_, engine.computeBatchFreeMult(leftValues, rightValues));
+        break;
+      }
 
       case GateType::Input:
-        throw common::exceptions::NotImplementedError("Unimplemented");
         break;
 
-      case GateType::Neg:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+      case GateType::SymmetricPlus: {
+        auto& leftValues = wireKeeper_.getBatchIntegerValue(left_);
+        auto& rightValues = wireKeeper_.getBatchIntegerValue(right_);
+        numberOfResults_ = leftValues.size();
+        wireKeeper_.setBatchIntegerValue(
+            wireID_, engine.computeBatchSymmetricPlus(leftValues, rightValues));
         break;
-
-      case GateType::SymmetricPlus:
-        throw common::exceptions::NotImplementedError("Unimplemented");
-        break;
+      }
 
       // Non-free gates
-      case GateType::Output:
-        throw common::exceptions::NotImplementedError("Unimplemented");
-        break;
+      case GateType::Output: {
+        if (secretSharesByParty.find(partyID_) == secretSharesByParty.end()) {
+          secretSharesByParty.emplace(
+              partyID_,
+              IGate::Secrets(std::vector<bool>(), std::vector<uint64_t>()));
+        }
+        auto& secretShares = secretSharesByParty.at(partyID_).integerSecrets;
+        scheduledResultIndex_ = secretShares.size();
 
-      case GateType::NonFreeMult:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        auto& values = wireKeeper_.getBatchIntegerValue(left_);
+        numberOfResults_ = values.size();
+        secretShares.insert(secretShares.end(), values.begin(), values.end());
         break;
+      }
+
+      case GateType::NonFreeMult: {
+        auto& leftValues = wireKeeper_.getBatchIntegerValue(left_);
+        auto& rightValues = wireKeeper_.getBatchIntegerValue(right_);
+
+        numberOfResults_ = leftValues.size();
+        if (numberOfResults_ == 0) {
+          break;
+        }
+        scheduledResultIndex_ =
+            engine.scheduleBatchMult(leftValues, rightValues);
+        break;
+      }
     }
   }
 
@@ -93,13 +132,20 @@ class BatchArithmeticGate final : public IArithmeticGate {
       engine::ISecretShareEngine& engine,
       std::map<int64_t, IGate::Secrets>& revealedSecretsByParty) override {
     switch (gateType_) {
-      case GateType::NonFreeMult:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+      case GateType::NonFreeMult: {
+        wireKeeper_.setBatchIntegerValue(
+            wireID_, engine.getBatchMultExecutionResult(scheduledResultIndex_));
         break;
+      }
 
-      case GateType::Output:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+      case GateType::Output: {
+        auto iterator =
+            revealedSecretsByParty.at(partyID_).integerSecrets.begin() +
+            scheduledResultIndex_;
+        std::vector<uint64_t> results(iterator, iterator + numberOfResults_);
+        wireKeeper_.setBatchIntegerValue(wireID_, results);
         break;
+      }
 
       default:
         break;
