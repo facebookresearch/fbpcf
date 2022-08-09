@@ -7,6 +7,7 @@
 
 #include "./EditDistanceInputReader.h" // @manual
 #include <sstream>
+#include "folly/logging/xlog.h"
 
 namespace fbpcf::edit_distance {
 
@@ -18,7 +19,10 @@ EditDistanceInputReader::EditDistanceInputReader(
     ++numRows_;
     return addFromCSV(header, parts);
   };
+  XLOG(INFO, "Reading input file");
   io::FileIOWrappers::readCsv(dataFilepath, readLine);
+
+  XLOG(INFO, "Reading Input Params");
 
   auto readParams = [&](const std::vector<std::string>& header,
                         const std::vector<std::string>& parts) {

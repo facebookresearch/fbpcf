@@ -29,6 +29,8 @@ void startEditDistanceGame(
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory>(
       MyRole, partyInfos, false, "", "Edit Distance Traffic for main thread");
 
+  XLOG(INFO, "Creating Edit Distance App");
+
   auto app = std::make_unique<fbpcf::edit_distance::EditDistanceApp<MyRole>>(
       MyRole,
       std::move(communicationAgentFactory),

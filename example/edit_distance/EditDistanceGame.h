@@ -13,6 +13,7 @@
 #include "./EditDistanceInputReader.h" // @manual
 #include "./InputProcessor.h" // @manual
 #include "fbpcf/frontend/mpcGame.h"
+#include "folly/logging/xlog.h"
 
 namespace fbpcf::edit_distance {
 
