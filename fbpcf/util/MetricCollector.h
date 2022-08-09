@@ -8,6 +8,7 @@
 #pragma once
 
 #include <folly/dynamic.h>
+#include <folly/logging/xlog.h>
 #include <string>
 #include <unordered_map>
 #include "fbpcf/util/IMetricRecorder.h"
@@ -29,6 +30,27 @@ class MetricCollector {
     for (const auto& [key, recorder] : recorders_) {
       result.insert(prefix_ + "." + key, recorder->getMetrics());
     }
+    return result;
+  }
+
+  folly::dynamic aggregateMetrics() const {
+    folly::dynamic result = folly::dynamic::object;
+
+    for (const auto& [key, recorder] : recorders_) {
+      auto&& metrics = recorder->getMetrics();
+      for (const auto& [metricKey, metricValue] : metrics.items()) {
+        if (metricValue.isNumber()) {
+          auto aggKey = prefix_ + "." + metricKey.asString();
+
+          if (result.count(aggKey)) {
+            result[aggKey] += metricValue;
+          } else {
+            result.insert(aggKey, metricValue);
+          }
+        }
+      }
+    }
+
     return result;
   }
 
