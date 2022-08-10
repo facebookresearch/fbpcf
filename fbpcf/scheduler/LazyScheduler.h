@@ -9,6 +9,7 @@
 
 #include <stdexcept>
 #include "fbpcf/engine/ISecretShareEngine.h"
+#include "fbpcf/scheduler/IArithmeticScheduler.h"
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/IWireKeeper.h"
 #include "fbpcf/scheduler/gate_keeper/IGateKeeper.h"
@@ -22,7 +23,7 @@ namespace fbpcf::scheduler {
  * and executed lazily to reduce roundtrips. It is cryptographically
  * secure if the underlying secret sharing engine is.
  */
-class LazyScheduler final : public IScheduler {
+class LazyScheduler final : public IArithmeticScheduler {
  public:
   explicit LazyScheduler(
       std::unique_ptr<engine::ISecretShareEngine> engine,
@@ -103,6 +104,80 @@ class LazyScheduler final : public IScheduler {
    */
   std::vector<bool> getBooleanValueBatch(
       WireId<IScheduler::Boolean> id) override;
+
+  //======== Below are integer input processing APIs ========
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateIntegerInput(uint64_t v, int partyId)
+      override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateIntegerInputBatch(
+      const std::vector<uint64_t>& v,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicIntegerInput(uint64_t v) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicIntegerInputBatch(
+      const std::vector<uint64_t>& v) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> recoverIntegerWire(uint64_t v) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> recoverIntegerWireBatch(
+      const std::vector<uint64_t>& v) override;
+
+  //======== Below are integer output processing APIs: ========
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> openIntegerValueToParty(
+      WireId<IScheduler::Arithmetic> src,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> openIntegerValueToPartyBatch(
+      WireId<IScheduler::Arithmetic> src,
+      int partyId) override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t extractIntegerSecretShare(
+      WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> extractIntegerSecretShareBatch(
+      WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t getIntegerValue(WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> getIntegerValueBatch(
+      WireId<IScheduler::Arithmetic> id) override;
 
   //======== Below are computation APIs: ========
 
@@ -264,6 +339,122 @@ class LazyScheduler final : public IScheduler {
   WireId<IScheduler::Boolean> notPublicBatch(
       WireId<IScheduler::Boolean> src) override;
 
+  //======== Below are arithmetic computation APIs: ========
+
+  // ------ Mult gates ------
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPrivate(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPrivateBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privateMultPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicMultPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicMultPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  // ------ Plus gates ------
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPrivate(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPrivateBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> privatePlusPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicPlusPublic(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> publicPlusPublicBatch(
+      WireId<IScheduler::Arithmetic> left,
+      WireId<IScheduler::Arithmetic> right) override;
+
+  // ------ Neg gates ------
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPrivate(
+      WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPrivateBatch(
+      WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPublic(
+      WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  WireId<IScheduler::Arithmetic> negPublicBatch(
+      WireId<IScheduler::Arithmetic> src) override;
+
   //======== Below are wire management APIs: ========
 
   /**
@@ -285,6 +476,26 @@ class LazyScheduler final : public IScheduler {
    * @inherit doc
    */
   void decreaseReferenceCountBatch(WireId<IScheduler::Boolean> id) override;
+
+  /**
+   * @inherit doc
+   */
+  void increaseReferenceCount(WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  void increaseReferenceCountBatch(WireId<IScheduler::Arithmetic> src) override;
+
+  /**
+   * @inherit doc
+   */
+  void decreaseReferenceCount(WireId<IScheduler::Arithmetic> id) override;
+
+  /**
+   * @inherit doc
+   */
+  void decreaseReferenceCountBatch(WireId<IScheduler::Arithmetic> id) override;
 
   //======== Below are rebatching APIs: ========
 
@@ -319,6 +530,9 @@ class LazyScheduler final : public IScheduler {
   // Compute the value for the given wire if it hasn't been set already.
   template <bool usingBatch>
   IGateKeeper::BoolType<usingBatch> forceWire(WireId<IScheduler::Boolean> id);
+
+  template <bool usingBatch>
+  IGateKeeper::IntType<usingBatch> forceWire(WireId<IScheduler::Arithmetic> id);
 
   void maybeExecuteGates();
 

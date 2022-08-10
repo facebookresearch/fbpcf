@@ -15,6 +15,7 @@
 
 #include <fbpcf/scheduler/gate_keeper/GateKeeper.h>
 #include <fbpcf/scheduler/gate_keeper/INormalGate.h>
+#include <sys/types.h>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/gate_keeper/IGate.h"
 #include "fbpcf/scheduler/gate_keeper/INormalGate.h"
@@ -107,6 +108,89 @@ bool LazyScheduler::getBooleanValue(WireId<IScheduler::Boolean> id) {
 
 std::vector<bool> LazyScheduler::getBooleanValueBatch(
     WireId<IScheduler::Boolean> id) {
+  return forceWire<true>(id);
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::privateIntegerInput(
+    uint64_t v,
+    int partyId) {
+  auto id = gateKeeper_->inputGate(engine_->setIntegerInput(partyId, v));
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::privateIntegerInputBatch(
+    const std::vector<uint64_t>& v,
+    int partyId) {
+  auto id =
+      gateKeeper_->inputGateBatch(engine_->setBatchIntegerInput(partyId, v));
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::publicIntegerInput(
+    uint64_t v) {
+  auto id = gateKeeper_->inputGate(v);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::publicIntegerInputBatch(const std::vector<uint64_t>& v) {
+  auto id = gateKeeper_->inputGateBatch(v);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::recoverIntegerWire(
+    uint64_t v) {
+  auto id = gateKeeper_->inputGate(v);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::recoverIntegerWireBatch(const std::vector<uint64_t>& v) {
+  auto id = gateKeeper_->inputGateBatch(v);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::openIntegerValueToParty(
+    WireId<IScheduler::Arithmetic> src,
+    int partyId) {
+  auto id = gateKeeper_->outputGate(src, partyId);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::openIntegerValueToPartyBatch(
+    WireId<IScheduler::Arithmetic> src,
+    int partyId) {
+  auto id = gateKeeper_->outputGateBatch(src, partyId);
+  maybeExecuteGates();
+  return id;
+}
+
+uint64_t LazyScheduler::extractIntegerSecretShare(
+    WireId<IScheduler::Arithmetic> id) {
+  return forceWire<false>(id);
+}
+
+std::vector<uint64_t> LazyScheduler::extractIntegerSecretShareBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  return forceWire<true>(id);
+}
+
+uint64_t LazyScheduler::getIntegerValue(WireId<IScheduler::Arithmetic> id) {
+  return forceWire<false>(id);
+}
+
+std::vector<uint64_t> LazyScheduler::getIntegerValueBatch(
+    WireId<IScheduler::Arithmetic> id) {
   return forceWire<true>(id);
 }
 
@@ -308,6 +392,148 @@ IScheduler::WireId<IScheduler::Boolean> LazyScheduler::notPublicBatch(
   return id;
 }
 
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::privateMultPrivate(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGate(
+      IArithmeticGate::GateType::NonFreeMult, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::privateMultPrivateBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGateBatch(
+      IArithmeticGate::GateType::NonFreeMult, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::privateMultPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGate(
+      IArithmeticGate::GateType::FreeMult, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::privateMultPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGateBatch(
+      IArithmeticGate::GateType::FreeMult, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::publicMultPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGate(
+      IArithmeticGate::GateType::FreeMult, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::publicMultPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGateBatch(
+      IArithmeticGate::GateType::FreeMult, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::privatePlusPrivate(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGate(
+      IArithmeticGate::GateType::SymmetricPlus, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::privatePlusPrivateBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGateBatch(
+      IArithmeticGate::GateType::SymmetricPlus, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::privatePlusPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGate(
+      IArithmeticGate::GateType::AsymmetricPlus, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic>
+LazyScheduler::privatePlusPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGateBatch(
+      IArithmeticGate::GateType::AsymmetricPlus, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::publicPlusPublic(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGate(
+      IArithmeticGate::GateType::SymmetricPlus, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::publicPlusPublicBatch(
+    WireId<IScheduler::Arithmetic> left,
+    WireId<IScheduler::Arithmetic> right) {
+  auto id = gateKeeper_->arithmeticGateBatch(
+      IArithmeticGate::GateType::SymmetricPlus, left, right);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::negPrivate(
+    WireId<IScheduler::Arithmetic> src) {
+  auto id = gateKeeper_->arithmeticGate(IArithmeticGate::GateType::Neg, src);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::negPrivateBatch(
+    WireId<IScheduler::Arithmetic> src) {
+  auto id =
+      gateKeeper_->arithmeticGateBatch(IArithmeticGate::GateType::Neg, src);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::negPublic(
+    WireId<IScheduler::Arithmetic> src) {
+  auto id = gateKeeper_->arithmeticGate(IArithmeticGate::GateType::Neg, src);
+  maybeExecuteGates();
+  return id;
+}
+
+IScheduler::WireId<IScheduler::Arithmetic> LazyScheduler::negPublicBatch(
+    WireId<IScheduler::Arithmetic> src) {
+  auto id =
+      gateKeeper_->arithmeticGateBatch(IArithmeticGate::GateType::Neg, src);
+  maybeExecuteGates();
+  return id;
+}
+
 void LazyScheduler::increaseReferenceCount(WireId<IScheduler::Boolean> id) {
   wireKeeper_->increaseReferenceCount(id);
 }
@@ -323,6 +549,24 @@ void LazyScheduler::decreaseReferenceCount(WireId<IScheduler::Boolean> id) {
 
 void LazyScheduler::decreaseReferenceCountBatch(
     WireId<IScheduler::Boolean> id) {
+  wireKeeper_->decreaseBatchReferenceCount(id);
+}
+
+void LazyScheduler::increaseReferenceCount(WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->increaseReferenceCount(id);
+}
+
+void LazyScheduler::increaseReferenceCountBatch(
+    WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->increaseBatchReferenceCount(id);
+}
+
+void LazyScheduler::decreaseReferenceCount(WireId<IScheduler::Arithmetic> id) {
+  wireKeeper_->decreaseReferenceCount(id);
+}
+
+void LazyScheduler::decreaseReferenceCountBatch(
+    WireId<IScheduler::Arithmetic> id) {
   wireKeeper_->decreaseBatchReferenceCount(id);
 }
 
@@ -360,6 +604,18 @@ IGateKeeper::BoolType<usingBatch> LazyScheduler::forceWire(
   }
 }
 
+template <bool usingBatch>
+IGateKeeper::IntType<usingBatch> LazyScheduler::forceWire(
+    IScheduler::WireId<IScheduler::Arithmetic> id) {
+  if constexpr (usingBatch) {
+    executeTillLevel(wireKeeper_->getBatchFirstAvailableLevel(id));
+    return wireKeeper_->getBatchIntegerValue(id);
+  } else {
+    executeTillLevel(wireKeeper_->getFirstAvailableLevel(id));
+    return wireKeeper_->getIntegerValue(id);
+  }
+}
+
 void LazyScheduler::maybeExecuteGates() {
   while (gateKeeper_->hasReachedBatchingLimit()) {
     executeOneLevel();
@@ -390,7 +646,6 @@ void LazyScheduler::executeOneLevel() {
   }
 
   if (!isLevelFree) {
-    // Execute AND gates and share secrets
     engine_->executeScheduledOperations();
 
     std::map<int64_t, IGate::Secrets> revealedSecretsByParty;
@@ -399,7 +654,7 @@ void LazyScheduler::executeOneLevel() {
           party,
           IGate::Secrets(
               engine_->revealToParty(party, secretShares.booleanSecrets),
-              std::vector<uint64_t>()));
+              engine_->revealToParty(party, secretShares.integerSecrets)));
     }
 
     // Update non-free gates
