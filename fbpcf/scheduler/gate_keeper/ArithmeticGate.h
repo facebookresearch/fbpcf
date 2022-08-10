@@ -58,33 +58,56 @@ class ArithmeticGate final : public IArithmeticGate {
       std::map<int64_t, Secrets>& secretSharesByParty) override {
     switch (gateType_) {
         // Free gates
+      case GateType::Neg:
+        wireKeeper_.setIntegerValue(
+            wireID_,
+            engine.computeSymmetricNeg(wireKeeper_.getIntegerValue(left_)));
+        break;
+
       case GateType::AsymmetricPlus:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        wireKeeper_.setIntegerValue(
+            wireID_,
+            engine.computeAsymmetricPlus(
+                wireKeeper_.getIntegerValue(left_),
+                wireKeeper_.getIntegerValue(right_)));
         break;
 
       case GateType::FreeMult:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        wireKeeper_.setIntegerValue(
+            wireID_,
+            engine.computeFreeMult(
+                wireKeeper_.getIntegerValue(left_),
+                wireKeeper_.getIntegerValue(right_)));
         break;
 
       case GateType::Input:
-        throw common::exceptions::NotImplementedError("Unimplemented");
-        break;
-
-      case GateType::Neg:
-        throw common::exceptions::NotImplementedError("Unimplemented");
         break;
 
       case GateType::SymmetricPlus:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        wireKeeper_.setIntegerValue(
+            wireID_,
+            engine.computeSymmetricPlus(
+                wireKeeper_.getIntegerValue(left_),
+                wireKeeper_.getIntegerValue(right_)));
         break;
 
       // Non-free gates
-      case GateType::Output:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+      case GateType::Output: {
+        if (secretSharesByParty.find(partyID_) == secretSharesByParty.end()) {
+          secretSharesByParty.emplace(
+              partyID_,
+              IGate::Secrets(std::vector<bool>(), std::vector<uint64_t>()));
+        }
+        auto& secretShares = secretSharesByParty.at(partyID_).integerSecrets;
+        scheduledResultIndex_ = secretShares.size();
+        secretShares.push_back(wireKeeper_.getIntegerValue(left_));
         break;
+      }
 
       case GateType::NonFreeMult:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        scheduledResultIndex_ = engine.scheduleMult(
+            wireKeeper_.getIntegerValue(left_),
+            wireKeeper_.getIntegerValue(right_));
         break;
     }
   }
@@ -94,11 +117,15 @@ class ArithmeticGate final : public IArithmeticGate {
       std::map<int64_t, Secrets>& revealedSecretsByParty) override {
     switch (gateType_) {
       case GateType::NonFreeMult:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        wireKeeper_.setIntegerValue(
+            wireID_, engine.getMultExecutionResult(scheduledResultIndex_));
         break;
 
       case GateType::Output:
-        throw common::exceptions::NotImplementedError("Unimplemented");
+        wireKeeper_.setIntegerValue(
+            wireID_,
+            revealedSecretsByParty.at(partyID_).integerSecrets.at(
+                scheduledResultIndex_));
         break;
 
       default:
