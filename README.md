@@ -261,3 +261,26 @@ These are essentially treated as compiled static libraries and greatly reduces r
     - This is the git release tag for https://github.com/fmtlib/fmt
   - FOLLY_RELEASE="2021.03.29.00"
     - This is the git release tag for https://github.com/facebook/folly.git
+
+
+## Citing Meta PCF
+
+
+To cite Meta PCF in academic paper, please use the following BibTeX entries.
+
+### Citing Whitepaper
+
+@MISC {pcfwp2022,
+    author       = {Shastri, Aditya  and Wu, David and Chua, Lynn  and  Zhu, Ruiyu and Davidi, Tal  and Sheng,  Yu  and  Mintz,  Josh},
+    title        = "{P}rivate {C}omputation {F}ramework 2.0",
+    howpublished = "{\url{https://research.facebook.com/publications/private-computation-framework-2-0/}}",
+    year         = "2022"
+}
+
+### Citing PCF library
+
+@MISC {pcf2022,
+    title        = "{P}rivate {C}omputation {F}ramework 2.0",
+    howpublished = "{\url{https://github.com/facebookresearch/fbpcf}}",
+    year         = "2022"
+}
