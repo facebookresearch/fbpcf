@@ -175,6 +175,17 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
     return data_[i];
   }
 
+  frontend::Int<true, 8, true, schedulerId, usingBatch> operator[](
+      frontend::Int<false, maxWidth, true, schedulerId, usingBatch> i) {
+    frontend::Int<true, 8, true, schedulerId, usingBatch> ret(0, 0);
+    for (size_t j = 0; j < maxWidth; j++) {
+      frontend::Int<false, maxWidth, false, schedulerId, usingBatch> indexInInt(
+          j);
+      ret = ret.mux(indexInInt == i, data_[j]);
+    }
+    return ret;
+  }
+
   AsciiString<maxWidth, isSecret, schedulerId, usingBatch> toUpperCase() const;
   AsciiString<maxWidth, isSecret, schedulerId, usingBatch> toLowerCase() const;
 
