@@ -37,6 +37,12 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
       std::string tlsDir,
       std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder);
 
+  explicit SocketPartyCommunicationAgent(
+      int sockFd,
+      int portNo,
+      TlsInfo tlsInfo,
+      std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder);
+
   /**
    * Created as socket client, optionally with TLS.
    */
@@ -45,6 +51,12 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
       int portNo,
       bool useTls,
       std::string tlsDir,
+      std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder);
+
+  SocketPartyCommunicationAgent(
+      const std::string& serverAddress,
+      int portNo,
+      TlsInfo tlsInfo,
       std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder);
 
   ~SocketPartyCommunicationAgent() override;
@@ -86,6 +98,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder_;
 
   SSL* ssl_;
+  TlsInfo tlsInfo_;
 };
 
 } // namespace fbpcf::engine::communication
