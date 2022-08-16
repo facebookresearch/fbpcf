@@ -35,13 +35,6 @@ class SocketPartyCommunicationAgentFactory final
     int portNo;
   };
 
-  struct TlsInfo {
-    bool useTls;
-    std::string certPath;
-    std::string keyPath;
-    std::string passphrasePath;
-  };
-
   /** it's OK if a party with a smaller id doesn't know a party with larger id's
   * ip address, since the party with smaller id will always be the server.
   *@param partyInfos This is a map that contains connection information for all
@@ -79,7 +72,7 @@ establishing multiple connections (>3) between each party pair.
   SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
-      TlsInfo tlsInfo,
+      SocketPartyCommunicationAgent::TlsInfo tlsInfo,
       std::string myname)
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
@@ -117,7 +110,7 @@ establishing multiple connections (>3) between each party pair.
   bool useTls_;
   std::string tlsDir_;
 
-  TlsInfo tlsInfo_;
+  SocketPartyCommunicationAgent::TlsInfo tlsInfo_;
 };
 
 } // namespace fbpcf::engine::communication
