@@ -21,6 +21,12 @@ namespace fbpcf::engine::communication {
  */
 class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
  public:
+  struct TlsInfo {
+    bool useTls;
+    std::string certPath;
+    std::string keyPath;
+    std::string passphrasePath;
+  };
   /**
    * Create as socket server, optionally with TLS.
    */
@@ -59,10 +65,15 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   void openClientPort(const std::string& serverAddress, int portNo);
 
   void openServerPortWithTls(int sockFd, int portNo, std::string tlsDir);
+  void openServerPortWithTls(int sockFd, int portNo, TlsInfo tlsInfo);
   void openClientPortWithTls(
       const std::string& serverAddress,
       int portNo,
       std::string tlsDir);
+  void openClientPortWithTls(
+      const std::string& serverAddress,
+      int portNo,
+      TlsInfo tlsInfo);
 
   /*
    * helper functions for shared code between TLS and non-TLS implementations
