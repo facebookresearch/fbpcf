@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -25,11 +26,11 @@ namespace fbpcf::scheduler {
 class WireKeeper final : public IWireKeeper {
  public:
   WireKeeper(
-      std::unique_ptr<IAllocator<WireRecord<bool>>> boolAllocator,
-      std::unique_ptr<IAllocator<WireRecord<std::vector<bool>>>>
+      std::unique_ptr<IAllocator<WireRecord<bool, false>>> boolAllocator,
+      std::unique_ptr<IAllocator<WireRecord<std::vector<bool>, true>>>
           boolBatchAllocator,
-      std::unique_ptr<IAllocator<WireRecord<uint64_t>>> intAllocator,
-      std::unique_ptr<IAllocator<WireRecord<std::vector<uint64_t>>>>
+      std::unique_ptr<IAllocator<WireRecord<uint64_t, false>>> intAllocator,
+      std::unique_ptr<IAllocator<WireRecord<std::vector<uint64_t>, true>>>
           intBatchAllocator_)
       : boolAllocator_{std::move(boolAllocator)},
         boolBatchAllocator_{std::move(boolBatchAllocator)},
@@ -39,22 +40,26 @@ class WireKeeper final : public IWireKeeper {
   template <bool unsafe>
   static std::unique_ptr<IWireKeeper> createWithVectorArena() {
     return std::make_unique<WireKeeper>(
-        std::make_unique<VectorArenaAllocator<WireRecord<bool>, unsafe>>(),
         std::make_unique<
-            VectorArenaAllocator<WireRecord<std::vector<bool>>, unsafe>>(),
-        std::make_unique<VectorArenaAllocator<WireRecord<uint64_t>, unsafe>>(),
+            VectorArenaAllocator<WireRecord<bool, false>, unsafe>>(),
+        std::make_unique<VectorArenaAllocator<
+            WireRecord<std::vector<bool>, true>,
+            unsafe>>(),
         std::make_unique<
-            VectorArenaAllocator<WireRecord<std::vector<uint64_t>>, unsafe>>());
+            VectorArenaAllocator<WireRecord<uint64_t, false>, unsafe>>(),
+        std::make_unique<VectorArenaAllocator<
+            WireRecord<std::vector<uint64_t>, true>,
+            unsafe>>());
   }
 
   static std::unique_ptr<IWireKeeper> createWithUnorderedMap() {
     return std::make_unique<WireKeeper>(
-        std::make_unique<UnorderedMapAllocator<WireRecord<bool>>>(),
+        std::make_unique<UnorderedMapAllocator<WireRecord<bool, false>>>(),
         std::make_unique<
-            UnorderedMapAllocator<WireRecord<std::vector<bool>>>>(),
-        std::make_unique<UnorderedMapAllocator<WireRecord<uint64_t>>>(),
+            UnorderedMapAllocator<WireRecord<std::vector<bool>, true>>>(),
+        std::make_unique<UnorderedMapAllocator<WireRecord<uint64_t, false>>>(),
         std::make_unique<
-            UnorderedMapAllocator<WireRecord<std::vector<uint64_t>>>>());
+            UnorderedMapAllocator<WireRecord<std::vector<uint64_t>, true>>>());
   }
 
   /**
@@ -149,16 +154,30 @@ class WireKeeper final : public IWireKeeper {
   /**
    * @inherit doc
    */
+  uint64_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> id) const override;
+
+  /**
+   * @inherit doc
+   */
+  uint64_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const override;
+
+  /**
+   * @inherit doc
+   */
   IScheduler::WireId<IScheduler::Boolean> allocateBatchBooleanValue(
       const std::vector<bool>& v,
-      uint32_t firstAvailableLevel = 0) override;
+      uint32_t firstAvailableLevel = 0,
+      size_t expectedBatchSize = 0) override;
 
   /**
    * @inherit doc
    */
   IScheduler::WireId<IScheduler::Arithmetic> allocateBatchIntegerValue(
       const std::vector<uint64_t>& v,
-      uint32_t firstAvailableLevel = 0) override;
+      uint32_t firstAvailableLevel = 0,
+      size_t expectedBatchSize = 0) override;
 
   /**
    * @inherit doc
@@ -245,11 +264,11 @@ class WireKeeper final : public IWireKeeper {
       IScheduler::WireId<IScheduler::Arithmetic> id) override;
 
  private:
-  std::unique_ptr<IAllocator<WireRecord<bool>>> boolAllocator_;
-  std::unique_ptr<IAllocator<WireRecord<std::vector<bool>>>>
+  std::unique_ptr<IAllocator<WireRecord<bool, false>>> boolAllocator_;
+  std::unique_ptr<IAllocator<WireRecord<std::vector<bool>, true>>>
       boolBatchAllocator_;
-  std::unique_ptr<IAllocator<WireRecord<uint64_t>>> intAllocator_;
-  std::unique_ptr<IAllocator<WireRecord<std::vector<uint64_t>>>>
+  std::unique_ptr<IAllocator<WireRecord<uint64_t, false>>> intAllocator_;
+  std::unique_ptr<IAllocator<WireRecord<std::vector<uint64_t>, true>>>
       intBatchAllocator_;
 };
 

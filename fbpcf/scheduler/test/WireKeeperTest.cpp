@@ -41,9 +41,9 @@ void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Bool
   std::vector<bool> testValue1(3, true);
-  auto wire7 = wireKeeper->allocateBatchBooleanValue(testValue1);
+  auto wire7 = wireKeeper->allocateBatchBooleanValue(testValue1, 0, 3);
   testVectorEq(wireKeeper->getBatchBooleanValue(wire7), testValue1);
-  std::vector<bool> testValue2(4, false);
+  std::vector<bool> testValue2(3, false);
   wireKeeper->setBatchBooleanValue(wire7, testValue2);
   testVectorEq(wireKeeper->getBatchBooleanValue(wire7), testValue2);
   testValue2[0] = true;
@@ -53,15 +53,15 @@ void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
   // Batch API: Int
 
   std::vector<uint64_t> testValue3({UINT64_MAX, UINT64_MAX, 0});
-  auto wire8 = wireKeeper->allocateBatchIntegerValue(testValue3);
-  testVectorEq(wireKeeper->getBatchIntegerValue(wire8), testValue3);
+  auto wire9 = wireKeeper->allocateBatchIntegerValue(testValue3, 0, 3);
+  testVectorEq(wireKeeper->getBatchIntegerValue(wire9), testValue3);
 
   std::vector<uint64_t> testValue4({10, 11, 12});
-  wireKeeper->setBatchIntegerValue(wire8, testValue4);
-  testVectorEq(wireKeeper->getBatchIntegerValue(wire8), testValue4);
+  wireKeeper->setBatchIntegerValue(wire9, testValue4);
+  testVectorEq(wireKeeper->getBatchIntegerValue(wire9), testValue4);
   testValue4[0] = 33;
-  wireKeeper->getWritableBatchIntegerValue(wire8)[0] = 33;
-  testVectorEq(wireKeeper->getBatchIntegerValue(wire8), testValue4);
+  wireKeeper->getWritableBatchIntegerValue(wire9)[0] = 33;
+  testVectorEq(wireKeeper->getBatchIntegerValue(wire9), testValue4);
 }
 
 TEST(UnorderedMapWireKeeperTest, testAllocateSetAndGet) {
@@ -95,7 +95,7 @@ void wireKeeperTestAvailableLevel(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Bool
   auto wire3 = wireKeeper->allocateBatchBooleanValue(
-      {true, false}, /*firstAvailableLevel*/ 9);
+      {true, false}, /*firstAvailableLevel*/ 9, 2);
   EXPECT_EQ(wireKeeper->getBatchFirstAvailableLevel(wire3), 9);
 
   wireKeeper->setBatchFirstAvailableLevel(wire3, 2);
@@ -103,7 +103,7 @@ void wireKeeperTestAvailableLevel(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Int
   auto wire4 = wireKeeper->allocateBatchIntegerValue(
-      {12, 24}, /* firstAvaialbleLevel*/ 25);
+      {12, 24}, /* firstAvaialbleLevel*/ 25, 2);
   EXPECT_EQ(wireKeeper->getBatchFirstAvailableLevel(wire4), 25);
 
   wireKeeper->setBatchFirstAvailableLevel(wire4, 1337);
@@ -183,7 +183,8 @@ void wireKeeperTestReferenceCount(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Bool
   std::vector<bool> testBoolValue(true, 3);
-  auto batchBoolWire = wireKeeper->allocateBatchBooleanValue(testBoolValue);
+  auto batchBoolWire =
+      wireKeeper->allocateBatchBooleanValue(testBoolValue, 0, 3);
 
   for (int i = 0; i < 10; i++) {
     if (i % 3 == 2) {
@@ -215,7 +216,7 @@ void wireKeeperTestReferenceCount(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Int
   std::vector<uint64_t> testIntValue({3, 4, 5});
-  auto batchIntWire = wireKeeper->allocateBatchIntegerValue(testIntValue);
+  auto batchIntWire = wireKeeper->allocateBatchIntegerValue(testIntValue, 0, 3);
 
   for (int i = 0; i < 10; i++) {
     if (i % 3 == 2) {
@@ -253,6 +254,41 @@ TEST(UnorderedMapWireKeeperTest, testReferenceCount) {
 
 TEST(SafeVectorArenaWireKeeperTest, testReferenceCount) {
   wireKeeperTestReferenceCount(
+      WireKeeper::createWithVectorArena</*unsafe*/ false>());
+}
+
+void wireKeeperTestExpectedBatchSize(std::unique_ptr<IWireKeeper> wireKeeper) {
+  // Batch API: Bool
+  std::vector<bool> testValue1(3, true);
+  auto wire1 = wireKeeper->allocateBatchBooleanValue(testValue1, 0, 3);
+  EXPECT_EQ(wireKeeper->getBatchSize(wire1), 3);
+
+  std::vector<bool> testValue2(4, false);
+  auto wire2 = wireKeeper->allocateBatchBooleanValue(testValue2, 0, 4);
+  EXPECT_EQ(wireKeeper->getBatchSize(wire2), 4);
+
+  // Batch API: Int
+  std::vector<uint64_t> testValue3(
+      {UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX});
+  auto wire3 = wireKeeper->allocateBatchIntegerValue(testValue3, 0, 5);
+  EXPECT_EQ(wireKeeper->getBatchSize(wire3), 5);
+
+  std::vector<uint64_t> testValue4({10, 11, 12, 7, 8, 9});
+  auto wire4 = wireKeeper->allocateBatchIntegerValue(testValue4, 0, 6);
+  EXPECT_EQ(wireKeeper->getBatchSize(wire4), 6);
+}
+
+TEST(UnorderedMapWireKeeperTest, testGetBatchSize) {
+  wireKeeperTestExpectedBatchSize(WireKeeper::createWithUnorderedMap());
+}
+
+TEST(UnsafeVectorArenaWireKeeperTest, testGetBatchSize) {
+  wireKeeperTestExpectedBatchSize(
+      WireKeeper::createWithVectorArena</*unsafe*/ true>());
+}
+
+TEST(SafeVectorArenaWireKeeperTest, testGetBatchSize) {
+  wireKeeperTestExpectedBatchSize(
       WireKeeper::createWithVectorArena</*unsafe*/ false>());
 }
 } // namespace fbpcf::scheduler

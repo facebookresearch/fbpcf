@@ -6,6 +6,7 @@
  */
 
 #include "fbpcf/scheduler/WireKeeper.h"
+#include <folly/logging/xlog.h>
 #include <cstdint>
 #include <exception>
 #include <stdexcept>
@@ -18,7 +19,7 @@ IScheduler::WireId<IScheduler::Boolean> WireKeeper::allocateBooleanValue(
     bool v,
     uint32_t firstAvailableLevel) {
   wiresAllocated_++;
-  auto wireID = boolAllocator_->allocate(WireRecord<bool>{
+  auto wireID = boolAllocator_->allocate(WireRecord<bool, false>{
       .v = v,
       .firstAvailableLevel = firstAvailableLevel,
       .referenceCount = 1,
@@ -30,7 +31,7 @@ IScheduler::WireId<IScheduler::Arithmetic> WireKeeper::allocateIntegerValue(
     uint64_t v,
     uint32_t firstAvailableLevel) {
   wiresAllocated_++;
-  auto wireID = intAllocator_->allocate(WireRecord<uint64_t>{
+  auto wireID = intAllocator_->allocate(WireRecord<uint64_t, false>{
       .v = v,
       .firstAvailableLevel = firstAvailableLevel,
       .referenceCount = 1,
@@ -108,28 +109,44 @@ void WireKeeper::decreaseReferenceCount(
   }
 }
 
+uint64_t WireKeeper::getBatchSize(
+    IScheduler::WireId<IScheduler::Boolean> id) const {
+  return boolBatchAllocator_->get(id.getId()).expectedBatchSize;
+}
+
+uint64_t WireKeeper::getBatchSize(
+    IScheduler::WireId<IScheduler::Arithmetic> id) const {
+  return intBatchAllocator_->get(id.getId()).expectedBatchSize;
+}
+
 IScheduler::WireId<IScheduler::Boolean> WireKeeper::allocateBatchBooleanValue(
     const std::vector<bool>& v,
-    uint32_t firstAvailableLevel) {
+    uint32_t firstAvailableLevel,
+    size_t expectedBatchSize) {
   wiresAllocated_++;
-  auto wireID = boolBatchAllocator_->allocate(WireRecord<std::vector<bool>>{
-      .v = v,
-      .firstAvailableLevel = firstAvailableLevel,
-      .referenceCount = 1,
-  });
+  auto wireID =
+      boolBatchAllocator_->allocate(WireRecord<std::vector<bool>, true>{
+          .v = v,
+          .firstAvailableLevel = firstAvailableLevel,
+          .referenceCount = 1,
+          .expectedBatchSize = expectedBatchSize,
+      });
   return IScheduler::WireId<IScheduler::Boolean>(wireID);
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
 WireKeeper::allocateBatchIntegerValue(
     const std::vector<uint64_t>& v,
-    uint32_t firstAvailableLevel) {
+    uint32_t firstAvailableLevel,
+    size_t expectedBatchSize) {
   wiresAllocated_++;
-  auto wireID = intBatchAllocator_->allocate(WireRecord<std::vector<uint64_t>>{
-      .v = v,
-      .firstAvailableLevel = firstAvailableLevel,
-      .referenceCount = 1,
-  });
+  auto wireID =
+      intBatchAllocator_->allocate(WireRecord<std::vector<uint64_t>, true>{
+          .v = v,
+          .firstAvailableLevel = firstAvailableLevel,
+          .referenceCount = 1,
+          .expectedBatchSize = expectedBatchSize,
+      });
   return IScheduler::WireId<IScheduler::Arithmetic>(wireID);
 }
 
@@ -156,12 +173,26 @@ std::vector<uint64_t>& WireKeeper::getWritableBatchIntegerValue(
 void WireKeeper::setBatchBooleanValue(
     IScheduler::WireId<IScheduler::Boolean> id,
     const std::vector<bool>& v) {
+  //  The following code will be used later once we set up a correct batch size
+  //  for the wires during allocation.
+  //  if
+  //  (boolBatchAllocator_->getWritableReference(id.getId()).expectedBatchSize
+  //  !=
+  //      v.size()) {
+  //    XLOG(ERR) << "Wire batch size is different from the size of Boolean
+  //    vector";
+  //  }
   boolBatchAllocator_->getWritableReference(id.getId()).v = v;
 }
 
 void WireKeeper::setBatchIntegerValue(
     IScheduler::WireId<IScheduler::Arithmetic> id,
     const std::vector<uint64_t>& v) {
+  if (intBatchAllocator_->getWritableReference(id.getId()).expectedBatchSize !=
+      v.size()) {
+    XLOG(ERR) << "Wire batch size is different from the size of Integer vector";
+    ;
+  }
   intBatchAllocator_->getWritableReference(id.getId()).v = v;
 }
 
