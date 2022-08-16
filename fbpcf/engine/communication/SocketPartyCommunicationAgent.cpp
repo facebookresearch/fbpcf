@@ -67,6 +67,19 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
 }
 
 SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
+    int sockFd,
+    int portNo,
+    TlsInfo tlsInfo,
+    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
+    : recorder_(recorder), ssl_(nullptr), tlsInfo_(tlsInfo) {
+  if (tlsInfo.useTls) {
+    openServerPortWithTls(sockFd, portNo, tlsInfo);
+  } else {
+    openServerPort(sockFd, portNo);
+  }
+}
+
+SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     const std::string& serverAddress,
     int portNo,
     bool useTls,
@@ -75,6 +88,19 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     : recorder_(recorder), ssl_(nullptr) {
   if (useTls) {
     openClientPortWithTls(serverAddress, portNo, tlsDir);
+  } else {
+    openClientPort(serverAddress, portNo);
+  }
+}
+
+SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
+    const std::string& serverAddress,
+    int portNo,
+    TlsInfo tlsInfo,
+    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
+    : recorder_(recorder), ssl_(nullptr), tlsInfo_(tlsInfo) {
+  if (tlsInfo.useTls) {
+    openClientPortWithTls(serverAddress, portNo, tlsInfo);
   } else {
     openClientPort(serverAddress, portNo);
   }
