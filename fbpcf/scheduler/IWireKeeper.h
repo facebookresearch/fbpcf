@@ -85,15 +85,25 @@ class IWireKeeper {
   virtual void decreaseReferenceCount(
       IScheduler::WireId<IScheduler::Arithmetic> id) = 0;
 
+  // get the batch size of the boolean value on the wire with given id
+  virtual uint64_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> id) const = 0;
+
+  // get the batch size of the integer value on the wire with given id
+  virtual uint64_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const = 0;
+
   // create a boolean wire with values v, return its wire id.
   virtual IScheduler::WireId<IScheduler::Boolean> allocateBatchBooleanValue(
       const std::vector<bool>& v,
-      uint32_t firstAvailableLevel = 0) = 0;
+      uint32_t firstAvailableLevel = 0,
+      size_t expectedBatchSize = 0) = 0;
 
   // create an integer wire with values v, return its wire id.
   virtual IScheduler::WireId<IScheduler::Arithmetic> allocateBatchIntegerValue(
       const std::vector<uint64_t>& v,
-      uint32_t firstAvailableLevel = 0) = 0;
+      uint32_t firstAvailableLevel = 0,
+      size_t expectedBatchSize = 0) = 0;
 
   // get the batch of value associated with boolean wire with given id.
   virtual const std::vector<bool>& getBatchBooleanValue(
@@ -166,11 +176,19 @@ class IWireKeeper {
   uint64_t wiresAllocated_ = 0;
   uint64_t wiresDeallocated_ = 0;
 
-  template <typename T>
+  template <typename T, bool isBatch>
   struct WireRecord {
     T v;
     uint32_t firstAvailableLevel;
     uint32_t referenceCount;
+  };
+
+  template <typename T>
+  struct WireRecord<T, true> {
+    T v;
+    uint32_t firstAvailableLevel;
+    uint32_t referenceCount;
+    size_t expectedBatchSize;
   };
 };
 
