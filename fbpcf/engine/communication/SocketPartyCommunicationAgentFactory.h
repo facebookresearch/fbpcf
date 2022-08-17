@@ -53,13 +53,13 @@ establishing multiple connections (>3) between each party pair.
         myId_(myId),
         useTls_(false),
         tlsDir_("") {
-    setupInitialConnection(partyInfos);
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = false;
     tlsInfo.certPath = "";
     tlsInfo.keyPath = "";
     tlsInfo.passphrasePath = "";
     tlsInfo_ = tlsInfo;
+    setupInitialConnection(partyInfos);
   }
 
   SocketPartyCommunicationAgentFactory(
@@ -72,13 +72,13 @@ establishing multiple connections (>3) between each party pair.
         myId_(myId),
         useTls_(useTls),
         tlsDir_(tlsDir) {
-    setupInitialConnection(partyInfos);
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = useTls;
     tlsInfo.certPath = tlsDir + "/cert.pem";
     tlsInfo.keyPath = tlsDir + "/key.pem";
     tlsInfo.passphrasePath = tlsDir + "/passphrase.pem";
     tlsInfo_ = tlsInfo;
+    setupInitialConnection(partyInfos);
   }
 
   SocketPartyCommunicationAgentFactory(
