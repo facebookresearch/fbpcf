@@ -59,6 +59,7 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     std::string tlsDir,
     std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
     : recorder_(recorder), ssl_(nullptr) {
+  XLOG(INFO) << "In old constructor as server";
   if (useTls) {
     openServerPortWithTls(sockFd, portNo, tlsDir);
   } else {
@@ -72,6 +73,7 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     TlsInfo tlsInfo,
     std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
     : recorder_(recorder), ssl_(nullptr), tlsInfo_(tlsInfo) {
+  XLOG(INFO) << "In new constructor as server";
   if (tlsInfo.useTls) {
     openServerPortWithTls(sockFd, portNo, tlsInfo);
   } else {
@@ -86,6 +88,7 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     std::string tlsDir,
     std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
     : recorder_(recorder), ssl_(nullptr) {
+  XLOG(INFO) << "In old constructor as client";
   if (useTls) {
     openClientPortWithTls(serverAddress, portNo, tlsDir);
   } else {
@@ -99,6 +102,7 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     TlsInfo tlsInfo,
     std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
     : recorder_(recorder), ssl_(nullptr), tlsInfo_(tlsInfo) {
+  XLOG(INFO) << "In new constructor as client";
   if (tlsInfo.useTls) {
     openClientPortWithTls(serverAddress, portNo, tlsInfo);
   } else {
