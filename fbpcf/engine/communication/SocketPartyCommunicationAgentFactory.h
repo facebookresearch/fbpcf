@@ -60,6 +60,7 @@ establishing multiple connections (>3) between each party pair.
     tlsInfo.keyPath = "";
     tlsInfo.passphrasePath = "";
     tlsInfo_ = tlsInfo;
+    XLOGF(INFO, "factory initialized with {}", tlsInfo_.useTls);
   }
 
   SocketPartyCommunicationAgentFactory(
@@ -79,6 +80,7 @@ establishing multiple connections (>3) between each party pair.
     tlsInfo.keyPath = tlsDir + "/key.pem";
     tlsInfo.passphrasePath = tlsDir + "/passphrase.pem";
     tlsInfo_ = tlsInfo;
+    XLOGF(INFO, "factory initialized with {}", tlsInfo_.useTls);
   }
 
   SocketPartyCommunicationAgentFactory(
