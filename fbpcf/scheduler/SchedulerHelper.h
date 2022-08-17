@@ -22,15 +22,6 @@
 namespace fbpcf::scheduler {
 
 template <bool unsafe>
-inline std::unique_ptr<IScheduler> createPlaintextScheduler(
-    int /*myId*/,
-    engine::communication::IPartyCommunicationAgentFactory&
-    /*communicationAgentFactory*/) {
-  return std::make_unique<PlaintextScheduler>(
-      WireKeeper::createWithVectorArena<unsafe>());
-}
-
-template <bool unsafe>
 inline std::unique_ptr<IScheduler> createNetworkPlaintextScheduler(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
