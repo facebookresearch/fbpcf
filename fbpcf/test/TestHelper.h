@@ -17,7 +17,6 @@
 #include "fbpcf/engine/SecretShareEngineFactory.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/scheduler/IScheduler.h"
-#include "fbpcf/scheduler/NetworkPlaintextSchedulerFactory.h"
 #include "fbpcf/scheduler/PlaintextSchedulerFactory.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 
@@ -94,13 +93,7 @@ inline SchedulerCreator getSchedulerCreator(SchedulerType schedulerType) {
         return scheduler::PlaintextSchedulerFactory<unsafe>().create();
       };
     case SchedulerType::NetworkPlaintext:
-      return [](int myId,
-                engine::communication::IPartyCommunicationAgentFactory&
-                    communicationAgentFactory) {
-        return scheduler::NetworkPlaintextSchedulerFactory<unsafe>(
-                   myId, communicationAgentFactory)
-            .create();
-      };
+      return scheduler::createNetworkPlaintextScheduler<unsafe>;
     case SchedulerType::Eager:
       return scheduler::createEagerSchedulerWithInsecureEngine<unsafe>;
     case SchedulerType::Lazy:

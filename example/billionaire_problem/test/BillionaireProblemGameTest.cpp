@@ -96,8 +96,7 @@ void testWithScheduler(SchedulerCreator schedulerCreator) {
 }
 
 TEST(BillionaireProblemTest, testWithNetworkPlaintextScheduler) {
-  testWithScheduler(fbpcf::getSchedulerCreator<unsafe>(
-      fbpcf::SchedulerType::NetworkPlaintext));
+  testWithScheduler(scheduler::createNetworkPlaintextScheduler<unsafe>);
 }
 
 TEST(BillionaireProblemTest, testWithEagerScheduler) {
@@ -152,7 +151,10 @@ std::pair<std::vector<bool>, std::vector<uint64_t>> runBatchWithScheduler(
   return {mpcResult, myTotalAssets};
 }
 
-void testBatchBillionaireProblem(fbpcf::SchedulerCreator schedulerCreator) {
+void testBatchBillionaireProblem(
+    std::unique_ptr<scheduler::IScheduler> schedulerCreator(
+        int,
+        engine::communication::IPartyCommunicationAgentFactory&)) {
   auto factories = engine::communication::getInMemoryAgentFactory(2);
 
   int size = 16384;
@@ -187,8 +189,8 @@ void testBatchBillionaireProblem(fbpcf::SchedulerCreator schedulerCreator) {
 }
 
 TEST(BillionaireProblemTest, testBatchWithNetworkPlaintextScheduler) {
-  testBatchBillionaireProblem(fbpcf::getSchedulerCreator<unsafe>(
-      fbpcf::SchedulerType::NetworkPlaintext));
+  testBatchBillionaireProblem(
+      scheduler::createNetworkPlaintextScheduler<unsafe>);
 }
 
 TEST(BillionaireProblemTest, testBatchWithEagerSchedulerAndFERRET) {
