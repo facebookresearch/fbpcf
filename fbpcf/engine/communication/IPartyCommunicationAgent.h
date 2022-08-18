@@ -125,13 +125,14 @@ class IPartyCommunicationAgent {
 
   template <typename T>
   void sendT(const std::vector<T>& src) {
-    send((std::vector<unsigned char>&)src);
+    sendImpl(static_cast<const void*>(src.data()), src.size() * sizeof(T));
   }
 
   template <typename T>
   std::vector<T> receiveT(int size) {
-    auto buf = receive(sizeof(T) * size);
-    return (std::vector<T>&)buf;
+    std::vector<T> rst(size);
+    recvImpl(static_cast<void*>(rst.data()), size * sizeof(T));
+    return rst;
   }
 
   template <typename T>
