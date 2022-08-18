@@ -28,6 +28,7 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
       std::unique_ptr<oblivious_transfer::IRandomCorrelatedObliviousTransfer>
           receiverRcot,
       __m128i delta,
+      std::shared_ptr<TuplesMetricRecorder> recorder,
       uint64_t bufferSize = kDefaultBufferSize);
 
   /**
@@ -88,6 +89,8 @@ class TwoPartyTupleGenerator final : public ITupleGenerator {
   std::unique_ptr<oblivious_transfer::IRandomCorrelatedObliviousTransfer>
       receiverRcot_;
   __m128i delta_;
+
+  std::shared_ptr<TuplesMetricRecorder> recorder_;
 
   std::mutex scheduleMutex_;
   std::condition_variable cv_;

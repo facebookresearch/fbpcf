@@ -60,9 +60,14 @@ class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
           agentFactory_.create(
               otherId, "two_party_tuple_generator_traffic_as_ot_sender"));
     }
+    auto recorder = std::make_shared<TuplesMetricRecorder>();
 
     return std::make_unique<TwoPartyTupleGenerator>(
-        std::move(senderRcot), std::move(receiverRcot), delta, bufferSize_);
+        std::move(senderRcot),
+        std::move(receiverRcot),
+        delta,
+        recorder,
+        bufferSize_);
   }
 
  private:
