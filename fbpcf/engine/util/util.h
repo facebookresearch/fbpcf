@@ -29,6 +29,9 @@ inline bool getLsb(__m128i src) {
   return _mm_extract_epi8(src, 0) & 1;
 }
 
+inline uint64_t getLast64Bits(__m128i src) {
+  return _mm_extract_epi64(src, 0);
+}
 /*
  * Extracts the last n bits in a 128 bit integer to the passed in boolean
  * vector. The order of bits will be from least significant to most significant.

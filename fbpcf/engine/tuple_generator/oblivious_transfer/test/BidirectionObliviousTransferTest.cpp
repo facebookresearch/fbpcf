@@ -92,9 +92,9 @@ TEST(DummyBidirectionObliviousTransferTest, testBiDirectionOT) {
 void testRcotBasedBidirectionObliviousTransfer(
     std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory0,
     std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory1) {
-  auto agentFactorys = communication::getInMemoryAgentFactory(2);
+  auto agentFactories = communication::getInMemoryAgentFactory(2);
 
-  auto task = [&agentFactorys](
+  auto task = [&agentFactories](
                   const std::vector<bool>& input0,
                   const std::vector<bool>& input1,
                   const std::vector<bool>& choice,
@@ -103,7 +103,7 @@ void testRcotBasedBidirectionObliviousTransfer(
                   int myId) {
     auto otFactory =
         std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
-            myId, *agentFactorys[myId], std::move(factory));
+            myId, *agentFactories[myId], std::move(factory));
     auto ot = otFactory->create(1 - myId);
     return ot->biDirectionOT(input0, input1, choice);
   };
@@ -148,10 +148,74 @@ void testRcotBasedBidirectionObliviousTransfer(
   }
 }
 
+void testRcotBasedBidirectionObliviousTransferForIntegers(
+    std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory0,
+    std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory1) {
+  auto agentFactories = communication::getInMemoryAgentFactory(2);
+  // integer test
+  auto task =
+      [&agentFactories](
+          const std::vector<uint64_t>& input0,
+          const std::vector<uint64_t>& input1,
+          const std::vector<bool>& choice,
+          std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory,
+          int myId) {
+        auto otFactory = std::make_unique<
+            RcotBasedBidirectionObliviousTransferFactory<uint64_t>>(
+            myId, *agentFactories[myId], std::move(factory));
+        auto ot = otFactory->create(1 - myId);
+        return ot->biDirectionOT(input0, input1, choice);
+      };
+
+  int size = 11000000;
+  std::vector<uint64_t> inputA[2];
+  inputA[0] = std::vector<uint64_t>(size);
+  inputA[1] = std::vector<uint64_t>(size);
+  std::vector<bool> choiceA(size);
+
+  std::vector<uint64_t> inputB[2];
+  inputB[0] = std::vector<uint64_t>(size);
+  inputB[1] = std::vector<uint64_t>(size);
+  std::vector<bool> choiceB(size);
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint64_t> dist;
+
+  for (int i = 0; i < size; i++) {
+    inputA[0][i] = dist(e);
+    inputA[1][i] = dist(e);
+    choiceA[i] = dist(e);
+
+    inputB[0][i] = dist(e);
+    inputB[1][i] = dist(e);
+    choiceB[i] = dist(e);
+  }
+  // needs a better bootstrapper
+  auto f1 =
+      std::async(task, inputA[0], inputA[1], choiceA, std::move(factory0), 1);
+
+  auto f2 =
+      std::async(task, inputB[0], inputB[1], choiceB, std::move(factory1), 0);
+
+  auto resultA = f1.get();
+  auto resultB = f2.get();
+
+  for (int i = 0; i < size; i++) {
+    EXPECT_EQ(resultA[i], inputB[choiceA[i]][i]);
+    EXPECT_EQ(resultB[i], inputA[choiceB[i]][i]);
+  }
+}
+
 TEST(
     RcotBasedBidirectionObliviousTransferTest,
     testBiDirectionOTWithDummyRcot) {
   testRcotBasedBidirectionObliviousTransfer(
+      std::make_unique<
+          insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+      std::make_unique<
+          insecure::DummyRandomCorrelatedObliviousTransferFactory>());
+  testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<
           insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
       std::make_unique<
@@ -162,6 +226,21 @@ TEST(
     RcotBasedBidirectionObliviousTransferTest,
     testBiDirectionOTWithExtenderBasedRcotPoweredByDummyExtender) {
   testRcotBasedBidirectionObliviousTransfer(
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::insecure::DummyRcotExtenderFactory>(),
+          1024,
+          128,
+          8),
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::insecure::DummyRcotExtenderFactory>(),
+          1024,
+          128,
+          8));
+  testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
           std::make_unique<
               insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
@@ -204,12 +283,56 @@ TEST(
           1024,
           128,
           8));
+  testRcotBasedBidirectionObliviousTransferForIntegers(
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<
+                  ferret::insecure::DummyMatrixMultiplierFactory>(),
+              std::make_unique<ferret::insecure::DummyMultiPointCotFactory>(
+                  std::make_unique<util::AesPrgFactory>(1024))),
+          1024,
+          128,
+          8),
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<
+                  ferret::insecure::DummyMatrixMultiplierFactory>(),
+              std::make_unique<ferret::insecure::DummyMultiPointCotFactory>(
+                  std::make_unique<util::AesPrgFactory>(1024))),
+          1024,
+          128,
+          8));
 }
 
 TEST(
     RcotBasedBidirectionObliviousTransferTest,
     testBiDirectionOTWithExtenderBasedRcotPoweredByFerretExtenderPoweredByDummyMpcotAnd10LocalLinearMatrixMultipler) {
   testRcotBasedBidirectionObliviousTransfer(
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::insecure::DummyMultiPointCotFactory>(
+                  std::make_unique<util::AesPrgFactory>(1024))),
+          1024,
+          128,
+          8),
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::insecure::DummyMultiPointCotFactory>(
+                  std::make_unique<util::AesPrgFactory>(1024))),
+          1024,
+          128,
+          8));
+  testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
           std::make_unique<
               insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
@@ -260,6 +383,31 @@ TEST(
           1024,
           128,
           8));
+  testRcotBasedBidirectionObliviousTransferForIntegers(
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                  std::make_unique<
+                      ferret::insecure::DummySinglePointCotFactory>(
+                      std::make_unique<util::AesPrgFactory>(1024)))),
+          1024,
+          128,
+          8),
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                  std::make_unique<
+                      ferret::insecure::DummySinglePointCotFactory>(
+                      std::make_unique<util::AesPrgFactory>(1024)))),
+          1024,
+          128,
+          8));
 }
 
 TEST(
@@ -286,12 +434,58 @@ TEST(
           ferret::kExtendedSize,
           ferret::kBaseSize,
           ferret::kWeight));
+  testRcotBasedBidirectionObliviousTransferForIntegers(
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                  std::make_unique<ferret::SinglePointCotFactory>())),
+          ferret::kExtendedSize,
+          ferret::kBaseSize,
+          ferret::kWeight),
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<
+              insecure::DummyRandomCorrelatedObliviousTransferFactory>(),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                  std::make_unique<ferret::SinglePointCotFactory>())),
+          ferret::kExtendedSize,
+          ferret::kBaseSize,
+          ferret::kWeight));
 }
 
 TEST(
     RcotBasedBidirectionObliviousTransferTest,
     testBiDirectionOTWithBootstrappedExtenderBasedRcotPoweredByFerretExtenderPoweredByMpcotWithRealSpcotAnd10LocalLinearMatrixMultipler) {
   testRcotBasedBidirectionObliviousTransfer(
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<tuple_generator::oblivious_transfer::
+                               IknpShRandomCorrelatedObliviousTransferFactory>(
+              std::make_unique<tuple_generator::oblivious_transfer::
+                                   NpBaseObliviousTransferFactory>()),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                  std::make_unique<ferret::SinglePointCotFactory>())),
+          ferret::kExtendedSize,
+          ferret::kBaseSize,
+          ferret::kWeight),
+      std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<tuple_generator::oblivious_transfer::
+                               IknpShRandomCorrelatedObliviousTransferFactory>(
+              std::make_unique<tuple_generator::oblivious_transfer::
+                                   NpBaseObliviousTransferFactory>()),
+          std::make_unique<ferret::RcotExtenderFactory>(
+              std::make_unique<ferret::TenLocalLinearMatrixMultiplierFactory>(),
+              std::make_unique<ferret::RegularErrorMultiPointCotFactory>(
+                  std::make_unique<ferret::SinglePointCotFactory>())),
+          ferret::kExtendedSize,
+          ferret::kBaseSize,
+          ferret::kWeight));
+  testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
           std::make_unique<tuple_generator::oblivious_transfer::
                                IknpShRandomCorrelatedObliviousTransferFactory>(
