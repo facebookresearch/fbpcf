@@ -8,14 +8,45 @@
 #pragma once
 
 #include <stdint.h>
+#include <atomic>
 #include <cstdint>
 #include <map>
 #include <stdexcept>
 #include <vector>
-
+#include "fbpcf/util/IMetricRecorder.h"
 namespace fbpcf::engine::tuple_generator {
 
 const uint64_t kDefaultBufferSize = 16384;
+
+/**
+ * This object is a metric recorder
+ */
+class TuplesMetricRecorder final : public fbpcf::util::IMetricRecorder {
+ public:
+  TuplesMetricRecorder()
+      : tuplesGenerated_(0), tuplesConsumed_(0), tuplesUnused_(0) {}
+
+  void addTuplesGenerated(uint64_t size) {
+    tuplesGenerated_ += size;
+  }
+
+  void addTuplesConsumed(uint64_t size) {
+    tuplesConsumed_ += size;
+  }
+
+  folly::dynamic getMetrics() const override {
+    return folly::dynamic::object(
+        "boolean_tuples_generated", tuplesGenerated_.load())(
+        "boolean_tuples_consumed", tuplesConsumed_.load())(
+        "boolean_tuples_unused",
+        tuplesGenerated_.load() - tuplesConsumed_.load());
+  }
+
+ private:
+  std::atomic_uint64_t tuplesGenerated_;
+  std::atomic_uint64_t tuplesConsumed_;
+  std::atomic_uint64_t tuplesUnused_;
+};
 
 /**
  The boolean tuple generator API
