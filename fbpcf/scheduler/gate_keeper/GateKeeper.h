@@ -204,14 +204,16 @@ class GateKeeper : public IGateKeeper {
 
   inline IScheduler::WireId<IScheduler::Boolean> allocateNewWire(
       const std::vector<bool>& v,
-      uint32_t level) const {
-    return wireKeeper_->allocateBatchBooleanValue(v, level);
+      uint32_t level,
+      size_t expectedBatchSize) const {
+    return wireKeeper_->allocateBatchBooleanValue(v, expectedBatchSize, level);
   }
 
   inline IScheduler::WireId<IScheduler::Arithmetic> allocateNewWire(
       const std::vector<uint64_t>& v,
-      uint32_t level) const {
-    return wireKeeper_->allocateBatchIntegerValue(v, level);
+      uint32_t level,
+      size_t expectedBatchSize) const {
+    return wireKeeper_->allocateBatchIntegerValue(v, expectedBatchSize, level);
   }
 
   inline uint32_t getOutputLevel(bool isGateFree, uint32_t maxInputLevel)

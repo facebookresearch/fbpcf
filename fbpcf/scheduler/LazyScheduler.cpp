@@ -664,4 +664,14 @@ void LazyScheduler::executeOneLevel() {
   }
 }
 
+size_t LazyScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Boolean> id) const {
+  return wireKeeper_->getBatchSize(id);
+}
+
+size_t LazyScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Arithmetic> id) const {
+  return wireKeeper_->getBatchSize(id);
+}
+
 } // namespace fbpcf::scheduler

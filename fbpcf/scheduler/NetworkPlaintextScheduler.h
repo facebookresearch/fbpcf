@@ -123,6 +123,18 @@ class NetworkPlaintextScheduler final : public PlaintextScheduler {
     return {sent, received};
   }
 
+  /**
+   * @inherit doc
+   */
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> id) const override;
+
+  /**
+   * @inherit doc
+   */
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const override;
+
  private:
   int myId_;
   std::

@@ -372,6 +372,20 @@ class IScheduler {
    */
   virtual std::pair<uint64_t, uint64_t> getWireStatistics() const = 0;
 
+  /**
+   * Get the batch size of a Boolean wire by inquring the wireKeeper.
+   * @return the batch size of a wire.
+   */
+  virtual size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> id) const = 0;
+
+  /**
+   * Get the batch size of an Arithmetic wire by inquring the wireKeeper.
+   * @return the batch size of a wire.
+   */
+  virtual size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const = 0;
+
  protected:
   uint64_t nonFreeGates_ = 0;
   uint64_t freeGates_ = 0;

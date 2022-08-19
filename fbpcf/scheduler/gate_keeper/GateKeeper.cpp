@@ -68,7 +68,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::inputGateBatch(
       GateClass<false>::isFree(INormalGate::GateType::Input),
       firstUnexecutedLevel_);
 
-  auto outputWire = allocateNewWire(initialValue, level);
+  auto outputWire = allocateNewWire(initialValue, level, size);
   addGate(
       std::make_unique<BatchNormalGate>(
           INormalGate::GateType::Input,
@@ -89,7 +89,7 @@ IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::inputGateBatch(
       IArithmeticGate::isFree(IArithmeticGate::GateType::Input),
       firstUnexecutedLevel_);
 
-  auto outputWire = allocateNewWire(initialValue, level);
+  auto outputWire = allocateNewWire(initialValue, level, size);
   addGate(
       std::make_unique<BatchArithmeticGate>(
           IArithmeticGate::GateType::Input,
@@ -151,7 +151,9 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGateBatch(
   auto level = getOutputLevel(
       GateClass<false>::isFree(INormalGate::GateType::Output),
       getMaxLevel<true, IScheduler::Boolean>(src));
-  auto outputWire = allocateNewWire(std::vector<bool>(), level);
+  auto expectedBatchSize = wireKeeper_->getBatchSize(src);
+  auto outputWire =
+      allocateNewWire(std::vector<bool>(), level, expectedBatchSize);
 
   addGate(
       std::make_unique<BatchNormalGate>(
@@ -160,7 +162,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::outputGateBatch(
           src,
           IScheduler::WireId<IScheduler::Boolean>(),
           partyID,
-          0,
+          expectedBatchSize,
           *wireKeeper_),
       level);
 
@@ -173,7 +175,9 @@ IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::outputGateBatch(
   auto level = getOutputLevel(
       IArithmeticGate::isFree(IArithmeticGate::GateType::Output),
       getMaxLevel<true, IScheduler::Arithmetic>(src));
-  auto outputWire = allocateNewWire(std::vector<uint64_t>(), level);
+  auto expectedBatchSize = wireKeeper_->getBatchSize(src);
+  auto outputWire =
+      allocateNewWire(std::vector<uint64_t>(), level, expectedBatchSize);
 
   addGate(
       std::make_unique<BatchArithmeticGate>(
@@ -182,7 +186,7 @@ IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::outputGateBatch(
           src,
           IScheduler::WireId<IScheduler::Arithmetic>(),
           partyID,
-          0,
+          expectedBatchSize,
           *wireKeeper_),
       level);
 
@@ -217,11 +221,19 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::normalGateBatch(
       std::max(
           getMaxLevel<true, IScheduler::Boolean>(left),
           getMaxLevel<true, IScheduler::Boolean>(right)));
-  auto outputWire = allocateNewWire(std::vector<bool>(), level);
+  auto expectedBatchSize = wireKeeper_->getBatchSize(left);
+  auto outputWire =
+      allocateNewWire(std::vector<bool>(), level, expectedBatchSize);
 
   addGate(
       std::make_unique<BatchNormalGate>(
-          gateType, outputWire, left, right, 0, 0, *wireKeeper_),
+          gateType,
+          outputWire,
+          left,
+          right,
+          0,
+          expectedBatchSize,
+          *wireKeeper_),
       level);
 
   return outputWire;
@@ -255,11 +267,19 @@ IScheduler::WireId<IScheduler::Arithmetic> GateKeeper::arithmeticGateBatch(
       std::max(
           getMaxLevel<true, IScheduler::Arithmetic>(left),
           getMaxLevel<true, IScheduler::Arithmetic>(right)));
-  auto outputWire = allocateNewWire(std::vector<uint64_t>(), level);
+  auto expectedBatchSize = wireKeeper_->getBatchSize(left);
+  auto outputWire =
+      allocateNewWire(std::vector<uint64_t>(), level, expectedBatchSize);
 
   addGate(
       std::make_unique<BatchArithmeticGate>(
-          gateType, outputWire, left, right, 0, 0, *wireKeeper_),
+          gateType,
+          outputWire,
+          left,
+          right,
+          0,
+          expectedBatchSize,
+          *wireKeeper_),
       level);
 
   return outputWire;
@@ -302,8 +322,10 @@ GateKeeper::compositeGateBatch(
       std::max(
           getMaxLevel<true, IScheduler::Boolean>(left),
           getMaxLevel<true>(rights)));
+  auto expectedBatchSize = wireKeeper_->getBatchSize(left);
   for (size_t i = 0; i < compositeSize; i++) {
-    outputWires[i] = allocateNewWire(std::vector<bool>(), level);
+    outputWires[i] =
+        allocateNewWire(std::vector<bool>(), level, expectedBatchSize);
   }
 
   addGate(
@@ -322,7 +344,7 @@ IScheduler::WireId<IScheduler::Boolean> GateKeeper::batchingUp(
   for (auto& item : src) {
     batchSize += wireKeeper_->getBatchBooleanValue(item).size();
   }
-  auto outputWire = allocateNewWire(std::vector<bool>(), level);
+  auto outputWire = allocateNewWire(std::vector<bool>(), level, batchSize);
   addGate(
       std::make_unique<RebatchingBooleanGate>(src, outputWire, *wireKeeper_),
       level);
@@ -338,7 +360,8 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>> GateKeeper::unbatching(
   std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
       unbatchingStrategy->size());
   for (size_t i = 0; i < outputWires.size(); i++) {
-    outputWires[i] = allocateNewWire(std::vector<bool>(), level);
+    outputWires[i] =
+        allocateNewWire(std::vector<bool>(), level, unbatchingStrategy->at(i));
   }
   addGate(
       std::make_unique<RebatchingBooleanGate>(

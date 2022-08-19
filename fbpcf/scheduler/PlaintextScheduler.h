@@ -522,6 +522,18 @@ class PlaintextScheduler : public IArithmeticScheduler {
     return wireKeeper_->getWireStatistics();
   }
 
+  /**
+   * @inherit doc
+   */
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> id) const override;
+
+  /**
+   * @inherit doc
+   */
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const override;
+
  protected:
   std::unique_ptr<IWireKeeper> wireKeeper_;
   std::shared_ptr<util::MetricCollector> collector_;
