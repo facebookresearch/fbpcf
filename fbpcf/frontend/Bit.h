@@ -135,6 +135,11 @@ class Bit : public scheduler::SchedulerKeeper<schedulerId> {
   std::vector<Bit<isSecret, schedulerId, usingBatch>> unbatching(
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
 
+  /**
+   * get the batch size of this bit, requires usingBatch is True
+   */
+  size_t getBatchSize() const;
+
  private:
   template <bool isSecretOther>
   std::vector<typename Bit<isSecret || isSecretOther, schedulerId, usingBatch>::

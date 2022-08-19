@@ -345,6 +345,16 @@ class schedulerMock final : public scheduler::IScheduler {
     return {0, 0};
   }
 
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> /*id*/) const override {
+    return 0;
+  }
+
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> /*id*/) const override {
+    return 0;
+  }
+
  private:
   int wireId = 1;
 };

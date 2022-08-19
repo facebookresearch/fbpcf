@@ -523,4 +523,45 @@ TEST(StringTest, testRebatching) {
   }
 }
 
+TEST(StringTest, testBatchSize) {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<int64_t> dSize(1, 1024);
+
+  std::uniform_int_distribution<uint8_t> dBool(0, 1);
+
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+
+  using SecString = BitString<true, 0>;
+  using PubString = BitString<false, 0>;
+  using SecBatchString = BitString<true, 0, true>;
+  using PubBatchString = BitString<false, 0, true>;
+
+  std::vector<bool> testValue(dSize(e));
+  for (size_t i = 0; i < testValue.size(); i++) {
+    testValue[i] = dBool(e);
+  }
+  std::vector<std::vector<bool>> testBatchValue(
+      dSize(e), std::vector<bool>(dSize(e)));
+  for (size_t i = 0; i < testBatchValue.size(); i++) {
+    for (size_t j = 0; j < testBatchValue.at(0).size(); j++) {
+      testBatchValue[i][j] = dBool(e);
+    }
+  }
+
+  SecString v1(testValue, 0);
+  PubString v2(testValue);
+
+  SecBatchString v3(testBatchValue, 0);
+  PubBatchString v4(testBatchValue);
+
+  SecBatchString v5(v3.extractStringShare());
+
+  EXPECT_EQ(v3.getBatchSize(), testBatchValue.size());
+  EXPECT_EQ(v4.getBatchSize(), testBatchValue.size());
+  EXPECT_EQ(v5.getBatchSize(), testBatchValue.size());
+}
+
 } // namespace fbpcf::frontend

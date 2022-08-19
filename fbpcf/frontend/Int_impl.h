@@ -29,7 +29,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::Int(const T& v) {
       "Need to use proper signed/unsigned integer (vector).");
   if constexpr (usingBatch) {
     publicInput(convertTo64BitIntVector(v));
-    batchSize_ = v.size();
   } else {
     publicInput(v);
   }
@@ -50,7 +49,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::Int(
       "Need to use proper signed/unsigned integer (vector).");
   if constexpr (usingBatch) {
     privateInput(convertTo64BitIntVector(v), partyId);
-    batchSize_ = v.size();
   } else {
     privateInput(v, partyId);
   }
@@ -64,9 +62,6 @@ template <
     bool usingBatch>
 Int<isSigned, width, isSecret, schedulerId, usingBatch>::Int(
     ExtractedInt&& extractedInt) {
-  if constexpr (usingBatch) {
-    batchSize_ = extractedInt.getBooleanShares()[0].size();
-  }
   for (int8_t i = 0; i < width; i++) {
     data_[i] =
         Bit<isSecret, schedulerId, usingBatch>(std::move(extractedInt[i]));
@@ -113,7 +108,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::operator+(
     const {
   // signed int add and unsigned int add are the same
   Int<isSigned, width, isSecret || isSecretOther, schedulerId, usingBatch> rst;
-  rst.batchSize_ = batchSize_;
 
   rst.data_[0] = data_.at(0) ^ other.data_.at(0);
   auto carry = data_.at(0) & other.data_.at(0);
@@ -142,7 +136,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::operator-() const {
       isSigned,
       "Only signed integers have inverse"); // assert that integer is signed
   Int<isSigned, width, isSecret, schedulerId, usingBatch> rst;
-  rst.batchSize_ = batchSize_;
 
   for (int8_t i = 1; i < width; i++) {
     rst.data_[i] = !data_.at(i);
@@ -169,7 +162,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::operator-(
     const {
   // signed int add and unsigned int subtract are the same
   Int<isSigned, width, isSecret || isSecretOther, schedulerId, usingBatch> rst;
-  rst.batchSize_ = batchSize_;
 
   rst.data_[0] = data_.at(0) ^ other.data_.at(0);
   auto carry = !data_.at(0) & other.data_.at(0);
@@ -313,8 +305,6 @@ template <int8_t newWidth>
 Int<isSigned, newWidth, isSecret, schedulerId, usingBatch>
 Int<isSigned, width, isSecret, schedulerId, usingBatch>::cast() const {
   Int<isSigned, newWidth, isSecret, schedulerId, usingBatch> rst;
-  // This is a hack for now. Should be replaced by T126205513
-  rst.batchSize_ = batchSize_;
   // downcast
   if constexpr (newWidth <= width) {
     for (size_t i = 0; i < newWidth; i++) {
@@ -336,7 +326,7 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::cast() const {
       if constexpr (isSecret) {
         if constexpr (usingBatch) {
           typename Bit<true, schedulerId, true>::ExtractedBit shares(
-              std::vector<bool>(batchSize_, false));
+              std::vector<bool>(getBatchSize(), false));
           zero = Bit<true, schedulerId, true>(std::move(shares));
         } else {
           typename Bit<true, schedulerId, false>::ExtractedBit share(false);
@@ -345,7 +335,7 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::cast() const {
       } else {
         if constexpr (usingBatch) {
           zero = Bit<false, schedulerId, true>(
-              std::vector<bool>(batchSize_, false));
+              std::vector<bool>(getBatchSize(), false));
         } else {
           zero = Bit<false, schedulerId, false>(false);
         }
@@ -387,8 +377,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::mux(
       usingBatch>
       rst;
 
-  rst.batchSize_ = batchSize_;
-
   // composite AND
   auto andResult = choice & sum.data_;
 
@@ -421,7 +409,6 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::openToParty(
     int partyId) const {
   static_assert(isSecret, "No need to open a public value.");
   Int<isSigned, width, false, schedulerId, usingBatch> rst;
-  rst.batchSize_ = batchSize_;
 
   for (int8_t i = 0; i < width; i++) {
     rst.data_[i] = data_.at(i).openToParty(partyId);
@@ -733,6 +720,18 @@ Int<isSigned, width, isSecret, schedulerId, usingBatch>::unbatching(
     }
   }
   return rst;
+}
+
+template <
+    bool isSigned,
+    int8_t width,
+    bool isSecret,
+    int schedulerId,
+    bool usingBatch>
+size_t Int<isSigned, width, isSecret, schedulerId, usingBatch>::getBatchSize()
+    const {
+  static_assert(usingBatch, "Only batch Int has batch size!");
+  return data_[0].getBatchSize();
 }
 
 template <

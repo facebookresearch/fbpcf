@@ -408,4 +408,11 @@ Bit<isSecret, schedulerId, usingBatch>::unbatching(
   return rst;
 }
 
+template <bool isSecret, int schedulerId, bool usingBatch>
+size_t Bit<isSecret, schedulerId, usingBatch>::getBatchSize() const {
+  static_assert(usingBatch, "Only batch bit has batch size!");
+  return scheduler::SchedulerKeeper<schedulerId>::getScheduler().getBatchSize(
+      id_);
+}
+
 } // namespace fbpcf::frontend

@@ -231,6 +231,14 @@ BitString<isSecret, schedulerId, usingBatch>::unbatching(
 }
 
 template <bool isSecret, int schedulerId, bool usingBatch>
+size_t BitString<isSecret, schedulerId, usingBatch>::getBatchSize() const {
+  if (data_.size() == 0) {
+    throw std::runtime_error("Cannot query batch size on an empty BitString!");
+  }
+  return data_[0].getBatchSize();
+}
+
+template <bool isSecret, int schedulerId, bool usingBatch>
 std::vector<std::vector<bool>>
 BitString<isSecret, schedulerId, usingBatch>::transposeVector(
     const std::vector<std::vector<bool>>& src) {
