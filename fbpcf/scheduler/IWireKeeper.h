@@ -62,7 +62,7 @@ class IWireKeeper {
       IScheduler::WireId<IScheduler::Boolean> id,
       uint32_t level) = 0;
 
-  // set the level associated with boolean wire with given id.
+  // set the level associated with integer wire with given id.
   virtual void setFirstAvailableLevel(
       IScheduler::WireId<IScheduler::Arithmetic> id,
       uint32_t level) = 0;
@@ -86,24 +86,24 @@ class IWireKeeper {
       IScheduler::WireId<IScheduler::Arithmetic> id) = 0;
 
   // get the batch size of the boolean value on the wire with given id
-  virtual uint64_t getBatchSize(
+  virtual size_t getBatchSize(
       IScheduler::WireId<IScheduler::Boolean> id) const = 0;
 
   // get the batch size of the integer value on the wire with given id
-  virtual uint64_t getBatchSize(
+  virtual size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const = 0;
 
   // create a boolean wire with values v, return its wire id.
   virtual IScheduler::WireId<IScheduler::Boolean> allocateBatchBooleanValue(
       const std::vector<bool>& v,
-      uint32_t firstAvailableLevel = 0,
-      size_t expectedBatchSize = 0) = 0;
+      size_t expectedBatchSize,
+      uint32_t firstAvailableLevel = 0) = 0;
 
   // create an integer wire with values v, return its wire id.
   virtual IScheduler::WireId<IScheduler::Arithmetic> allocateBatchIntegerValue(
       const std::vector<uint64_t>& v,
-      uint32_t firstAvailableLevel = 0,
-      size_t expectedBatchSize = 0) = 0;
+      size_t expectedBatchSize,
+      uint32_t firstAvailableLevel = 0) = 0;
 
   // get the batch of value associated with boolean wire with given id.
   virtual const std::vector<bool>& getBatchBooleanValue(
@@ -144,7 +144,7 @@ class IWireKeeper {
       IScheduler::WireId<IScheduler::Boolean> id,
       uint32_t level) = 0;
 
-  // set the level associated with boolean wire with given id.
+  // set the level associated with integer wire with given id.
   virtual void setBatchFirstAvailableLevel(
       IScheduler::WireId<IScheduler::Arithmetic> id,
       uint32_t level) = 0;

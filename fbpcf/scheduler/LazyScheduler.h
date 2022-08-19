@@ -521,6 +521,18 @@ class LazyScheduler final : public IArithmeticScheduler {
     return wireKeeper_->getWireStatistics();
   }
 
+  /**
+   * @inherit doc
+   */
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Boolean> id) const override;
+
+  /**
+   * @inherit doc
+   */
+  size_t getBatchSize(
+      IScheduler::WireId<IScheduler::Arithmetic> id) const override;
+
  private:
   std::unique_ptr<engine::ISecretShareEngine> engine_;
   std::shared_ptr<IWireKeeper> wireKeeper_;

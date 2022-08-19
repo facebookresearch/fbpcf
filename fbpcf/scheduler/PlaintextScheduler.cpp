@@ -31,7 +31,7 @@ PlaintextScheduler::privateBooleanInputBatch(
     const std::vector<bool>& v,
     int /*partyId*/) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchBooleanValue(v);
+  return wireKeeper_->allocateBatchBooleanValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::publicBooleanInput(
@@ -43,7 +43,7 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::publicBooleanInput(
 IScheduler::WireId<IScheduler::Boolean>
 PlaintextScheduler::publicBooleanInputBatch(const std::vector<bool>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchBooleanValue(v);
+  return wireKeeper_->allocateBatchBooleanValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::recoverBooleanWire(
@@ -55,7 +55,7 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::recoverBooleanWire(
 IScheduler::WireId<IScheduler::Boolean>
 PlaintextScheduler::recoverBooleanWireBatch(const std::vector<bool>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchBooleanValue(v);
+  return wireKeeper_->allocateBatchBooleanValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean>
@@ -72,7 +72,7 @@ PlaintextScheduler::openBooleanValueToPartyBatch(
     int /*partyId*/) {
   auto& v = wireKeeper_->getBatchBooleanValue(src);
   nonFreeGates_ += v.size();
-  return wireKeeper_->allocateBatchBooleanValue(v);
+  return wireKeeper_->allocateBatchBooleanValue(v, v.size());
 }
 
 bool PlaintextScheduler::extractBooleanSecretShare(
@@ -105,7 +105,7 @@ PlaintextScheduler::privateIntegerInputBatch(
     const std::vector<uint64_t>& v,
     int /*partyId*/) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchIntegerValue(v);
+  return wireKeeper_->allocateBatchIntegerValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -117,7 +117,7 @@ PlaintextScheduler::publicIntegerInput(uint64_t v) {
 IScheduler::WireId<IScheduler::Arithmetic>
 PlaintextScheduler::publicIntegerInputBatch(const std::vector<uint64_t>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchIntegerValue(v);
+  return wireKeeper_->allocateBatchIntegerValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -129,7 +129,7 @@ PlaintextScheduler::recoverIntegerWire(uint64_t v) {
 IScheduler::WireId<IScheduler::Arithmetic>
 PlaintextScheduler::recoverIntegerWireBatch(const std::vector<uint64_t>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchIntegerValue(v);
+  return wireKeeper_->allocateBatchIntegerValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -146,7 +146,7 @@ PlaintextScheduler::openIntegerValueToPartyBatch(
     int /*partyId*/) {
   auto& v = wireKeeper_->getBatchIntegerValue(src);
   nonFreeGates_ += v.size();
-  return wireKeeper_->allocateBatchIntegerValue(v);
+  return wireKeeper_->allocateBatchIntegerValue(v, v.size());
 }
 
 uint64_t PlaintextScheduler::extractIntegerSecretShare(
@@ -191,7 +191,7 @@ PlaintextScheduler::privateAndPrivateBatch(
   for (size_t i = 0; i < leftValue.size(); i++) {
     rst[i] = leftValue[i] & rightValue[i];
   }
-  return wireKeeper_->allocateBatchBooleanValue(rst);
+  return wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateAndPublic(
@@ -216,7 +216,7 @@ PlaintextScheduler::privateAndPublicBatch(
   for (size_t i = 0; i < leftValue.size(); i++) {
     rst[i] = leftValue.at(i) & rightValue.at(i);
   }
-  return wireKeeper_->allocateBatchBooleanValue(rst);
+  return wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::publicAndPublic(
@@ -296,7 +296,7 @@ PlaintextScheduler::privateXorPrivateBatch(
   for (size_t i = 0; i < leftValue.size(); i++) {
     rst[i] = leftValue[i] ^ rightValue[i];
   }
-  return wireKeeper_->allocateBatchBooleanValue(rst);
+  return wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateXorPublic(
@@ -339,7 +339,7 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPrivateBatch(
   for (size_t i = 0; i < value.size(); i++) {
     rst[i] = !value[i];
   }
-  return wireKeeper_->allocateBatchBooleanValue(rst);
+  return wireKeeper_->allocateBatchBooleanValue(rst, value.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::notPublic(
@@ -375,7 +375,7 @@ PlaintextScheduler::privatePlusPrivateBatch(
   for (size_t i = 0; i < leftValue.size(); i++) {
     rst.at(i) = leftValue.at(i) + rightValue.at(i);
   }
-  return wireKeeper_->allocateBatchIntegerValue(rst);
+  return wireKeeper_->allocateBatchIntegerValue(rst, leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -428,7 +428,7 @@ PlaintextScheduler::privateMultPrivateBatch(
   for (size_t i = 0; i < leftValue.size(); i++) {
     rst.at(i) = leftValue.at(i) * rightValue.at(i);
   }
-  return wireKeeper_->allocateBatchIntegerValue(rst);
+  return wireKeeper_->allocateBatchIntegerValue(rst, leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -454,7 +454,7 @@ PlaintextScheduler::privateMultPublicBatch(
   for (size_t i = 0; i < leftValue.size(); i++) {
     rst.at(i) = leftValue.at(i) * rightValue.at(i);
   }
-  return wireKeeper_->allocateBatchIntegerValue(rst);
+  return wireKeeper_->allocateBatchIntegerValue(rst, leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::publicMultPublic(
@@ -484,7 +484,7 @@ IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::negPrivateBatch(
   for (size_t i = 0; i < value.size(); i++) {
     rst.at(i) = -value.at(i);
   }
-  return wireKeeper_->allocateBatchIntegerValue(rst);
+  return wireKeeper_->allocateBatchIntegerValue(rst, value.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> PlaintextScheduler::negPublic(
@@ -568,7 +568,7 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::batchingUp(
       vector[index++] = v;
     }
   }
-  return wireKeeper_->allocateBatchBooleanValue(vector);
+  return wireKeeper_->allocateBatchBooleanValue(vector, batchSize);
 }
 
 // decompose a batch of values into several smaller batches.
@@ -589,7 +589,8 @@ PlaintextScheduler::unbatching(
     for (size_t j = 0; j < v.size(); j++) {
       v[j] = batch.at(index++);
     }
-    rst[i] = wireKeeper_->allocateBatchBooleanValue(v);
+    rst[i] =
+        wireKeeper_->allocateBatchBooleanValue(v, unbatchingStrategy->at(i));
   }
   return rst;
 }
@@ -610,9 +611,21 @@ PlaintextScheduler::validateAndComputeBatchCompositeAND(
     for (size_t i = 0; i < leftValue.size(); i++) {
       rst.push_back(leftValue[i] & rightValue[i]);
     }
-    returnWires.push_back(wireKeeper_->allocateBatchBooleanValue(rst));
+    returnWires.push_back(
+        wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size()));
   }
   gateCounter += leftValue.size() * rights.size();
   return returnWires;
 }
+
+size_t PlaintextScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Boolean> id) const {
+  return wireKeeper_->getBatchSize(id);
+}
+
+size_t PlaintextScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Arithmetic> id) const {
+  return wireKeeper_->getBatchSize(id);
+}
+
 } // namespace fbpcf::scheduler

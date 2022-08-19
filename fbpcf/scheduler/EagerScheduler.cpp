@@ -32,7 +32,7 @@ EagerScheduler::privateBooleanInputBatch(
     int partyId) {
   freeGates_ += v.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->setBatchInput(partyId, v));
+      engine_->setBatchInput(partyId, v), v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicBooleanInput(
@@ -44,7 +44,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicBooleanInput(
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicBooleanInputBatch(
     const std::vector<bool>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchBooleanValue(v);
+  return wireKeeper_->allocateBatchBooleanValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::recoverBooleanWire(
@@ -56,7 +56,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::recoverBooleanWire(
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::recoverBooleanWireBatch(
     const std::vector<bool>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchBooleanValue(v);
+  return wireKeeper_->allocateBatchBooleanValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::openBooleanValueToParty(
@@ -82,7 +82,8 @@ EagerScheduler::openBooleanValueToPartyBatch(
   auto revealedSecrets = engine_->revealToParty(partyId, secretShares);
 
   if (revealedSecrets.size() == secretShares.size()) {
-    return wireKeeper_->allocateBatchBooleanValue(revealedSecrets);
+    return wireKeeper_->allocateBatchBooleanValue(
+        revealedSecrets, secretShares.size());
   } else {
     throw std::runtime_error(
         "Unexpected number of revealed secrets " +
@@ -122,7 +123,7 @@ EagerScheduler::privateIntegerInputBatch(
     int partyId) {
   freeGates_ += v.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->setBatchIntegerInput(partyId, v));
+      engine_->setBatchIntegerInput(partyId, v), v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicIntegerInput(
@@ -134,7 +135,7 @@ IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicIntegerInput(
 IScheduler::WireId<IScheduler::Arithmetic>
 EagerScheduler::publicIntegerInputBatch(const std::vector<uint64_t>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchIntegerValue(v);
+  return wireKeeper_->allocateBatchIntegerValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::recoverIntegerWire(
@@ -146,7 +147,7 @@ IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::recoverIntegerWire(
 IScheduler::WireId<IScheduler::Arithmetic>
 EagerScheduler::recoverIntegerWireBatch(const std::vector<uint64_t>& v) {
   freeGates_ += v.size();
-  return wireKeeper_->allocateBatchIntegerValue(v);
+  return wireKeeper_->allocateBatchIntegerValue(v, v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -173,7 +174,8 @@ EagerScheduler::openIntegerValueToPartyBatch(
   auto revealedSecrets = engine_->revealToParty(partyId, secretShares);
 
   if (revealedSecrets.size() == secretShares.size()) {
-    return wireKeeper_->allocateBatchIntegerValue(revealedSecrets);
+    return wireKeeper_->allocateBatchIntegerValue(
+        revealedSecrets, secretShares.size());
   } else {
     throw std::runtime_error(
         "Unexpected number of revealed secrets " +
@@ -218,7 +220,8 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPrivateBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   nonFreeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchANDImmediately(leftValue, rightValue));
+      engine_->computeBatchANDImmediately(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPublic(
@@ -236,7 +239,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateAndPublicBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchFreeAND(leftValue, rightValue));
+      engine_->computeBatchFreeAND(leftValue, rightValue), leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicAndPublic(
@@ -254,7 +257,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicAndPublicBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchFreeAND(leftValue, rightValue));
+      engine_->computeBatchFreeAND(leftValue, rightValue), leftValue.size());
 }
 
 std::vector<IScheduler::WireId<IScheduler::Boolean>>
@@ -295,7 +298,8 @@ EagerScheduler::privateAndPrivateCompositeBatch(
   std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
       result.size());
   for (size_t i = 0; i < result.size(); i++) {
-    outputWires[i] = wireKeeper_->allocateBatchBooleanValue(result[i]);
+    outputWires[i] =
+        wireKeeper_->allocateBatchBooleanValue(result[i], result[i].size());
   }
   return outputWires;
 }
@@ -324,9 +328,10 @@ EagerScheduler::privateAndPublicCompositeBatch(
   std::vector<IScheduler::WireId<IScheduler::Boolean>> outputWires(
       rights.size());
   for (size_t i = 0; i < rights.size(); i++) {
-    outputWires[i] =
-        wireKeeper_->allocateBatchBooleanValue((engine_->computeBatchFreeAND(
-            leftValues, wireKeeper_->getBatchBooleanValue(rights[i]))));
+    outputWires[i] = wireKeeper_->allocateBatchBooleanValue(
+        engine_->computeBatchFreeAND(
+            leftValues, wireKeeper_->getBatchBooleanValue(rights[i])),
+        leftValues.size());
   }
   return outputWires;
 }
@@ -360,7 +365,8 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateXorPrivateBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchSymmetricXOR(leftValue, rightValue));
+      engine_->computeBatchSymmetricXOR(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateXorPublic(
@@ -378,7 +384,8 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::privateXorPublicBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchAsymmetricXOR(leftValue, rightValue));
+      engine_->computeBatchAsymmetricXOR(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicXorPublic(
@@ -396,7 +403,8 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::publicXorPublicBatch(
   auto rightValue = wireKeeper_->getBatchBooleanValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchSymmetricXOR(leftValue, rightValue));
+      engine_->computeBatchSymmetricXOR(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::notPrivate(
@@ -411,7 +419,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::notPrivateBatch(
   auto values = wireKeeper_->getBatchBooleanValue(src);
   freeGates_ += values.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchAsymmetricNOT(values));
+      engine_->computeBatchAsymmetricNOT(values), values.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean> EagerScheduler::notPublic(
@@ -426,7 +434,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::notPublicBatch(
   auto values = wireKeeper_->getBatchBooleanValue(src);
   freeGates_ += values.size();
   return wireKeeper_->allocateBatchBooleanValue(
-      engine_->computeBatchSymmetricNOT(values));
+      engine_->computeBatchSymmetricNOT(values), values.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privateMultPrivate(
@@ -448,7 +456,8 @@ EagerScheduler::privateMultPrivateBatch(
   auto rightValue = wireKeeper_->getBatchIntegerValue(right);
   nonFreeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchMultImmediately(leftValue, rightValue));
+      engine_->computeBatchMultImmediately(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privateMultPublic(
@@ -467,7 +476,7 @@ EagerScheduler::privateMultPublicBatch(
   auto rightValue = wireKeeper_->getBatchIntegerValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchFreeMult(leftValue, rightValue));
+      engine_->computeBatchFreeMult(leftValue, rightValue), leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicMultPublic(
@@ -486,7 +495,7 @@ EagerScheduler::publicMultPublicBatch(
   auto rightValue = wireKeeper_->getBatchIntegerValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchFreeMult(leftValue, rightValue));
+      engine_->computeBatchFreeMult(leftValue, rightValue), leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privatePlusPrivate(
@@ -505,7 +514,8 @@ EagerScheduler::privatePlusPrivateBatch(
   auto rightValue = wireKeeper_->getBatchIntegerValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchSymmetricPlus(leftValue, rightValue));
+      engine_->computeBatchSymmetricPlus(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::privatePlusPublic(
@@ -524,7 +534,8 @@ EagerScheduler::privatePlusPublicBatch(
   auto rightValue = wireKeeper_->getBatchIntegerValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchAsymmetricPlus(leftValue, rightValue));
+      engine_->computeBatchAsymmetricPlus(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::publicPlusPublic(
@@ -543,7 +554,8 @@ EagerScheduler::publicPlusPublicBatch(
   auto rightValue = wireKeeper_->getBatchIntegerValue(right);
   freeGates_ += leftValue.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchSymmetricPlus(leftValue, rightValue));
+      engine_->computeBatchSymmetricPlus(leftValue, rightValue),
+      leftValue.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPrivate(
@@ -558,7 +570,7 @@ IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPrivateBatch(
   auto values = wireKeeper_->getBatchIntegerValue(src);
   freeGates_ += values.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchSymmetricNeg(values));
+      engine_->computeBatchSymmetricNeg(values), values.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPublic(
@@ -573,7 +585,7 @@ IScheduler::WireId<IScheduler::Arithmetic> EagerScheduler::negPublicBatch(
   auto values = wireKeeper_->getBatchIntegerValue(src);
   freeGates_ += values.size();
   return wireKeeper_->allocateBatchIntegerValue(
-      engine_->computeBatchSymmetricNeg(values));
+      engine_->computeBatchSymmetricNeg(values), values.size());
 }
 
 void EagerScheduler::increaseReferenceCount(WireId<IScheduler::Boolean> id) {
@@ -627,7 +639,7 @@ IScheduler::WireId<IScheduler::Boolean> EagerScheduler::batchingUp(
       vector[index++] = batch.at(i);
     }
   }
-  return wireKeeper_->allocateBatchBooleanValue(vector);
+  return wireKeeper_->allocateBatchBooleanValue(vector, batchSize);
 }
 
 // decompose a batch of values into several smaller batches.
@@ -647,13 +659,23 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>> EagerScheduler::unbatching(
     for (size_t j = 0; j < v.size(); j++) {
       v[j] = batch.at(index++);
     }
-    rst[i] = wireKeeper_->allocateBatchBooleanValue(v);
+    rst[i] = wireKeeper_->allocateBatchBooleanValue(v, v.size());
   }
   return rst;
 }
 
 std::pair<uint64_t, uint64_t> EagerScheduler::getTrafficStatistics() const {
   return engine_->getTrafficStatistics();
+}
+
+size_t EagerScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Boolean> id) const {
+  return wireKeeper_->getBatchSize(id);
+}
+
+size_t EagerScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Arithmetic> id) const {
+  return wireKeeper_->getBatchSize(id);
 }
 
 } // namespace fbpcf::scheduler
