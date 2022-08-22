@@ -217,6 +217,11 @@ class Int {
   std::vector<Int<isSigned, width, isSecret, schedulerId, usingBatch>>
   unbatching(std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
 
+  /**
+   * get the batch size of this Int, requires usingBatch is True
+   */
+  size_t getBatchSize() const;
+
  private:
   template <typename T>
   std::vector<UnitIntType> convertTo64BitIntVector(
@@ -247,8 +252,6 @@ class Int {
   static BoolType extractLsb(const IntType& v, size_t t);
 
   std::array<Bit<isSecret, schedulerId, usingBatch>, width> data_;
-
-  size_t batchSize_;
 
   // a uint64_t integer such that the last width bits are 1. Written in this
   // format to prevent overflow when width = 64

@@ -639,4 +639,33 @@ TEST(BitTest, testBatchingAndUnBatching) {
   scheduler::SchedulerKeeper<0>::freeScheduler();
 }
 
+TEST(BitTest, testBatchSize) {
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+
+  std::vector<bool> v(5, true);
+  int partyId = 3;
+
+  using SecBitBatch = Bit<true, 0, true>;
+  using PubBitBatch = Bit<false, 0, true>;
+  {
+    SecBitBatch b1(v, partyId);
+
+    SecBitBatch b2;
+    b2.privateInput(v, partyId);
+
+    PubBitBatch b3(v);
+
+    SecBitBatch::ExtractedBit extractedBit(v);
+    SecBitBatch b4(std::move(extractedBit));
+
+    EXPECT_EQ(b1.getBatchSize(), 5);
+    EXPECT_EQ(b2.getBatchSize(), 5);
+    EXPECT_EQ(b3.getBatchSize(), 5);
+    EXPECT_EQ(b4.getBatchSize(), 5);
+  }
+  scheduler::SchedulerKeeper<0>::freeScheduler();
+}
+
 } // namespace fbpcf::frontend

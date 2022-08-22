@@ -2022,4 +2022,34 @@ TEST(IntTest, testAbs) {
   EXPECT_EQ(r2.getValue(), v);
 }
 
+TEST(IntTest, testBatchSize) {
+  const int8_t width = 15;
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using secSignedIntBatch = Integer<Secret<Batch<Signed<width>>>, 0>;
+  using pubSignedIntBatch = Integer<Public<Batch<Signed<width>>>, 0>;
+  using secUnsignedIntBatch = Integer<Secret<Batch<Unsigned<width>>>, 0>;
+  using pubUnsignedIntBatch = Integer<Public<Batch<Unsigned<width>>>, 0>;
+  using secSignedInt = Integer<Secret<Signed<width>>, 0>;
+  int partyId = 2;
+
+  int size = 5;
+  std::vector<int64_t> v1(size, (int64_t(1) << (width - 1)) - 1);
+  std::vector<uint64_t> v2(size, (uint64_t(1) << width) - 1);
+  int64_t unbatch_v1 = (int64_t(1) << (width - 1)) - 1;
+
+  secSignedIntBatch int1(v1, partyId);
+  secUnsignedIntBatch int2(v2, partyId);
+
+  pubSignedIntBatch int3(v1);
+  pubUnsignedIntBatch int4(v2);
+
+  secSignedInt unbatch_int1(unbatch_v1, partyId);
+  EXPECT_EQ(int1.getBatchSize(), size);
+  EXPECT_EQ(int2.getBatchSize(), size);
+  EXPECT_EQ(int3.getBatchSize(), size);
+  EXPECT_EQ(int4.getBatchSize(), size);
+}
+
 } // namespace fbpcf::frontend

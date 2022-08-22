@@ -147,6 +147,11 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   std::vector<BitString<isSecret, schedulerId, usingBatch>> unbatching(
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) const;
 
+  /**
+   * get the batch size of this BitString, requires usingBatch is True
+   */
+  size_t getBatchSize() const;
+
  private:
   std::vector<Bit<isSecret, schedulerId, usingBatch>> data_;
 
