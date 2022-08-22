@@ -32,6 +32,7 @@ class TupleGenerator final : public ITupleGenerator {
       std::map<int, std::unique_ptr<IProductShareGenerator>>&&
           productShareGeneratorMap,
       std::unique_ptr<util::IPrg> prg,
+      std::shared_ptr<TuplesMetricRecorder> recorder,
       uint64_t bufferSize = kDefaultBufferSize);
 
   /**
@@ -68,6 +69,7 @@ class TupleGenerator final : public ITupleGenerator {
       productShareGeneratorMap_;
   std::unique_ptr<util::IPrg> prg_;
 
+  std::shared_ptr<TuplesMetricRecorder> recorder_;
   util::AsyncBuffer<BooleanTuple> asyncBuffer_;
 };
 

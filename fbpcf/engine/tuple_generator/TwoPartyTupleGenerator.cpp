@@ -18,12 +18,14 @@ TwoPartyTupleGenerator::TwoPartyTupleGenerator(
     std::unique_ptr<oblivious_transfer::IRandomCorrelatedObliviousTransfer>
         receiverRcot,
     __m128i delta,
+    std::shared_ptr<TuplesMetricRecorder> recorder,
     uint64_t bufferSize)
     : // the key itself is not important as long as it's a pre-agreed value
       hashFromAes_(util::Aes::getFixedKey()),
       senderRcot_{std::move(senderRcot)},
       receiverRcot_{std::move(receiverRcot)},
       delta_{delta},
+      recorder_{recorder},
       booleanTupleBuffer_{
           bufferSize,
           [this](uint64_t size) {
@@ -49,6 +51,8 @@ TwoPartyTupleGenerator::TwoPartyTupleGenerator(
 
 std::vector<ITupleGenerator::BooleanTuple>
 TwoPartyTupleGenerator::getBooleanTuple(uint32_t size) {
+  recorder_->addTuplesConsumed(size);
+
   return booleanTupleBuffer_.getData(size);
 }
 
@@ -105,6 +109,7 @@ TwoPartyTupleGenerator::generateNormalTuples(uint64_t size) {
     toGenerate_.pop_front();
     cv_.notify_one();
   }
+  recorder_->addTuplesGenerated(size);
 
   return expandRCOTResults<false>(
       std::move(sender0Messages), std::move(receiverMessages), 1);

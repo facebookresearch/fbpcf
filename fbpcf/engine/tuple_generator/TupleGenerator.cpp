@@ -15,9 +15,11 @@ TupleGenerator::TupleGenerator(
     std::map<int, std::unique_ptr<IProductShareGenerator>>&&
         productShareGeneratorMap,
     std::unique_ptr<util::IPrg> prg,
+    std::shared_ptr<TuplesMetricRecorder> recorder,
     uint64_t bufferSize)
     : productShareGeneratorMap_{std::move(productShareGeneratorMap)},
       prg_{std::move(prg)},
+      recorder_{recorder},
       asyncBuffer_{bufferSize, [this](uint64_t size) {
                      return std::async(
                          [this](uint64_t size) { return generateTuples(size); },
@@ -26,6 +28,7 @@ TupleGenerator::TupleGenerator(
 
 std::vector<ITupleGenerator::BooleanTuple> TupleGenerator::getBooleanTuple(
     uint32_t size) {
+  recorder_->addTuplesConsumed(size);
   return asyncBuffer_.getData(size);
 }
 
@@ -55,6 +58,8 @@ std::vector<TupleGenerator::BooleanTuple> TupleGenerator::generateTuples(
     booleanTuples[i] = BooleanTuple(
         vectorA[i], vectorB[i], (vectorA[i] & vectorB[i]) ^ vectorC[i]);
   }
+
+  recorder_->addTuplesGenerated(size);
   return booleanTuples;
 }
 

@@ -45,9 +45,11 @@ class TupleGeneratorFactory final : public ITupleGeneratorFactory {
         productShareGeneratorMap.emplace(i, productShareFactory_->create(i));
       }
     }
+    auto recorder = std::make_shared<TuplesMetricRecorder>();
     return std::make_unique<TupleGenerator>(
         std::move(productShareGeneratorMap),
         prgFactory_->create(util::getRandomM128iFromSystemNoise()),
+        recorder,
         bufferSize_);
   }
 
