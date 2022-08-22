@@ -8,11 +8,29 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace fbpcf::io {
+
+// This chunk size has to be large enough that we don't make
+// unnecessary trips to cloud storage but small enough that
+// we don't cause OOM issues. This chunk size was chosen based
+// on the size of our containers as well as the expected size
+// of our files to fit the aforementioned constraints.
+constexpr size_t kCloudBufferedReaderChunkSize = 1'073'741'824; // 2^30
+
+// The chunk size for writing to cloud storage (S3 and GCS) must be greater than
+// 5 MB per the AWS and GCS documentation. Otherwise multipart upload will fail.
+// AWS Doc: https://docs.aws.amazon.com/AmazonS3/latest/userguide/qfacts.html
+// GCS Doc: https://cloud.google.com/storage/quotas#requests
+// The number below is 5 MB in bytes.
+constexpr size_t kCloudBufferedWriterChunkSize = 5'242'880;
+
+constexpr size_t kLocalBufferedReaderChunkSize = 4096;
+constexpr size_t kLocalBufferedWriterChunkSize = 4096;
 
 class IOUtils {
  public:
@@ -38,6 +56,22 @@ class IOUtils {
       tokens.push_back(substr);
     }
     return tokens;
+  }
+
+  static size_t getDefaultWriterChunkSizeForFile(std::string filename) {
+    if (isCloudFile(filename)) {
+      return kCloudBufferedWriterChunkSize;
+    } else {
+      return kLocalBufferedWriterChunkSize;
+    }
+  }
+
+  static size_t getDefaultReaderChunkSizeForFile(std::string filename) {
+    if (isCloudFile(filename)) {
+      return kCloudBufferedReaderChunkSize;
+    } else {
+      return kLocalBufferedReaderChunkSize;
+    }
   }
 
  private:

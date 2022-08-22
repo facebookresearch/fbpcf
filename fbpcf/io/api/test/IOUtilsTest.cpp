@@ -20,4 +20,24 @@ TEST(IOUtilsTest, testIsCloudFile) {
   EXPECT_EQ(ans, false);
 }
 
+TEST(IOUtilsTest, testGetDefaultWriterChunkSizeForFile) {
+  auto cloudResult = IOUtils::getDefaultWriterChunkSizeForFile(
+      "https://random_bucket.us-west-2.amazonaws.com");
+  EXPECT_EQ(cloudResult, kCloudBufferedWriterChunkSize);
+
+  auto localResult =
+      IOUtils::getDefaultWriterChunkSizeForFile("/random/local/file");
+  EXPECT_EQ(localResult, kLocalBufferedWriterChunkSize);
+}
+
+TEST(IOUtilsTest, testGetDefaultReaderChunkSizeForFile) {
+  auto cloudResult = IOUtils::getDefaultReaderChunkSizeForFile(
+      "https://random_bucket.us-west-2.amazonaws.com");
+  EXPECT_EQ(cloudResult, kCloudBufferedReaderChunkSize);
+
+  auto localResult =
+      IOUtils::getDefaultReaderChunkSizeForFile("/random/local/file");
+  EXPECT_EQ(localResult, kLocalBufferedReaderChunkSize);
+}
+
 } // namespace fbpcf::io
