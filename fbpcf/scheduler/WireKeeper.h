@@ -154,13 +154,13 @@ class WireKeeper final : public IWireKeeper {
   /**
    * @inherit doc
    */
-  uint64_t getBatchSize(
+  size_t getBatchSize(
       IScheduler::WireId<IScheduler::Boolean> id) const override;
 
   /**
    * @inherit doc
    */
-  uint64_t getBatchSize(
+  size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const override;
 
   /**
@@ -168,16 +168,16 @@ class WireKeeper final : public IWireKeeper {
    */
   IScheduler::WireId<IScheduler::Boolean> allocateBatchBooleanValue(
       const std::vector<bool>& v,
-      uint32_t firstAvailableLevel = 0,
-      size_t expectedBatchSize = 0) override;
+      size_t expectedBatchSize,
+      uint32_t firstAvailableLevel = 0) override;
 
   /**
    * @inherit doc
    */
   IScheduler::WireId<IScheduler::Arithmetic> allocateBatchIntegerValue(
       const std::vector<uint64_t>& v,
-      uint32_t firstAvailableLevel = 0,
-      size_t expectedBatchSize = 0) override;
+      size_t expectedBatchSize,
+      uint32_t firstAvailableLevel = 0) override;
 
   /**
    * @inherit doc

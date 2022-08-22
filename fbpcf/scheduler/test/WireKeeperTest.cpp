@@ -41,7 +41,7 @@ void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Bool
   std::vector<bool> testValue1(3, true);
-  auto wire7 = wireKeeper->allocateBatchBooleanValue(testValue1, 0, 3);
+  auto wire7 = wireKeeper->allocateBatchBooleanValue(testValue1, 3);
   testVectorEq(wireKeeper->getBatchBooleanValue(wire7), testValue1);
   std::vector<bool> testValue2(3, false);
   wireKeeper->setBatchBooleanValue(wire7, testValue2);
@@ -53,7 +53,7 @@ void wireKeeperTestAllocateSetAndGet(std::unique_ptr<IWireKeeper> wireKeeper) {
   // Batch API: Int
 
   std::vector<uint64_t> testValue3({UINT64_MAX, UINT64_MAX, 0});
-  auto wire9 = wireKeeper->allocateBatchIntegerValue(testValue3, 0, 3);
+  auto wire9 = wireKeeper->allocateBatchIntegerValue(testValue3, 3);
   testVectorEq(wireKeeper->getBatchIntegerValue(wire9), testValue3);
 
   std::vector<uint64_t> testValue4({10, 11, 12});
@@ -95,7 +95,7 @@ void wireKeeperTestAvailableLevel(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Bool
   auto wire3 = wireKeeper->allocateBatchBooleanValue(
-      {true, false}, /*firstAvailableLevel*/ 9, 2);
+      {true, false}, 2, /*firstAvailableLevel*/ 9);
   EXPECT_EQ(wireKeeper->getBatchFirstAvailableLevel(wire3), 9);
 
   wireKeeper->setBatchFirstAvailableLevel(wire3, 2);
@@ -103,7 +103,7 @@ void wireKeeperTestAvailableLevel(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Int
   auto wire4 = wireKeeper->allocateBatchIntegerValue(
-      {12, 24}, /* firstAvaialbleLevel*/ 25, 2);
+      {12, 24}, 2, /* firstAvaialbleLevel*/ 25);
   EXPECT_EQ(wireKeeper->getBatchFirstAvailableLevel(wire4), 25);
 
   wireKeeper->setBatchFirstAvailableLevel(wire4, 1337);
@@ -183,8 +183,7 @@ void wireKeeperTestReferenceCount(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Bool
   std::vector<bool> testBoolValue(true, 3);
-  auto batchBoolWire =
-      wireKeeper->allocateBatchBooleanValue(testBoolValue, 0, 3);
+  auto batchBoolWire = wireKeeper->allocateBatchBooleanValue(testBoolValue, 3);
 
   for (int i = 0; i < 10; i++) {
     if (i % 3 == 2) {
@@ -216,7 +215,7 @@ void wireKeeperTestReferenceCount(std::unique_ptr<IWireKeeper> wireKeeper) {
 
   // Batch API: Int
   std::vector<uint64_t> testIntValue({3, 4, 5});
-  auto batchIntWire = wireKeeper->allocateBatchIntegerValue(testIntValue, 0, 3);
+  auto batchIntWire = wireKeeper->allocateBatchIntegerValue(testIntValue, 3);
 
   for (int i = 0; i < 10; i++) {
     if (i % 3 == 2) {
@@ -260,21 +259,21 @@ TEST(SafeVectorArenaWireKeeperTest, testReferenceCount) {
 void wireKeeperTestExpectedBatchSize(std::unique_ptr<IWireKeeper> wireKeeper) {
   // Batch API: Bool
   std::vector<bool> testValue1(3, true);
-  auto wire1 = wireKeeper->allocateBatchBooleanValue(testValue1, 0, 3);
+  auto wire1 = wireKeeper->allocateBatchBooleanValue(testValue1, 3);
   EXPECT_EQ(wireKeeper->getBatchSize(wire1), 3);
 
   std::vector<bool> testValue2(4, false);
-  auto wire2 = wireKeeper->allocateBatchBooleanValue(testValue2, 0, 4);
+  auto wire2 = wireKeeper->allocateBatchBooleanValue(testValue2, 4);
   EXPECT_EQ(wireKeeper->getBatchSize(wire2), 4);
 
   // Batch API: Int
   std::vector<uint64_t> testValue3(
       {UINT64_MAX, UINT64_MAX, 0, UINT64_MAX, UINT64_MAX});
-  auto wire3 = wireKeeper->allocateBatchIntegerValue(testValue3, 0, 5);
+  auto wire3 = wireKeeper->allocateBatchIntegerValue(testValue3, 5);
   EXPECT_EQ(wireKeeper->getBatchSize(wire3), 5);
 
   std::vector<uint64_t> testValue4({10, 11, 12, 7, 8, 9});
-  auto wire4 = wireKeeper->allocateBatchIntegerValue(testValue4, 0, 6);
+  auto wire4 = wireKeeper->allocateBatchIntegerValue(testValue4, 6);
   EXPECT_EQ(wireKeeper->getBatchSize(wire4), 6);
 }
 

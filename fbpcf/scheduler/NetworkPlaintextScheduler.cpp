@@ -49,10 +49,10 @@ NetworkPlaintextScheduler::privateBooleanInputBatch(
     for (auto& iter : agentMap_) {
       iter.second->sendBool(v);
     }
-    return wireKeeper_->allocateBatchBooleanValue(v);
+    return wireKeeper_->allocateBatchBooleanValue(v, v.size());
   }
   auto otherV = agentMap_.at(partyId)->receiveBool(v.size());
-  return wireKeeper_->allocateBatchBooleanValue(otherV);
+  return wireKeeper_->allocateBatchBooleanValue(otherV, v.size());
 }
 
 IScheduler::WireId<IScheduler::Boolean>
@@ -98,7 +98,7 @@ NetworkPlaintextScheduler::recoverBooleanWireBatch(const std::vector<bool>& v) {
     }
   }
 
-  return wireKeeper_->allocateBatchBooleanValue(result);
+  return wireKeeper_->allocateBatchBooleanValue(result, v.size());
 }
 
 bool NetworkPlaintextScheduler::extractBooleanSecretShare(
@@ -148,10 +148,10 @@ NetworkPlaintextScheduler::privateIntegerInputBatch(
     for (auto& iter : agentMap_) {
       iter.second->sendInt64(v);
     }
-    return wireKeeper_->allocateBatchIntegerValue(v);
+    return wireKeeper_->allocateBatchIntegerValue(v, v.size());
   }
   auto otherV = agentMap_.at(partyId)->receiveInt64(v.size());
-  return wireKeeper_->allocateBatchIntegerValue(otherV);
+  return wireKeeper_->allocateBatchIntegerValue(otherV, v.size());
 }
 
 IScheduler::WireId<IScheduler::Arithmetic>
@@ -198,7 +198,7 @@ NetworkPlaintextScheduler::recoverIntegerWireBatch(
     }
   }
 
-  return wireKeeper_->allocateBatchIntegerValue(result);
+  return wireKeeper_->allocateBatchIntegerValue(result, v.size());
 }
 
 uint64_t NetworkPlaintextScheduler::extractIntegerSecretShare(
@@ -222,6 +222,16 @@ std::vector<uint64_t> NetworkPlaintextScheduler::extractIntegerSecretShareBatch(
   } else {
     return std::vector<uint64_t>(result.size(), 0);
   }
+}
+
+size_t NetworkPlaintextScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Boolean> id) const {
+  return wireKeeper_->getBatchSize(id);
+}
+
+size_t NetworkPlaintextScheduler::getBatchSize(
+    IScheduler::WireId<IScheduler::Arithmetic> id) const {
+  return wireKeeper_->getBatchSize(id);
 }
 
 } // namespace fbpcf::scheduler

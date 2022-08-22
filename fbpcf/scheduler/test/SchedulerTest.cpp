@@ -82,24 +82,10 @@ void runWithArithmeticScheduler(
 }
 
 class SchedulerTestFixture : public ::testing::TestWithParam<SchedulerType> {};
-class ArithmeticSchedulerTestFixture
-    : public ::testing::TestWithParam<SchedulerType> {};
 
 INSTANTIATE_TEST_SUITE_P(
     SchedulerTest,
     SchedulerTestFixture,
-    ::testing::Values(
-        SchedulerType::Plaintext,
-        SchedulerType::NetworkPlaintext,
-        SchedulerType::Eager,
-        SchedulerType::Lazy),
-    [](const testing::TestParamInfo<SchedulerTestFixture::ParamType>& info) {
-      return getSchedulerName(info.param);
-    });
-
-INSTANTIATE_TEST_SUITE_P(
-    SchedulerTest,
-    ArithmeticSchedulerTestFixture,
     ::testing::Values(
         SchedulerType::Plaintext,
         SchedulerType::NetworkPlaintext,
@@ -181,7 +167,7 @@ void testIntegerInputAndOutput(
   EXPECT_EQ(gateCount.second, 5);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testInputAndOutput) {
+TEST_P(SchedulerTestFixture, testIntegerInputAndOutput) {
   runWithArithmeticScheduler(GetParam(), testIntegerInputAndOutput);
 }
 
@@ -262,7 +248,7 @@ void testIntegerInputAndOutputBatch(
   EXPECT_EQ(gateCount.second, 10);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testInputAndOutputBatch) {
+TEST_P(SchedulerTestFixture, testIntegerInputAndOutputBatch) {
   runWithArithmeticScheduler(GetParam(), testIntegerInputAndOutputBatch);
 }
 
@@ -385,7 +371,7 @@ void testMult(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
   EXPECT_EQ(gateCount.second, 32);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testMult) {
+TEST_P(SchedulerTestFixture, testMult) {
   runWithArithmeticScheduler(GetParam(), testMult);
 }
 
@@ -430,7 +416,7 @@ void testMultBatch(
   EXPECT_EQ(gateCount.second, 64);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testMultBatch) {
+TEST_P(SchedulerTestFixture, testMultBatch) {
   runWithArithmeticScheduler(GetParam(), testMultBatch);
 }
 
@@ -553,7 +539,7 @@ void testPlus(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
   EXPECT_EQ(gateCount.second, 36);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testPlus) {
+TEST_P(SchedulerTestFixture, testPlus) {
   runWithArithmeticScheduler(GetParam(), testPlus);
 }
 
@@ -598,7 +584,7 @@ void testPlusBatch(
   EXPECT_EQ(gateCount.second, 72);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testPlusBatch) {
+TEST_P(SchedulerTestFixture, testPlusBatch) {
   runWithArithmeticScheduler(GetParam(), testPlusBatch);
 }
 
@@ -669,7 +655,7 @@ void testNeg(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
   EXPECT_EQ(gateCount.second, 8);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testNeg) {
+TEST_P(SchedulerTestFixture, testNeg) {
   runWithArithmeticScheduler(GetParam(), testNeg);
 }
 
@@ -698,7 +684,7 @@ void testNegBatch(
   EXPECT_EQ(gateCount.second, 16);
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testNegBatch) {
+TEST_P(SchedulerTestFixture, testNegBatch) {
   runWithArithmeticScheduler(GetParam(), testNegBatch);
 }
 
@@ -818,7 +804,7 @@ void testMultipleArithmeticOperations(
   }
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testMultipleOperations) {
+TEST_P(SchedulerTestFixture, testMultipleArithmeticOperations) {
   runWithArithmeticScheduler(GetParam(), testMultipleArithmeticOperations);
 }
 
@@ -923,7 +909,7 @@ void testArithmeticReferenceCount(
   testPairEq(scheduler->getWireStatistics(), {1, 1});
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testReferenceCount) {
+TEST_P(SchedulerTestFixture, testArithmeticReferenceCount) {
   runWithArithmeticScheduler(GetParam(), testArithmeticReferenceCount);
 }
 
@@ -958,7 +944,7 @@ void testArithmeticReferenceCountBatch(
   testPairEq(scheduler->getWireStatistics(), {1, 1});
 }
 
-TEST_P(ArithmeticSchedulerTestFixture, testReferenceCountBatch) {
+TEST_P(SchedulerTestFixture, testArithmeticReferenceCountBatch) {
   runWithArithmeticScheduler(GetParam(), testArithmeticReferenceCountBatch);
 }
 
@@ -1208,6 +1194,79 @@ TEST_P(CompositeSchedulerTestFixture, testCompositeANDBatch) {
       [andSize](std::unique_ptr<IScheduler> scheduler, int8_t myID) {
         testCompositeANDBatch(std::move(scheduler), myID, andSize);
       });
+}
+
+void testBatchSize(std::unique_ptr<IScheduler> scheduler, int8_t /*myId*/) {
+  // Public inputs
+  auto wire1 = scheduler->publicBooleanInputBatch({true, false});
+  auto wire2 = scheduler->publicBooleanInputBatch({false, true});
+
+  // Private inputs
+  auto wire3 = scheduler->privateBooleanInputBatch({false, true}, 0);
+  auto wire4 = scheduler->privateBooleanInputBatch({true, false}, 1);
+
+  // And Gates
+  auto wire5 = scheduler->publicAndPublicBatch(wire1, wire2);
+  auto wire6 = scheduler->privateAndPrivateBatch(wire3, wire4);
+  auto wire7 = scheduler->privateAndPublicBatch(wire3, wire1);
+
+  // Xor Gates
+  auto wire8 = scheduler->publicXorPublicBatch(wire5, wire1);
+  auto wire9 = scheduler->privateXorPublicBatch(wire6, wire2);
+  auto wire10 = scheduler->privateXorPrivateBatch(wire6, wire7);
+
+  // Not Gates
+  auto wire11 = scheduler->notPublicBatch(wire8);
+  auto wire12 = scheduler->notPrivateBatch(wire9);
+
+  // batching and unbatching
+  auto wire13 = scheduler->batchingUp({wire9, wire10});
+  auto wire14 = scheduler->unbatching(
+      wire13,
+      std::make_shared<std::vector<uint32_t>>(std::vector<uint32_t>({3, 1})));
+
+  EXPECT_EQ(scheduler->getBatchSize(wire11), 2);
+  EXPECT_EQ(scheduler->getBatchSize(wire12), 2);
+  EXPECT_EQ(scheduler->getBatchSize(wire14.at(0)), 3);
+  EXPECT_EQ(scheduler->getBatchSize(wire14.at(1)), 1);
+}
+
+TEST_P(SchedulerTestFixture, testBatchSize) {
+  runWithScheduler(GetParam(), testBatchSize);
+}
+
+void testArithmeticBatchSize(
+    std::unique_ptr<IArithmeticScheduler> scheduler,
+    int8_t /*myId*/) {
+  // Public inputs
+  auto wire1 = scheduler->publicIntegerInputBatch({18, 27});
+  auto wire2 = scheduler->publicIntegerInputBatch({52, 17});
+
+  // Private inputs
+  auto wire3 = scheduler->privateIntegerInputBatch({26, 27}, 0);
+  auto wire4 = scheduler->privateIntegerInputBatch({31, 7}, 1);
+
+  // Mult Gates
+  auto wire5 = scheduler->publicMultPublicBatch(wire1, wire2);
+  auto wire6 = scheduler->privateMultPrivateBatch(wire3, wire4);
+  auto wire7 = scheduler->privateMultPublicBatch(wire3, wire1);
+
+  // Plus Gates
+  auto wire8 = scheduler->publicPlusPublicBatch(wire5, wire1);
+  auto wire9 = scheduler->privatePlusPublicBatch(wire6, wire2);
+  auto wire10 = scheduler->privatePlusPrivateBatch(wire6, wire7);
+
+  // Neg Gates
+  auto wire11 = scheduler->negPublicBatch(wire8);
+  auto wire12 = scheduler->negPrivateBatch(wire9);
+
+  EXPECT_EQ(scheduler->getBatchSize(wire10), 2);
+  EXPECT_EQ(scheduler->getBatchSize(wire11), 2);
+  EXPECT_EQ(scheduler->getBatchSize(wire12), 2);
+}
+
+TEST_P(SchedulerTestFixture, testArithmeticBatchSize) {
+  runWithArithmeticScheduler(GetParam(), testArithmeticBatchSize);
 }
 
 } // namespace fbpcf::scheduler
