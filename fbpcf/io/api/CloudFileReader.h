@@ -32,6 +32,8 @@ class CloudFileReader : public IReaderCloser {
     }
     fileLength_ = cloudFileReader_->getFileContentLength(filePath);
     XLOG(INFO) << "Total file length is: " << fileLength_;
+
+    filepath_ = filePath;
   }
 
   int close() override;

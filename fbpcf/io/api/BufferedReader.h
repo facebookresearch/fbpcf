@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "fbpcf/io/api/IOUtils.h"
 #include "fbpcf/io/api/IReaderCloser.h"
 
 namespace fbpcf::io {
@@ -30,8 +31,10 @@ class BufferedReader : public IReaderCloser {
       const size_t chunkSize)
       : buffer_{std::vector<char>(chunkSize)},
         currentPosition_{0},
-        baseReader_{std::move(baseReader)},
-        lastPosition_{0} {}
+        lastPosition_{0} {
+    filepath_ = baseReader->getFilePath();
+    baseReader_ = std::move(baseReader);
+  }
 
   explicit BufferedReader(std::unique_ptr<IReaderCloser> baseReader)
       : buffer_{std::vector<char>(defaultReaderChunkSize)},

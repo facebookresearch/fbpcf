@@ -28,6 +28,8 @@ LocalFileWriter::LocalFileWriter(std::string filePathStr) {
     XLOGF(ERR, "Error when opening file: {}", strerror(errno));
     throw std::runtime_error("Couldn't open local file.");
   }
+
+  filepath_ = filePathStr;
 }
 
 int LocalFileWriter::close() {
