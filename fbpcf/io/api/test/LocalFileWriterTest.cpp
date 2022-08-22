@@ -22,6 +22,8 @@ inline void runBaseWriterTests(
     IWriterCloser& writer,
     std::string fileToWriteTo,
     std::string expectedFile) {
+  EXPECT_EQ(fileToWriteTo, writer.getFilePath());
+
   /*
     CASE 1
     Write simple string to file

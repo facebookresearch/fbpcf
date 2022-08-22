@@ -26,6 +26,7 @@ class CloudFileWriter : public IWriterCloser {
   explicit CloudFileWriter(const std::string& filePath) : filePath_{filePath} {
     cloudFileUploader_ = fbpcf::cloudio::getCloudFileUploader(filePath_);
     isClosed_ = false;
+    filepath_ = filePath;
   }
 
   int close() override;

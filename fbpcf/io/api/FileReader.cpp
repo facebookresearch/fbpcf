@@ -22,6 +22,8 @@ FileReader::FileReader(std::string filePath) {
   } else {
     childReader_ = std::make_unique<LocalFileReader>(filePath);
   }
+
+  filepath_ = filePath;
 }
 
 FileReader::~FileReader() {

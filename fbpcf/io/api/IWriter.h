@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace fbpcf::io {
@@ -25,7 +26,18 @@ class IWriter {
    * n bytes of the entire provided buffer.
    */
   virtual size_t write(std::vector<char>& buf) = 0;
+
+  /*
+   * returns the path of the file being written to
+   */
+  std::string& getFilePath() {
+    return filepath_;
+  }
+
   virtual ~IWriter() = default;
+
+ protected:
+  std::string filepath_;
 };
 
 } // namespace fbpcf::io

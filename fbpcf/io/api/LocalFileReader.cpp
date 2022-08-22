@@ -21,6 +21,8 @@ LocalFileReader::LocalFileReader(std::string filePath) {
     throw std::runtime_error("Couldn't open local file.");
   }
   isClosed_ = false;
+
+  filepath_ = filePath;
 }
 
 int LocalFileReader::close() {
