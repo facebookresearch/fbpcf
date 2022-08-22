@@ -27,8 +27,14 @@ class BufferedReader : public IReaderCloser {
  public:
   explicit BufferedReader(
       std::unique_ptr<IReaderCloser> baseReader,
-      const size_t chunkSize = defaultReaderChunkSize)
+      const size_t chunkSize)
       : buffer_{std::vector<char>(chunkSize)},
+        currentPosition_{0},
+        baseReader_{std::move(baseReader)},
+        lastPosition_{0} {}
+
+  explicit BufferedReader(std::unique_ptr<IReaderCloser> baseReader)
+      : buffer_{std::vector<char>(defaultReaderChunkSize)},
         currentPosition_{0},
         baseReader_{std::move(baseReader)},
         lastPosition_{0} {}
