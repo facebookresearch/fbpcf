@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "fbpcf/io/api/IOUtils.h"
 #include "fbpcf/io/api/IWriterCloser.h"
 
 namespace fbpcf::io {
@@ -27,14 +28,17 @@ class BufferedWriter : public IWriterCloser {
   explicit BufferedWriter(
       std::unique_ptr<IWriterCloser> baseWriter,
       const size_t chunkSize)
-      : buffer_{std::vector<char>(chunkSize)},
-        currentPosition_{0},
-        baseWriter_{std::move(baseWriter)} {}
+      : buffer_{std::vector<char>(chunkSize)}, currentPosition_{0} {
+    filepath_ = baseWriter->getFilePath();
+    baseWriter_ = std::move(baseWriter);
+  }
 
   explicit BufferedWriter(std::unique_ptr<IWriterCloser> baseWriter)
       : buffer_{std::vector<char>(defaultWriterChunkSize)},
-        currentPosition_{0},
-        baseWriter_{std::move(baseWriter)} {}
+        currentPosition_{0} {
+    filepath_ = baseWriter->getFilePath();
+    baseWriter_ = std::move(baseWriter);
+  }
 
   int close() override;
   size_t write(std::vector<char>& buf) override;

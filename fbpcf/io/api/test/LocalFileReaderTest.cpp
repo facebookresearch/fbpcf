@@ -14,8 +14,9 @@
 
 namespace fbpcf::io {
 
-inline void runBaseReaderTests(IReaderCloser& reader) {
+inline void runBaseReaderTests(IReaderCloser& reader, std::string fileToRead) {
   EXPECT_FALSE(reader.eof());
+  EXPECT_EQ(fileToRead, reader.getFilePath());
 
   /*
     CASE 1A
@@ -58,19 +59,19 @@ inline void runBaseReaderTests(IReaderCloser& reader) {
 }
 
 TEST(LocalFileReaderTest, testReadingFromFile) {
-  auto reader = fbpcf::io::LocalFileReader(
-      IOTestHelper::getBaseDirFromPath(__FILE__) +
-      "data/local_file_reader_test_file.txt");
+  auto fileToRead = IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/local_file_reader_test_file.txt";
+  auto reader = fbpcf::io::LocalFileReader(fileToRead);
 
-  runBaseReaderTests(reader);
+  runBaseReaderTests(reader, fileToRead);
 }
 
 TEST(LocalFileReaderTest, testLocalFileReaderThroughFileReader) {
-  auto reader = fbpcf::io::FileReader(
-      IOTestHelper::getBaseDirFromPath(__FILE__) +
-      "data/local_file_reader_test_file.txt");
+  auto fileToRead = IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/local_file_reader_test_file.txt";
+  auto reader = fbpcf::io::FileReader(fileToRead);
 
-  runBaseReaderTests(reader);
+  runBaseReaderTests(reader, fileToRead);
 }
 
 TEST(LocalFileReaderTest, testLocalFileReaderWithMissingFile) {

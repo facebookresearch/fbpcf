@@ -21,6 +21,8 @@ FileWriter::FileWriter(std::string filePath) {
   } else {
     childWriter_ = std::make_unique<LocalFileWriter>(filePath);
   }
+
+  filepath_ = filePath;
 }
 
 FileWriter::~FileWriter() {

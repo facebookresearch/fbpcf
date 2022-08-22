@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace fbpcf::io {
@@ -30,7 +31,18 @@ class IReader {
    * data left in the file
    */
   virtual bool eof() = 0;
+
+  /*
+   * returns the path of the file being read
+   */
+  std::string& getFilePath() {
+    return filepath_;
+  }
+
   virtual ~IReader() = default;
+
+ protected:
+  std::string filepath_;
 };
 
 } // namespace fbpcf::io
