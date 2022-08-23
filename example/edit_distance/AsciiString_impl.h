@@ -19,9 +19,9 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
     const StringType& data) {
   static_assert(!isSecret, "Private value must not be created public input");
   if constexpr (usingBatch) {
-    batchSize_ = data.size();
-    knownSize_.reserve(batchSize_);
-    for (size_t i = 0; i < batchSize_; i++) {
+    auto batchSize = data.size();
+    knownSize_.reserve(batchSize);
+    for (size_t i = 0; i < batchSize; i++) {
       if (data[i].size() > maxWidth) {
         throw std::runtime_error(fmt::format(
             "Input value is too large. Maximum string width is %d, was  given %d",
@@ -31,8 +31,8 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
       knownSize_.push_back(data[i].size());
     }
     for (size_t i = 0; i < maxWidth; i++) {
-      std::vector<char> chars(batchSize_);
-      for (size_t j = 0; j < batchSize_; j++) {
+      std::vector<char> chars(batchSize);
+      for (size_t j = 0; j < batchSize; j++) {
         chars[j] = i < data[j].size() ? data[j][i] : 0;
       }
       data_[i] = frontend::Int<true, 8, false, schedulerId, usingBatch>(chars);
@@ -63,8 +63,8 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
     int partyId) {
   static_assert(isSecret, "Public value must not be created secret input");
   if constexpr (usingBatch) {
-    batchSize_ = data.size();
-    for (size_t j = 0; j < batchSize_; j++) {
+    auto batchSize = data.size();
+    for (size_t j = 0; j < batchSize; j++) {
       if (data[j].size() > maxWidth) {
         throw std::runtime_error(fmt::format(
             "Input value is too large. Maximum string width is %d, was  given %d",
@@ -73,8 +73,8 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::AsciiString(
       }
     }
     for (size_t i = 0; i < maxWidth; i++) {
-      std::vector<char> chars(batchSize_);
-      for (size_t j = 0; j < batchSize_; j++) {
+      std::vector<char> chars(batchSize);
+      for (size_t j = 0; j < batchSize; j++) {
         chars[j] = i < data[j].size() ? data[j][i] : 0;
       }
       data_[i] =
@@ -116,7 +116,6 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::openToParty(
     int partyId) const {
   static_assert(isSecret, "No need to open a public value");
   AsciiString<maxWidth, false, schedulerId, usingBatch> rst;
-  rst.batchSize_ = batchSize_;
   for (size_t i = 0; i < maxWidth; i++) {
     rst.data_[i] = data_.at(i).openToParty(partyId);
   }
@@ -214,15 +213,15 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::privateSize() const {
     frontend::Int<false, sizeWidth, false, schedulerId, usingBatch> zeroIndex =
         createPublicBatchConstant<
             frontend::Int<false, sizeWidth, false, schedulerId, usingBatch>,
-            uint64_t>(0, batchSize_);
+            uint64_t>(0, getBatchSize());
     frontend::Int<false, sizeWidth, false, schedulerId, usingBatch> one =
         createPublicBatchConstant<
             frontend::Int<false, sizeWidth, false, schedulerId, usingBatch>,
-            uint64_t>(1, batchSize_);
+            uint64_t>(1, getBatchSize());
     frontend::Int<true, 8, false, schedulerId, usingBatch> zeroChar =
         createPublicBatchConstant<
             frontend::Int<true, 8, false, schedulerId, usingBatch>,
-            int64_t>(0, batchSize_);
+            int64_t>(0, getBatchSize());
     rst = one.mux(data_[0] == zeroChar, zeroIndex);
     for (size_t i = 1; i < maxWidth; i++) {
       rst = (rst + one).mux(data_[i] == zeroChar, rst);
@@ -246,11 +245,10 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>
 AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::toUpperCase() const {
   if constexpr (usingBatch) {
     AsciiString<maxWidth, isSecret, schedulerId, usingBatch> rst;
-    rst.batchSize_ = batchSize_;
-    std::vector<int64_t> v1(batchSize_, 'a');
-    std::vector<int64_t> v2(batchSize_, 'z');
-    std::vector<int64_t> v3(batchSize_, 0);
-    std::vector<int64_t> v4(batchSize_, 'A' - 'a');
+    std::vector<int64_t> v1(getBatchSize(), 'a');
+    std::vector<int64_t> v2(getBatchSize(), 'z');
+    std::vector<int64_t> v3(getBatchSize(), 0);
+    std::vector<int64_t> v4(getBatchSize(), 'A' - 'a');
     frontend::Int<true, 8, false, schedulerId, usingBatch> a(v1);
     frontend::Int<true, 8, false, schedulerId, usingBatch> z(v2);
     frontend::Int<true, 8, false, schedulerId, usingBatch> zero(v3);
@@ -329,6 +327,12 @@ AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::convertLongsToChar(
     rst[i] = values[i];
   }
   return rst;
+}
+
+template <int maxWidth, bool isSecret, int schedulerId, bool usingBatch>
+size_t AsciiString<maxWidth, isSecret, schedulerId, usingBatch>::getBatchSize()
+    const {
+  return data_[0].getBatchSize();
 }
 
 } // namespace fbpcf::edit_distance

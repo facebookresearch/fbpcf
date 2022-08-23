@@ -145,10 +145,7 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
     return knownSize_;
   }
 
-  size_t getBatchSize() const {
-    static_assert(usingBatch, "Only batch types have batch size");
-    return batchSize_;
-  }
+  size_t getBatchSize() const;
 
   // returns the length of the string as a secret integer. Template specifies
   // the width of the Int and must be enough to store the width.
@@ -203,7 +200,6 @@ class AsciiString : public scheduler::SchedulerKeeper<schedulerId> {
       array<frontend::Int<true, 8, isSecret, schedulerId, usingBatch>, maxWidth>
           data_;
   SizeType knownSize_;
-  size_t batchSize_ = 1;
 
   static std::vector<char> convertLongsToChar(std::vector<int64_t> values);
 
