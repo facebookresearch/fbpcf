@@ -311,4 +311,45 @@ TEST(AsciiStringTest, testPrivateSizeBatch) {
   }
 }
 
+TEST(AsciiStringTest, testBatchSize) {
+  scheduler::SchedulerKeeper<0>::setScheduler(
+      std::make_unique<scheduler::PlaintextScheduler>(
+          scheduler::WireKeeper::createWithUnorderedMap()));
+  using SecBatchAsciiString = AsciiString<15, true, 0, true>;
+  using PubBatchAsciiString = AsciiString<15, false, 0, true>;
+
+  int partyId = 0;
+  size_t batchSize = 9;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<char> dist1('a', 'z');
+  std::uniform_int_distribution<uint8_t> dist2(0, 1);
+  std::uniform_int_distribution<size_t> strLength(1, 15);
+
+  std::vector<std::string> v1(batchSize);
+  std::vector<bool> choice(batchSize);
+
+  for (size_t j = 0; j < batchSize; j++) {
+    auto len = strLength(e);
+    v1[j] = randomString(dist1, e, len);
+    choice[j] = dist2(e);
+  }
+  SecBatchAsciiString secStr1(v1, partyId);
+  PubBatchAsciiString pubStr1(v1);
+
+  frontend::Bit<true, 0, true> secChoice(choice, partyId);
+  frontend::Bit<false, 0, true> pubChoice(choice);
+
+  auto r1 = secStr1.mux(secChoice, secStr1);
+  auto r2 = pubStr1.mux(secChoice, pubStr1);
+  auto r3 = r1.privateSize<16>();
+
+  EXPECT_EQ(secStr1.getBatchSize(), batchSize);
+  EXPECT_EQ(pubStr1.getBatchSize(), batchSize);
+  EXPECT_EQ(r1.getBatchSize(), batchSize);
+  EXPECT_EQ(r2.getBatchSize(), batchSize);
+  EXPECT_EQ(r3.getBatchSize(), batchSize);
+}
+
 } // namespace fbpcf::edit_distance
