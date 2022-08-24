@@ -14,13 +14,9 @@
 
 namespace fbpcf::io {
 
-inline void runBufferedReaderTestForReadLineOnly(size_t chunkSize) {
+inline void runBufferedReaderTestForReadLineOnly(
+    std::unique_ptr<BufferedReader> bufferedReader) {
   // this more accurately resembles a production style usage
-  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
-      IOTestHelper::getBaseDirFromPath(__FILE__) +
-      "data/buffered_reader_test_file.txt");
-  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
-      std::move(fileReader), chunkSize);
 
   auto expectedLines = std::vector<std::string>{
       "this is a simple first line",
@@ -50,13 +46,8 @@ inline void runBufferedReaderTestForReadLineOnly(size_t chunkSize) {
   }
 }
 
-inline void runBufferedReaderTestForReadAndReadLine(size_t chunkSize) {
-  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
-      IOTestHelper::getBaseDirFromPath(__FILE__) +
-      "data/buffered_reader_test_file.txt");
-  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
-      std ::move(fileReader), chunkSize);
-
+inline void runBufferedReaderTestForReadAndReadLine(
+    std::unique_ptr<BufferedReader> bufferedReader) {
   auto firstLine = bufferedReader->readLine();
 
   EXPECT_EQ(firstLine, "this is a simple first line");
@@ -116,13 +107,45 @@ class BufferedReaderTest
 TEST_P(BufferedReaderTest, testBufferedReaderWithReadLineOnly) {
   auto chunkSize = GetParam();
 
-  runBufferedReaderTestForReadLineOnly(chunkSize);
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/buffered_reader_test_file.txt");
+  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std::move(fileReader), chunkSize);
+
+  runBufferedReaderTestForReadLineOnly(std::move(bufferedReader));
 }
 
 TEST_P(BufferedReaderTest, testBufferedReaderWithReadAndReadLine) {
   auto chunkSize = GetParam();
 
-  runBufferedReaderTestForReadAndReadLine(chunkSize);
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/buffered_reader_test_file.txt");
+  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std::move(fileReader), chunkSize);
+
+  runBufferedReaderTestForReadAndReadLine(std::move(bufferedReader));
+}
+
+TEST(BufferedReaderTest, testBufferedReaderWithReadLineOnlyNoChunkSize) {
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/buffered_reader_test_file.txt");
+  auto bufferedReader =
+      std::make_unique<fbpcf::io::BufferedReader>(std::move(fileReader));
+
+  runBufferedReaderTestForReadAndReadLine(std::move(bufferedReader));
+}
+
+TEST(BufferedReaderTest, testBufferedReaderWithReadAndReadLineNoChunkSize) {
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/buffered_reader_test_file.txt");
+  auto bufferedReader =
+      std::make_unique<fbpcf::io::BufferedReader>(std::move(fileReader));
+
+  runBufferedReaderTestForReadAndReadLine(std::move(bufferedReader));
 }
 
 INSTANTIATE_TEST_SUITE_P(
