@@ -31,13 +31,41 @@ std::vector<BitType> AesCircuit<BitType>::decrypt_impl(
 template <typename BitType>
 std::vector<std::array<typename AesCircuit<BitType>::WordType, 4>>
 AesCircuit<BitType>::convertToWords(const std::vector<BitType>& src) const {
-  throw std::runtime_error("Not implemented!");
+  if (src.size() % 128 != 0) {
+    throw std::runtime_error("Bit vector must be a multiple of 128");
+  }
+  std::vector<std::array<WordType, 4>> wordVec;
+  size_t blockNo = src.size() / 128;
+  wordVec.reserve(blockNo);
+  for (int i_block = 0; i_block < blockNo; ++i_block) {
+    std::array<typename AesCircuit<BitType>::WordType, 4> wordArray;
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 0; j < 4; ++j) {
+        for (int k = 0; k < 8; ++k) {
+          wordArray[i][j][k] = src[i_block * 128 + i * 32 + j * 8 + k];
+        }
+      }
+    }
+    wordVec.push_back(wordArray);
+  }
+  return wordVec;
 }
 
 template <typename BitType>
 std::vector<BitType> AesCircuit<BitType>::convertFromWords(
     std::vector<std::array<WordType, 4>>& src) const {
-  throw std::runtime_error("Not implemented!");
+  std::vector<BitType> bitVec;
+  bitVec.reserve(src.size() * 128);
+  for (int i = 0; i < src.size(); ++i) {
+    for (int j = 0; j < 4; ++j) {
+      for (int k = 0; k < 4; ++k) {
+        for (int m = 0; m < 8; ++m) {
+          bitVec.push_back(src[i][j][k][m]);
+        }
+      }
+    }
+  }
+  return bitVec;
 }
 
 template <typename BitType>
