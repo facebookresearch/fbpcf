@@ -114,18 +114,24 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo2 = {
       {0, {"127.0.0.1", port02}}, {1, {"127.0.0.1", port12}}};
 
-  auto factory1 = std::async([&partyInfo1, &createdDir]() {
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = createdDir + "/cert.pem";
+  tlsInfo.keyPath = createdDir + "/key.pem";
+  tlsInfo.passphrasePath = createdDir + "/passphrase.pem";
+  tlsInfo.useTls = true;
+
+  auto factory1 = std::async([&partyInfo1, &createdDir, &tlsInfo]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, true, createdDir, "Party_1");
+        1, partyInfo1, tlsInfo, "Party_1");
   });
 
-  auto factory2 = std::async([&partyInfo2, &createdDir]() {
+  auto factory2 = std::async([&partyInfo2, &createdDir, &tlsInfo]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, true, createdDir, "Party_2");
+        2, partyInfo2, tlsInfo, "Party_2");
   });
 
   auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, true, createdDir, "Party_0");
+      0, partyInfo0, tlsInfo, "Party_0");
 
   int size = 1048576; // 1024 ^ 2
   auto thread0 =
