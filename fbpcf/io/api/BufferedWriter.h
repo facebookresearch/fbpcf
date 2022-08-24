@@ -34,10 +34,12 @@ class BufferedWriter : public IWriterCloser {
   }
 
   explicit BufferedWriter(std::unique_ptr<IWriterCloser> baseWriter)
-      : buffer_{std::vector<char>(defaultWriterChunkSize)},
-        currentPosition_{0} {
+      : currentPosition_{0} {
+    auto defaultChunkSizeForFile =
+        IOUtils::getDefaultWriterChunkSizeForFile(baseWriter->getFilePath());
     filepath_ = baseWriter->getFilePath();
     baseWriter_ = std::move(baseWriter);
+    buffer_ = std::vector<char>(defaultChunkSizeForFile);
   }
 
   int close() override;

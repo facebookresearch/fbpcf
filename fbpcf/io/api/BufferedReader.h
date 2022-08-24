@@ -37,10 +37,13 @@ class BufferedReader : public IReaderCloser {
   }
 
   explicit BufferedReader(std::unique_ptr<IReaderCloser> baseReader)
-      : buffer_{std::vector<char>(defaultReaderChunkSize)},
-        currentPosition_{0},
-        baseReader_{std::move(baseReader)},
-        lastPosition_{0} {}
+      : currentPosition_{0}, lastPosition_{0} {
+    auto defaultChunkSizeForFile =
+        IOUtils::getDefaultReaderChunkSizeForFile(baseReader->getFilePath());
+    filepath_ = baseReader->getFilePath();
+    buffer_ = std::vector<char>(defaultChunkSizeForFile);
+    baseReader_ = std::move(baseReader);
+  }
 
   int close() override;
   size_t read(std::vector<char>& buf) override;

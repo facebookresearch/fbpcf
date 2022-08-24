@@ -18,18 +18,8 @@
 
 namespace fbpcf::io {
 
-inline void runBufferedWriterTest(size_t chunkSize) {
-  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
-  std::random_device rd;
-  std::default_random_engine defEngine(rd());
-  std::uniform_int_distribution<int> intDistro(1, 25000);
-  auto randint = intDistro(defEngine);
-  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file" +
-      std::to_string(randint) + ".txt";
-  auto writer = std::make_unique<fbpcf::io::LocalFileWriter>(fileToWriteTo);
-  auto bufferedWriter =
-      std::make_unique<BufferedWriter>(std::move(writer), chunkSize);
-
+inline void runBufferedWriterTest(
+    std::unique_ptr<BufferedWriter> bufferedWriter) {
   std::string to_write = "this file tests the buffered writer\n";
   auto buf =
       std::vector<char>(to_write.c_str(), to_write.c_str() + to_write.size());
@@ -76,9 +66,11 @@ inline void runBufferedWriterTest(size_t chunkSize) {
     Verify that file contents match the expected
   */
   IOTestHelper::expectFileContentsMatch(
-      fileToWriteTo, baseDir + "data/expected_buffered_writer_test_file.txt");
+      bufferedWriter->getFilePath(),
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+          "data/expected_buffered_writer_test_file.txt");
 
-  IOTestHelper::cleanup(fileToWriteTo);
+  IOTestHelper::cleanup(bufferedWriter->getFilePath());
 }
 
 class BufferedWriterTest
@@ -93,7 +85,32 @@ class BufferedWriterTest
 TEST_P(BufferedWriterTest, testWritingToFile) {
   auto chunkSize = GetParam();
 
-  runBufferedWriterTest(chunkSize);
+  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
+  std::random_device rd;
+  std::default_random_engine defEngine(rd());
+  std::uniform_int_distribution<int> intDistro(1, 25000);
+  auto randint = intDistro(defEngine);
+  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file" +
+      std::to_string(randint) + ".txt";
+  auto writer = std::make_unique<fbpcf::io::LocalFileWriter>(fileToWriteTo);
+  auto bufferedWriter =
+      std::make_unique<BufferedWriter>(std::move(writer), chunkSize);
+
+  runBufferedWriterTest(std::move(bufferedWriter));
+}
+
+TEST(BufferedWriterTest, testWritingToFileNoChunkSize) {
+  std::string baseDir = IOTestHelper::getBaseDirFromPath(__FILE__);
+  std::random_device rd;
+  std::default_random_engine defEngine(rd());
+  std::uniform_int_distribution<int> intDistro(1, 25000);
+  auto randint = intDistro(defEngine);
+  std::string fileToWriteTo = baseDir + "data/local_file_writer_test_file" +
+      std::to_string(randint) + ".txt";
+  auto writer = std::make_unique<fbpcf::io::LocalFileWriter>(fileToWriteTo);
+  auto bufferedWriter = std::make_unique<BufferedWriter>(std::move(writer));
+
+  runBufferedWriterTest(std::move(bufferedWriter));
 }
 
 INSTANTIATE_TEST_SUITE_P(
