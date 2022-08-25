@@ -16,7 +16,10 @@
 #include <fbpcf/scheduler/IArithmeticScheduler.h>
 #include "fbpcf/engine/SecretShareEngineFactory.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
+#include "fbpcf/scheduler/EagerSchedulerFactory.h"
 #include "fbpcf/scheduler/IScheduler.h"
+#include "fbpcf/scheduler/ISchedulerFactory.h"
+#include "fbpcf/scheduler/LazySchedulerFactory.h"
 #include "fbpcf/scheduler/NetworkPlaintextSchedulerFactory.h"
 #include "fbpcf/scheduler/PlaintextSchedulerFactory.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -65,6 +68,11 @@ inline void testEq(
 }
 
 enum class SchedulerType { Plaintext, NetworkPlaintext, Eager, Lazy };
+enum class EngineType {
+  EngineWithDummyTuple,
+  EngineWithTupleFromClassicOT,
+  EngineWithTupleFromFERRET
+};
 
 inline std::string getSchedulerName(SchedulerType schedulerType) {
   switch (schedulerType) {
@@ -76,6 +84,70 @@ inline std::string getSchedulerName(SchedulerType schedulerType) {
       return "EagerScheduler";
     case SchedulerType::Lazy:
       return "LazyScheduler";
+  }
+}
+
+template <bool unsafe>
+inline std::unique_ptr<scheduler::EagerSchedulerFactory<unsafe>>
+getEagerSchedulerFactory(
+    EngineType engineType,
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory) {
+  switch (engineType) {
+    case EngineType::EngineWithDummyTuple:
+      return scheduler::getEagerSchedulerFactoryWithInsecureEngine<unsafe>(
+          myId, communicationAgentFactory);
+    case EngineType::EngineWithTupleFromClassicOT:
+      return scheduler::getEagerSchedulerFactoryWithClassicOT(
+          myId, communicationAgentFactory);
+    case EngineType::EngineWithTupleFromFERRET:
+      return scheduler::getEagerSchedulerFactoryWithRealEngine(
+          myId, communicationAgentFactory);
+  }
+}
+
+template <bool unsafe>
+inline std::unique_ptr<scheduler::LazySchedulerFactory<unsafe>>
+getLazySchedulerFactory(
+    EngineType engineType,
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory) {
+  switch (engineType) {
+    case EngineType::EngineWithDummyTuple:
+      return scheduler::getLazySchedulerFactoryWithInsecureEngine<unsafe>(
+          myId, communicationAgentFactory);
+    case EngineType::EngineWithTupleFromClassicOT:
+      return scheduler::getLazySchedulerFactoryWithClassicOT(
+          myId, communicationAgentFactory);
+    case EngineType::EngineWithTupleFromFERRET:
+      return scheduler::getLazySchedulerFactoryWithRealEngine(
+          myId, communicationAgentFactory);
+  }
+}
+
+template <bool unsafe>
+inline std::unique_ptr<scheduler::ISchedulerFactory<unsafe>>
+getSchedulerFactory(
+    SchedulerType schedulerType,
+    EngineType engineType,
+    int myId,
+    engine::communication::IPartyCommunicationAgentFactory&
+        communicationAgentFactory) {
+  switch (schedulerType) {
+    case SchedulerType::Plaintext:
+      return std::make_unique<scheduler::PlaintextSchedulerFactory<unsafe>>();
+    case SchedulerType::NetworkPlaintext:
+      return std::make_unique<
+          scheduler::NetworkPlaintextSchedulerFactory<unsafe>>(
+          myId, communicationAgentFactory);
+    case SchedulerType::Eager:
+      return getEagerSchedulerFactory<unsafe>(
+          engineType, myId, communicationAgentFactory);
+    case SchedulerType::Lazy:
+      return getLazySchedulerFactory<unsafe>(
+          engineType, myId, communicationAgentFactory);
   }
 }
 
