@@ -58,6 +58,30 @@ class AesCircuitTests : public AesCircuit<BitType> {
       }
     }
   }
+
+  void testWordConversion() {
+    using ByteType = std::array<bool, 8>;
+    using WordType = std::array<ByteType, 4>;
+    std::vector<bool> input;
+    size_t blockNo = 5;
+    size_t blockSize = 128;
+    for (int i = 0; i < blockSize * blockNo; ++i) {
+      input.push_back((i % 2) == 0);
+    }
+    std::vector<std::array<WordType, 4>> expectedWords;
+    ByteType sampleByte = {true, false, true, false, true, false, true, false};
+    WordType sampleWord = {sampleByte, sampleByte, sampleByte, sampleByte};
+    std::array<WordType, 4> sampleBlock = {
+        sampleWord, sampleWord, sampleWord, sampleWord};
+    for (int i = 0; i < blockNo; ++i) {
+      expectedWords.push_back(sampleBlock);
+    }
+    auto convertedWords = AesCircuit<bool>::convertToWords(input);
+    testVectorEq(convertedWords, expectedWords);
+
+    auto convertedBits = AesCircuit<bool>::convertFromWords(convertedWords);
+    testVectorEq(convertedBits, input);
+  }
 };
 
 void intToBinaryArray(unsigned int n, std::array<bool, 8>& array) {
@@ -100,6 +124,11 @@ TEST(AesCircuitTest, testShiftRowInPlace) {
   auto plaintext = generateRandomPlaintext();
   AesCircuitTests<bool> test;
   test.testShiftRowInPlace(plaintext);
+}
+
+TEST(AesCircuitTest, testWordConversion) {
+  AesCircuitTests<bool> test;
+  test.testWordConversion();
 }
 
 class AesCircuitSBoxTestSuite
