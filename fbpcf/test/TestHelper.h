@@ -174,7 +174,13 @@ inline SchedulerCreator getSchedulerCreator(SchedulerType schedulerType) {
             .create();
       };
     case SchedulerType::Eager:
-      return scheduler::createEagerSchedulerWithInsecureEngine<unsafe>;
+      return [](int myId,
+                engine::communication::IPartyCommunicationAgentFactory&
+                    communicationAgentFactory) {
+        return scheduler::getEagerSchedulerFactoryWithInsecureEngine<unsafe>(
+                   myId, communicationAgentFactory)
+            ->create();
+      };
     case SchedulerType::Lazy:
       return scheduler::createLazySchedulerWithInsecureEngine<unsafe>;
   }
@@ -212,15 +218,17 @@ void setupRealBackend(
       [](std::reference_wrapper<
           engine::communication::IPartyCommunicationAgentFactory> factory) {
         scheduler::SchedulerKeeper<schedulerId0>::setScheduler(
-            scheduler::createEagerSchedulerWithInsecureEngine<unsafe>(
-                0, factory));
+            scheduler::getEagerSchedulerFactoryWithInsecureEngine<unsafe>(
+                0, factory)
+                ->create());
       };
   auto task1 =
       [](std::reference_wrapper<
           engine::communication::IPartyCommunicationAgentFactory> factory) {
         scheduler::SchedulerKeeper<schedulerId1>::setScheduler(
-            scheduler::createEagerSchedulerWithInsecureEngine<unsafe>(
-                1, factory));
+            scheduler::getEagerSchedulerFactoryWithInsecureEngine<unsafe>(
+                1, factory)
+                ->create());
       };
 
   auto future0 = std::async(

@@ -42,9 +42,8 @@ void initializeBatch(
 template <int schedulerId>
 std::pair<bool, uint64_t> runWithScheduler(
     int myId,
-    std::reference_wrapper<
-        engine::communication::IPartyCommunicationAgentFactory> factory,
-    SchedulerCreator schedulerCreator) {
+    std::shared_ptr<fbpcf::scheduler::ISchedulerFactory<unsafe>>
+        schedulerFactory) {
   std::random_device rd;
   std::mt19937_64 e(rd());
   std::uniform_int_distribution<uint32_t> dist(0, 0xFFFFFFFF);
@@ -56,7 +55,7 @@ std::pair<bool, uint64_t> runWithScheduler(
   myAssets.stock = dist(e);
   myAssets.property = dist(e);
 
-  auto scheduler = schedulerCreator(myId, factory);
+  auto scheduler = schedulerFactory->create();
 
   auto game = std::make_unique<BillionaireProblemGame<schedulerId, false>>(
       std::move(scheduler));
@@ -70,24 +69,29 @@ std::pair<bool, uint64_t> runWithScheduler(
   return {mpcResult, myTotalAssets};
 }
 
-void testWithScheduler(SchedulerCreator schedulerCreator) {
-  auto factories = engine::communication::getInMemoryAgentFactory(2);
+void testWithScheduler(
+    fbpcf::SchedulerType schedulerType,
+    fbpcf::EngineType engineType) {
+  auto communicationAgentFactories =
+      engine::communication::getInMemoryAgentFactory(2);
 
-  auto future0 = std::async(
-      runWithScheduler<0>,
-      0,
-      std::reference_wrapper<
-          engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[0]),
-      schedulerCreator);
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
 
-  auto future1 = std::async(
-      runWithScheduler<1>,
-      1,
-      std::reference_wrapper<
-          engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[1]),
-      schedulerCreator);
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 0, *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 1, *communicationAgentFactory1);
+
+  auto future0 =
+      std::async(runWithScheduler<0>, 0, std::move(schedulerFactory0));
+
+  auto future1 =
+      std::async(runWithScheduler<1>, 1, std::move(schedulerFactory1));
 
   auto [result, aliceTotal] = future0.get();
   auto [_, bobTotal] = future1.get();
@@ -96,26 +100,30 @@ void testWithScheduler(SchedulerCreator schedulerCreator) {
 }
 
 TEST(BillionaireProblemTest, testWithNetworkPlaintextScheduler) {
-  testWithScheduler(fbpcf::getSchedulerCreator<unsafe>(
-      fbpcf::SchedulerType::NetworkPlaintext));
+  testWithScheduler(
+      fbpcf::SchedulerType::NetworkPlaintext,
+      fbpcf::EngineType::EngineWithDummyTuple);
 }
 
 TEST(BillionaireProblemTest, testWithEagerScheduler) {
-  testWithScheduler(scheduler::createEagerSchedulerWithRealEngine);
+  testWithScheduler(
+      fbpcf::SchedulerType::Eager,
+      fbpcf::EngineType::EngineWithTupleFromFERRET);
 }
 
 TEST(BillionaireProblemTest, testWithLazyScheduler) {
-  testWithScheduler(scheduler::createLazySchedulerWithRealEngine);
+  testWithScheduler(
+      fbpcf::SchedulerType::Lazy, fbpcf::EngineType::EngineWithTupleFromFERRET);
 }
 
 template <int schedulerId>
 std::pair<std::vector<bool>, std::vector<uint64_t>> runBatchWithScheduler(
     int size,
     int myId,
-    std::reference_wrapper<
-        engine::communication::IPartyCommunicationAgentFactory> factory,
-    SchedulerCreator schedulerCreator) {
-  auto scheduler = schedulerCreator(myId, factory);
+    std::shared_ptr<fbpcf::scheduler::ISchedulerFactory<unsafe>>
+        schedulerFactory) {
+  auto scheduler = schedulerFactory->create();
+
   std::random_device rd;
   std::mt19937_64 e(rd());
   std::uniform_int_distribution<uint32_t> dist(0, 0xFFFFFFFF);
@@ -152,28 +160,31 @@ std::pair<std::vector<bool>, std::vector<uint64_t>> runBatchWithScheduler(
   return {mpcResult, myTotalAssets};
 }
 
-void testBatchBillionaireProblem(fbpcf::SchedulerCreator schedulerCreator) {
-  auto factories = engine::communication::getInMemoryAgentFactory(2);
+void testBatchBillionaireProblem(
+    fbpcf::SchedulerType schedulerType,
+    fbpcf::EngineType engineType) {
+  auto communicationAgentFactories =
+      engine::communication::getInMemoryAgentFactory(2);
+
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
+
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 0, *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 1, *communicationAgentFactory1);
 
   int size = 16384;
 
   auto future0 = std::async(
-      runBatchWithScheduler<0>,
-      size,
-      0,
-      std::reference_wrapper<
-          engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[0]),
-      schedulerCreator);
+      runBatchWithScheduler<0>, size, 0, std::move(schedulerFactory0));
 
   auto future1 = std::async(
-      runBatchWithScheduler<1>,
-      size,
-      1,
-      std::reference_wrapper<
-          engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[1]),
-      schedulerCreator);
+      runBatchWithScheduler<1>, size, 1, std::move(schedulerFactory1));
 
   auto [result, aliceTotal] = future0.get();
   auto bobTotal = future1.get().second;
@@ -187,24 +198,32 @@ void testBatchBillionaireProblem(fbpcf::SchedulerCreator schedulerCreator) {
 }
 
 TEST(BillionaireProblemTest, testBatchWithNetworkPlaintextScheduler) {
-  testBatchBillionaireProblem(fbpcf::getSchedulerCreator<unsafe>(
-      fbpcf::SchedulerType::NetworkPlaintext));
+  testBatchBillionaireProblem(
+      fbpcf::SchedulerType::NetworkPlaintext,
+      fbpcf::EngineType::EngineWithDummyTuple);
 }
 
 TEST(BillionaireProblemTest, testBatchWithEagerSchedulerAndFERRET) {
-  testBatchBillionaireProblem(scheduler::createEagerSchedulerWithRealEngine);
+  testBatchBillionaireProblem(
+      fbpcf::SchedulerType::Eager,
+      fbpcf::EngineType::EngineWithTupleFromFERRET);
 }
 
 TEST(BillionaireProblemTest, testBatchWithEagerSchedulerAndClassicOT) {
-  testBatchBillionaireProblem(scheduler::createEagerSchedulerWithClassicOT);
+  testBatchBillionaireProblem(
+      fbpcf::SchedulerType::Eager,
+      fbpcf::EngineType::EngineWithTupleFromClassicOT);
 }
 
 TEST(BillionaireProblemTest, testBatchWithLazySchedulerAndFERRET) {
-  testBatchBillionaireProblem(scheduler::createLazySchedulerWithRealEngine);
+  testBatchBillionaireProblem(
+      fbpcf::SchedulerType::Lazy, fbpcf::EngineType::EngineWithTupleFromFERRET);
 }
 
 TEST(BillionaireProblemTest, testBatchWithLazySchedulerAndClassicOT) {
-  testBatchBillionaireProblem(scheduler::createLazySchedulerWithClassicOT);
+  testBatchBillionaireProblem(
+      fbpcf::SchedulerType::Lazy,
+      fbpcf::EngineType::EngineWithTupleFromClassicOT);
 }
 
 } // namespace fbpcf::billionaire_problem
