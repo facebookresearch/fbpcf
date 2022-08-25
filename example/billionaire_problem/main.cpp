@@ -8,7 +8,7 @@
 #include <folly/json.h>
 
 #include <gflags/gflags.h>
-#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/scheduler/LazySchedulerFactory.h"
 #include "folly/init/Init.h"
 #include "folly/logging/xlog.h"
 
@@ -40,8 +40,9 @@ int main(int argc, char* argv[]) {
 
   auto game = std::make_unique<
       fbpcf::billionaire_problem::BillionaireProblemGame<0, true>>(
-      fbpcf::scheduler::createLazySchedulerWithRealEngine(
-          FLAGS_party, *factory));
+      fbpcf::scheduler::getLazySchedulerFactoryWithRealEngine(
+          FLAGS_party, *factory)
+          ->create());
 
   const int size = 32;
 

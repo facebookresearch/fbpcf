@@ -22,7 +22,7 @@
 #include "fbpcf/mpc_std_lib/shuffler/PermuteBasedShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/IScheduler.h"
-#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/scheduler/LazySchedulerFactory.h"
 
 namespace fbpcf::mpc_std_lib::compactor {
 
@@ -48,7 +48,8 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
  protected:
   void initSender() override {
     scheduler::SchedulerKeeper<0>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
+            ->create());
     setCompactorFactory();
     compactor0_ = factory0_->create();
   }
@@ -69,7 +70,8 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
 
   void initReceiver() override {
     scheduler::SchedulerKeeper<1>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
+            ->create());
     setCompactorFactory();
     compactor1_ = factory1_->create();
   }

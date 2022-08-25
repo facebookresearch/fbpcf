@@ -15,7 +15,7 @@
 #include "fbpcf/frontend/BitString.h"
 #include "fbpcf/frontend/mpcGame.h"
 #include "fbpcf/scheduler/IScheduler.h"
-#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/scheduler/LazySchedulerFactory.h"
 
 namespace fbpcf::frontend {
 
@@ -35,7 +35,8 @@ class FrontendBenchmark : public engine::util::NetworkedBenchmark {
  protected:
   void initSender() override {
     sender_ = std::make_unique<Game0>(
-        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
+            ->create());
     // scheduler::createPlaintextScheduler<unsafe>(0, *agentFactory0_));
   }
 
@@ -45,7 +46,8 @@ class FrontendBenchmark : public engine::util::NetworkedBenchmark {
 
   void initReceiver() override {
     receiver_ = std::make_unique<Game1>(
-        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
+            ->create());
     // scheduler::createPlaintextScheduler<unsafe>(1, *agentFactory1_));
   }
 

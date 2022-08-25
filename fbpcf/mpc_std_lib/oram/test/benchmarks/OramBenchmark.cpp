@@ -21,7 +21,7 @@
 #include "fbpcf/mpc_std_lib/oram/WriteOnlyOramFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/scheduler/IScheduler.h"
-#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/scheduler/LazySchedulerFactory.h"
 
 namespace fbpcf::mpc_std_lib::oram {
 
@@ -44,7 +44,8 @@ class DifferenceCalculatorBenchmark : public engine::util::NetworkedBenchmark {
  protected:
   void initSender() override {
     scheduler::SchedulerKeeper<0>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
+            ->create());
     DifferenceCalculatorFactory<uint32_t, indicatorWidth, 0> factory(
         true, 0, 1);
     sender_ = factory.create();
@@ -59,7 +60,8 @@ class DifferenceCalculatorBenchmark : public engine::util::NetworkedBenchmark {
 
   void initReceiver() override {
     scheduler::SchedulerKeeper<1>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
+            ->create());
     DifferenceCalculatorFactory<uint32_t, indicatorWidth, 1> factory(
         false, 0, 1);
     receiver_ = factory.create();
@@ -114,7 +116,8 @@ class ObliviousDeltaCalculatorBenchmark
  protected:
   void initSender() override {
     scheduler::SchedulerKeeper<0>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
+            ->create());
     ObliviousDeltaCalculatorFactory<0> factory(true, 0, 1);
     sender_ = factory.create();
   }
@@ -126,7 +129,8 @@ class ObliviousDeltaCalculatorBenchmark
 
   void initReceiver() override {
     scheduler::SchedulerKeeper<1>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
+            ->create());
     ObliviousDeltaCalculatorFactory<1> factory(false, 0, 1);
     receiver_ = factory.create();
   }
@@ -190,7 +194,8 @@ class SinglePointArrayGeneratorBenchmark
  protected:
   void initSender() override {
     scheduler::SchedulerKeeper<0>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
+            ->create());
     SinglePointArrayGeneratorFactory factory(
         true, std::make_unique<ObliviousDeltaCalculatorFactory<0>>(true, 0, 1));
     sender_ = factory.create();
@@ -202,7 +207,8 @@ class SinglePointArrayGeneratorBenchmark
 
   void initReceiver() override {
     scheduler::SchedulerKeeper<1>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
+            ->create());
     SinglePointArrayGeneratorFactory factory(
         false,
         std::make_unique<ObliviousDeltaCalculatorFactory<1>>(false, 0, 1));
@@ -255,7 +261,8 @@ class BaseWriteOnlyOramBenchmark : public engine::util::NetworkedBenchmark {
  protected:
   void initSender() override {
     scheduler::SchedulerKeeper<0>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(0, *agentFactory0_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
+            ->create());
     auto factory = getOramFactory(true);
     sender_ = factory->create(oramSize_);
   }
@@ -266,7 +273,8 @@ class BaseWriteOnlyOramBenchmark : public engine::util::NetworkedBenchmark {
 
   void initReceiver() override {
     scheduler::SchedulerKeeper<1>::setScheduler(
-        scheduler::createLazySchedulerWithRealEngine(1, *agentFactory1_));
+        scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
+            ->create());
     auto factory = getOramFactory(false);
     receiver_ = factory->create(oramSize_);
   }
