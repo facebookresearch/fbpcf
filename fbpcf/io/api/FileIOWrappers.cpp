@@ -19,8 +19,8 @@ namespace fbpcf::io {
 
 std::string FileIOWrappers::readFile(const std::string& srcPath) {
   auto reader = std::make_unique<fbpcf::io::FileReader>(srcPath);
-  auto bufferedReader =
-      std::make_unique<fbpcf::io::BufferedReader>(std::move(reader));
+  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std::move(reader), kBufferedReaderChunkSize);
   std::string output = "";
   std::string newLine = "\n";
   while (!bufferedReader->eof()) {
@@ -35,8 +35,8 @@ void FileIOWrappers::writeFile(
     const std::string& destPath,
     const std::string& content) {
   auto fileWriter = std::make_unique<fbpcf::io::FileWriter>(destPath);
-  auto bufferedWriter =
-      std::make_unique<fbpcf::io::BufferedWriter>(std::move(fileWriter));
+  auto bufferedWriter = std::make_unique<fbpcf::io::BufferedWriter>(
+      std::move(fileWriter), kBufferedWriterChunkSize);
   bufferedWriter->writeString(content);
   bufferedWriter->close();
 }
@@ -45,12 +45,12 @@ void FileIOWrappers::transferFileInParts(
     const std::string& srcPath,
     const std::string& destPath) {
   auto fileWriter = std::make_unique<fbpcf::io::FileWriter>(destPath);
-  auto bufferedWriter =
-      std::make_unique<fbpcf::io::BufferedWriter>(std::move(fileWriter));
+  auto bufferedWriter = std::make_unique<fbpcf::io::BufferedWriter>(
+      std::move(fileWriter), kBufferedWriterChunkSize);
 
   auto reader = std::make_unique<fbpcf::io::FileReader>(srcPath);
-  auto bufferedReader =
-      std::make_unique<fbpcf::io::BufferedReader>(std::move(reader));
+  auto bufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std::move(reader), kBufferedReaderChunkSize);
 
   std::string newLine = "\n";
   while (!bufferedReader->eof()) {
@@ -70,8 +70,8 @@ bool FileIOWrappers::readCsv(
         readLine,
     std::function<void(const std::vector<std::string>&)> processHeader) {
   auto inlineReader = std::make_unique<fbpcf::io::FileReader>(fileName);
-  auto inlineBufferedReader =
-      std::make_unique<fbpcf::io::BufferedReader>(std::move(inlineReader));
+  auto inlineBufferedReader = std::make_unique<fbpcf::io::BufferedReader>(
+      std::move(inlineReader), kBufferedReaderChunkSize);
 
   std::string line = inlineBufferedReader->readLine();
   auto header = IOUtils::splitByComma(line);
