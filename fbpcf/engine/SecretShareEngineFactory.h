@@ -116,7 +116,7 @@ getSecureEngineFactoryWithRcotFactory(
   } else {
     auto biDirectionOtFactory =
         std::make_unique<tuple_generator::oblivious_transfer::
-                             RcotBasedBidirectionObliviousTransferFactory<T>>(
+                             RcotBasedBidirectionObliviousTransferFactory>(
             myId, communicationAgentFactory, std::move(rcotFactory));
 
     // use OT for tuple generation

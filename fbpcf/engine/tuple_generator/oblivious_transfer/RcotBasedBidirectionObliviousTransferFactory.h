@@ -18,9 +18,8 @@
 
 namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
-template <class T>
 class RcotBasedBidirectionObliviousTransferFactory final
-    : public IBidirectionObliviousTransferFactory<T> {
+    : public IBidirectionObliviousTransferFactory {
  public:
   RcotBasedBidirectionObliviousTransferFactory(
       int myid,
@@ -30,7 +29,7 @@ class RcotBasedBidirectionObliviousTransferFactory final
         agentFactory_(agentFactory),
         rcotFactory_(std::move(rcotFactory)) {}
 
-  std::unique_ptr<IBidirectionObliviousTransfer<T>> create(int id) override {
+  std::unique_ptr<IBidirectionObliviousTransfer> create(int id) override {
     __m128i delta = util::getRandomM128iFromSystemNoise();
     util::setLsbTo1(delta);
 
@@ -49,7 +48,7 @@ class RcotBasedBidirectionObliviousTransferFactory final
           delta, agentFactory_.create(id, "rcot_sender_traffic"));
     }
 
-    return std::make_unique<RcotBasedBidirectionObliviousTransfer<T>>(
+    return std::make_unique<RcotBasedBidirectionObliviousTransfer>(
         agentFactory_.create(id, "bidirection_ot_traffic"),
         delta,
         std::move(senderRcot),

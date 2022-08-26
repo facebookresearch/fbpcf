@@ -217,10 +217,10 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
     agentFactory1_ = std::move(agentFactory1);
 
     senderFactory_ =
-        std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
+        std::make_unique<RcotBasedBidirectionObliviousTransferFactory>(
             0, *agentFactory0_, getRcotFactory());
     receiverFactory_ =
-        std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
+        std::make_unique<RcotBasedBidirectionObliviousTransferFactory>(
             1, *agentFactory1_, getRcotFactory());
 
     senderInput0_ = util::getRandomBoolVector(size_);
@@ -264,11 +264,11 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
   std::unique_ptr<communication::IPartyCommunicationAgentFactory>
       agentFactory1_;
 
-  std::unique_ptr<IBidirectionObliviousTransferFactory<bool>> senderFactory_;
-  std::unique_ptr<IBidirectionObliviousTransferFactory<bool>> receiverFactory_;
+  std::unique_ptr<IBidirectionObliviousTransferFactory> senderFactory_;
+  std::unique_ptr<IBidirectionObliviousTransferFactory> receiverFactory_;
 
-  std::unique_ptr<IBidirectionObliviousTransfer<bool>> sender_;
-  std::unique_ptr<IBidirectionObliviousTransfer<bool>> receiver_;
+  std::unique_ptr<IBidirectionObliviousTransfer> sender_;
+  std::unique_ptr<IBidirectionObliviousTransfer> receiver_;
 
   std::vector<bool> senderInput0_;
   std::vector<bool> receiverInput0_;

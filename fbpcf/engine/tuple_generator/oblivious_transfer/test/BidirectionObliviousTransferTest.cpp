@@ -35,17 +35,15 @@ namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 TEST(DummyBidirectionObliviousTransferTest, testBiDirectionOT) {
   auto factorys = communication::getInMemoryAgentFactory(2);
 
-  insecure::DummyBidirectionObliviousTransferFactory<bool> factory0(
-      *factorys[0]);
-  insecure::DummyBidirectionObliviousTransferFactory<bool> factory1(
-      *factorys[1]);
+  insecure::DummyBidirectionObliviousTransferFactory factory0(*factorys[0]);
+  insecure::DummyBidirectionObliviousTransferFactory factory1(*factorys[1]);
 
   communication::InMemoryPartyCommunicationAgentHost host;
 
   auto ot0 = factory0.create(1);
   auto ot1 = factory1.create(0);
 
-  auto task = [](std::unique_ptr<IBidirectionObliviousTransfer<bool>> ot,
+  auto task = [](std::unique_ptr<IBidirectionObliviousTransfer> ot,
                  const std::vector<bool>& input0,
                  const std::vector<bool>& input1,
                  const std::vector<bool>& choice) {
@@ -94,19 +92,19 @@ void testRcotBasedBidirectionObliviousTransfer(
     std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory1) {
   auto agentFactories = communication::getInMemoryAgentFactory(2);
 
-  auto task = [&agentFactories](
-                  const std::vector<bool>& input0,
-                  const std::vector<bool>& input1,
-                  const std::vector<bool>& choice,
-                  std::unique_ptr<IRandomCorrelatedObliviousTransferFactory>
-                      factory,
-                  int myId) {
-    auto otFactory =
-        std::make_unique<RcotBasedBidirectionObliviousTransferFactory<bool>>(
-            myId, *agentFactories[myId], std::move(factory));
-    auto ot = otFactory->create(1 - myId);
-    return ot->biDirectionOT(input0, input1, choice);
-  };
+  auto task =
+      [&agentFactories](
+          const std::vector<bool>& input0,
+          const std::vector<bool>& input1,
+          const std::vector<bool>& choice,
+          std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory,
+          int myId) {
+        auto otFactory =
+            std::make_unique<RcotBasedBidirectionObliviousTransferFactory>(
+                myId, *agentFactories[myId], std::move(factory));
+        auto ot = otFactory->create(1 - myId);
+        return ot->biDirectionOT(input0, input1, choice);
+      };
 
   int size = 11000000;
   std::vector<bool> inputA[2];
@@ -160,9 +158,9 @@ void testRcotBasedBidirectionObliviousTransferForIntegers(
           const std::vector<bool>& choice,
           std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory,
           int myId) {
-        auto otFactory = std::make_unique<
-            RcotBasedBidirectionObliviousTransferFactory<uint64_t>>(
-            myId, *agentFactories[myId], std::move(factory));
+        auto otFactory =
+            std::make_unique<RcotBasedBidirectionObliviousTransferFactory>(
+                myId, *agentFactories[myId], std::move(factory));
         auto ot = otFactory->create(1 - myId);
         return ot->biDirectionOT(input0, input1, choice);
       };
