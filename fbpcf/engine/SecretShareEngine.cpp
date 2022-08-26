@@ -551,10 +551,11 @@ SecretShareEngine::computeAllScheduledOperations(
     }
 
     // dummy tuple generation
-    std::vector<tuple_generator::ITupleGenerator::IntegerTuple> integerTuples;
+    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>
+        integerTuples;
     for (int i = 0; i < integerTupleCount; i++) {
       integerTuples.push_back(
-          tuple_generator::ITupleGenerator::IntegerTuple(0, 0, 0));
+          tuple_generator::IArithmeticTupleGenerator::IntegerTuple(0, 0, 0));
     }
 
     auto integerSecretsToOpen = computeSecretSharesToOpen(
@@ -612,10 +613,11 @@ SecretShareEngine::computeAllScheduledOperations(
     }
 
     // dummy tuple generation
-    std::vector<tuple_generator::ITupleGenerator::IntegerTuple> integerTuples;
+    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>
+        integerTuples;
     for (int i = 0; i < integerTupleCount; i++) {
       integerTuples.push_back(
-          tuple_generator::ITupleGenerator::IntegerTuple(0, 0, 0));
+          tuple_generator::IArithmeticTupleGenerator::IntegerTuple(0, 0, 0));
     }
 
     size_t openedIntegerSecretCount = integerTupleCount * 2;
@@ -736,7 +738,7 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
         size_t,
         std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
         compositeTuples,
-    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
         integerTuples) {
   std::vector<bool> andResults;
   andResults.reserve(ands.size());
@@ -924,7 +926,7 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
     std::vector<bool>& openedSecrets,
     std::vector<uint64_t>& openedIntegerSecrets,
     std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples,
-    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
         integerTuples) {
   std::vector<bool> andResults;
   andResults.reserve(ands.size());
@@ -1034,7 +1036,7 @@ void SecretShareEngine::computeMultExecutionResultsFromOpenedShares(
     std::vector<ScheduledBatchMult>& batchMults,
     std::vector<std::vector<uint64_t>>& batchMultResults,
     std::vector<uint64_t>& openedIntegerSecrets,
-    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
         integerTuples) {
   size_t integerTupleIndex = 0;
 
@@ -1095,7 +1097,8 @@ const std::vector<uint64_t>& SecretShareEngine::getBatchMultExecutionResult(
 std::vector<uint64_t> SecretShareEngine::computeSecretSharesToOpen(
     std::vector<ScheduledMult>& mults,
     std::vector<ScheduledBatchMult>& batchMults,
-    std::vector<tuple_generator::ITupleGenerator::IntegerTuple>& tuples,
+    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
+        tuples,
     size_t openedSecretCount) {
   std::vector<uint64_t> secretsToOpen(openedSecretCount);
 
