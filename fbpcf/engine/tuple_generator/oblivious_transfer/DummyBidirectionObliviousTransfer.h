@@ -19,9 +19,8 @@ namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
  objects)
   3. a helper when testing other objects;
  */
-template <class T>
 class DummyBidirectionObliviousTransfer final
-    : public IBidirectionObliviousTransfer<T> {
+    : public IBidirectionObliviousTransfer {
  public:
   explicit DummyBidirectionObliviousTransfer(
       std::unique_ptr<communication::IPartyCommunicationAgent> agent)
@@ -30,9 +29,17 @@ class DummyBidirectionObliviousTransfer final
   /**
    * @inherit doc
    */
-  std::vector<T> biDirectionOT(
-      const std::vector<T>& input0,
-      const std::vector<T>& input1,
+  std::vector<bool> biDirectionOT(
+      const std::vector<bool>& input0,
+      const std::vector<bool>& input1,
+      const std::vector<bool>& choice) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> biDirectionOT(
+      const std::vector<uint64_t>& input0,
+      const std::vector<uint64_t>& input1,
       const std::vector<bool>& choice) override;
 
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
@@ -45,5 +52,3 @@ class DummyBidirectionObliviousTransfer final
 
 } // namespace
   // fbpcf::engine::tuple_generator::oblivious_transfer::insecure
-
-#include "fbpcf/engine/tuple_generator/oblivious_transfer/DummyBidirectionObliviousTransfer_impl.h"

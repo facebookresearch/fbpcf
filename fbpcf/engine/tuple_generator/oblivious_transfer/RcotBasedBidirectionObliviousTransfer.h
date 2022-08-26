@@ -7,6 +7,7 @@
 
 #pragma once
 #include <emmintrin.h>
+#include <cstdint>
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IBidirectionObliviousTransfer.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IRandomCorrelatedObliviousTransfer.h"
@@ -19,9 +20,8 @@ namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 /**
  * This is an Rcot based oblivious transfer object.
  */
-template <class T>
 class RcotBasedBidirectionObliviousTransfer final
-    : public IBidirectionObliviousTransfer<T> {
+    : public IBidirectionObliviousTransfer {
  public:
   RcotBasedBidirectionObliviousTransfer(
       std::unique_ptr<communication::IPartyCommunicationAgent> agent,
@@ -32,9 +32,17 @@ class RcotBasedBidirectionObliviousTransfer final
   /**
    * @inherit doc
    */
-  std::vector<T> biDirectionOT(
-      const std::vector<T>& input0,
-      const std::vector<T>& input1,
+  std::vector<bool> biDirectionOT(
+      const std::vector<bool>& input0,
+      const std::vector<bool>& input1,
+      const std::vector<bool>& choice) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> biDirectionOT(
+      const std::vector<uint64_t>& input0,
+      const std::vector<uint64_t>& input1,
       const std::vector<bool>& choice) override;
 
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override;
@@ -50,5 +58,3 @@ class RcotBasedBidirectionObliviousTransfer final
 };
 
 } // namespace fbpcf::engine::tuple_generator::oblivious_transfer
-
-#include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransfer_impl.h"
