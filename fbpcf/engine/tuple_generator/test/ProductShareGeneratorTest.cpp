@@ -7,6 +7,8 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <sys/types.h>
+#include <cstdint>
 #include <functional>
 #include <future>
 #include <memory>
@@ -72,9 +74,56 @@ void testGenerator(
   }
 }
 
+void testIntegerGenerator(
+    std::unique_ptr<IProductShareGeneratorFactory> factory0,
+    std::unique_ptr<IProductShareGeneratorFactory> factory1) {
+  int size = 1024;
+  std::vector<uint64_t> left0(size);
+  std::vector<uint64_t> right0(size);
+  std::vector<uint64_t> left1(size);
+  std::vector<uint64_t> right1(size);
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint64_t> dist;
+
+  for (int i = 0; i < size; i++) {
+    left0[i] = dist(e);
+    right0[i] = dist(e);
+    left1[i] = dist(e);
+    right1[i] = dist(e);
+  }
+  auto task = [](std::unique_ptr<IProductShareGeneratorFactory> factory,
+                 int partnerId,
+                 const std::vector<uint64_t>& left,
+                 const std::vector<uint64_t>& right) {
+    auto generator = factory->create(partnerId);
+    return generator->generateIntegerProductShares(left, right);
+  };
+
+  auto f0 = std::async(task, std::move(factory0), 1, left0, right0);
+
+  auto f1 = std::async(task, std::move(factory1), 0, left1, right1);
+
+  auto result0 = f0.get();
+  auto result1 = f1.get();
+
+  for (int i = 0; i < size; i++) {
+    EXPECT_EQ(
+        result0[i] + result1[i],
+        (left0[i] * right1[i]) + (left1[i] * right0[i]));
+  }
+}
+
 TEST(ProductShareGenerator, testDummyGenerator) {
   auto factorys = communication::getInMemoryAgentFactory(2);
   testGenerator(
+      std::make_unique<insecure::DummyProductShareGeneratorFactory>(
+          *factorys[0]),
+      std::make_unique<insecure::DummyProductShareGeneratorFactory>(
+          *factorys[1]));
+
+  testIntegerGenerator(
       std::make_unique<insecure::DummyProductShareGeneratorFactory>(
           *factorys[0]),
       std::make_unique<insecure::DummyProductShareGeneratorFactory>(
@@ -95,6 +144,18 @@ TEST(ProductShareGenerator, testRealGeneratorWithDummyOT) {
           std::make_unique<oblivious_transfer::insecure::
                                DummyBidirectionObliviousTransferFactory>(
               *factorys[1])));
+
+  testIntegerGenerator(
+      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+          std::make_unique<util::AesPrgFactory>(),
+          std::make_unique<oblivious_transfer::insecure::
+                               DummyBidirectionObliviousTransferFactory>(
+              *factorys[0])),
+      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+          std::make_unique<util::AesPrgFactory>(),
+          std::make_unique<oblivious_transfer::insecure::
+                               DummyBidirectionObliviousTransferFactory>(
+              *factorys[1])));
 }
 
 TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
@@ -110,6 +171,24 @@ TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
               oblivious_transfer::createFerretRcotFactory(
                   kTestExtendedSize, kTestBaseSize, kTestWeight))),
       std::make_unique<ProductShareGeneratorFactory<bool>>(
+          std::make_unique<util::AesPrgFactory>(),
+          std::make_unique<
+              oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
+              1,
+              *agentFactories.at(1),
+              oblivious_transfer::createFerretRcotFactory(
+                  kTestExtendedSize, kTestBaseSize, kTestWeight))));
+
+  testIntegerGenerator(
+      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+          std::make_unique<util::AesPrgFactory>(),
+          std::make_unique<
+              oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
+              0,
+              *agentFactories.at(0),
+              oblivious_transfer::createFerretRcotFactory(
+                  kTestExtendedSize, kTestBaseSize, kTestWeight))),
+      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<
               oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
