@@ -16,7 +16,6 @@ namespace fbpcf::engine::tuple_generator {
  * This is a product shares generator that uses OT as underlying object to
  * operate.
  */
-
 class ProductShareGenerator final : public IProductShareGenerator {
  public:
   ProductShareGenerator(
@@ -33,6 +32,13 @@ class ProductShareGenerator final : public IProductShareGenerator {
   std::vector<bool> generateBooleanProductShares(
       const std::vector<bool>& left,
       const std::vector<bool>& right) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> generateIntegerProductShares(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) override;
 
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return bidirectionObliviousTransfer_->getTrafficStatistics();

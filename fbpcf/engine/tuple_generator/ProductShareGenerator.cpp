@@ -7,10 +7,12 @@
 
 #include "fbpcf/engine/tuple_generator/ProductShareGenerator.h"
 #include <assert.h>
+#include <cstdint>
 #include <vector>
 
 namespace fbpcf::engine::tuple_generator {
 
+const size_t INT_64_LENGTH = 64;
 /**
  * product share generation algorithm:
  * The two parties P1, P2 hold bits a1 b1 and a2 b2 respectively. Two OT
@@ -42,6 +44,38 @@ std::vector<bool> ProductShareGenerator::generateBooleanProductShares(
       bidirectionObliviousTransfer_->biDirectionOT(input0, input1, right);
   for (size_t i = 0; i < result.size(); i++) {
     result[i] = result[i] ^ input0[i];
+  }
+  return result;
+}
+
+std::vector<uint64_t> ProductShareGenerator::generateIntegerProductShares(
+    const std::vector<uint64_t>& left,
+    const std::vector<uint64_t>& right) {
+  if (left.size() != right.size()) {
+    throw std::runtime_error("Inconsistent length in inputs");
+  }
+
+  std::vector<uint64_t> result(left.size());
+  auto input0 = prg_->getRandomUInt64(INT_64_LENGTH * left.size());
+  std::vector<uint64_t> input1(INT_64_LENGTH * left.size());
+  std::vector<bool> choice(INT_64_LENGTH * left.size());
+  for (int i = 0; i < left.size(); i++) {
+    for (int j = 0; j < INT_64_LENGTH; j++) {
+      input1.at((i << 6) + j) =
+          input0.at((i << 6) + j) + ((uint64_t)1 << j) * left.at(i);
+    }
+
+    for (int j = 0; j < INT_64_LENGTH; j++) {
+      choice.at((i << 6) + j) = (bool)(right.at(i) >> j & 1);
+    }
+  }
+  auto received =
+      bidirectionObliviousTransfer_->biDirectionOT(input0, input1, choice);
+
+  for (int i = 0; i < left.size(); i++) {
+    for (size_t j = 0; j < INT_64_LENGTH; j++) {
+      result.at(i) += received.at((i << 6) + j) - input0.at((i << 6) + j);
+    }
   }
   return result;
 }
