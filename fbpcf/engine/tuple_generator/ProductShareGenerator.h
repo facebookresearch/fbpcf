@@ -21,7 +21,7 @@ class ProductShareGenerator final : public IProductShareGenerator {
  public:
   ProductShareGenerator(
       std::unique_ptr<util::IPrg> prg,
-      std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransfer<bool>>
+      std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransfer>
           bidirectionObliviousTransfer)
       : prg_{std::move(prg)},
         bidirectionObliviousTransfer_{std::move(bidirectionObliviousTransfer)} {
@@ -40,7 +40,7 @@ class ProductShareGenerator final : public IProductShareGenerator {
 
  private:
   std::unique_ptr<util::IPrg> prg_;
-  std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransfer<bool>>
+  std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransfer>
       bidirectionObliviousTransfer_;
 };
 

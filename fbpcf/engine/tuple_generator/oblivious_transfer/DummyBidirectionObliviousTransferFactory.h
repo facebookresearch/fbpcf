@@ -14,16 +14,15 @@
 
 namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {
 
-template <class T>
 class DummyBidirectionObliviousTransferFactory final
-    : public IBidirectionObliviousTransferFactory<T> {
+    : public IBidirectionObliviousTransferFactory {
  public:
   explicit DummyBidirectionObliviousTransferFactory(
       communication::IPartyCommunicationAgentFactory& factory)
       : factory_(factory) {}
 
-  std::unique_ptr<IBidirectionObliviousTransfer<T>> create(int id) override {
-    return std::make_unique<DummyBidirectionObliviousTransfer<T>>(
+  std::unique_ptr<IBidirectionObliviousTransfer> create(int id) override {
+    return std::make_unique<DummyBidirectionObliviousTransfer>(
         factory_.create(id, "dummy_bidirection_ot_traffic"));
   }
 

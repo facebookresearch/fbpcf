@@ -26,8 +26,7 @@ class ProductShareGeneratorFactory final
  public:
   ProductShareGeneratorFactory(
       std::unique_ptr<util::IPrgFactory> prgFactory,
-      std::unique_ptr<
-          oblivious_transfer::IBidirectionObliviousTransferFactory<T>>
+      std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransferFactory>
           otFactory)
       : prgFactory_(std::move(prgFactory)), otFactory_(std::move(otFactory)) {}
 
@@ -39,7 +38,7 @@ class ProductShareGeneratorFactory final
 
  private:
   std::unique_ptr<util::IPrgFactory> prgFactory_;
-  std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransferFactory<T>>
+  std::unique_ptr<oblivious_transfer::IBidirectionObliviousTransferFactory>
       otFactory_;
 };
 
