@@ -11,7 +11,6 @@
 
 namespace fbpcf::engine::tuple_generator::oblivious_transfer {
 
-template <class T>
 class IBidirectionObliviousTransferFactory {
  public:
   virtual ~IBidirectionObliviousTransferFactory() = default;
@@ -21,7 +20,7 @@ class IBidirectionObliviousTransferFactory {
    * Some implementation may need party id to decide parties' roles in the
    * underlying protocol.
    */
-  virtual std::unique_ptr<IBidirectionObliviousTransfer<T>> create(int id) = 0;
+  virtual std::unique_ptr<IBidirectionObliviousTransfer> create(int id) = 0;
 };
 
 } // namespace fbpcf::engine::tuple_generator::oblivious_transfer

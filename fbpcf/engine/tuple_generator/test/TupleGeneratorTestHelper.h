@@ -72,7 +72,7 @@ createTupleGeneratorFactoryWithRealProductShareGenerator(
     int myId,
     communication::IPartyCommunicationAgentFactory& agentFactory) {
   auto otFactory = std::make_unique<
-      oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory<bool>>(
+      oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
       myId,
       agentFactory,
       oblivious_transfer::createFerretRcotFactory(
