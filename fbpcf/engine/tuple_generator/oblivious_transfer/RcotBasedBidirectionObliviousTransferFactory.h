@@ -24,7 +24,7 @@ class RcotBasedBidirectionObliviousTransferFactory final
   RcotBasedBidirectionObliviousTransferFactory(
       int myid,
       communication::IPartyCommunicationAgentFactory& agentFactory,
-      std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> rcotFactory)
+      std::shared_ptr<IRandomCorrelatedObliviousTransferFactory> rcotFactory)
       : myid_(myid),
         agentFactory_(agentFactory),
         rcotFactory_(std::move(rcotFactory)) {}
@@ -58,7 +58,7 @@ class RcotBasedBidirectionObliviousTransferFactory final
  private:
   int myid_;
   communication::IPartyCommunicationAgentFactory& agentFactory_;
-  std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> rcotFactory_;
+  std::shared_ptr<IRandomCorrelatedObliviousTransferFactory> rcotFactory_;
 };
 
 } // namespace fbpcf::engine::tuple_generator::oblivious_transfer

@@ -22,12 +22,15 @@
 namespace fbpcf::engine {
 SecretShareEngine::SecretShareEngine(
     std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator,
+    std::unique_ptr<tuple_generator::IArithmeticTupleGenerator>
+        arithmeticTupleGenerator,
     std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
         communicationAgent,
     std::unique_ptr<util::IPrgFactory> prgFactory,
     int myId,
     int numberOfParty)
     : tupleGenerator_{std::move(tupleGenerator)},
+      arithmeticTupleGenerator_{std::move(arithmeticTupleGenerator)},
       communicationAgent_{std::move(communicationAgent)},
       prgFactory_{std::move(prgFactory)},
       myId_{myId},
@@ -535,6 +538,7 @@ SecretShareEngine::computeAllScheduledOperations(
     auto [normalTuples, compositeTuples] =
         tupleGenerator_->getNormalAndCompositeBooleanTuples(
             normalTupleCount, compositeTupleCount);
+
     auto secretsToOpen = computeSecretSharesToOpen(
         ands,
         batchAnds,
@@ -550,13 +554,8 @@ SecretShareEngine::computeAllScheduledOperations(
       throw std::runtime_error("unexpected number of opened secrets");
     }
 
-    // dummy tuple generation
-    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>
-        integerTuples;
-    for (int i = 0; i < integerTupleCount; i++) {
-      integerTuples.push_back(
-          tuple_generator::IArithmeticTupleGenerator::IntegerTuple(0, 0, 0));
-    }
+    auto integerTuples =
+        arithmeticTupleGenerator_->getIntegerTuple(integerTupleCount);
 
     auto integerSecretsToOpen = computeSecretSharesToOpen(
         mults, batchMults, integerTuples, openedIntegerSecretCount);
@@ -601,7 +600,9 @@ SecretShareEngine::computeAllScheduledOperations(
           std::vector<uint64_t>(),
           std::vector<std::vector<uint64_t>>()};
     }
+
     auto tuples = tupleGenerator_->getBooleanTuple(normalTupleCount);
+
     auto secretsToOpen = computeSecretSharesToOpenLegacy(
         ands, batchAnds, compositeAnds, batchCompositeAnds, tuples);
 
@@ -612,13 +613,8 @@ SecretShareEngine::computeAllScheduledOperations(
       throw std::runtime_error("unexpected number of opened secrets");
     }
 
-    // dummy tuple generation
-    std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>
-        integerTuples;
-    for (int i = 0; i < integerTupleCount; i++) {
-      integerTuples.push_back(
-          tuple_generator::IArithmeticTupleGenerator::IntegerTuple(0, 0, 0));
-    }
+    auto integerTuples =
+        arithmeticTupleGenerator_->getIntegerTuple(integerTupleCount);
 
     size_t openedIntegerSecretCount = integerTupleCount * 2;
     auto integerSecretsToOpen = computeSecretSharesToOpen(

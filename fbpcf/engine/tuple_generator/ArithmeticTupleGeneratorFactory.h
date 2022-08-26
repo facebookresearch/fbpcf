@@ -21,7 +21,7 @@ class ArithmeticTupleGeneratorFactory
     : public IArithmeticTupleGeneratorFactory {
  public:
   ArithmeticTupleGeneratorFactory(
-      std::unique_ptr<IProductShareGeneratorFactory> productShareFactory,
+      std::shared_ptr<IProductShareGeneratorFactory> productShareFactory,
       std::unique_ptr<util::IPrgFactory> prgFactory,
       int bufferSize,
       int myId,
@@ -50,7 +50,7 @@ class ArithmeticTupleGeneratorFactory
   }
 
  private:
-  std::unique_ptr<IProductShareGeneratorFactory> productShareFactory_;
+  std::shared_ptr<IProductShareGeneratorFactory> productShareFactory_;
   std::unique_ptr<util::IPrgFactory> prgFactory_;
   int bufferSize_;
   int myId_;

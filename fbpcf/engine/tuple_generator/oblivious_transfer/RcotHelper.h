@@ -31,12 +31,12 @@ createClassicRcotFactory() {
                            NpBaseObliviousTransferFactory>());
 }
 
-inline std::unique_ptr<IRandomCorrelatedObliviousTransferFactory>
+inline std::shared_ptr<IRandomCorrelatedObliviousTransferFactory>
 createFerretRcotFactory(
     int64_t extendedSize = ferret::kExtendedSize,
     int64_t baseSize = ferret::kBaseSize,
     int64_t weight = ferret::kWeight) {
-  return std::make_unique<
+  return std::make_shared<
       ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
       createClassicRcotFactory(),
       std::make_unique<ferret::RcotExtenderFactory>(

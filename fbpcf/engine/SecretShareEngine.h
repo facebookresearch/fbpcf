@@ -23,6 +23,8 @@ class SecretShareEngine final : public ISecretShareEngine {
  public:
   SecretShareEngine(
       std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator,
+      std::unique_ptr<tuple_generator::IArithmeticTupleGenerator>
+          arithmeticTupleGenerator,
       std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
           communicationAgent,
       std::unique_ptr<util::IPrgFactory> prgFactory,
@@ -515,6 +517,8 @@ class SecretShareEngine final : public ISecretShareEngine {
           integerTuples);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;
+  std::unique_ptr<tuple_generator::IArithmeticTupleGenerator>
+      arithmeticTupleGenerator_;
   std::unique_ptr<communication::ISecretShareEngineCommunicationAgent>
       communicationAgent_;
   std::unique_ptr<util::IPrgFactory> prgFactory_;

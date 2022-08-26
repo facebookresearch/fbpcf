@@ -20,7 +20,7 @@ namespace fbpcf::engine::tuple_generator {
 class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
  public:
   TwoPartyTupleGeneratorFactory(
-      std::unique_ptr<
+      std::shared_ptr<
           oblivious_transfer::IRandomCorrelatedObliviousTransferFactory>
           rcotFactory,
       communication::IPartyCommunicationAgentFactory& agentFactory,
@@ -71,7 +71,7 @@ class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
   }
 
  private:
-  std::unique_ptr<oblivious_transfer::IRandomCorrelatedObliviousTransferFactory>
+  std::shared_ptr<oblivious_transfer::IRandomCorrelatedObliviousTransferFactory>
       rcotFactory_;
   communication::IPartyCommunicationAgentFactory& agentFactory_;
   int myId_;
