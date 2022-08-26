@@ -16,7 +16,6 @@ namespace fbpcf::engine::tuple_generator {
  * the other party holds bits a2, b2. This object will generate the shares of
  * a1&b2 ^ a2&b1 for the two parties
  */
-
 class IProductShareGenerator {
  public:
   virtual ~IProductShareGenerator() = default;
@@ -29,6 +28,15 @@ class IProductShareGenerator {
   virtual std::vector<bool> generateBooleanProductShares(
       const std::vector<bool>& left,
       const std::vector<bool>& right) = 0;
+
+  /**
+   * @param left the array of one factor
+   * @param right the array of another factor
+   * @return the share of the products
+   */
+  virtual std::vector<uint64_t> generateIntegerProductShares(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) = 0;
 
   /**
    * Get the total amount of traffic transmitted.
