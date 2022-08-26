@@ -6,9 +6,9 @@
  */
 
 #include "../EditDistanceCalculator.h" // @manual
-#include <fbpcf/scheduler/SchedulerHelper.h>
 #include <folly/json.h>
 #include <gtest/gtest.h>
+#include <memory>
 #include "../EditDistanceInputReader.h" // @manual
 #include "../EditDistanceResults.h" // @manual
 #include "../MPCTypes.h" // @manual
@@ -24,10 +24,9 @@ template <int schedulerId>
 EditDistanceCalculator<schedulerId> createCalculatorWithScheduler(
     int myRole,
     EditDistanceInputReader&& inputData,
-    std::reference_wrapper<
-        fbpcf::engine::communication::IPartyCommunicationAgentFactory> factory,
-    fbpcf::SchedulerCreator schedulerCreator) {
-  auto scheduler = schedulerCreator(myRole, factory);
+    std::shared_ptr<fbpcf::scheduler::ISchedulerFactory<unsafe>>
+        schedulerFactory) {
+  auto scheduler = schedulerFactory->create();
   fbpcf::scheduler::SchedulerKeeper<schedulerId>::setScheduler(
       std::move(scheduler));
   InputProcessor<schedulerId> inputProcessor(myRole, std::move(inputData));
@@ -74,26 +73,35 @@ TEST(EditDistanceCalculatorTest, testEditDistanceCalculator) {
   auto player1InputData =
       EditDistanceInputReader(dataFilepath2.native(), paramsFilePath.native());
 
-  auto schedulerCreator = fbpcf::scheduler::createLazySchedulerWithRealEngine;
-  auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
+  auto communicationAgentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  auto schedulerType = fbpcf::SchedulerType::Lazy;
+  auto engineType = fbpcf::EngineType::EngineWithTupleFromFERRET;
+
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
+
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 0, *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 1, *communicationAgentFactory1);
 
   auto future0 = std::async(
       createCalculatorWithScheduler<0>,
       PLAYER0,
       std::move(player0InputData),
-      std::reference_wrapper<
-          fbpcf::engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[0]),
-      schedulerCreator);
+      std::move(schedulerFactory0));
 
   auto future1 = std::async(
       createCalculatorWithScheduler<1>,
       PLAYER1,
       std::move(player1InputData),
-      std::reference_wrapper<
-          fbpcf::engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[1]),
-      schedulerCreator);
+      std::move(schedulerFactory1));
 
   EditDistanceCalculator<0> player0Calculator = future0.get();
   EditDistanceCalculator<1> player1Calculator = future1.get();
@@ -133,26 +141,35 @@ TEST(EditDistanceCalculatorTest, testToJson) {
   auto player1InputData =
       EditDistanceInputReader(dataFilepath2.native(), paramsFilePath.native());
 
-  auto schedulerCreator = fbpcf::scheduler::createLazySchedulerWithRealEngine;
-  auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
+  auto communicationAgentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  auto schedulerType = fbpcf::SchedulerType::Lazy;
+  auto engineType = fbpcf::EngineType::EngineWithTupleFromFERRET;
+
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
+
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 0, *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 1, *communicationAgentFactory1);
 
   auto future0 = std::async(
       createCalculatorWithScheduler<0>,
       PLAYER0,
       std::move(player0InputData),
-      std::reference_wrapper<
-          fbpcf::engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[0]),
-      schedulerCreator);
+      std::move(schedulerFactory0));
 
   auto future1 = std::async(
       createCalculatorWithScheduler<1>,
       PLAYER1,
       std::move(player1InputData),
-      std::reference_wrapper<
-          fbpcf::engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[1]),
-      schedulerCreator);
+      std::move(schedulerFactory1));
 
   EditDistanceCalculator<0> player0Calculator = future0.get();
   EditDistanceCalculator<1> player1Calculator = future1.get();

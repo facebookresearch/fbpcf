@@ -7,15 +7,16 @@
 
 #pragma once
 
-#include <fbpcf/scheduler/SchedulerHelper.h>
+#include <fbpcf/scheduler/LazySchedulerFactory.h>
 #include "./EditDistanceApp.h" // @manual
 
 namespace fbpcf::edit_distance {
 
 template <int schedulerId>
 void EditDistanceApp<schedulerId>::run() {
-  auto scheduler = fbpcf::scheduler::createLazySchedulerWithRealEngine(
-      myRole_, *communicationAgentFactory_);
+  auto scheduler = fbpcf::scheduler::getLazySchedulerFactoryWithRealEngine(
+                       myRole_, *communicationAgentFactory_)
+                       ->create();
 
   XLOG(INFO, "Scheduler created successfully");
   auto editDistanceGame =

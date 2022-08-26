@@ -13,7 +13,7 @@
 #include "fbpcf/engine/util/test/benchmarks/BenchmarkHelper.h"
 #include "fbpcf/engine/util/test/benchmarks/NetworkedBenchmark.h"
 #include "fbpcf/scheduler/EagerSchedulerFactory.h"
-#include "fbpcf/scheduler/SchedulerHelper.h"
+#include "fbpcf/scheduler/LazySchedulerFactory.h"
 #include "fbpcf/scheduler/test/benchmarks/AllocatorBenchmark.h"
 #include "fbpcf/scheduler/test/benchmarks/WireKeeperBenchmark.h"
 
@@ -166,8 +166,9 @@ class LazySchedulerBenchmark : virtual public SchedulerBenchmark {
       int myId,
       engine::communication::IPartyCommunicationAgentFactory&
           communicationAgentFactory) override {
-    return createLazySchedulerWithInsecureEngine<unsafe>(
-        myId, communicationAgentFactory);
+    return scheduler::getLazySchedulerFactoryWithInsecureEngine<unsafe>(
+               myId, communicationAgentFactory)
+        ->create();
   }
 };
 

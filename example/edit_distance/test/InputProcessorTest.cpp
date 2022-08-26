@@ -7,6 +7,7 @@
 
 #include "../InputProcessor.h" // @manual
 #include <gtest/gtest.h>
+#include <memory>
 #include "../EditDistanceInputReader.h" // @manual
 #include "../MPCTypes.h" // @manual
 #include "./Constants.h" // @manual
@@ -21,10 +22,9 @@ template <int schedulerId>
 InputProcessor<schedulerId> createInputProcessorWithScheduler(
     int myRole,
     EditDistanceInputReader&& inputData,
-    std::reference_wrapper<
-        fbpcf::engine::communication::IPartyCommunicationAgentFactory> factory,
-    fbpcf::SchedulerCreator schedulerCreator) {
-  auto scheduler = schedulerCreator(myRole, factory);
+    std::shared_ptr<fbpcf::scheduler::ISchedulerFactory<unsafe>>
+        schedulerFactory) {
+  auto scheduler = schedulerFactory->create();
   fbpcf::scheduler::SchedulerKeeper<schedulerId>::setScheduler(
       std::move(scheduler));
   return InputProcessor<schedulerId>(myRole, std::move(inputData));
@@ -76,26 +76,35 @@ TEST(InputProcessorTest, testInputProcessor) {
   auto player1InputData =
       EditDistanceInputReader(dataFilepath2.native(), paramsFilePath.native());
 
-  auto schedulerCreator = fbpcf::scheduler::createLazySchedulerWithRealEngine;
-  auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
+  auto communicationAgentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
+
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerType = fbpcf::SchedulerType::Lazy;
+  auto engineType = fbpcf::EngineType::EngineWithTupleFromFERRET;
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 0, *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType, engineType, 1, *communicationAgentFactory1);
 
   auto future0 = std::async(
       createInputProcessorWithScheduler<0>,
       PLAYER0,
       std::move(player0InputData),
-      std::reference_wrapper<
-          fbpcf::engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[0]),
-      schedulerCreator);
+      std::move(schedulerFactory0));
 
   auto future1 = std::async(
       createInputProcessorWithScheduler<1>,
       PLAYER1,
       std::move(player1InputData),
-      std::reference_wrapper<
-          fbpcf::engine::communication::IPartyCommunicationAgentFactory>(
-          *factories[1]),
-      schedulerCreator);
+      std::move(schedulerFactory1));
 
   InputProcessor<0> player0InputProcessor = future0.get();
   InputProcessor<1> player1InputProcessor = future1.get();
