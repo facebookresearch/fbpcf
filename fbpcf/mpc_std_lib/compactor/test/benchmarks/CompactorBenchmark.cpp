@@ -28,7 +28,7 @@ namespace fbpcf::mpc_std_lib::compactor {
 
 const uint32_t batchSize = 1000;
 
-class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
+class ShuffleBasedCompactorBenchmark : public engine::util::NetworkedBenchmark {
  public:
   void setup() override {
     auto [agentFactory0, agentFactory1] =
@@ -43,6 +43,33 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
     auto label = util::generateRandomBinary(batchSize);
     value_ = value;
     label_ = label;
+
+    factory0_ =
+        std::make_unique<ShuffleBasedCompactorFactory<uint32_t, bool, 0>>(
+            0,
+            1,
+            std::make_unique<shuffler::PermuteBasedShufflerFactory<std::pair<
+                frontend::Int<false, 32, true, 0, true>,
+                frontend::Bit<true, 0, true>>>>(
+                0,
+                1,
+                std::make_unique<permuter::AsWaksmanPermuterFactory<
+                    std::pair<uint32_t, bool>,
+                    0>>(0, 1),
+                std::make_unique<engine::util::AesPrgFactory>()));
+    factory1_ =
+        std::make_unique<ShuffleBasedCompactorFactory<uint32_t, bool, 1>>(
+            1,
+            0,
+            std::make_unique<shuffler::PermuteBasedShufflerFactory<std::pair<
+                frontend::Int<false, 32, true, 1, true>,
+                frontend::Bit<true, 1, true>>>>(
+                1,
+                0,
+                std::make_unique<permuter::AsWaksmanPermuterFactory<
+                    std::pair<uint32_t, bool>,
+                    1>>(1, 0),
+                std::make_unique<engine::util::AesPrgFactory>()));
   }
 
  protected:
@@ -50,7 +77,6 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
     scheduler::SchedulerKeeper<0>::setScheduler(
         scheduler::getLazySchedulerFactoryWithRealEngine(0, *agentFactory0_)
             ->create());
-    setCompactorFactory();
     compactor0_ = factory0_->create();
   }
 
@@ -72,7 +98,6 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
     scheduler::SchedulerKeeper<1>::setScheduler(
         scheduler::getLazySchedulerFactoryWithRealEngine(1, *agentFactory1_)
             ->create());
-    setCompactorFactory();
     compactor1_ = factory1_->create();
   }
 
@@ -95,8 +120,6 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
         scheduler::SchedulerKeeper<0>::getTrafficStatistics();
     return schedulerTraffic;
   }
-
-  virtual void setCompactorFactory() = 0;
 
   std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
@@ -126,37 +149,6 @@ class BaseCompactorBenchmark : public engine::util::NetworkedBenchmark {
   std::vector<bool> label_;
 };
 
-class ShuffleBasedCompactorBenchmark : public BaseCompactorBenchmark {
- protected:
-  void setCompactorFactory() override {
-    factory0_ =
-        std::make_unique<ShuffleBasedCompactorFactory<uint32_t, bool, 0>>(
-            0,
-            1,
-            std::make_unique<shuffler::PermuteBasedShufflerFactory<std::pair<
-                frontend::Int<false, 32, true, 0, true>,
-                frontend::Bit<true, 0, true>>>>(
-                0,
-                1,
-                std::make_unique<permuter::AsWaksmanPermuterFactory<
-                    std::pair<uint32_t, bool>,
-                    0>>(0, 1),
-                std::make_unique<engine::util::AesPrgFactory>()));
-    factory1_ =
-        std::make_unique<ShuffleBasedCompactorFactory<uint32_t, bool, 1>>(
-            1,
-            0,
-            std::make_unique<shuffler::PermuteBasedShufflerFactory<std::pair<
-                frontend::Int<false, 32, true, 1, true>,
-                frontend::Bit<true, 1, true>>>>(
-                1,
-                0,
-                std::make_unique<permuter::AsWaksmanPermuterFactory<
-                    std::pair<uint32_t, bool>,
-                    1>>(1, 0),
-                std::make_unique<engine::util::AesPrgFactory>()));
-  }
-};
 BENCHMARK_COUNTERS(ShuffleBasedCompactor_Benchmark, counters) {
   ShuffleBasedCompactorBenchmark benchmark;
   benchmark.runBenchmark(counters);
