@@ -13,8 +13,10 @@
 
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/tuple_generator/ArithmeticTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/DummyProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/DummyTupleGeneratorFactory.h"
+#include "fbpcf/engine/tuple_generator/IArithmeticTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/IProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/ITupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/ProductShareGeneratorFactory.h"
@@ -84,6 +86,46 @@ createTupleGeneratorFactoryWithRealProductShareGenerator(
               std::make_unique<util::AesPrgFactory>(kTestBufferSize),
               std::move(otFactory)));
   return std::make_unique<TupleGeneratorFactory>(
+      std::move(productShareGeneratorFactory),
+      std::make_unique<util::AesPrgFactory>(kTestBufferSize),
+      kTestBufferSize,
+      myId,
+      numberOfParty);
+}
+
+inline std::unique_ptr<IArithmeticTupleGeneratorFactory>
+createArithmeticTupleGeneratorFactoryWithDummyProductShareGenerator(
+    int numberOfParty,
+    int myId,
+    communication::IPartyCommunicationAgentFactory& agentFactory) {
+  return std::make_unique<ArithmeticTupleGeneratorFactory>(
+      std::unique_ptr<IProductShareGeneratorFactory>(
+          std::make_unique<insecure::DummyProductShareGeneratorFactory>(
+              agentFactory)),
+      std::make_unique<util::AesPrgFactory>(kTestBufferSize),
+      kTestBufferSize,
+      myId,
+      numberOfParty);
+}
+
+inline std::unique_ptr<IArithmeticTupleGeneratorFactory>
+createArithmeticTupleGeneratorFactoryWithRealProductShareGenerator(
+    int numberOfParty,
+    int myId,
+    communication::IPartyCommunicationAgentFactory& agentFactory) {
+  auto otFactory = std::make_unique<
+      oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
+      myId,
+      agentFactory,
+      oblivious_transfer::createFerretRcotFactory(
+          kTestExtendedSize, kTestBaseSize, kTestWeight));
+
+  auto productShareGeneratorFactory =
+      std::unique_ptr<IProductShareGeneratorFactory>(
+          std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+              std::make_unique<util::AesPrgFactory>(kTestBufferSize),
+              std::move(otFactory)));
+  return std::make_unique<ArithmeticTupleGeneratorFactory>(
       std::move(productShareGeneratorFactory),
       std::make_unique<util::AesPrgFactory>(kTestBufferSize),
       kTestBufferSize,
