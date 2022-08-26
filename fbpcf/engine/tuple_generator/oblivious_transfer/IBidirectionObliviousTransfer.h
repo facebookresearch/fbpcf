@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -18,14 +19,12 @@ namespace fbpcf::engine::tuple_generator::oblivious_transfer {
  * play the role of sender and receiver. This feature is extensively used in
  * SS-based MPC while single-direction OT is never used at all.
  */
-
-template <class T>
 class IBidirectionObliviousTransfer {
  public:
   virtual ~IBidirectionObliviousTransfer() = default;
 
   /**
-   * run a number of bidirection OT.
+   * run a number of bidirection OT for booleans.
    * @param input0 :  The input for each OT when playing as the sender, the
    * other party will receive this as output if their choice bit is 0;
    * @param input1 : The input for each OT when playing as the sender,  the
@@ -33,9 +32,23 @@ class IBidirectionObliviousTransfer {
    * @param choice: the choice bit for each OT when playing as the receiver
    * @return : the output from OT.
    */
-  virtual std::vector<T> biDirectionOT(
-      const std::vector<T>& input0,
-      const std::vector<T>& input1,
+  virtual std::vector<bool> biDirectionOT(
+      const std::vector<bool>& input0,
+      const std::vector<bool>& input1,
+      const std::vector<bool>& choice) = 0;
+
+  /**
+   * run a number of bidirection OT for integers.
+   * @param input0 :  The input for each OT when playing as the sender, the
+   * other party will receive this as output if their choice bit is 0;
+   * @param input1 : The input for each OT when playing as the sender,  the
+   * other party will receive this as output if their choice bit is 1;
+   * @param choice: the choice bit for each OT when playing as the receiver
+   * @return : the output from OT.
+   */
+  virtual std::vector<uint64_t> biDirectionOT(
+      const std::vector<uint64_t>& input0,
+      const std::vector<uint64_t>& input1,
       const std::vector<bool>& choice) = 0;
 
   /**
