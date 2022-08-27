@@ -14,6 +14,7 @@
 #include <thread>
 
 #include "fbpcf/engine/tuple_generator/DummyProductShareGeneratorFactory.h"
+#include "fbpcf/engine/tuple_generator/IArithmeticTupleGenerator.h"
 #include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
 #include "fbpcf/engine/tuple_generator/test/TupleGeneratorTestHelper.h"
 
@@ -21,6 +22,12 @@ namespace fbpcf::engine::tuple_generator {
 
 using TupleGeneratorFactoryCreator =
     std::unique_ptr<tuple_generator::ITupleGeneratorFactory>(
+        int numberOfParty,
+        int myId,
+        communication::IPartyCommunicationAgentFactory& agentFactory);
+
+using ArithmeticTupleGeneratorFactoryCreator =
+    std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>(
         int numberOfParty,
         int myId,
         communication::IPartyCommunicationAgentFactory& agentFactory);
@@ -90,6 +97,30 @@ void assertResults(
   }
 }
 
+void assertResults(
+    int numberOfParty,
+    std::vector<
+        std::future<std::vector<IArithmeticTupleGenerator::IntegerTuple>>>&
+        futures,
+    int expectedTupleCount) {
+  std::vector<std::vector<IArithmeticTupleGenerator::IntegerTuple>> results;
+  for (int i = 0; i < numberOfParty; i++) {
+    results.push_back(futures[i].get());
+  }
+
+  for (int i = 0; i < expectedTupleCount; i++) {
+    uint64_t a = 0;
+    uint64_t b = 0;
+    uint64_t c = 0;
+    for (int j = 0; j < numberOfParty; j++) {
+      a += results[j][i].getA();
+      b += results[j][i].getB();
+      c += results[j][i].getC();
+    }
+    EXPECT_EQ(c, a * b);
+  }
+}
+
 template <bool testCompositeTuples>
 void testTupleGenerator(
     int numberOfParty,
@@ -149,6 +180,42 @@ void testTupleGenerator(
       numberOfParty, futures, tupleSize, compositeTuplesSizes);
 }
 
+void testArithmeticTupleGenerator(
+    int numberOfParty,
+    ArithmeticTupleGeneratorFactoryCreator creator) {
+  auto agentFactories = communication::getInMemoryAgentFactory(numberOfParty);
+
+  auto task =
+      [](ArithmeticTupleGeneratorFactoryCreator creator,
+         int numberOfParty,
+         int myId,
+         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>
+             agentFactory,
+         uint32_t tupleSize) {
+        auto generator = creator(numberOfParty, myId, agentFactory)->create();
+        auto tuples = generator->getIntegerTuple(tupleSize);
+        return tuples;
+      };
+
+  // this size is larger than the AES and tuple generator buffer size so we can
+  // test regeneration.
+  uint32_t tupleSize = kTestBufferSize * 4;
+
+  std::vector<std::future<std::vector<IArithmeticTupleGenerator::IntegerTuple>>>
+      futures;
+  for (int i = 0; i < numberOfParty; i++) {
+    futures.push_back(std::async(
+        task,
+        creator,
+        numberOfParty,
+        i,
+        std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
+            *agentFactories.at(i)),
+        tupleSize));
+  }
+  assertResults(numberOfParty, futures, tupleSize);
+}
+
 TEST(TupleGeneratorTest, testDummyTupleGenerator) {
   int numberOfParty = 4;
 
@@ -162,11 +229,27 @@ TEST(TupleGeneratorTest, testWithDummyProductShareGenerator) {
       numberOfParty, createTupleGeneratorFactoryWithDummyProductShareGenerator);
 }
 
+TEST(ArithmeticTupleGeneratorTest, testWithDummyProductShareGenerator) {
+  int numberOfParty = 4;
+
+  testArithmeticTupleGenerator(
+      numberOfParty,
+      createArithmeticTupleGeneratorFactoryWithDummyProductShareGenerator);
+}
+
 TEST(TupleGeneratorTest, testWithSecureProductShareGenerator) {
   int numberOfParty = 4;
 
   testTupleGenerator<false>(
       numberOfParty, createTupleGeneratorFactoryWithRealProductShareGenerator);
+}
+
+TEST(ArithmeticTupleGeneratorTest, testWithSecureProductShareGenerator) {
+  int numberOfParty = 4;
+
+  testArithmeticTupleGenerator(
+      numberOfParty,
+      createArithmeticTupleGeneratorFactoryWithRealProductShareGenerator);
 }
 
 TEST(TupleGeneratorTest, testTwoPartyTupleGeneratorWithDummyRcot) {
