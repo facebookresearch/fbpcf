@@ -13,6 +13,7 @@
 
 #include "fbpcf/engine/ISecretShareEngine.h"
 #include "fbpcf/engine/communication/ISecretShareEngineCommunicationAgent.h"
+#include "fbpcf/engine/tuple_generator/IArithmeticTupleGenerator.h"
 #include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
 #include "fbpcf/engine/util/IPrgFactory.h"
 
@@ -474,7 +475,7 @@ class SecretShareEngine final : public ISecretShareEngine {
           size_t,
           std::vector<tuple_generator::ITupleGenerator::CompositeBooleanTuple>>&
           compositeTuples,
-      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+      std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
           integerTuples);
 
   std::vector<bool> computeSecretSharesToOpenLegacy(
@@ -494,13 +495,14 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<bool>& openedSecrets,
       std::vector<uint64_t>& openedIntegerSecrets,
       std::vector<tuple_generator::ITupleGenerator::BooleanTuple>& tuples,
-      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+      std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
           integerTuples);
 
   std::vector<uint64_t> computeSecretSharesToOpen(
       std::vector<ScheduledMult>& mults,
       std::vector<ScheduledBatchMult>& batchMults,
-      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>& tuples,
+      std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
+          tuples,
       size_t openedSecretCount);
 
   void computeMultExecutionResultsFromOpenedShares(
@@ -509,7 +511,7 @@ class SecretShareEngine final : public ISecretShareEngine {
       std::vector<ScheduledBatchMult>& batchMults,
       std::vector<std::vector<uint64_t>>& batchMultResults,
       std::vector<uint64_t>& openedIntegerSecrets,
-      std::vector<tuple_generator::ITupleGenerator::IntegerTuple>&
+      std::vector<tuple_generator::IArithmeticTupleGenerator::IntegerTuple>&
           integerTuples);
 
   std::unique_ptr<tuple_generator::ITupleGenerator> tupleGenerator_;

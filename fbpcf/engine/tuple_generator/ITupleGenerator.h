@@ -128,35 +128,6 @@ class ITupleGenerator {
   };
 
   /**
-   * This is a integer version multiplicative triple. This object represents the
-   * shares hold by one party, e.g. the share of a, b and their product c.
-   */
-  class IntegerTuple {
-   public:
-    IntegerTuple() {}
-
-    IntegerTuple(uint64_t a, uint64_t b, uint64_t c) : a_(a), b_(b), c_(c) {}
-
-    // get the first share
-    uint64_t getA() const {
-      return a_;
-    }
-
-    // get the second share
-    uint64_t getB() const {
-      return b_;
-    }
-
-    // get the third share
-    uint64_t getC() const {
-      return c_;
-    }
-
-   private:
-    uint64_t a_, b_, c_;
-  };
-
-  /**
    * Generate a number of boolean tuples.
    * @param size number of tuples to generate.
    */
