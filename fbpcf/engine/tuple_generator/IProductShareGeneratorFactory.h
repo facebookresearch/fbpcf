@@ -18,7 +18,6 @@ namespace fbpcf::engine::tuple_generator {
  * holds bits a1, b1 and the other party holds bits a2, b2. This object will
  * generate the shares of a1&b2 ^ a2&b1 for the two parties
  */
-
 class IProductShareGeneratorFactory {
  public:
   virtual ~IProductShareGeneratorFactory() = default;

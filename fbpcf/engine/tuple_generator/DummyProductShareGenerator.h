@@ -17,7 +17,6 @@ namespace fbpcf::engine::tuple_generator::insecure {
  * This is a Dummy product shares generator. It will generate shares with
  * plaintext communication.
  */
-
 class DummyProductShareGenerator final : public IProductShareGenerator {
  public:
   explicit DummyProductShareGenerator(
@@ -30,6 +29,13 @@ class DummyProductShareGenerator final : public IProductShareGenerator {
   std::vector<bool> generateBooleanProductShares(
       const std::vector<bool>& left,
       const std::vector<bool>& right) override;
+
+  /**
+   * @inherit doc
+   */
+  std::vector<uint64_t> generateIntegerProductShares(
+      const std::vector<uint64_t>& left,
+      const std::vector<uint64_t>& right) override;
 
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return agent_->getTrafficStatistics();
