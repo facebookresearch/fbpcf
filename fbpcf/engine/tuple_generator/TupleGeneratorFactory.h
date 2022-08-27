@@ -23,7 +23,7 @@ namespace fbpcf::engine::tuple_generator {
 class TupleGeneratorFactory final : public ITupleGeneratorFactory {
  public:
   TupleGeneratorFactory(
-      std::unique_ptr<IProductShareGeneratorFactory> productShareFactory,
+      std::shared_ptr<IProductShareGeneratorFactory> productShareFactory,
       std::unique_ptr<util::IPrgFactory> prgFactory,
       int bufferSize,
       int myId,
@@ -54,7 +54,7 @@ class TupleGeneratorFactory final : public ITupleGeneratorFactory {
   }
 
  private:
-  std::unique_ptr<IProductShareGeneratorFactory> productShareFactory_;
+  std::shared_ptr<IProductShareGeneratorFactory> productShareFactory_;
   std::unique_ptr<util::IPrgFactory> prgFactory_;
   int bufferSize_;
   int myId_;

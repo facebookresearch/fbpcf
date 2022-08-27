@@ -11,13 +11,20 @@
 #include <optional>
 #include <vector>
 
+#include <fbpcf/engine/tuple_generator/IArithmeticTupleGenerator.h>
+#include <fbpcf/engine/tuple_generator/IProductShareGenerator.h>
+#include <fbpcf/engine/tuple_generator/IProductShareGeneratorFactory.h>
 #include "fbpcf/engine/ISecretShareEngineFactory.h"
 #include "fbpcf/engine/SecretShareEngine.h"
 #include "fbpcf/engine/communication/AgentMapHelper.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SecretShareEngineCommunicationAgent.h"
+#include "fbpcf/engine/tuple_generator/ArithmeticTupleGeneratorFactory.h"
+#include "fbpcf/engine/tuple_generator/DummyArithmeticTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/DummyTupleGeneratorFactory.h"
+#include "fbpcf/engine/tuple_generator/IArithmeticTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/ITupleGeneratorFactory.h"
+#include "fbpcf/engine/tuple_generator/NullArithmeticTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/ProductShareGenerator.h"
 #include "fbpcf/engine/tuple_generator/ProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/TupleGeneratorFactory.h"
@@ -43,11 +50,15 @@ class SecretShareEngineFactory final : public ISecretShareEngineFactory {
   SecretShareEngineFactory(
       std::unique_ptr<tuple_generator::ITupleGeneratorFactory>
           tupleGeneratorFactory,
+      std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>
+          arithmeticTupleGeneratorFactory,
       communication::IPartyCommunicationAgentFactory& communicationAgentFactory,
       std::unique_ptr<util::IPrgFactory> prgFactoryCreator(),
       int myId,
       int numberOfParty)
       : tupleGeneratorFactory_(std::move(tupleGeneratorFactory)),
+        arithmeticTupleGeneratorFactory_(
+            std::move(arithmeticTupleGeneratorFactory)),
         communicationAgentFactory_(communicationAgentFactory),
         prgFactoryCreator_(std::move(prgFactoryCreator)),
         myId_(myId),
@@ -59,6 +70,7 @@ class SecretShareEngineFactory final : public ISecretShareEngineFactory {
 
     return std::make_unique<SecretShareEngine>(
         tupleGeneratorFactory_->create(),
+        arithmeticTupleGeneratorFactory_->create(),
         std::make_unique<communication::SecretShareEngineCommunicationAgent>(
             myId_, std::move(agentMap)),
         prgFactoryCreator_(),
@@ -69,6 +81,8 @@ class SecretShareEngineFactory final : public ISecretShareEngineFactory {
  private:
   std::unique_ptr<tuple_generator::ITupleGeneratorFactory>
       tupleGeneratorFactory_;
+  std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>
+      arithmeticTupleGeneratorFactory_;
   communication::IPartyCommunicationAgentFactory& communicationAgentFactory_;
   std::function<std::unique_ptr<util::IPrgFactory>()> prgFactoryCreator_;
   int myId_;
@@ -81,9 +95,12 @@ getEngineFactoryWithTupleGeneratorFactory(
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory,
     std::unique_ptr<tuple_generator::ITupleGeneratorFactory>
-        tupleGeneratorFactory) {
+        tupleGeneratorFactory,
+    std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>
+        arithmeticTupleGeneratorFactory) {
   return std::make_unique<SecretShareEngineFactory>(
       std::move(tupleGeneratorFactory),
+      std::move(arithmeticTupleGeneratorFactory),
       communicationAgentFactory,
       []() -> std::unique_ptr<util::IPrgFactory> {
         return std::make_unique<util::AesPrgFactory>();
@@ -98,48 +115,52 @@ getSecureEngineFactoryWithRcotFactory(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory,
-    std::unique_ptr<tuple_generator::oblivious_transfer::
+    std::shared_ptr<tuple_generator::oblivious_transfer::
                         IRandomCorrelatedObliviousTransferFactory>
         rcotFactory) {
   size_t bufferSize = 1600000;
 
   std::unique_ptr<tuple_generator::ITupleGeneratorFactory>
       tupleGeneratorFactory;
+  std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>
+      arithmeticTupleGeneratorFactory;
 
   if (numberOfParty == 2) {
     tupleGeneratorFactory =
         std::make_unique<tuple_generator::TwoPartyTupleGeneratorFactory>(
-            std::move(rcotFactory),
-            communicationAgentFactory,
-            myId,
-            bufferSize);
+            rcotFactory, communicationAgentFactory, myId, bufferSize);
   } else {
     auto biDirectionOtFactory =
         std::make_unique<tuple_generator::oblivious_transfer::
                              RcotBasedBidirectionObliviousTransferFactory>(
-            myId, communicationAgentFactory, std::move(rcotFactory));
+            myId, communicationAgentFactory, rcotFactory);
 
     // use OT for tuple generation
     auto productShareGeneratorFactory =
-        std::make_unique<tuple_generator::ProductShareGeneratorFactory<T>>(
+        std::make_shared<tuple_generator::ProductShareGeneratorFactory<T>>(
             std::make_unique<util::AesPrgFactory>(bufferSize),
             std::move(biDirectionOtFactory));
 
     tupleGeneratorFactory =
         std::make_unique<tuple_generator::TupleGeneratorFactory>(
-            std::move(productShareGeneratorFactory),
+            productShareGeneratorFactory,
             std::make_unique<util::AesPrgFactory>(),
             bufferSize,
             myId,
             numberOfParty);
   }
 
+  arithmeticTupleGeneratorFactory =
+      std::make_unique<tuple_generator::NullArithmeticTupleGeneratorFactory>();
+
   return getEngineFactoryWithTupleGeneratorFactory(
       myId,
       numberOfParty,
       communicationAgentFactory,
-      std::move(tupleGeneratorFactory));
+      std::move(tupleGeneratorFactory),
+      std::move(arithmeticTupleGeneratorFactory));
 }
+
 /**
  * create a secure engine that utilizes FERRET protocol
  * this function must be called by all parties at the same time since it
@@ -191,8 +212,9 @@ getInsecureEngineFactoryWithDummyTupleGenerator(
       myId,
       numberOfParty,
       communicationAgentFactory,
+      std::make_unique<tuple_generator::insecure::DummyTupleGeneratorFactory>(),
       std::make_unique<
-          tuple_generator::insecure::DummyTupleGeneratorFactory>());
+          tuple_generator::insecure::DummyArithmeticTupleGeneratorFactory>());
 }
 
 } // namespace fbpcf::engine
