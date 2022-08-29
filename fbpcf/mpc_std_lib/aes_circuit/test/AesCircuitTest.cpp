@@ -24,7 +24,9 @@
   FRIEND_TEST(AesCircuitMixColumnsTestSuite, InverseMixColumnsInplaceTest);
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/util/aes.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit_impl.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/DummyAesCircuitFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuit.h"
@@ -39,22 +41,21 @@ template <typename BitType>
 class AesCircuitTests : public AesCircuit<BitType> {
  public:
   void testShiftRowInPlace(std::vector<bool> plaintext) {
-    std::random_device rd;
-    std::mt19937_64 e(rd());
-    std::uniform_int_distribution<uint8_t> dist(0, 3);
-    int row = dist(e);
-
-    std::array<std::array<bool, 8>, 4> word;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 8; j++) {
-        word[i][j] = plaintext[32 * i + 8 * row + j];
+    std::array<std::array<std::array<bool, 8>, 4>, 4> block;
+    for (int k = 0; k < 4; ++k) {
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 8; j++) {
+          block[k][i][j] = plaintext[32 * k + 8 * i + j];
+        }
       }
     }
 
-    AesCircuit<bool>::shiftRowInPlace(word, row);
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 8; j++) {
-        EXPECT_EQ(word[i][j], plaintext[32 * ((i + row) % 4) + 8 * row + j]);
+    AesCircuit<bool>::shiftRowInPlace(block);
+    for (int k = 0; k < 4; ++k) {
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 8; j++) {
+          EXPECT_EQ(block[k][i][j], plaintext[32 * ((k + i) % 4) + 8 * i + j]);
+        }
       }
     }
   }
@@ -89,6 +90,36 @@ void intToBinaryArray(unsigned int n, std::array<bool, 8>& array) {
     array[7 - i] = n & 1;
     n = n >> 1;
   }
+}
+
+void int8VecToBinaryVec(
+    std::vector<uint8_t>& intVec,
+    std::vector<bool>& BinaryVec) {
+  for (auto intUnit : intVec) {
+    for (size_t i = 0; i < 8; ++i) {
+      BinaryVec.push_back((intUnit >> (7 - i) & 1) == 1);
+    }
+  }
+}
+
+void loadValueToLocalAes(
+    std::vector<uint8_t>& value,
+    std::vector<__m128i>& aesStore) {
+  size_t blockNo = value.size() / 16;
+  for (int i = 0; i < blockNo; ++i) {
+    uint8_t tmparray[16];
+    for (int j = 0; j < 16; ++j) {
+      tmparray[j] = value[i * 16 + j];
+    }
+    __m128i tmp = _mm_loadu_si128((const __m128i*)tmparray);
+    aesStore.push_back(tmp);
+  }
+}
+
+void loadValueFromLocalAes(__m128i aesStore, std::vector<uint8_t>& memStore) {
+  uint8_t tmparray[16];
+  _mm_storeu_si128((__m128i*)tmparray, aesStore);
+  memStore.insert(memStore.end(), &tmparray[0], &tmparray[16]);
 }
 
 std::vector<bool> generateRandomPlaintext(int size = 128) {
@@ -258,5 +289,64 @@ INSTANTIATE_TEST_SUITE_P(
         std::make_tuple(0xc6, 0xc6, 0xc6, 0xc6, 0xc6, 0xc6, 0xc6, 0xc6),
         std::make_tuple(0xd4, 0xd4, 0xd4, 0xd5, 0xd5, 0xd5, 0xd7, 0xd6),
         std::make_tuple(0x2d, 0x26, 0x31, 0x4c, 0x4d, 0x7e, 0xbd, 0xf8)));
+
+void testAesCircuitEncrypt(
+    std::shared_ptr<AesCircuitFactory<bool>> AesCircuitFactory) {
+  auto AesCircuit = AesCircuitFactory->create();
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint8_t> dist(0, 0xFF);
+  size_t blockNo = dist(e);
+
+  // generate random key
+  __m128i key = _mm_set_epi32(dist(e), dist(e), dist(e), dist(e));
+  // generate random plaintext
+  std::vector<uint8_t> plaintext;
+  for (int i = 0; i < blockNo * 16; ++i) {
+    plaintext.push_back(dist(e));
+  }
+  std::vector<__m128i> plaintextAES;
+  loadValueToLocalAes(plaintext, plaintextAES);
+
+  // expend key
+  engine::util::Aes truthAes(key);
+  auto expendedKey = truthAes.expandEncryptionKey(key);
+  // extract key and plaintext
+  std::vector<__m128i> keyVec(11);
+  for (int i = 0; i < 11; ++i) {
+    keyVec[i] = expendedKey[i];
+  }
+
+  std::vector<uint8_t> extractedKeys;
+  for (auto keyb : expendedKey) {
+    loadValueFromLocalAes(keyb, extractedKeys);
+  }
+
+  // convert key and plaintext into bool vector
+  std::vector<bool> KeyBits;
+  int8VecToBinaryVec(extractedKeys, KeyBits);
+  std::vector<bool> plaintextBits;
+  int8VecToBinaryVec(plaintext, plaintextBits);
+
+  // encrypt in real aes and aes circuit
+  truthAes.encryptInPlace(plaintextAES);
+  auto ciphertextBits = AesCircuit->encrypt(plaintextBits, KeyBits);
+
+  // extract ciphertext
+  std::vector<uint8_t> ciphertextTruth;
+  for (auto b : plaintextAES) {
+    loadValueFromLocalAes(b, ciphertextTruth);
+  }
+
+  std::vector<bool> cipherextBitsTruth;
+  int8VecToBinaryVec(ciphertextTruth, cipherextBitsTruth);
+
+  testVectorEq(ciphertextBits, cipherextBitsTruth);
+}
+
+TEST(AesCircuitTest, testAesCircuitEncrypt) {
+  testAesCircuitEncrypt(std::make_unique<AesCircuitFactory<bool>>());
+}
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit

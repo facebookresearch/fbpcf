@@ -18,7 +18,64 @@ template <typename BitType>
 std::vector<BitType> AesCircuit<BitType>::encrypt_impl(
     const std::vector<BitType>& plaintext,
     const std::vector<BitType>& expandedEncKey) const {
-  throw std::runtime_error("Not implemented!");
+  // prepare input
+  auto plaintextBlocks = convertToWords(plaintext);
+  auto roundKeys = convertToWords(expandedEncKey);
+
+  size_t blockNo = plaintextBlocks.size();
+  int round = 0;
+  // pre-round
+  for (int block = 0; block < blockNo; ++block) {
+    for (int word = 0; word < 4; ++word) {
+      for (int byte = 0; byte < 4; ++byte) {
+        for (int bit = 0; bit < 8; ++bit) {
+          plaintextBlocks[block][word][byte][bit] =
+              plaintextBlocks[block][word][byte][bit] ^
+              roundKeys[round][word][byte][bit];
+        }
+      }
+    }
+  }
+
+  // rounds 1 - 10
+  for (round = 1; round <= 10; ++round) {
+    // Sbox
+    for (int block = 0; block < blockNo; ++block) {
+      for (int word = 0; word < 4; ++word) {
+        for (int byte = 0; byte < 4; ++byte) {
+          sBoxInPlace(plaintextBlocks[block][word][byte]);
+        }
+      }
+    }
+
+    // ShiftRow
+    for (int block = 0; block < blockNo; ++block) {
+      shiftRowInPlace(plaintextBlocks[block]);
+    }
+
+    // MixColumns except for 10-th Round
+    if (round != 10) {
+      for (int block = 0; block < blockNo; ++block) {
+        for (int word = 0; word < 4; ++word) {
+          mixColumnsInPlace(plaintextBlocks[block][word]);
+        }
+      }
+    }
+
+    // AddRoundKey
+    for (int block = 0; block < blockNo; ++block) {
+      for (int word = 0; word < 4; ++word) {
+        for (int byte = 0; byte < 4; ++byte) {
+          for (int bit = 0; bit < 8; ++bit) {
+            plaintextBlocks[block][word][byte][bit] =
+                plaintextBlocks[block][word][byte][bit] ^
+                roundKeys[round][word][byte][bit];
+          }
+        }
+      }
+    }
+  }
+  return convertFromWords(plaintextBlocks);
 }
 
 template <typename BitType>
@@ -420,19 +477,21 @@ void AesCircuit<BitType>::inverseMixColumnsInPlace(WordType& src) const {
 }
 
 template <typename BitType>
-void AesCircuit<BitType>::shiftRowInPlace(WordType& src, int8_t offset) {
-  if (offset == 1) {
-    std::swap(src[0], src[1]);
-    std::swap(src[1], src[2]);
-    std::swap(src[2], src[3]);
-  } else if (offset == 2) {
-    std::swap(src[0], src[2]);
-    std::swap(src[1], src[3]);
-  } else if (offset == 3) {
-    std::swap(src[3], src[2]);
-    std::swap(src[2], src[1]);
-    std::swap(src[1], src[0]);
-  }
+void AesCircuit<BitType>::shiftRowInPlace(std::array<WordType, 4>& src) const {
+  // 1st row
+  int row = 1;
+  std::swap(src[0][row], src[1][row]);
+  std::swap(src[1][row], src[2][row]);
+  std::swap(src[2][row], src[3][row]);
+  // 2nd row
+  row++;
+  std::swap(src[0][row], src[2][row]);
+  std::swap(src[1][row], src[3][row]);
+  // 3rd row
+  row++;
+  std::swap(src[3][row], src[2][row]);
+  std::swap(src[2][row], src[1][row]);
+  std::swap(src[1][row], src[0][row]);
 }
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
