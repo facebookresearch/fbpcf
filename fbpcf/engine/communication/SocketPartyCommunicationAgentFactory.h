@@ -62,7 +62,7 @@ establishing multiple connections (>3) between each party pair.
     setupInitialConnection(partyInfos);
   }
 
-  SocketPartyCommunicationAgentFactory(
+  [[deprecated("Use the constructor with TlsInfo instead.")]] SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
       bool useTls,
