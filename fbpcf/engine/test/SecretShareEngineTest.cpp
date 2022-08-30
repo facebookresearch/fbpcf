@@ -824,7 +824,7 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             2,
-            getSecureEngineFactoryWithFERRET<bool>),
+            getSecureEngineFactoryWithFERRET),
         std::make_tuple<
             std::string,
             size_t,
@@ -834,7 +834,7 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             3,
-            getSecureEngineFactoryWithFERRET<bool>)),
+            getSecureEngineFactoryWithFERRET)),
     [](const testing::TestParamInfo<NonFreeAndTestFixture::ParamType>& info) {
       return std::get<0>(info.param) + '_' +
           std::to_string(std::get<1>(info.param)) + "Party";
@@ -999,8 +999,7 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             2,
-            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator<
-                uint64_t>),
+            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator),
         std::make_tuple<
             std::string,
             size_t,
@@ -1010,8 +1009,7 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             3,
-            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator<
-                uint64_t>)),
+            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator)),
     [](const testing::TestParamInfo<NonFreeMultTestFixture::ParamType>& info) {
       return std::get<0>(info.param) + '_' +
           std::to_string(std::get<1>(info.param)) + "Party";

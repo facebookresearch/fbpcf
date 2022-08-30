@@ -52,7 +52,7 @@ getEagerSchedulerFactoryWithClassicOT(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
-      engine::getSecureEngineFactoryWithClassicOt<bool>(
+      engine::getSecureEngineFactoryWithClassicOt(
           myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerSchedulerFactory</* unsafe */ true>>(
@@ -65,7 +65,7 @@ getEagerSchedulerFactoryWithRealEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
-      engine::getSecureEngineFactoryWithFERRET<bool>(
+      engine::getSecureEngineFactoryWithFERRET(
           myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerSchedulerFactory</* unsafe */ true>>(
