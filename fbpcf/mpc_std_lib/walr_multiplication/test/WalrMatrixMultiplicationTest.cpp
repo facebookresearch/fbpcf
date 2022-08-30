@@ -22,6 +22,8 @@
 #include "fbpcf/mpc_std_lib/walr_multiplication/DummyMatrixMultiplicationFactory.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplication.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplicationFactory.h"
+#include "fbpcf/mpc_std_lib/walr_multiplication/OTBasedMatrixMultiplication.h"
+#include "fbpcf/mpc_std_lib/walr_multiplication/OTBasedMatrixMultiplicationFactory.h"
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::walr {
@@ -269,4 +271,5 @@ TEST(
   matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
       std::move(featureOwnerFactory), std::move(labelOwnerFactory), 1e-7);
 }
+
 } // namespace fbpcf::mpc_std_lib::walr
