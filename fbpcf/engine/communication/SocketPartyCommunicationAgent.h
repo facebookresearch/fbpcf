@@ -30,7 +30,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   /**
    * Create as socket server, optionally with TLS.
    */
-  explicit SocketPartyCommunicationAgent(
+  [[deprecated("Use the constructor with TlsInfo instead.")]] explicit SocketPartyCommunicationAgent(
       int sockFd,
       int portNo,
       bool useTls,
@@ -46,7 +46,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
   /**
    * Created as socket client, optionally with TLS.
    */
-  SocketPartyCommunicationAgent(
+  [[deprecated("Use the constructor with TlsInfo instead.")]] SocketPartyCommunicationAgent(
       const std::string& serverAddress,
       int portNo,
       bool useTls,
