@@ -25,6 +25,7 @@
 #include "fbpcf/engine/tuple_generator/IArithmeticTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/ITupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/NullArithmeticTupleGeneratorFactory.h"
+#include "fbpcf/engine/tuple_generator/NullTupleGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/ProductShareGenerator.h"
 #include "fbpcf/engine/tuple_generator/ProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/TupleGeneratorFactory.h"
@@ -90,7 +91,7 @@ class SecretShareEngineFactory final : public ISecretShareEngineFactory {
 };
 
 inline std::unique_ptr<SecretShareEngineFactory>
-getEngineFactoryWithTupleGeneratorFactory(
+getEngineFactoryWithTupleGeneratorFactories(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory,
@@ -109,9 +110,12 @@ getEngineFactoryWithTupleGeneratorFactory(
       numberOfParty);
 }
 
+/**
+ * Creates a secret share engine that supports XOR, NOT, AND operations
+ **/
 template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
-getSecureEngineFactoryWithRcotFactory(
+getSecureEngineFactoryWithBooleanOnlyTupleGenerator(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory,
@@ -153,7 +157,7 @@ getSecureEngineFactoryWithRcotFactory(
   arithmeticTupleGeneratorFactory =
       std::make_unique<tuple_generator::NullArithmeticTupleGeneratorFactory>();
 
-  return getEngineFactoryWithTupleGeneratorFactory(
+  return getEngineFactoryWithTupleGeneratorFactories(
       myId,
       numberOfParty,
       communicationAgentFactory,
@@ -161,6 +165,72 @@ getSecureEngineFactoryWithRcotFactory(
       std::move(arithmeticTupleGeneratorFactory));
 }
 
+/**
+ * Creates a secret share engine that supports PlUS, NEG, MULT operations
+ * If withBooleanTupleGenerator is true, the secret share engine will also
+ * support XOR, NOT, AND operations
+ */
+template <class T>
+inline std::unique_ptr<SecretShareEngineFactory>
+getSecureEngineFactoryWithIntegerTupleGenerator(
+    int myId,
+    int numberOfParty,
+    communication::IPartyCommunicationAgentFactory& communicationAgentFactory,
+    std::shared_ptr<tuple_generator::oblivious_transfer::
+                        IRandomCorrelatedObliviousTransferFactory> rcotFactory,
+    bool withBooleanTupleGenerator) {
+  size_t bufferSize = 40000;
+
+  std::unique_ptr<tuple_generator::ITupleGeneratorFactory>
+      tupleGeneratorFactory;
+  std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>
+      arithmeticTupleGeneratorFactory;
+
+  auto biDirectionOtFactory =
+      std::make_unique<tuple_generator::oblivious_transfer::
+                           RcotBasedBidirectionObliviousTransferFactory>(
+          myId, communicationAgentFactory, rcotFactory);
+
+  // use OT for tuple generation
+  auto productShareGeneratorFactory =
+      std::make_shared<tuple_generator::ProductShareGeneratorFactory<T>>(
+          std::make_unique<util::AesPrgFactory>(bufferSize),
+          std::move(biDirectionOtFactory));
+
+  arithmeticTupleGeneratorFactory =
+      std::make_unique<tuple_generator::ArithmeticTupleGeneratorFactory>(
+          productShareGeneratorFactory,
+          std::make_unique<util::AesPrgFactory>(),
+          bufferSize,
+          myId,
+          numberOfParty);
+
+  if (withBooleanTupleGenerator) {
+    if (numberOfParty == 2) {
+      tupleGeneratorFactory =
+          std::make_unique<tuple_generator::TwoPartyTupleGeneratorFactory>(
+              rcotFactory, communicationAgentFactory, myId, bufferSize);
+    } else {
+      tupleGeneratorFactory =
+          std::make_unique<tuple_generator::TupleGeneratorFactory>(
+              productShareGeneratorFactory,
+              std::make_unique<util::AesPrgFactory>(),
+              bufferSize,
+              myId,
+              numberOfParty);
+    }
+  } else {
+    tupleGeneratorFactory =
+        std::make_unique<tuple_generator::NullTupleGeneratorFactory>();
+  }
+
+  return getEngineFactoryWithTupleGeneratorFactories(
+      myId,
+      numberOfParty,
+      communicationAgentFactory,
+      std::move(tupleGeneratorFactory),
+      std::move(arithmeticTupleGeneratorFactory));
+}
 /**
  * create a secure engine that utilizes FERRET protocol
  * this function must be called by all parties at the same time since it
@@ -172,13 +242,40 @@ getSecureEngineFactoryWithFERRET(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getSecureEngineFactoryWithRcotFactory<T>(
+  return getSecureEngineFactoryWithBooleanOnlyTupleGenerator<T>(
       myId,
       numberOfParty,
       communicationAgentFactory,
       tuple_generator::oblivious_transfer::createFerretRcotFactory());
 }
 
+template <class T>
+inline std::unique_ptr<SecretShareEngineFactory>
+getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator(
+    int myId,
+    int numberOfParty,
+    communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
+  return getSecureEngineFactoryWithIntegerTupleGenerator<T>(
+      myId,
+      numberOfParty,
+      communicationAgentFactory,
+      tuple_generator::oblivious_transfer::createFerretRcotFactory(),
+      true);
+}
+
+template <class T>
+inline std::unique_ptr<SecretShareEngineFactory>
+getSecureEngineFactoryWithIntegerOnlyTupleGenerator(
+    int myId,
+    int numberOfParty,
+    communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
+  return getSecureEngineFactoryWithIntegerTupleGenerator<T>(
+      myId,
+      numberOfParty,
+      communicationAgentFactory,
+      tuple_generator::oblivious_transfer::createFerretRcotFactory(),
+      false);
+}
 /**
  * create a secure engine that utilizes classic OT protocol
  * this function must be called by all parties at the same time since it
@@ -190,7 +287,7 @@ getSecureEngineFactoryWithClassicOt(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getSecureEngineFactoryWithRcotFactory<T>(
+  return getSecureEngineFactoryWithBooleanTupleGenerator<T>(
       myId,
       numberOfParty,
       communicationAgentFactory,
@@ -208,7 +305,7 @@ getInsecureEngineFactoryWithDummyTupleGenerator(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getEngineFactoryWithTupleGeneratorFactory(
+  return getEngineFactoryWithTupleGeneratorFactories(
       myId,
       numberOfParty,
       communicationAgentFactory,

@@ -989,7 +989,29 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "InsecureEngineWithDummyTupleGenerator",
             4,
-            getInsecureEngineFactoryWithDummyTupleGenerator)),
+            getInsecureEngineFactoryWithDummyTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "SecureEngineWithFerret",
+            2,
+            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator<
+                uint64_t>),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "SecureEngineWithFerret",
+            3,
+            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator<
+                uint64_t>)),
     [](const testing::TestParamInfo<NonFreeMultTestFixture::ParamType>& info) {
       return std::get<0>(info.param) + '_' +
           std::to_string(std::get<1>(info.param)) + "Party";
