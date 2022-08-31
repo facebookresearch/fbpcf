@@ -62,7 +62,7 @@ inline std::unique_ptr<IScheduler> createEagerSchedulerWithRealEngine(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
-  auto engineFactory = engine::getSecureEngineFactoryWithFERRET<bool>(
+  auto engineFactory = engine::getSecureEngineFactoryWithFERRET(
       myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerScheduler>(
@@ -75,7 +75,7 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithRealEngine(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
-  auto engineFactory = engine::getSecureEngineFactoryWithFERRET<bool>(
+  auto engineFactory = engine::getSecureEngineFactoryWithFERRET(
       myId, 2, communicationAgentFactory);
 
   std::shared_ptr<IWireKeeper> wireKeeper =
@@ -91,7 +91,7 @@ inline std::unique_ptr<IScheduler> createEagerSchedulerWithClassicOT(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
-  auto engineFactory = engine::getSecureEngineFactoryWithClassicOt<bool>(
+  auto engineFactory = engine::getSecureEngineFactoryWithClassicOt(
       myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerScheduler>(
@@ -103,7 +103,7 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithClassicOT(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
-  auto engineFactory = engine::getSecureEngineFactoryWithClassicOt<bool>(
+  auto engineFactory = engine::getSecureEngineFactoryWithClassicOt(
       myId, 2, communicationAgentFactory);
 
   std::shared_ptr<IWireKeeper> wireKeeper =

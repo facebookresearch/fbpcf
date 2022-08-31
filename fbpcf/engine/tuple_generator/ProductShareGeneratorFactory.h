@@ -20,7 +20,6 @@ namespace fbpcf::engine::tuple_generator {
  * This object always generates the product share generators that run with an
  * underlying ot
  */
-template <class T>
 class ProductShareGeneratorFactory final
     : public IProductShareGeneratorFactory {
  public:

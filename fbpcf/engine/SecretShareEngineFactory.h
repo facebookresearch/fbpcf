@@ -113,7 +113,6 @@ getEngineFactoryWithTupleGeneratorFactories(
 /**
  * Creates a secret share engine that supports XOR, NOT, AND operations
  **/
-template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
 getSecureEngineFactoryWithBooleanOnlyTupleGenerator(
     int myId,
@@ -141,7 +140,7 @@ getSecureEngineFactoryWithBooleanOnlyTupleGenerator(
 
     // use OT for tuple generation
     auto productShareGeneratorFactory =
-        std::make_shared<tuple_generator::ProductShareGeneratorFactory<T>>(
+        std::make_shared<tuple_generator::ProductShareGeneratorFactory>(
             std::make_unique<util::AesPrgFactory>(bufferSize),
             std::move(biDirectionOtFactory));
 
@@ -170,7 +169,6 @@ getSecureEngineFactoryWithBooleanOnlyTupleGenerator(
  * If withBooleanTupleGenerator is true, the secret share engine will also
  * support XOR, NOT, AND operations
  */
-template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
 getSecureEngineFactoryWithIntegerTupleGenerator(
     int myId,
@@ -193,7 +191,7 @@ getSecureEngineFactoryWithIntegerTupleGenerator(
 
   // use OT for tuple generation
   auto productShareGeneratorFactory =
-      std::make_shared<tuple_generator::ProductShareGeneratorFactory<T>>(
+      std::make_shared<tuple_generator::ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(bufferSize),
           std::move(biDirectionOtFactory));
 
@@ -231,31 +229,30 @@ getSecureEngineFactoryWithIntegerTupleGenerator(
       std::move(tupleGeneratorFactory),
       std::move(arithmeticTupleGeneratorFactory));
 }
+
 /**
  * create a secure engine that utilizes FERRET protocol
  * this function must be called by all parties at the same time since it
  * contains inter-party communication
  */
-template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
 getSecureEngineFactoryWithFERRET(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getSecureEngineFactoryWithBooleanOnlyTupleGenerator<T>(
+  return getSecureEngineFactoryWithBooleanOnlyTupleGenerator(
       myId,
       numberOfParty,
       communicationAgentFactory,
       tuple_generator::oblivious_transfer::createFerretRcotFactory());
 }
 
-template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
 getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getSecureEngineFactoryWithIntegerTupleGenerator<T>(
+  return getSecureEngineFactoryWithIntegerTupleGenerator(
       myId,
       numberOfParty,
       communicationAgentFactory,
@@ -263,13 +260,12 @@ getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator(
       true);
 }
 
-template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
 getSecureEngineFactoryWithIntegerOnlyTupleGenerator(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getSecureEngineFactoryWithIntegerTupleGenerator<T>(
+  return getSecureEngineFactoryWithIntegerTupleGenerator(
       myId,
       numberOfParty,
       communicationAgentFactory,
@@ -281,13 +277,12 @@ getSecureEngineFactoryWithIntegerOnlyTupleGenerator(
  * this function must be called by all parties at the same time since it
  * contains inter-party commuication
  */
-template <class T>
 inline std::unique_ptr<SecretShareEngineFactory>
 getSecureEngineFactoryWithClassicOt(
     int myId,
     int numberOfParty,
     communication::IPartyCommunicationAgentFactory& communicationAgentFactory) {
-  return getSecureEngineFactoryWithBooleanOnlyTupleGenerator<T>(
+  return getSecureEngineFactoryWithBooleanOnlyTupleGenerator(
       myId,
       numberOfParty,
       communicationAgentFactory,

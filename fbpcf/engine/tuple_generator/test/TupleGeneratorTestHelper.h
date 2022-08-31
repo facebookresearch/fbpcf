@@ -82,7 +82,7 @@ createTupleGeneratorFactoryWithRealProductShareGenerator(
 
   auto productShareGeneratorFactory =
       std::unique_ptr<IProductShareGeneratorFactory>(
-          std::make_unique<ProductShareGeneratorFactory<bool>>(
+          std::make_unique<ProductShareGeneratorFactory>(
               std::make_unique<util::AesPrgFactory>(kTestBufferSize),
               std::move(otFactory)));
   return std::make_unique<TupleGeneratorFactory>(
@@ -122,7 +122,7 @@ createArithmeticTupleGeneratorFactoryWithRealProductShareGenerator(
 
   auto productShareGeneratorFactory =
       std::unique_ptr<IProductShareGeneratorFactory>(
-          std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+          std::make_unique<ProductShareGeneratorFactory>(
               std::make_unique<util::AesPrgFactory>(kTestBufferSize),
               std::move(otFactory)));
   return std::make_unique<ArithmeticTupleGeneratorFactory>(

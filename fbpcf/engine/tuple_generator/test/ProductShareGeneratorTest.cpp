@@ -134,24 +134,24 @@ TEST(ProductShareGenerator, testRealGeneratorWithDummyOT) {
   auto factorys = communication::getInMemoryAgentFactory(2);
 
   testGenerator(
-      std::make_unique<ProductShareGeneratorFactory<bool>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<oblivious_transfer::insecure::
                                DummyBidirectionObliviousTransferFactory>(
               *factorys[0])),
-      std::make_unique<ProductShareGeneratorFactory<bool>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<oblivious_transfer::insecure::
                                DummyBidirectionObliviousTransferFactory>(
               *factorys[1])));
 
   testIntegerGenerator(
-      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<oblivious_transfer::insecure::
                                DummyBidirectionObliviousTransferFactory>(
               *factorys[0])),
-      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<oblivious_transfer::insecure::
                                DummyBidirectionObliviousTransferFactory>(
@@ -162,7 +162,7 @@ TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
   auto agentFactories = communication::getInMemoryAgentFactory(2);
 
   testGenerator(
-      std::make_unique<ProductShareGeneratorFactory<bool>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<
               oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
@@ -170,7 +170,7 @@ TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
               *agentFactories.at(0),
               oblivious_transfer::createFerretRcotFactory(
                   kTestExtendedSize, kTestBaseSize, kTestWeight))),
-      std::make_unique<ProductShareGeneratorFactory<bool>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<
               oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
@@ -180,7 +180,7 @@ TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
                   kTestExtendedSize, kTestBaseSize, kTestWeight))));
 
   testIntegerGenerator(
-      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<
               oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
@@ -188,7 +188,7 @@ TEST(ProductShareGenerator, testRealGeneratorWithRealOT) {
               *agentFactories.at(0),
               oblivious_transfer::createFerretRcotFactory(
                   kTestExtendedSize, kTestBaseSize, kTestWeight))),
-      std::make_unique<ProductShareGeneratorFactory<uint64_t>>(
+      std::make_unique<ProductShareGeneratorFactory>(
           std::make_unique<util::AesPrgFactory>(),
           std::make_unique<
               oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(

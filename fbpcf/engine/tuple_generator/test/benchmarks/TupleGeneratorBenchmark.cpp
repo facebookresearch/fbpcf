@@ -26,13 +26,13 @@ class ProductShareGeneratorBenchmark : public util::NetworkedBenchmark {
     agentFactory0_ = std::move(agentFactory0);
     agentFactory1_ = std::move(agentFactory1);
 
-    senderFactory_ = std::make_unique<ProductShareGeneratorFactory<bool>>(
+    senderFactory_ = std::make_unique<ProductShareGeneratorFactory>(
         std::make_unique<util::AesPrgFactory>(),
         std::make_unique<
             oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
             0, *agentFactory0_, oblivious_transfer::createFerretRcotFactory()));
 
-    receiverFactory_ = std::make_unique<ProductShareGeneratorFactory<bool>>(
+    receiverFactory_ = std::make_unique<ProductShareGeneratorFactory>(
         std::make_unique<util::AesPrgFactory>(),
         std::make_unique<
             oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
@@ -153,7 +153,7 @@ class TupleGeneratorBenchmark final : public BaseTupleGeneratorBenchmark {
         oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
         myId, agentFactory, oblivious_transfer::createFerretRcotFactory());
     auto productShareGeneratorFactory =
-        std::make_unique<ProductShareGeneratorFactory<bool>>(
+        std::make_unique<ProductShareGeneratorFactory>(
             std::make_unique<util::AesPrgFactory>(bufferSize_),
             std::move(otFactory));
     return std::make_unique<TupleGeneratorFactory>(
