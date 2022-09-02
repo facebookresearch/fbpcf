@@ -41,7 +41,6 @@ class OTBasedMatrixMultiplicationFactory final
         cotWRMFactory_(std::move(cotWRMFactory)) {}
 
   std::unique_ptr<IWalrMatrixMultiplication<schedulerId>> create() override {
-    __m128i delta = engine::util::getRandomM128iFromSystemNoise();
     std::unique_ptr<util::COTWithRandomMessage> cotWRM;
     auto cotWRMAgent = agentFactory_.create(
         partnerId_,
@@ -51,7 +50,10 @@ class OTBasedMatrixMultiplicationFactory final
         partnerId_,
         "walr_matrix_multiplication_rcot_of_cotWRM_traffic_to_party " +
             std::to_string(partnerId_));
+
     if (isFeatureOwner_) {
+      __m128i delta = engine::util::getRandomM128iFromSystemNoise();
+      engine::util::setLsbTo1(delta);
       cotWRM = cotWRMFactory_->create(
           delta, std::move(cotWRMAgent), std::move(rcotAgent));
     } else {
