@@ -22,16 +22,26 @@ class COTWithRandomMessageFactory {
           rcotFactory)
       : rcotFactory_(std::move(rcotFactory)) {}
 
+  // create sender
   std::unique_ptr<COTWithRandomMessage> create(
       __m128i delta,
       std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent,
       std::unique_ptr<engine::communication::IPartyCommunicationAgent>
-          rcotAgent);
+          rcotAgent) {
+    auto rcot = rcotFactory_->create(delta, std::move(rcotAgent));
+    return std::make_unique<COTWithRandomMessage>(
+        delta, std::move(agent), std::move(rcot));
+  }
 
+  // create receiver
   std::unique_ptr<COTWithRandomMessage> create(
       std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent,
       std::unique_ptr<engine::communication::IPartyCommunicationAgent>
-          rcotAgent);
+          rcotAgent) {
+    auto rcot = rcotFactory_->create(std::move(rcotAgent));
+    return std::make_unique<COTWithRandomMessage>(
+        std::move(agent), std::move(rcot));
+  }
 
  private:
   std::unique_ptr<engine::tuple_generator::oblivious_transfer::
