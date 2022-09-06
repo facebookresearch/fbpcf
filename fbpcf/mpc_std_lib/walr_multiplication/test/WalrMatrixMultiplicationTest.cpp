@@ -7,6 +7,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <sys/types.h>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -18,12 +19,23 @@
 #include <vector>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/DummyRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/EmpShRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/ExtenderBasedRandomCorrelatedObliviousTransferFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RcotExtenderFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RegularErrorMultiPointCotFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/SinglePointCotFactory.h"
+#include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/TenLocalLinearMatrixMultiplierFactory.h"
+#include "fbpcf/engine/util/AesPrgFactory.h"
+
 #include "fbpcf/mpc_std_lib/walr_multiplication/DummyMatrixMultiplication.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/DummyMatrixMultiplicationFactory.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplication.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplicationFactory.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/OTBasedMatrixMultiplication.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/OTBasedMatrixMultiplicationFactory.h"
+#include "fbpcf/mpc_std_lib/walr_multiplication/util/COTWithRandomMessageFactory.h"
+
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::walr {
@@ -277,4 +289,247 @@ TEST(
       std::move(featureOwnerFactory), std::move(labelOwnerFactory), 1e-7);
 }
 
+TEST(
+    matrixVectorMultiplicationNoNoiseTest,
+    testOTBasedMatrixMultiplicationWithDummyRCOT) {
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  // feature owner is party 0 and uses scheduler 0
+  // label owner is party 1 and uses scheduler 1
+  constexpr uint64_t divisor = static_cast<uint64_t>(1e9);
+  constexpr double tolerance = 1e-7;
+
+  auto prgFactory0 = std::make_unique<engine::util::AesPrgFactory>();
+  auto prgFactory1 = std::make_unique<engine::util::AesPrgFactory>();
+
+  auto rcotFactory0 =
+      std::make_unique<engine::tuple_generator::oblivious_transfer::insecure::
+                           DummyRandomCorrelatedObliviousTransferFactory>();
+  auto rcotFactory1 =
+      std::make_unique<engine::tuple_generator::oblivious_transfer::insecure::
+                           DummyRandomCorrelatedObliviousTransferFactory>();
+
+  auto cotWRMFactory0 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory0));
+  auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory1));
+
+  auto featureOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
+          0,
+          1,
+          true,
+          divisor,
+          *agentFactories[0],
+          std::move(prgFactory0),
+          std::move(cotWRMFactory0));
+  auto labelOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
+          1,
+          0,
+          false,
+          divisor,
+          *agentFactories[1],
+          std::move(prgFactory1),
+          std::move(cotWRMFactory1));
+
+  matrixVectorMultiplicationNoNoiseTest<0, 1, 0, 1>(
+      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+}
+
+TEST(
+    matrixVectorMultiplicationUniformNoiseTest,
+    testOTBasedMatrixMultiplicationWithDummyRCOT) {
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  // feature owner is party 0 and uses scheduler 0
+  // label owner is party 1 and uses scheduler 1
+  constexpr uint64_t divisor = static_cast<uint64_t>(1e9);
+  constexpr double tolerance = 1e-7;
+
+  auto prgFactory0 = std::make_unique<engine::util::AesPrgFactory>();
+  auto prgFactory1 = std::make_unique<engine::util::AesPrgFactory>();
+
+  auto rcotFactory0 =
+      std::make_unique<engine::tuple_generator::oblivious_transfer::insecure::
+                           DummyRandomCorrelatedObliviousTransferFactory>();
+  auto rcotFactory1 =
+      std::make_unique<engine::tuple_generator::oblivious_transfer::insecure::
+                           DummyRandomCorrelatedObliviousTransferFactory>();
+
+  auto cotWRMFactory0 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory0));
+  auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory1));
+
+  auto featureOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
+          0,
+          1,
+          true,
+          divisor,
+          *agentFactories[0],
+          std::move(prgFactory0),
+          std::move(cotWRMFactory0));
+  auto labelOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
+          1,
+          0,
+          false,
+          divisor,
+          *agentFactories[1],
+          std::move(prgFactory1),
+          std::move(cotWRMFactory1));
+
+  matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
+      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+}
+
+TEST(
+    matrixVectorMultiplicationNoNoiseTest,
+    testOTBasedMatrixMultiplicationWithFERRET) {
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  // feature owner is party 0 and uses scheduler 0
+  // label owner is party 1 and uses scheduler 1
+  constexpr uint64_t divisor = static_cast<uint64_t>(1e9);
+  constexpr double tolerance = 1e-7;
+
+  auto prgFactory0 = std::make_unique<engine::util::AesPrgFactory>();
+  auto prgFactory1 = std::make_unique<engine::util::AesPrgFactory>();
+
+  auto rcotFactory0 = std::make_unique<
+      engine::tuple_generator::oblivious_transfer::
+          ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+      std::make_unique<engine::tuple_generator::oblivious_transfer::
+                           EmpShRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<engine::util::AesPrgFactory>(1024)),
+      std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                           RcotExtenderFactory>(
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               TenLocalLinearMatrixMultiplierFactory>(),
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               RegularErrorMultiPointCotFactory>(
+              std::make_unique<engine::tuple_generator::oblivious_transfer::
+                                   ferret::SinglePointCotFactory>())),
+      engine::tuple_generator::oblivious_transfer::ferret::kExtendedSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kBaseSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kWeight);
+  auto rcotFactory1 = std::make_unique<
+      engine::tuple_generator::oblivious_transfer::
+          ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+      std::make_unique<engine::tuple_generator::oblivious_transfer::
+                           EmpShRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<engine::util::AesPrgFactory>(1024)),
+      std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                           RcotExtenderFactory>(
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               TenLocalLinearMatrixMultiplierFactory>(),
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               RegularErrorMultiPointCotFactory>(
+              std::make_unique<engine::tuple_generator::oblivious_transfer::
+                                   ferret::SinglePointCotFactory>())),
+      engine::tuple_generator::oblivious_transfer::ferret::kExtendedSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kBaseSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kWeight);
+
+  auto cotWRMFactory0 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory0));
+  auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory1));
+
+  auto featureOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
+          0,
+          1,
+          true,
+          divisor,
+          *agentFactories[0],
+          std::move(prgFactory0),
+          std::move(cotWRMFactory0));
+  auto labelOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
+          1,
+          0,
+          false,
+          divisor,
+          *agentFactories[1],
+          std::move(prgFactory1),
+          std::move(cotWRMFactory1));
+
+  matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
+      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+}
+
+TEST(
+    matrixVectorMultiplicationUniformNoiseTest,
+    testOTBasedMatrixMultiplicationWithFERRET) {
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  // feature owner is party 0 and uses scheduler 0
+  // label owner is party 1 and uses scheduler 1
+  constexpr uint64_t divisor = static_cast<uint64_t>(1e9);
+  constexpr double tolerance = 1e-7;
+
+  auto prgFactory0 = std::make_unique<engine::util::AesPrgFactory>();
+  auto prgFactory1 = std::make_unique<engine::util::AesPrgFactory>();
+
+  auto rcotFactory0 = std::make_unique<
+      engine::tuple_generator::oblivious_transfer::
+          ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+      std::make_unique<engine::tuple_generator::oblivious_transfer::
+                           EmpShRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<engine::util::AesPrgFactory>(1024)),
+      std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                           RcotExtenderFactory>(
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               TenLocalLinearMatrixMultiplierFactory>(),
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               RegularErrorMultiPointCotFactory>(
+              std::make_unique<engine::tuple_generator::oblivious_transfer::
+                                   ferret::SinglePointCotFactory>())),
+      engine::tuple_generator::oblivious_transfer::ferret::kExtendedSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kBaseSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kWeight);
+  auto rcotFactory1 = std::make_unique<
+      engine::tuple_generator::oblivious_transfer::
+          ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
+      std::make_unique<engine::tuple_generator::oblivious_transfer::
+                           EmpShRandomCorrelatedObliviousTransferFactory>(
+          std::make_unique<engine::util::AesPrgFactory>(1024)),
+      std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                           RcotExtenderFactory>(
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               TenLocalLinearMatrixMultiplierFactory>(),
+          std::make_unique<engine::tuple_generator::oblivious_transfer::ferret::
+                               RegularErrorMultiPointCotFactory>(
+              std::make_unique<engine::tuple_generator::oblivious_transfer::
+                                   ferret::SinglePointCotFactory>())),
+      engine::tuple_generator::oblivious_transfer::ferret::kExtendedSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kBaseSize,
+      engine::tuple_generator::oblivious_transfer::ferret::kWeight);
+
+  auto cotWRMFactory0 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory0));
+  auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
+      std::move(rcotFactory1));
+
+  auto featureOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
+          0,
+          1,
+          true,
+          divisor,
+          *agentFactories[0],
+          std::move(prgFactory0),
+          std::move(cotWRMFactory0));
+  auto labelOwnerFactory =
+      std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
+          1,
+          0,
+          false,
+          divisor,
+          *agentFactories[1],
+          std::move(prgFactory1),
+          std::move(cotWRMFactory1));
+
+  matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
+      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+}
 } // namespace fbpcf::mpc_std_lib::walr
