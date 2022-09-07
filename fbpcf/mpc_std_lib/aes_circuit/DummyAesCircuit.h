@@ -22,7 +22,7 @@ class DummyAesCircuit final : public IAesCircuit<BitType> {
  private:
   std::vector<BitType> encrypt_impl(
       const std::vector<BitType>& plaintext,
-      const std::vector<BitType>& /* expandedEncKey */) const {
+      const std::vector<BitType>& /* expandedEncKey */) const override {
     return plaintext;
   }
 
@@ -31,7 +31,7 @@ class DummyAesCircuit final : public IAesCircuit<BitType> {
    */
   std::vector<BitType> decrypt_impl(
       const std::vector<BitType>& ciphertext,
-      const std::vector<BitType>& /* expandedDecKey */) const {
+      const std::vector<BitType>& /* expandedDecKey */) const override {
     return ciphertext;
   }
 };

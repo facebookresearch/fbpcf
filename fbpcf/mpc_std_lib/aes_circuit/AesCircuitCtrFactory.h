@@ -8,15 +8,18 @@
 #pragma once
 
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitCtrFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitFactory.h"
 
 namespace fbpcf::mpc_std_lib::aes_circuit {
 
 template <typename BitType>
-class AesCircuitFactory : IAesCircuitFactory<BitType> {
+class AesCircuitCtrFactory : IAesCircuitCtrFactory<BitType> {
  public:
-  std::unique_ptr<IAesCircuit<BitType>> create() override {
-    return std::make_unique<AesCircuit<BitType>>();
+  std::unique_ptr<IAesCircuitCtr<BitType>> create() override {
+    return std::make_unique<AesCircuitCtr<BitType>>(
+        std::make_unique<AesCircuit<BitType>>());
   }
 
   typename IAesCircuitFactory<BitType>::CircuitType getCircuitType()

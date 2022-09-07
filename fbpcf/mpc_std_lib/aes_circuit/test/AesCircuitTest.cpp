@@ -26,10 +26,14 @@
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/util/aes.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtrFactory.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr_impl.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit_impl.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/DummyAesCircuitFactory.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuit.h"
+#include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
 #include "fbpcf/mpc_std_lib/util/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
@@ -303,6 +307,7 @@ void testAesCircuitEncrypt(
   __m128i key = _mm_set_epi32(dist(e), dist(e), dist(e), dist(e));
   // generate random plaintext
   std::vector<uint8_t> plaintext;
+  plaintext.reserve(blockNo * 16);
   for (int i = 0; i < blockNo * 16; ++i) {
     plaintext.push_back(dist(e));
   }
@@ -313,33 +318,33 @@ void testAesCircuitEncrypt(
   engine::util::Aes truthAes(key);
   auto expendedKey = truthAes.expandEncryptionKey(key);
   // extract key and plaintext
-  std::vector<__m128i> keyVec(11);
-  for (int i = 0; i < 11; ++i) {
-    keyVec[i] = expendedKey[i];
-  }
-
   std::vector<uint8_t> extractedKeys;
+  extractedKeys.reserve(176);
   for (auto keyb : expendedKey) {
     loadValueFromLocalAes(keyb, extractedKeys);
   }
 
   // convert key and plaintext into bool vector
-  std::vector<bool> KeyBits;
-  int8VecToBinaryVec(extractedKeys, KeyBits);
+  std::vector<bool> keyBits;
+  keyBits.reserve(1408);
+  int8VecToBinaryVec(extractedKeys, keyBits);
   std::vector<bool> plaintextBits;
+  plaintextBits.reserve(blockNo * 128);
   int8VecToBinaryVec(plaintext, plaintextBits);
 
   // encrypt in real aes and aes circuit
   truthAes.encryptInPlace(plaintextAES);
-  auto ciphertextBits = AesCircuit->encrypt(plaintextBits, KeyBits);
+  auto ciphertextBits = AesCircuit->encrypt(plaintextBits, keyBits);
 
   // extract ciphertext
   std::vector<uint8_t> ciphertextTruth;
+  ciphertextTruth.reserve(blockNo * 16);
   for (auto b : plaintextAES) {
     loadValueFromLocalAes(b, ciphertextTruth);
   }
 
   std::vector<bool> cipherextBitsTruth;
+  cipherextBitsTruth.reserve(blockNo * 128);
   int8VecToBinaryVec(ciphertextTruth, cipherextBitsTruth);
 
   testVectorEq(ciphertextBits, cipherextBitsTruth);
@@ -347,6 +352,68 @@ void testAesCircuitEncrypt(
 
 TEST(AesCircuitTest, testAesCircuitEncrypt) {
   testAesCircuitEncrypt(std::make_unique<AesCircuitFactory<bool>>());
+}
+
+void testAesCircuitCtr(
+    std::shared_ptr<AesCircuitCtrFactory<bool>> AesCircuitCtrFactory) {
+  auto AesCircuitCtr = AesCircuitCtrFactory->create();
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint8_t> dist(0, 0xFF);
+  size_t blockNo = dist(e);
+
+  // generate random key
+  __m128i key = _mm_set_epi32(dist(e), dist(e), dist(e), dist(e));
+  // generate random plaintext
+  std::vector<uint8_t> plaintext;
+  plaintext.reserve(blockNo * 16);
+  for (int i = 0; i < blockNo * 16; ++i) {
+    plaintext.push_back(dist(e));
+  }
+
+  // generate random mask
+  std::vector<uint8_t> mask;
+  mask.reserve(blockNo * 16);
+  for (int i = 0; i < blockNo * 16; ++i) {
+    mask.push_back(i);
+  }
+
+  // expend key
+  engine::util::Aes truthAes(key);
+  auto expendedKey = truthAes.expandEncryptionKey(key);
+  // extract key and plaintext
+  std::vector<uint8_t> extractedKeys;
+  extractedKeys.reserve(176);
+  for (auto keyb : expendedKey) {
+    loadValueFromLocalAes(keyb, extractedKeys);
+  }
+
+  // convert key, plaintext, initial vector, and counter into bool vector
+  std::vector<bool> keyBits;
+  keyBits.reserve(1408);
+
+  int8VecToBinaryVec(extractedKeys, keyBits);
+  std::vector<bool> plaintextBits;
+  plaintextBits.reserve(blockNo * 128);
+
+  int8VecToBinaryVec(plaintext, plaintextBits);
+  std::vector<bool> maskBits;
+  maskBits.reserve(blockNo * 128);
+  int8VecToBinaryVec(mask, maskBits);
+
+  // encrypt in aes ctr circuit
+  auto ciphertextBits =
+      AesCircuitCtr->encrypt(plaintextBits, keyBits, maskBits);
+  // encrypt in aes ctr circuit
+  auto decryptedBits =
+      AesCircuitCtr->decrypt(ciphertextBits, keyBits, maskBits);
+
+  testVectorEq(decryptedBits, plaintextBits);
+}
+
+TEST(AesCircuitTest, testAesCircuitCtr) {
+  testAesCircuitCtr(std::make_unique<AesCircuitCtrFactory<bool>>());
 }
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit

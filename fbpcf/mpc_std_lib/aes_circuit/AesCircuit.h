@@ -20,7 +20,7 @@ class AesCircuit : public IAesCircuit<BitType> {
  private:
   std::vector<BitType> encrypt_impl(
       const std::vector<BitType>& plaintext,
-      const std::vector<BitType>& expandedEncKey) const;
+      const std::vector<BitType>& expandedEncKey) const override;
   void sharedSBoxInPlace(
       const std::array<BitType, 28>& T,
       const BitType& D,
@@ -33,7 +33,7 @@ class AesCircuit : public IAesCircuit<BitType> {
    */
   std::vector<BitType> decrypt_impl(
       const std::vector<BitType>& ciphertext,
-      const std::vector<BitType>& expandedDecKey) const;
+      const std::vector<BitType>& expandedDecKey) const override;
 
  protected:
   std::vector<std::array<WordType, 4>> convertToWords(
