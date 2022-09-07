@@ -7,22 +7,21 @@
 
 #pragma once
 
-#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuit.h"
+#include <memory>
+#include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitFactory.h"
 
 namespace fbpcf::mpc_std_lib::aes_circuit {
 
 template <typename BitType>
-class AesCircuitFactory : IAesCircuitFactory<BitType> {
+class IAesCircuitCtrFactory {
  public:
-  std::unique_ptr<IAesCircuit<BitType>> create() override {
-    return std::make_unique<AesCircuit<BitType>>();
-  }
+  virtual ~IAesCircuitCtrFactory() = default;
 
-  typename IAesCircuitFactory<BitType>::CircuitType getCircuitType()
-      const override {
-    return IAesCircuitFactory<BitType>::CircuitType::Secure;
-  }
+  virtual std::unique_ptr<IAesCircuitCtr<BitType>> create() = 0;
+
+  virtual typename IAesCircuitFactory<BitType>::CircuitType getCircuitType()
+      const = 0;
 };
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit

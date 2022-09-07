@@ -80,8 +80,8 @@ std::vector<BitType> AesCircuit<BitType>::encrypt_impl(
 
 template <typename BitType>
 std::vector<BitType> AesCircuit<BitType>::decrypt_impl(
-    const std::vector<BitType>& ciphertext,
-    const std::vector<BitType>& expandedDecKey) const {
+    const std::vector<BitType>& /* ciphertext */,
+    const std::vector<BitType>& /* expandedDecKey */) const {
   throw std::runtime_error("Not implemented!");
 }
 

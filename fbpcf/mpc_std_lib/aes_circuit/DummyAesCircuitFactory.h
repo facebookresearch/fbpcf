@@ -13,13 +13,14 @@
 namespace fbpcf::mpc_std_lib::aes_circuit::insecure {
 
 template <typename BitType>
-class DummyAesCircuitFactory {
+class DummyAesCircuitFactory : public IAesCircuitFactory<BitType> {
  public:
-  std::unique_ptr<IAesCircuit<BitType>> create() {
+  std::unique_ptr<IAesCircuit<BitType>> create() override {
     return std::make_unique<insecure::DummyAesCircuit<BitType>>();
   }
 
-  typename IAesCircuitFactory<BitType>::CircuitType getCircuitType() const {
+  typename IAesCircuitFactory<BitType>::CircuitType getCircuitType()
+      const override {
     return IAesCircuitFactory<BitType>::CircuitType::Dummy;
   }
 };
