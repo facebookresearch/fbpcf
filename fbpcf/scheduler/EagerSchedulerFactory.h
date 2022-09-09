@@ -21,7 +21,15 @@ class EagerSchedulerFactory final : public ISchedulerFactory<unsafe> {
  public:
   EagerSchedulerFactory(
       std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory)
-      : engineFactory_(std::move(engineFactory)) {}
+      : ISchedulerFactory<unsafe>(
+            std::make_shared<fbpcf::util::MetricCollector>("eager_scheduler")),
+        engineFactory_(std::move(engineFactory)) {}
+
+  EagerSchedulerFactory(
+      std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ISchedulerFactory<unsafe>(metricCollector),
+        engineFactory_(std::move(engineFactory)) {}
 
   std::unique_ptr<IScheduler> create() override {
     return std::make_unique<EagerScheduler>(
@@ -37,39 +45,48 @@ inline std::unique_ptr<EagerSchedulerFactory<unsafe>>
 getEagerSchedulerFactoryWithInsecureEngine(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
-        communicationAgentFactory) {
+        communicationAgentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "default_metric_collector")) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
       engine::getInsecureEngineFactoryWithDummyTupleGenerator(
           myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerSchedulerFactory<unsafe>>(
-      std::move(engineFactory));
+      std::move(engineFactory), metricCollector);
 }
 
 inline std::unique_ptr<EagerSchedulerFactory</* unsafe */ true>>
 getEagerSchedulerFactoryWithClassicOT(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
-        communicationAgentFactory) {
+        communicationAgentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "default_metric_collector")) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
       engine::getSecureEngineFactoryWithClassicOt(
           myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerSchedulerFactory</* unsafe */ true>>(
-      std::move(engineFactory));
+      std::move(engineFactory), metricCollector);
 }
 
 inline std::unique_ptr<EagerSchedulerFactory</* unsafe */ true>>
 getEagerSchedulerFactoryWithRealEngine(
     int myId,
     engine::communication::IPartyCommunicationAgentFactory&
-        communicationAgentFactory) {
+        communicationAgentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "default_metric_collector")) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
       engine::getSecureEngineFactoryWithFERRET(
           myId, 2, communicationAgentFactory);
 
   return std::make_unique<EagerSchedulerFactory</* unsafe */ true>>(
-      std::move(engineFactory));
+      std::move(engineFactory), metricCollector);
 }
 
 } // namespace fbpcf::scheduler

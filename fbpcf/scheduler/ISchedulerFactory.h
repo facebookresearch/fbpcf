@@ -8,15 +8,22 @@
 #pragma once
 
 #include "fbpcf/scheduler/IScheduler.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::scheduler {
 
 template <bool unsafe>
 class ISchedulerFactory {
  public:
+  explicit ISchedulerFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : metricCollector_(metricCollector) {}
   virtual ~ISchedulerFactory() = default;
 
   virtual std::unique_ptr<IScheduler> create() = 0;
+
+ protected:
+  std::shared_ptr<fbpcf::util::MetricCollector> metricCollector_;
 };
 
 } // namespace fbpcf::scheduler

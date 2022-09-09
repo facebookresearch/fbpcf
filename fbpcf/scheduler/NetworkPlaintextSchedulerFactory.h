@@ -23,7 +23,20 @@ class NetworkPlaintextSchedulerFactory final
       int myId,
       engine::communication::IPartyCommunicationAgentFactory&
           communicationAgentFactory)
-      : myId_(myId), communicationAgentFactory_(communicationAgentFactory) {}
+      : ISchedulerFactory<unsafe>(
+            std::make_shared<fbpcf::util::MetricCollector>(
+                "network_plaintext_scheduler")),
+        myId_(myId),
+        communicationAgentFactory_(communicationAgentFactory) {}
+
+  NetworkPlaintextSchedulerFactory(
+      int myId,
+      engine::communication::IPartyCommunicationAgentFactory&
+          communicationAgentFactory,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ISchedulerFactory<unsafe>(metricCollector),
+        myId_(myId),
+        communicationAgentFactory_(communicationAgentFactory) {}
 
   std::unique_ptr<IScheduler> create() override {
     auto numberOfParties = 2;
