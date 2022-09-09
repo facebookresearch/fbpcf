@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <openssl/opensslv.h>
 #include <openssl/ssl.h>
 #include <string>
 

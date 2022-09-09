@@ -171,6 +171,7 @@ void SocketPartyCommunicationAgent::openServerPort(int sockFd, int portNo) {
 void SocketPartyCommunicationAgent::openClientPort(
     const std::string& serverAddress,
     int portNo) {
+  XLOGF(INFO, "Version: {}", OpenSSL_version(OPENSSL_VERSION));
   XLOG(INFO) << "try to connect as client to " << serverAddress << " at port "
              << portNo;
 
