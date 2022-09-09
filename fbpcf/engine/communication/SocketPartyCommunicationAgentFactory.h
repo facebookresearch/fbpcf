@@ -62,6 +62,23 @@ establishing multiple connections (>3) between each party pair.
     setupInitialConnection(partyInfos);
   }
 
+  SocketPartyCommunicationAgentFactory(
+      int myId,
+      std::map<int, PartyInfo> partyInfos,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : IPartyCommunicationAgentFactory(metricCollector),
+        myId_(myId),
+        useTls_(false),
+        tlsDir_("") {
+    SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+    tlsInfo.useTls = false;
+    tlsInfo.certPath = "";
+    tlsInfo.keyPath = "";
+    tlsInfo.passphrasePath = "";
+    tlsInfo_ = tlsInfo;
+    setupInitialConnection(partyInfos);
+  }
+
   [[deprecated("Use the constructor with TlsInfo instead.")]] SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
@@ -87,6 +104,17 @@ establishing multiple connections (>3) between each party pair.
       SocketPartyCommunicationAgent::TlsInfo tlsInfo,
       std::string myname)
       : IPartyCommunicationAgentFactory(myname),
+        myId_(myId),
+        tlsInfo_(tlsInfo) {
+    setupInitialConnection(partyInfos);
+  }
+
+  SocketPartyCommunicationAgentFactory(
+      int myId,
+      std::map<int, PartyInfo> partyInfos,
+      SocketPartyCommunicationAgent::TlsInfo tlsInfo,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : IPartyCommunicationAgentFactory(metricCollector),
         myId_(myId),
         tlsInfo_(tlsInfo) {
     setupInitialConnection(partyInfos);

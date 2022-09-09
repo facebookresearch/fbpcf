@@ -41,6 +41,18 @@ class InMemoryPartyCommunicationAgentFactory final
     }
   }
 
+  InMemoryPartyCommunicationAgentFactory(
+      int myId,
+      std::map<int, std::shared_ptr<HostInfo>>&& sharedHosts,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : IPartyCommunicationAgentFactory(metricCollector),
+        myId_(myId),
+        sharedHosts_(sharedHosts) {
+    for (auto& item : sharedHosts_) {
+      createdAgentCount_.emplace(item.first, 0);
+    }
+  }
+
   /**
    * @inherit doc
    */

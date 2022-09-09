@@ -14,6 +14,7 @@
 
 #include "./BillionaireProblemGame.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
+#include "fbpcf/util/MetricCollector.h"
 
 DEFINE_int32(party, 0, "my party ID");
 DEFINE_string(server_ip, "127.0.0.1", "server's ip address");
@@ -27,6 +28,9 @@ int main(int argc, char* argv[]) {
   XLOGF(INFO, "server IP: {}", FLAGS_server_ip);
   XLOGF(INFO, "port: {}", FLAGS_port);
 
+  auto metricCollector =
+      std::make_shared<fbpcf::util::MetricCollector>("billionaire_problem");
+
   std::map<
       int,
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory::
@@ -36,7 +40,7 @@ int main(int argc, char* argv[]) {
            {1, {FLAGS_server_ip, FLAGS_port}}});
   auto factory = std::make_unique<
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory>(
-      FLAGS_party, partyInfos, "billionaire_problem_traffic");
+      FLAGS_party, partyInfos, metricCollector);
 
   auto game = std::make_unique<
       fbpcf::billionaire_problem::BillionaireProblemGame<0, true>>(
