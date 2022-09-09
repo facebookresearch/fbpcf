@@ -141,7 +141,9 @@ void matrixVectorMultiplicationTestHelper(
     double tolerance = 1e-7) {
   // setup mpc engine and schedulers
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
-  setupRealBackend<featureOwnerSchedulerId, labelOwnerSchedulerId>(
+  setupRealBackendWithLazyScheduler<
+      featureOwnerSchedulerId,
+      labelOwnerSchedulerId>(
       *agentFactories[featureOwnerId], *agentFactories[labelOwnerId]);
 
   frontend::Bit<true, featureOwnerSchedulerId, true> testLabelsShare0;

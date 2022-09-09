@@ -81,7 +81,7 @@ class DummyMatrixMultiplication final
   void matrixVectorMultiplication(
       const frontend::Bit<true, schedulerId, true>& labels,
       const std::vector<double>& dpNoise) const {
-    labels.openToParty(partnerId_);
+    labels.openToParty(partnerId_).getValue();
     agent_->sendT<double>(dpNoise);
   }
 

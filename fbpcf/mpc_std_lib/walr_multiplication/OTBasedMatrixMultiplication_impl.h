@@ -44,8 +44,12 @@ std::vector<double> OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
         std::to_string(std::numeric_limits<uint32_t>::max()) + " rows.");
   }
 
+  // Extracting label before running COTwRM to help the other party
+  // extract its label share, which will be used as choice bit
+  auto extractedLabels = labels.extractBit().getValue();
+
   // create COT with random message
-  // For each column, we run the COTwR once to generate two 128-bit random
+  // For each column, we run the COTwRM once to generate two 128-bit random
   // messages k0 and k1, which will be used to generate the random additive
   // noise vectors.
   auto [sender0Messages, sender1Messages] = cotWRM_->send(nLabels);
@@ -53,7 +57,6 @@ std::vector<double> OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
   assert(sender1Messages.size() == nLabels);
 
   // Now we run the protocol
-  auto extractedLabels = labels.extractBit().getValue();
   std::vector<FixedPointType> totalNoise(nFeatures, 0);
   for (size_t i = 0; i < nLabels; i++) {
     std::vector<FixedPointType> feature =
