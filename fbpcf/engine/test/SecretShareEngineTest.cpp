@@ -92,6 +92,31 @@ void assertPartyResultsConsistent(
   }
 }
 
+void assertPartyResultsConsistent(
+    std::tuple<
+        std::vector<bool>,
+        std::vector<std::vector<bool>>,
+        std::vector<uint64_t>> base,
+    std::tuple<
+        std::vector<bool>,
+        std::vector<std::vector<bool>>,
+        std::vector<uint64_t>> comparison) {
+  auto expectedAndResult = std::get<0>(base);
+  auto expectedCompositeAndResult = std::get<1>(base);
+  auto expectedMultResult = std::get<2>(base);
+
+  auto andResult = std::get<0>(comparison);
+  EXPECT_EQ(andResult.size(), expectedAndResult.size());
+
+  auto multResult = std::get<2>(comparison);
+  EXPECT_EQ(multResult.size(), expectedMultResult.size());
+
+  auto compositeResult = std::get<1>(comparison);
+  EXPECT_EQ(compositeResult.size(), expectedCompositeAndResult.size());
+  for (int j = 0; j < compositeResult.size(); j++) {
+    EXPECT_EQ(compositeResult[j].size(), expectedCompositeAndResult[j].size());
+  }
+}
 std::function<std::vector<bool>(
     std::unique_ptr<ISecretShareEngine> engine,
     int myId,
@@ -204,6 +229,81 @@ testTemplate(
             engine->revealToParty(0, compositeANDResults[i]);
       }
       return std::make_pair(andResults, compositeANDResults);
+    } else {
+      return outputs;
+    }
+  };
+}
+
+std::function<std::tuple<
+    std::vector<bool>,
+    std::vector<std::vector<bool>>,
+    std::vector<uint64_t>>(
+    std::unique_ptr<ISecretShareEngine> engine,
+    int myId,
+    int numberOfParty)>
+testTemplate(
+    const std::vector<std::pair<bool, int>>& boolInputsArrangement,
+    const std::vector<std::pair<uint64_t, int>>& intInputsArrangement,
+    std::tuple<
+        std::vector<bool>,
+        std::vector<std::vector<bool>>,
+        std::vector<uint64_t>>
+        testBody(
+            ISecretShareEngine& engine,
+            const std::vector<bool>&,
+            const std::vector<uint64_t>&),
+    bool resultNeedsOpen = true) {
+  return [boolInputsArrangement,
+          intInputsArrangement,
+          resultNeedsOpen,
+          testBody](
+             std::unique_ptr<ISecretShareEngine> engine,
+             int myId,
+             int numberOfParty) {
+    std::vector<bool> boolInputs;
+    for (int i = 0; i < boolInputsArrangement.size(); i++) {
+      if (boolInputsArrangement[i].second < numberOfParty) {
+        // a private value
+        if (myId == boolInputsArrangement[i].second) {
+          boolInputs.push_back(engine->setInput(
+              boolInputsArrangement[i].second, boolInputsArrangement[i].first));
+        } else {
+          boolInputs.push_back(
+              engine->setInput(boolInputsArrangement[i].second));
+        }
+      } else {
+        // a public value
+        boolInputs.push_back(boolInputsArrangement[i].first);
+      }
+    }
+
+    std::vector<uint64_t> intInputs;
+    for (size_t i = 0; i < intInputsArrangement.size(); i++) {
+      if (intInputsArrangement[i].second < numberOfParty) {
+        // a private value
+        if (myId == intInputsArrangement[i].second) {
+          intInputs.push_back(engine->setIntegerInput(
+              intInputsArrangement[i].second, intInputsArrangement[i].first));
+        } else {
+          intInputs.push_back(
+              engine->setIntegerInput(intInputsArrangement[i].second));
+        }
+      } else {
+        // a public value
+        intInputs.push_back(intInputsArrangement[i].first);
+      }
+    }
+    auto outputs = testBody(*engine, boolInputs, intInputs);
+    if (resultNeedsOpen) {
+      auto andResults = engine->revealToParty(0, std::get<0>(outputs));
+      std::vector<std::vector<bool>> compositeANDResults = std::get<1>(outputs);
+      for (int i = 0; i < compositeANDResults.size(); i++) {
+        compositeANDResults[i] =
+            engine->revealToParty(0, compositeANDResults[i]);
+      }
+      auto multResults = engine->revealToParty(0, std::get<2>(outputs));
+      return std::make_tuple(andResults, compositeANDResults, multResults);
     } else {
       return outputs;
     }
@@ -656,63 +756,92 @@ TEST(SecretShareEngineTest, TestBatchPlusWithDummyComponents) {
   }
 }
 
-std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
+std::tuple<
+    std::vector<bool>,
+    std::vector<std::vector<bool>>,
+    std::vector<uint64_t>>
+ANDMultTestBody(
     ISecretShareEngine& engine,
-    const std::vector<bool>& inputs) {
-  auto size = inputs.size();
-  EXPECT_EQ(size % 16, 0);
+    const std::vector<bool>& boolInputs,
+    const std::vector<uint64_t>& intInputs) {
+  auto intSize = intInputs.size();
+  auto boolSize = boolInputs.size();
+  EXPECT_EQ(intSize % 16, 0);
+  EXPECT_EQ(boolSize % 16, 0);
 
-  // regular AND's
-  std::vector<int> regularANDIndex(size / 2);
-  for (int i = 0; i < size / 2; i++) {
-    regularANDIndex[i] = engine.scheduleAND(inputs[i], inputs[i + size / 2]);
+  // regular Mult's
+  std::vector<int> regularMultIndex(intSize / 2);
+  for (int i = 0; i < intSize / 2; i++) {
+    regularMultIndex[i] =
+        engine.scheduleMult(intInputs[i], intInputs[i + intSize / 2]);
   }
 
+  // regular AND's
+  std::vector<int> regularANDIndex(boolSize / 2);
+  for (int i = 0; i < boolSize / 2; i++) {
+    regularANDIndex[i] =
+        engine.scheduleAND(boolInputs[i], boolInputs[i + boolSize / 2]);
+  }
+
+  // batch Mult's
+  auto firstHalfIntInput =
+      std::vector<uint64_t>(intInputs.begin(), intInputs.begin() + intSize / 2);
+
+  auto secondHalfIntInput =
+      std::vector<uint64_t>(intInputs.begin() + intSize / 2, intInputs.end());
+
+  auto batchIndexInt0 =
+      engine.scheduleBatchMult(firstHalfIntInput, secondHalfIntInput);
+  auto batchIndexInt1 =
+      engine.scheduleBatchMult(firstHalfIntInput, secondHalfIntInput);
+
   // batch AND's
+  auto firstHalfBoolInput =
+      std::vector<bool>(boolInputs.begin(), boolInputs.begin() + boolSize / 2);
 
-  auto firstHalfInput =
-      std::vector<bool>(inputs.begin(), inputs.begin() + size / 2);
+  auto secondHalfBoolInput =
+      std::vector<bool>(boolInputs.begin() + boolSize / 2, boolInputs.end());
+  engine.computeBatchANDImmediately(firstHalfBoolInput, secondHalfBoolInput);
 
-  auto secondHalfInput =
-      std::vector<bool>(inputs.begin() + size / 2, inputs.end());
-  engine.computeBatchANDImmediately(firstHalfInput, secondHalfInput);
-
-  auto batchIndex0 = engine.scheduleBatchAND(firstHalfInput, secondHalfInput);
-  auto batchIndex1 = engine.scheduleBatchAND(firstHalfInput, secondHalfInput);
+  auto batchIndexBool0 =
+      engine.scheduleBatchAND(firstHalfBoolInput, secondHalfBoolInput);
+  auto batchIndexBool1 =
+      engine.scheduleBatchAND(firstHalfBoolInput, secondHalfBoolInput);
 
   std::vector<bool> leftComposite15 =
-      std::vector<bool>(inputs.begin(), inputs.begin() + size / 16);
+      std::vector<bool>(boolInputs.begin(), boolInputs.begin() + boolSize / 16);
   std::vector<std::vector<bool>> rightComposite15(15);
 
-  for (int i = 0; i < size / 16; i++) {
+  for (int i = 0; i < boolSize / 16; i++) {
     for (int j = 0; j < 15; j++) {
-      rightComposite15[j].push_back(inputs[size / 16 + 15 * i + j]);
+      rightComposite15[j].push_back(boolInputs[boolSize / 16 + 15 * i + j]);
     }
   }
 
   std::vector<bool> leftComposite7 =
-      std::vector<bool>(inputs.begin(), inputs.begin() + size / 8);
+      std::vector<bool>(boolInputs.begin(), boolInputs.begin() + boolSize / 8);
   std::vector<std::vector<bool>> rightComposite7(7);
 
-  for (int i = 0; i < size / 8; i++) {
+  for (int i = 0; i < boolSize / 8; i++) {
     for (int j = 0; j < 7; j++) {
-      rightComposite7[j].push_back(inputs[size / 8 + 7 * i + j]);
+      rightComposite7[j].push_back(boolInputs[boolSize / 8 + 7 * i + j]);
     }
   }
 
   std::vector<bool> leftComposite3 =
-      std::vector<bool>(inputs.begin(), inputs.begin() + size / 4);
+      std::vector<bool>(boolInputs.begin(), boolInputs.begin() + boolSize / 4);
   std::vector<std::vector<bool>> rightComposite3(3);
 
-  for (int i = 0; i < size / 4; i++) {
+  for (int i = 0; i < boolSize / 4; i++) {
     for (int j = 0; j < 3; j++) {
-      rightComposite3[j].push_back(inputs[size / 4 + 3 * i + j]);
+      rightComposite3[j].push_back(boolInputs[boolSize / 4 + 3 * i + j]);
     }
   }
 
   // schedule composite runs by running through batch structures individually
-  std::vector<int> compositeANDIndex(size / 16 + size / 8 + size / 4);
-  for (int i = 0; i < size / 16; i++) {
+  std::vector<int> compositeANDIndex(
+      boolSize / 16 + boolSize / 8 + boolSize / 4);
+  for (int i = 0; i < boolSize / 16; i++) {
     std::vector<bool> rights(15);
     for (int j = 0; j < 15; j++) {
       rights[j] = rightComposite15[j][i];
@@ -721,20 +850,20 @@ std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
         engine.scheduleCompositeAND(leftComposite15[i], rights);
   }
 
-  for (int i = 0; i < size / 8; i++) {
+  for (int i = 0; i < boolSize / 8; i++) {
     std::vector<bool> rights(7);
     for (int j = 0; j < 7; j++) {
       rights[j] = rightComposite7[j][i];
     }
-    compositeANDIndex[size / 16 + i] =
+    compositeANDIndex[boolSize / 16 + i] =
         engine.scheduleCompositeAND(leftComposite7[i], rights);
   }
-  for (int i = 0; i < size / 4; i++) {
+  for (int i = 0; i < boolSize / 4; i++) {
     std::vector<bool> rights(3);
     for (int j = 0; j < 3; j++) {
       rights[j] = rightComposite3[j][i];
     }
-    compositeANDIndex[size / 16 + size / 8 + i] =
+    compositeANDIndex[boolSize / 16 + boolSize / 8 + i] =
         engine.scheduleCompositeAND(leftComposite3[i], rights);
   }
 
@@ -748,25 +877,41 @@ std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
 
   engine.executeScheduledOperations();
 
+  // Regular Mult
+  std::vector<uint64_t> multResult(intSize / 2);
+  for (size_t i = 0; i < intSize / 2; i++) {
+    multResult[i] = engine.getMultExecutionResult(regularMultIndex[i]);
+  }
+  auto tmp0 = engine.getBatchMultExecutionResult(batchIndexInt0);
+  multResult.insert(multResult.end(), tmp0.begin(), tmp0.end());
+
+  tmp0 = engine.getBatchMultExecutionResult(batchIndexInt1);
+  multResult.insert(multResult.end(), tmp0.begin(), tmp0.end());
+
+  tmp0 =
+      engine.computeBatchMultImmediately(firstHalfIntInput, secondHalfIntInput);
+  multResult.insert(multResult.end(), tmp0.begin(), tmp0.end());
+
   // Regular AND
-  std::vector<bool> andResult(size / 2);
-  for (size_t i = 0; i < size / 2; i++) {
+  std::vector<bool> andResult(boolSize / 2);
+  for (size_t i = 0; i < boolSize / 2; i++) {
     andResult[i] = engine.getANDExecutionResult(regularANDIndex[i]);
   }
-  auto tmp = engine.getBatchANDExecutionResult(batchIndex0);
-  andResult.insert(andResult.end(), tmp.begin(), tmp.end());
+  auto tmp1 = engine.getBatchANDExecutionResult(batchIndexBool0);
+  andResult.insert(andResult.end(), tmp1.begin(), tmp1.end());
 
-  tmp = engine.getBatchANDExecutionResult(batchIndex1);
-  andResult.insert(andResult.end(), tmp.begin(), tmp.end());
+  tmp1 = engine.getBatchANDExecutionResult(batchIndexBool1);
+  andResult.insert(andResult.end(), tmp1.begin(), tmp1.end());
 
-  tmp = engine.computeBatchANDImmediately(firstHalfInput, secondHalfInput);
-  andResult.insert(andResult.end(), tmp.begin(), tmp.end());
+  tmp1 = engine.computeBatchANDImmediately(
+      firstHalfBoolInput, secondHalfBoolInput);
+  andResult.insert(andResult.end(), tmp1.begin(), tmp1.end());
 
   // Composite AND
   std::vector<std::vector<bool>> compositeAndResult;
   for (auto compositeIndex : compositeANDIndex) {
-    tmp = engine.getCompositeANDExecutionResult(compositeIndex);
-    compositeAndResult.push_back(tmp);
+    tmp1 = engine.getCompositeANDExecutionResult(compositeIndex);
+    compositeAndResult.push_back(tmp1);
   }
 
   auto tmp2 = engine.getBatchCompositeANDExecutionResult(batchCompositeIndex0);
@@ -777,6 +922,162 @@ std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
 
   tmp2 = engine.getBatchCompositeANDExecutionResult(batchCompositeIndex2);
   compositeAndResult.insert(compositeAndResult.end(), tmp2.begin(), tmp2.end());
+
+  return std::make_tuple(andResult, compositeAndResult, multResult);
+}
+
+class NonFreeMultAndANDTestFixture
+    : public ::testing::TestWithParam<std::tuple<
+          std::string, // Human readable name
+          size_t, // number of parties
+          std::function<std::unique_ptr<SecretShareEngineFactory>(
+              int myId,
+              int numberOfParty,
+              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    SecretShareEngineTest,
+    NonFreeMultAndANDTestFixture,
+    ::testing::Values(
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "InsecureEngineWithDummyTupleGenerator",
+            2,
+            getInsecureEngineFactoryWithDummyTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "InsecureEngineWithDummyTupleGenerator",
+            4,
+            getInsecureEngineFactoryWithDummyTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "SecureEngineWithFerret",
+            2,
+            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator),
+        std::make_tuple<
+            std::string,
+            size_t,
+            std::function<std::unique_ptr<SecretShareEngineFactory>(
+                int myId,
+                int numberOfParty,
+                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+            "SecureEngineWithFerret",
+            3,
+            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator)),
+    [](const testing::TestParamInfo<NonFreeMultAndANDTestFixture::ParamType>&
+           info) {
+      return std::get<0>(info.param) + '_' +
+          std::to_string(std::get<1>(info.param)) + "Party";
+    });
+
+TEST_P(NonFreeMultAndANDTestFixture, TestMultAndAND) {
+  size_t numberOfParty = std::get<1>(GetParam());
+  size_t size = 16384;
+  auto boolInputs = generateRandomInputs(numberOfParty, size, size);
+  auto intInputs = generateRandomIntegerInputs(numberOfParty, size, size);
+
+  auto result = testHelper(
+      numberOfParty,
+      testTemplate(boolInputs, intInputs, ANDMultTestBody),
+      std::get<2>(GetParam()),
+      assertPartyResultsConsistent);
+  auto andResult = std::get<0>(result);
+  auto compositeAndResult = std::get<1>(result);
+  auto multResult = std::get<2>(result);
+
+  ASSERT_EQ(andResult.size(), 2 * size);
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(
+        andResult[i], boolInputs[i].first & boolInputs[i + size / 2].first);
+    EXPECT_EQ(
+        andResult[i + size / 2],
+        boolInputs[i].first & boolInputs[i + size / 2].first);
+    EXPECT_EQ(
+        andResult[i + size],
+        boolInputs[i].first & boolInputs[i + size / 2].first);
+    EXPECT_EQ(
+        andResult[i + size / 2 + size],
+        boolInputs[i].first & boolInputs[i + size / 2].first);
+  }
+
+  int composite15EndIndex = size / 16;
+  int composite7EndIndex = composite15EndIndex + size / 8;
+  int composite3EndIndex = composite7EndIndex + size / 4;
+  int batchComposite15EndIndex = composite3EndIndex + 15;
+  int batchComposite7EndIndex = batchComposite15EndIndex + 7;
+
+  // First check 1:15 runs
+  for (int i = 0; i < size / 16; i++) {
+    for (int j = 0; j < 15; j++) {
+      EXPECT_EQ(
+          compositeAndResult[i][j],
+          boolInputs[i].first & boolInputs[size / 16 + 15 * i + j].first);
+      EXPECT_EQ(
+          compositeAndResult[j + composite3EndIndex][i],
+          boolInputs[i].first & boolInputs[size / 16 + 15 * i + j].first);
+    }
+  }
+
+  for (int i = 0; i < size / 8; i++) {
+    for (int j = 0; j < 7; j++) {
+      EXPECT_EQ(
+          compositeAndResult[i + composite15EndIndex][j],
+          boolInputs[i].first & boolInputs[size / 8 + 7 * i + j].first);
+      EXPECT_EQ(
+          compositeAndResult[j + batchComposite15EndIndex][i],
+          boolInputs[i].first & boolInputs[size / 8 + 7 * i + j].first);
+    }
+  }
+
+  // check 1:3 runs
+  for (int i = 0; i < size / 4; i++) {
+    for (int j = 0; j < 3; j++) {
+      EXPECT_EQ(
+          compositeAndResult[i + composite7EndIndex][j],
+          boolInputs[i].first & boolInputs[size / 4 + 3 * i + j].first);
+      EXPECT_EQ(
+          compositeAndResult[j + batchComposite7EndIndex][i],
+          boolInputs[i].first & boolInputs[size / 4 + 3 * i + j].first);
+    }
+  }
+
+  ASSERT_EQ(multResult.size(), 2 * size);
+  for (int i = 0; i < size / 2; i++) {
+    EXPECT_EQ(
+        multResult[i], intInputs[i].first * intInputs[i + size / 2].first);
+    EXPECT_EQ(
+        multResult[i + size / 2],
+        intInputs[i].first * intInputs[i + size / 2].first);
+    EXPECT_EQ(
+        multResult[i + size],
+        intInputs[i].first * intInputs[i + size / 2].first);
+    EXPECT_EQ(
+        multResult[i + size / 2 + size],
+        intInputs[i].first * intInputs[i + size / 2].first);
+  }
+}
+
+std::pair<std::vector<bool>, std::vector<std::vector<bool>>> ANDTestBody(
+    ISecretShareEngine& engine,
+    const std::vector<bool>& inputs) {
+  auto [andResult, compositeAndResult, multResult] =
+      ANDMultTestBody(engine, inputs, std::vector<uint64_t>());
 
   return std::make_pair(andResult, compositeAndResult);
 }
@@ -917,42 +1218,8 @@ TEST_P(NonFreeAndTestFixture, TestAnd) {
 std::vector<uint64_t> MultTestBody(
     ISecretShareEngine& engine,
     const std::vector<uint64_t>& inputs) {
-  auto size = inputs.size();
-  EXPECT_EQ(size % 16, 0);
-
-  // regular Mult's
-  std::vector<int> regularMultIndex(size / 2);
-  for (int i = 0; i < size / 2; i++) {
-    regularMultIndex[i] = engine.scheduleMult(inputs[i], inputs[i + size / 2]);
-  }
-
-  // batch Mult's
-
-  auto firstHalfInput =
-      std::vector<uint64_t>(inputs.begin(), inputs.begin() + size / 2);
-
-  auto secondHalfInput =
-      std::vector<uint64_t>(inputs.begin() + size / 2, inputs.end());
-
-  auto batchIndex0 = engine.scheduleBatchMult(firstHalfInput, secondHalfInput);
-  auto batchIndex1 = engine.scheduleBatchMult(firstHalfInput, secondHalfInput);
-
-  engine.executeScheduledOperations();
-
-  // Regular Mult
-  std::vector<uint64_t> multResult(size / 2);
-  for (size_t i = 0; i < size / 2; i++) {
-    multResult[i] = engine.getMultExecutionResult(regularMultIndex[i]);
-  }
-  auto tmp = engine.getBatchMultExecutionResult(batchIndex0);
-  multResult.insert(multResult.end(), tmp.begin(), tmp.end());
-
-  tmp = engine.getBatchMultExecutionResult(batchIndex1);
-  multResult.insert(multResult.end(), tmp.begin(), tmp.end());
-
-  tmp = engine.computeBatchMultImmediately(firstHalfInput, secondHalfInput);
-  multResult.insert(multResult.end(), tmp.begin(), tmp.end());
-
+  auto [andResult, compositeAndResult, multResult] =
+      ANDMultTestBody(engine, std::vector<bool>(), inputs);
   return multResult;
 }
 
@@ -999,7 +1266,7 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             2,
-            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator),
+            getSecureEngineFactoryWithIntegerOnlyTupleGenerator),
         std::make_tuple<
             std::string,
             size_t,
@@ -1009,7 +1276,7 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             3,
-            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator)),
+            getSecureEngineFactoryWithIntegerOnlyTupleGenerator)),
     [](const testing::TestParamInfo<NonFreeMultTestFixture::ParamType>& info) {
       return std::get<0>(info.param) + '_' +
           std::to_string(std::get<1>(info.param)) + "Party";
