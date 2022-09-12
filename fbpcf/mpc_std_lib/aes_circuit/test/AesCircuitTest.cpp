@@ -416,4 +416,357 @@ TEST(AesCircuitTest, testAesCircuitCtr) {
   testAesCircuitCtr(std::make_unique<AesCircuitCtrFactory<bool>>());
 }
 
+// test Aes Circuit in MPC with scheduler
+template <int schedulerId, bool usingBatch = false>
+using SecBit = frontend::Bit<true, schedulerId, usingBatch>;
+template <int schedulerId, bool usingBatch = false>
+using PubBit = frontend::Bit<false, schedulerId, usingBatch>;
+
+const int PLAYER0 = 0;
+const int PLAYER1 = 1;
+
+__m128i setAesKey(std::vector<uint8_t> keyBytes) {
+  return _mm_set_epi8(
+      keyBytes[0],
+      keyBytes[1],
+      keyBytes[2],
+      keyBytes[3],
+      keyBytes[4],
+      keyBytes[5],
+      keyBytes[6],
+      keyBytes[7],
+      keyBytes[8],
+      keyBytes[9],
+      keyBytes[10],
+      keyBytes[11],
+      keyBytes[12],
+      keyBytes[13],
+      keyBytes[14],
+      keyBytes[15]);
+}
+
+template <int schedulerId>
+std::vector<SecBit<schedulerId>> int8ToSecBit(
+    std::vector<uint8_t>& intVec,
+    int partyID) {
+  std::vector<SecBit<schedulerId>> rst;
+  rst.reserve(intVec.size());
+  for (auto intUnit : intVec) {
+    for (size_t i = 0; i < 8; ++i) {
+      bool bit = (intUnit >> (7 - i) & 1) == 1;
+      rst.push_back(SecBit<schedulerId>(bit, partyID));
+    }
+  }
+  return rst;
+}
+
+template <int schedulerId>
+std::vector<PubBit<schedulerId>> revealOutputs(
+    int myRole,
+    std::vector<SecBit<schedulerId>>& input) {
+  std::vector<PubBit<schedulerId>> rst;
+  if (myRole == 0) {
+    for (int i = 0; i < input.size(); ++i) {
+      rst.push_back(input[i].openToParty(PLAYER0));
+    }
+    for (int i = 0; i < input.size(); ++i) {
+      input[i].openToParty(PLAYER1);
+    }
+  } else {
+    for (int i = 0; i < input.size(); ++i) {
+      input[i].openToParty(PLAYER0);
+    }
+    for (int i = 0; i < input.size(); ++i) {
+      rst.push_back(input[i].openToParty(PLAYER1));
+    }
+  }
+  return rst;
+}
+
+template <int schedulerId>
+std::pair<std::vector<bool>, std::vector<uint8_t>> encryptionWithScheduler(
+    int myRole,
+    std::shared_ptr<fbpcf::scheduler::ISchedulerFactory<unsafe>>
+        schedulerFactory,
+    std::shared_ptr<AesCircuitFactory<SecBit<schedulerId>>> AesCircuitFactory) {
+  auto scheduler = schedulerFactory->create();
+  fbpcf::scheduler::SchedulerKeeper<schedulerId>::setScheduler(
+      std::move(scheduler));
+  auto aesCircuit = AesCircuitFactory->create();
+
+  // generate input
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint8_t> dist(0, 0xFF);
+  size_t blockNo = 53;
+
+  // generate random key
+  std::vector<uint8_t> keyBytes;
+  for (int i = 0; i < 16; ++i) {
+    keyBytes.push_back(dist(e));
+  }
+  __m128i key = setAesKey(keyBytes);
+  // generate random plaintext
+  std::vector<uint8_t> plaintext;
+  plaintext.reserve(blockNo * 16);
+  for (int i = 0; i < blockNo * 16; ++i) {
+    plaintext.push_back(dist(e));
+  }
+
+  // expend key
+  engine::util::Aes truthAes(key);
+  auto expendedKey = truthAes.expandEncryptionKey(key);
+  // extract key and plaintext
+  std::vector<uint8_t> extractedKeys;
+  extractedKeys.reserve(176);
+  for (auto keyb : expendedKey) {
+    loadValueFromLocalAes(keyb, extractedKeys);
+  }
+
+  // convert key and plaintext into bool vector
+  std::vector<SecBit<schedulerId>> keySecBits;
+  std::vector<uint8_t> dummyKey(176);
+  keySecBits = int8ToSecBit<schedulerId>(
+      myRole == PLAYER0 ? extractedKeys : dummyKey, PLAYER0);
+
+  std::vector<SecBit<schedulerId>> plaintextSecBits;
+  std::vector<uint8_t> dummyPlaintext(plaintext.size());
+  plaintextSecBits = int8ToSecBit<schedulerId>(
+      myRole == PLAYER1 ? plaintext : dummyPlaintext, PLAYER1);
+
+  auto encryptedSecBits = aesCircuit->encrypt(plaintextSecBits, keySecBits);
+  auto openEncryptedSecBits =
+      revealOutputs<schedulerId>(myRole, encryptedSecBits);
+  std::vector<bool> encryptedBits;
+  encryptedBits.reserve(encryptedSecBits.size());
+  for (int i = 0; i < encryptedSecBits.size(); ++i) {
+    encryptedBits.push_back(openEncryptedSecBits[i].getValue());
+  }
+
+  return std::pair(encryptedBits, myRole == PLAYER0 ? keyBytes : plaintext);
+}
+
+void testAesCircuitWithScheduler(fbpcf::SchedulerType schedulerType) {
+  auto communicationAgentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
+
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType,
+      fbpcf::EngineType::EngineWithDummyTuple,
+      0,
+      *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType,
+      fbpcf::EngineType::EngineWithDummyTuple,
+      1,
+      *communicationAgentFactory1);
+
+  auto aesCircuitFactory0 = std::make_unique<AesCircuitFactory<SecBit<0>>>();
+  auto aesCircuitFactory1 = std::make_unique<AesCircuitFactory<SecBit<1>>>();
+
+  auto future0 = std::async(
+      encryptionWithScheduler<0>,
+      PLAYER0,
+      std::move(schedulerFactory0),
+      std::move(aesCircuitFactory0));
+
+  auto future1 = std::async(
+      encryptionWithScheduler<1>,
+      PLAYER1,
+      std::move(schedulerFactory1),
+      std::move(aesCircuitFactory1));
+
+  auto rst0 = future0.get();
+  auto rst1 = future1.get();
+
+  auto encryptedBits0 = std::get<0>(rst0);
+  auto encryptedBits1 = std::get<0>(rst1);
+
+  auto plaintext = std::get<1>(rst1);
+  auto keyBytes = std::get<1>(rst0);
+
+  std::vector<__m128i> plaintextAES;
+  loadValueToLocalAes(plaintext, plaintextAES);
+  __m128i key = setAesKey(keyBytes);
+  // expend key
+  engine::util::Aes truthAes(key);
+
+  // encrypt in real aes
+  truthAes.encryptInPlace(plaintextAES);
+
+  // extract ciphertext
+  std::vector<uint8_t> ciphertextTruth;
+  ciphertextTruth.reserve(plaintext.size());
+  for (auto b : plaintextAES) {
+    loadValueFromLocalAes(b, ciphertextTruth);
+  }
+
+  std::vector<bool> cipherextBitsTruth;
+  cipherextBitsTruth.reserve(ciphertextTruth.size() * 8);
+  int8VecToBinaryVec(ciphertextTruth, cipherextBitsTruth);
+
+  testVectorEq(encryptedBits1, encryptedBits0);
+  testVectorEq(encryptedBits0, cipherextBitsTruth);
+}
+
+class AesCircuitSchedulerTestFixture
+    : public ::testing::TestWithParam<SchedulerType> {};
+
+INSTANTIATE_TEST_SUITE_P(
+    AesCircuitSchedulerTest,
+    AesCircuitSchedulerTestFixture,
+    ::testing::Values(
+        SchedulerType::NetworkPlaintext,
+        SchedulerType::Lazy,
+        SchedulerType::Eager),
+    [](const testing::TestParamInfo<AesCircuitSchedulerTestFixture::ParamType>&
+           info) { return getSchedulerName(info.param); });
+
+TEST_P(AesCircuitSchedulerTestFixture, testAesCircuitScheduler) {
+  auto schedulerType = GetParam();
+  testAesCircuitWithScheduler(schedulerType);
+}
+
+template <int schedulerId>
+std::pair<std::vector<bool>, std::vector<uint8_t>> encryptionCtrWithScheduler(
+    int myRole,
+    std::shared_ptr<fbpcf::scheduler::ISchedulerFactory<unsafe>>
+        schedulerFactory,
+    std::shared_ptr<AesCircuitCtrFactory<SecBit<schedulerId>>>
+        AesCircuitCtrFactory) {
+  auto scheduler = schedulerFactory->create();
+  fbpcf::scheduler::SchedulerKeeper<schedulerId>::setScheduler(
+      std::move(scheduler));
+  auto aesCircuit = AesCircuitCtrFactory->create();
+
+  // generate input
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint8_t> dist(0, 0xFF);
+  size_t blockNo = 53;
+
+  // generate random key
+  std::vector<uint8_t> keyBytes;
+  for (int i = 0; i < 16; ++i) {
+    keyBytes.push_back(dist(e));
+  }
+  __m128i key = setAesKey(keyBytes);
+  // generate random plaintext
+  std::vector<uint8_t> plaintext;
+  plaintext.reserve(blockNo * 16);
+  for (int i = 0; i < blockNo * 16; ++i) {
+    plaintext.push_back(dist(e));
+  }
+  // generate random mask
+  std::vector<uint8_t> mask;
+  mask.reserve(blockNo * 16);
+  for (int i = 0; i < blockNo * 16; ++i) {
+    mask.push_back(dist(e));
+  }
+
+  // expend key
+  engine::util::Aes truthAes(key);
+  auto expendedKey = truthAes.expandEncryptionKey(key);
+  // extract key and plaintext
+  std::vector<uint8_t> extractedKeys;
+  extractedKeys.reserve(176);
+  for (auto keyb : expendedKey) {
+    loadValueFromLocalAes(keyb, extractedKeys);
+  }
+
+  // convert key, plaintext, and mask into bool vector
+  std::vector<SecBit<schedulerId>> keySecBits;
+  std::vector<uint8_t> dummyKey(176);
+  keySecBits = int8ToSecBit<schedulerId>(
+      myRole == PLAYER0 ? extractedKeys : dummyKey, PLAYER0);
+
+  std::vector<SecBit<schedulerId>> plaintextSecBits;
+  std::vector<uint8_t> dummyPlaintext(plaintext.size());
+  plaintextSecBits = int8ToSecBit<schedulerId>(
+      myRole == PLAYER1 ? plaintext : dummyPlaintext, PLAYER1);
+
+  std::vector<SecBit<schedulerId>> maskSecBits;
+  std::vector<uint8_t> dummyMask(mask.size());
+  maskSecBits =
+      int8ToSecBit<schedulerId>(myRole == PLAYER1 ? mask : dummyMask, PLAYER1);
+
+  auto encryptedSecBits =
+      aesCircuit->encrypt(plaintextSecBits, keySecBits, maskSecBits);
+  auto decryptedSecBits =
+      aesCircuit->decrypt(encryptedSecBits, keySecBits, maskSecBits);
+  auto openDecryptedSecBits =
+      revealOutputs<schedulerId>(myRole, decryptedSecBits);
+  std::vector<bool> decryptedBits;
+  decryptedBits.reserve(decryptedSecBits.size());
+  for (int i = 0; i < decryptedSecBits.size(); ++i) {
+    decryptedBits.push_back(openDecryptedSecBits[i].getValue());
+  }
+
+  return std::pair(decryptedBits, plaintext);
+}
+
+void testAesCircuitCtrWithScheduler(fbpcf::SchedulerType schedulerType) {
+  auto communicationAgentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  // Creating shared pointers to the communicationAgentFactories
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory0 = std::move(communicationAgentFactories[0]);
+
+  std::shared_ptr<fbpcf::engine::communication::IPartyCommunicationAgentFactory>
+      communicationAgentFactory1 = std::move(communicationAgentFactories[1]);
+
+  auto schedulerFactory0 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType,
+      fbpcf::EngineType::EngineWithTupleFromFERRET,
+      0,
+      *communicationAgentFactory0);
+  auto schedulerFactory1 = fbpcf::getSchedulerFactory<unsafe>(
+      schedulerType,
+      fbpcf::EngineType::EngineWithTupleFromFERRET,
+      1,
+      *communicationAgentFactory1);
+
+  auto aesCircuitFactory0 = std::make_unique<AesCircuitCtrFactory<SecBit<0>>>();
+  auto aesCircuitFactory1 = std::make_unique<AesCircuitCtrFactory<SecBit<1>>>();
+
+  auto future0 = std::async(
+      encryptionCtrWithScheduler<0>,
+      PLAYER0,
+      std::move(schedulerFactory0),
+      std::move(aesCircuitFactory0));
+
+  auto future1 = std::async(
+      encryptionCtrWithScheduler<1>,
+      PLAYER1,
+      std::move(schedulerFactory1),
+      std::move(aesCircuitFactory1));
+
+  auto rst0 = future0.get();
+  auto rst1 = future1.get();
+
+  auto decryptedBits0 = std::get<0>(rst0);
+  auto decryptedBits1 = std::get<0>(rst1);
+
+  auto plaintext = std::get<1>(rst1);
+
+  std::vector<bool> plaintextBits;
+  plaintextBits.reserve(decryptedBits0.size());
+  int8VecToBinaryVec(plaintext, plaintextBits);
+
+  testVectorEq(decryptedBits0, decryptedBits1);
+  testVectorEq(decryptedBits0, plaintextBits);
+}
+
+TEST_P(AesCircuitSchedulerTestFixture, testAesCircuitCtrScheduler) {
+  auto schedulerType = GetParam();
+  testAesCircuitCtrWithScheduler(schedulerType);
+}
 } // namespace fbpcf::mpc_std_lib::aes_circuit
