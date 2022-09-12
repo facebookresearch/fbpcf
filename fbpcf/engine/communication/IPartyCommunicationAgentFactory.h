@@ -23,6 +23,10 @@ class IPartyCommunicationAgentFactory {
       : metricCollector_(std::make_shared<fbpcf::util::MetricCollector>(name)) {
   }
 
+  explicit IPartyCommunicationAgentFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : metricCollector_(metricCollector) {}
+
   virtual ~IPartyCommunicationAgentFactory() = default;
 
   /**
