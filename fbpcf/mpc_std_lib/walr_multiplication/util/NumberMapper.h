@@ -37,16 +37,12 @@ class NumberMapper {
                   int64_t>>>>;
 
  public:
-  explicit NumberMapper(uint64_t divisor) : divisor_(divisor) {
-    if (divisor > std::numeric_limits<FixedPointType>::max()) {
-      throw std::invalid_argument(
-          "The divisor's value should not exceed the max value a FixedPointType can represent.");
-    }
-  }
-  static constexpr uintmax_t groupSizeInt =
-      std::numeric_limits<FixedPointType>::max() + 1;
+  explicit NumberMapper(uint64_t divisor) : divisor_(divisor) {}
 
-  static constexpr double groupSizeDouble = double(groupSizeInt);
+  static constexpr double groupSizeEstimation =
+      ((double)std::numeric_limits<FixedPointType>::max()) + 1;
+  static constexpr double maxAbsValueEstimation =
+      (double)std::numeric_limits<SignedFixedPointType>::max();
 
   /*
    * Methods supporting converting from/to FixedPointType.
@@ -59,13 +55,14 @@ class NumberMapper {
    */
   inline FixedPointType mapToFixedPointType(double input) const {
     double product = input * divisor_;
-    if (std::abs(product) > groupSizeDouble) {
-      XLOG_EVERY_MS(WARN, 500) << "Magnitude of input number " << input
-                               << " too large. Conversion exceeds group size."
-                               << " May incur unwanted precision loss.";
+    if (std::abs(product) > maxAbsValueEstimation) {
+      XLOG_EVERY_MS(ERR, 500)
+          << "Magnitude of input number " << input
+          << "might be too large. Conversion exceeds group size."
+          << " May incur unwanted precision loss.";
     }
-    uintmax_t rst = static_cast<uintmax_t>(static_cast<intmax_t>(product));
-    return static_cast<FixedPointType>(rst);
+    return static_cast<FixedPointType>(
+        static_cast<SignedFixedPointType>(product));
   }
 
   std::vector<FixedPointType> mapToFixedPointType(
