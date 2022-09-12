@@ -17,6 +17,14 @@ namespace fbpcf::scheduler {
 template <bool unsafe>
 class PlaintextSchedulerFactory final : public ISchedulerFactory<unsafe> {
  public:
+  PlaintextSchedulerFactory()
+      : ISchedulerFactory<unsafe>(
+            std::make_shared<fbpcf::util::MetricCollector>(
+                "plaintext_scheduler")) {}
+
+  PlaintextSchedulerFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ISchedulerFactory<unsafe>(metricCollector) {}
   std::unique_ptr<IScheduler> create() override {
     return std::make_unique<PlaintextScheduler>(
         WireKeeper::createWithVectorArena<unsafe>());
