@@ -969,16 +969,6 @@ INSTANTIATE_TEST_SUITE_P(
                 communication::IPartyCommunicationAgentFactory& agentFactory)>>(
             "SecureEngineWithFerret",
             2,
-            getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator),
-        std::make_tuple<
-            std::string,
-            size_t,
-            std::function<std::unique_ptr<SecretShareEngineFactory>(
-                int myId,
-                int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
-            "SecureEngineWithFerret",
-            3,
             getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator)),
     [](const testing::TestParamInfo<NonFreeMultAndANDTestFixture::ParamType>&
            info) {
