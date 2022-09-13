@@ -8,6 +8,7 @@
 #include <fbpcf/mpc_std_lib/walr_multiplication/util/NumberMapper.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <sys/types.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -42,7 +43,6 @@ TEST(numberMapperTest, testBasicConversion) {
   auto mapper32 = NumberMapper<uint32_t>(divisor);
   constexpr uint64_t groupSize =
       (uint64_t)std::numeric_limits<uint32_t>::max() + 1;
-
   // Basic conversion
   // 1.0 / 7 = 0.1428571428571
   EXPECT_EQ(mapper32.mapToFixedPointType(1.0 / 7), 1428571);
@@ -52,18 +52,11 @@ TEST(numberMapperTest, testBasicConversion) {
   // Converting negative number
   // On the integer group of size 2^32, -k is equivalent to 2^32 - k
   EXPECT_EQ(mapper32.mapToFixedPointType(-1.0 / 7), groupSize - 1428571);
-
-  // Overflow
-  double input = ((uint32_t)1 << 31) + (1.0 / 7);
-  EXPECT_EQ(
-      mapper32.mapToFixedPointType(input),
-      (uint64_t)(input * divisor) % groupSize);
 }
 
 TEST(numberMapperTest, testUnsignedConversionPrecision) {
   constexpr uint64_t divisor = static_cast<uint64_t>(1e9);
   auto mapper64 = NumberMapper<uint64_t>(divisor);
-
   std::random_device rd;
   std::mt19937_64 e(rd());
   std::uniform_real_distribution<double> dist(0, 10.1);
