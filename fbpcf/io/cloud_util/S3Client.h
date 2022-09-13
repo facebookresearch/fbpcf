@@ -22,7 +22,7 @@ class S3Client {
   }
 
  public:
-  static S3Client& getInstance(const fbpcf::aws::S3ClientOption& option);
+  static std::shared_ptr<S3Client> getInstance(const fbpcf::aws::S3ClientOption& option);
 
   std::shared_ptr<Aws::S3::S3Client> getS3Client() {
     return awsS3Client_;

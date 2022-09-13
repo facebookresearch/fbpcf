@@ -76,7 +76,7 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
     return std::make_unique<S3FileUploader>(
         fbpcf::cloudio::S3Client::getInstance(
             fbpcf::aws::S3ClientOption{.region = ref.region})
-            .getS3Client(),
+            ->getS3Client(),
         filePath);
   } else {
     throw fbpcf::PcfException("Not supported yet.");
