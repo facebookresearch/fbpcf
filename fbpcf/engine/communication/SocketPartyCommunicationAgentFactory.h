@@ -27,7 +27,7 @@ namespace fbpcf::engine::communication {
 /**
  * An communication factory API
  */
-class SocketPartyCommunicationAgentFactory final
+class SocketPartyCommunicationAgentFactory
     : public IPartyCommunicationAgentFactory {
  public:
   struct PartyInfo {
