@@ -7,8 +7,11 @@
 
 #pragma once
 
+#include <future>
 #include <memory>
+
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
+#include "fbpcf/engine/communication/test/SocketPartyCommunicationAgentFactoryForTests.h"
 
 namespace fbpcf::engine::communication {
 
@@ -35,5 +38,60 @@ getInMemoryAgentFactory(int numberOfParty) {
   }
   return rst;
 }
+
+inline std::pair<
+    std::unique_ptr<communication::IPartyCommunicationAgentFactory>,
+    std::unique_ptr<communication::IPartyCommunicationAgentFactory>>
+getSocketAgentFactoryPair(
+    fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo&
+        tlsInfo) {
+  std::map<
+      int,
+      fbpcf::engine::communication::SocketPartyCommunicationAgentFactory::
+          PartyInfo>
+      partyInfosAlice({{1, {"", 0}}});
+
+  auto communicationAgentFactoryAlice =
+      std::make_unique<fbpcf::engine::communication::
+                           SocketPartyCommunicationAgentFactoryForTests>(
+          0,
+          partyInfosAlice,
+          tlsInfo,
+          std::make_shared<fbpcf::util::MetricCollector>(
+              "aggregation_test_traffic"));
+
+  std::map<
+      int,
+      fbpcf::engine::communication::SocketPartyCommunicationAgentFactory::
+          PartyInfo>
+      partyInfosBob({{0, {"127.0.0.1", 0}}});
+
+  auto boundPorts = communicationAgentFactoryAlice->getBoundPorts();
+  partyInfosBob.at(0).portNo =
+      boundPorts.at(1); // tell partner how to connect to publisher
+
+  auto communicationAgentFactoryBob =
+      std::make_unique<fbpcf::engine::communication::
+                           SocketPartyCommunicationAgentFactoryForTests>(
+          1,
+          partyInfosBob,
+          tlsInfo,
+          std::make_shared<fbpcf::util::MetricCollector>(
+              "aggregation_test_traffic"));
+
+  auto task =
+      [](std::unique_ptr<fbpcf::engine::communication::
+                             SocketPartyCommunicationAgentFactoryForTests>
+             factory) {
+        factory->completeNetworkingSetup();
+        return factory;
+      };
+
+  auto futureAlice =
+      std::async(task, std::move(communicationAgentFactoryAlice));
+  auto futureBob = std::async(task, std::move(communicationAgentFactoryBob));
+
+  return {futureAlice.get(), futureBob.get()};
+};
 
 } // namespace fbpcf::engine::communication

@@ -14,10 +14,12 @@
 #include <queue>
 #include <random>
 #include <stdexcept>
+#include <utility>
 
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
+#include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/communication/test/SocketInTestHelper.h"
 #include "folly/Random.h"
 #include "folly/logging/xlog.h"
@@ -123,15 +125,13 @@ inline std::pair<
     std::unique_ptr<communication::IPartyCommunicationAgentFactory>,
     std::unique_ptr<communication::IPartyCommunicationAgentFactory>>
 getSocketAgentFactories() {
-  auto agentsByParty =
-      std::make_shared<BenchmarkSocketAgentFactory::AgentsByParty>();
-  agentsByParty->agents = std::vector<
-      std::queue<std::unique_ptr<communication::IPartyCommunicationAgent>>>(2);
-  agentsByParty->mutex = std::make_unique<std::mutex>();
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
 
-  return {
-      std::make_unique<util::BenchmarkSocketAgentFactory>(0, agentsByParty),
-      std::make_unique<util::BenchmarkSocketAgentFactory>(1, agentsByParty)};
+  return communication::getSocketAgentFactoryPair(tlsInfo);
 };
 
 } // namespace fbpcf::engine::util
