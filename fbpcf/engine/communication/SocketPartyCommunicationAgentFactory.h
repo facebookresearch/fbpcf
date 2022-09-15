@@ -52,13 +52,15 @@ establishing multiple connections (>3) between each party pair.
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
         useTls_(false),
-        tlsDir_("") {
+        tlsDir_(""),
+        partyInfos_(partyInfos) {
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = false;
     tlsInfo.certPath = "";
     tlsInfo.keyPath = "";
     tlsInfo.passphrasePath = "";
     tlsInfo_ = tlsInfo;
+    setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
 
@@ -69,13 +71,15 @@ establishing multiple connections (>3) between each party pair.
       : IPartyCommunicationAgentFactory(metricCollector),
         myId_(myId),
         useTls_(false),
-        tlsDir_("") {
+        tlsDir_(""),
+        partyInfos_(partyInfos) {
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = false;
     tlsInfo.certPath = "";
     tlsInfo.keyPath = "";
     tlsInfo.passphrasePath = "";
     tlsInfo_ = tlsInfo;
+    setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
 
@@ -88,13 +92,15 @@ establishing multiple connections (>3) between each party pair.
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
         useTls_(useTls),
-        tlsDir_(tlsDir) {
+        tlsDir_(tlsDir),
+        partyInfos_(partyInfos) {
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = useTls;
     tlsInfo.certPath = tlsDir + "/cert.pem";
     tlsInfo.keyPath = tlsDir + "/key.pem";
     tlsInfo.passphrasePath = tlsDir + "/passphrase.pem";
     tlsInfo_ = tlsInfo;
+    setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
 
@@ -105,7 +111,9 @@ establishing multiple connections (>3) between each party pair.
       std::string myname)
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
-        tlsInfo_(tlsInfo) {
+        tlsInfo_(tlsInfo),
+        partyInfos_(partyInfos) {
+    setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
 
@@ -116,7 +124,9 @@ establishing multiple connections (>3) between each party pair.
       std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
       : IPartyCommunicationAgentFactory(metricCollector),
         myId_(myId),
-        tlsInfo_(tlsInfo) {
+        tlsInfo_(tlsInfo),
+        partyInfos_(partyInfos) {
+    setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
 
@@ -126,7 +136,25 @@ establishing multiple connections (>3) between each party pair.
   std::unique_ptr<IPartyCommunicationAgent> create(int id, std::string name)
       override;
 
- private:
+ protected:
+  /**
+   * This constructor sets member variables but does
+   * not make any connections. This is important
+   * for tests, and thus is protected (not public).
+   */
+  SocketPartyCommunicationAgentFactory(
+      int myId,
+      std::map<int, PartyInfo> partyInfos,
+      SocketPartyCommunicationAgent::TlsInfo tlsInfo,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector,
+      bool /* skipConnection */)
+      : IPartyCommunicationAgentFactory(metricCollector),
+        myId_(myId),
+        tlsInfo_(tlsInfo),
+        partyInfos_(partyInfos) {
+    setupInitialSockets(partyInfos);
+  }
+
   /**
    * @param portNo intended port number for the socket. If portNo=0, a random
    * free port number will be used instead
@@ -134,9 +162,13 @@ establishing multiple connections (>3) between each party pair.
    */
   std::pair<int, int> createSocketFromMaybeFreePort(int portNo);
 
+  int getPortFromSocket(int sockfd);
+
+  void setupInitialSockets(const std::map<int, PartyInfo>& partyInfos);
   void setupInitialConnection(const std::map<int, PartyInfo>& partyInfos);
 
   int myId_;
+  std::map<int, int> sockets_;
   std::map<
       int,
       std::pair<PartyInfo, std::unique_ptr<SocketPartyCommunicationAgent>>>
@@ -151,6 +183,7 @@ establishing multiple connections (>3) between each party pair.
   std::string tlsDir_;
 
   SocketPartyCommunicationAgent::TlsInfo tlsInfo_;
+  std::map<int, PartyInfo> partyInfos_;
 };
 
 } // namespace fbpcf::engine::communication
