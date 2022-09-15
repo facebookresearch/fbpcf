@@ -85,6 +85,10 @@ SocketPartyCommunicationAgentFactory::createSocketFromMaybeFreePort(
     return {sockfd, portNo};
   }
 
+  return {sockfd, getPortFromSocket(sockfd)};
+}
+
+int SocketPartyCommunicationAgentFactory::getPortFromSocket(int sockfd) {
   struct sockaddr_in actualAddr;
 
   socklen_t len = sizeof(actualAddr);
@@ -94,41 +98,51 @@ SocketPartyCommunicationAgentFactory::createSocketFromMaybeFreePort(
   if (ntohs(actualAddr.sin_port) == 0) {
     throw std::runtime_error("port number shouldn't be 0.");
   }
-  return {sockfd, ntohs(actualAddr.sin_port)};
+
+  return ntohs(actualAddr.sin_port);
+}
+
+void SocketPartyCommunicationAgentFactory::setupInitialSockets(
+    const std::map<int, PartyInfo>& partyInfos) {
+  for (const auto& [partyId, partyInfo] : partyInfos) {
+    if (myId_ < partyId) {
+      auto [socket, port] = createSocketFromMaybeFreePort(partyInfo.portNo);
+      sockets_.insert({partyId, socket});
+    }
+  }
 }
 
 void SocketPartyCommunicationAgentFactory::setupInitialConnection(
     const std::map<int, PartyInfo>& partyInfos) {
-  for (auto& item : partyInfos) {
-    if (myId_ < item.first) {
+  for (const auto& [partyId, partyInfo] : partyInfos) {
+    if (myId_ < partyId) {
       auto recorder =
           std::make_shared<PartyCommunicationAgentTrafficRecorder>();
       metricCollector_->addNewRecorder(
-          "Port_number_sync_traffic_with_party_" + std::to_string(item.first),
-          recorder);
-      auto [socket, _] = createSocketFromMaybeFreePort(item.second.portNo);
-      initialConnections_.insert(
-          {item.first,
-           std::make_pair(
-               item.second,
-               std::make_unique<SocketPartyCommunicationAgent>(
-                   socket, item.second.portNo, tlsInfo_, recorder))});
-
-    } else if (myId_ > item.first) {
-      auto recorder =
-          std::make_shared<PartyCommunicationAgentTrafficRecorder>();
-      metricCollector_->addNewRecorder(
-          "Port_number_sync_traffic_with_party_" + std::to_string(item.first),
+          "Port_number_sync_traffic_with_party_" + std::to_string(partyId),
           recorder);
       initialConnections_.insert(
-          {item.first,
+          {partyId,
            std::make_pair(
-               item.second,
+               partyInfo,
                std::make_unique<SocketPartyCommunicationAgent>(
-                   item.second.address,
-                   item.second.portNo,
+                   sockets_.at(partyId),
+                   partyInfo.portNo,
                    tlsInfo_,
                    recorder))});
+
+    } else if (myId_ > partyId) {
+      auto recorder =
+          std::make_shared<PartyCommunicationAgentTrafficRecorder>();
+      metricCollector_->addNewRecorder(
+          "Port_number_sync_traffic_with_party_" + std::to_string(partyId),
+          recorder);
+      initialConnections_.insert(
+          {partyId,
+           std::make_pair(
+               partyInfo,
+               std::make_unique<SocketPartyCommunicationAgent>(
+                   partyInfo.address, partyInfo.portNo, tlsInfo_, recorder))});
     }
   }
 }
