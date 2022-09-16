@@ -45,7 +45,7 @@ will contain a port (and an address that will be ignored) and will behave as a
 TCP server. We expect the gap between port numbers are large enough to allow
 establishing multiple connections (>3) between each party pair.
   */
-  SocketPartyCommunicationAgentFactory(
+  [[deprecated("Use the constructor with TlsInfo instead.")]] SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
       std::string myname)
@@ -64,7 +64,7 @@ establishing multiple connections (>3) between each party pair.
     setupInitialConnection(partyInfos);
   }
 
-  SocketPartyCommunicationAgentFactory(
+  [[deprecated("Use the constructor with TlsInfo instead.")]] SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
       std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)

@@ -25,9 +25,15 @@ void startEditDistanceGame(
           PartyInfo>
       partyInfos({{0, {serverIp, port}}, {1, {serverIp, port}}});
 
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
+
   auto communicationAgentFactory = std::make_unique<
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory>(
-      MyRole, partyInfos, "Edit Distance Traffic for main thread");
+      MyRole, partyInfos, tlsInfo, "Edit Distance Traffic for main thread");
 
   XLOG(INFO, "Creating Edit Distance App");
 
