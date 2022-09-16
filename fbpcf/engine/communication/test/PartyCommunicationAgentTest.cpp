@@ -153,6 +153,12 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
   auto port02 = port01 + 4;
   auto port12 = port01 + 8;
 
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
+
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
       {1, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port02}}};
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
@@ -160,18 +166,18 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo2 = {
       {0, {"127.0.0.1", port02}}, {1, {"127.0.0.1", port12}}};
 
-  auto factory1 = std::async([&partyInfo1]() {
+  auto factory1 = std::async([&partyInfo1, &tlsInfo]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, "Party_1");
+        1, partyInfo1, tlsInfo, "Party_1");
   });
 
-  auto factory2 = std::async([&partyInfo2]() {
+  auto factory2 = std::async([&partyInfo2, &tlsInfo]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, "Party_2");
+        2, partyInfo2, tlsInfo, "Party_2");
   });
 
   auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, "Party_0");
+      0, partyInfo0, tlsInfo, "Party_0");
 
   int size = 1048576; // 1024 ^ 2
 
@@ -208,6 +214,12 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithJammedPort) {
   auto port02 = port01 + 4;
   auto port12 = port01 + 8;
 
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
+
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
       {1, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port02}}};
   std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
@@ -236,18 +248,18 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithJammedPort) {
     ::bind(sockfd3, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in));
   }
 
-  auto factory1 = std::async([&partyInfo1]() {
+  auto factory1 = std::async([&partyInfo1, &tlsInfo]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, "Party_1");
+        1, partyInfo1, tlsInfo, "Party_1");
   });
 
-  auto factory2 = std::async([&partyInfo2]() {
+  auto factory2 = std::async([&partyInfo2, &tlsInfo]() {
     return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, "Party_2");
+        2, partyInfo2, tlsInfo, "Party_2");
   });
 
   auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, "Party_0");
+      0, partyInfo0, tlsInfo, "Party_0");
 
   int size = 1048576; // 1024 ^ 2
   auto thread0 =

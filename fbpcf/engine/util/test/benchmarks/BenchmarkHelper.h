@@ -48,14 +48,20 @@ getSocketAgents() {
   std::map<int, communication::SocketPartyCommunicationAgentFactory::PartyInfo>
       partyInfo1 = {{0, {"127.0.0.1", port}}};
 
-  auto factory1Future = std::async([&partyInfo1]() {
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
+
+  auto factory1Future = std::async([&partyInfo1, &tlsInfo]() {
     return std::make_unique<
         communication::SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, "party_1_unit_test_traffic");
+        1, partyInfo1, tlsInfo, "party_1_unit_test_traffic");
   });
   auto factory0 =
       std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
-          0, partyInfo0, "party_0_unit_test_traffic");
+          0, partyInfo0, tlsInfo, "party_0_unit_test_traffic");
   auto factory1 = factory1Future.get();
 
   auto task = [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>

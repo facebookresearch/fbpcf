@@ -31,6 +31,12 @@ int main(int argc, char* argv[]) {
   auto metricCollector =
       std::make_shared<fbpcf::util::MetricCollector>("billionaire_problem");
 
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
+
   std::map<
       int,
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory::
@@ -40,7 +46,7 @@ int main(int argc, char* argv[]) {
            {1, {FLAGS_server_ip, FLAGS_port}}});
   auto factory = std::make_unique<
       fbpcf::engine::communication::SocketPartyCommunicationAgentFactory>(
-      FLAGS_party, partyInfos, metricCollector);
+      FLAGS_party, partyInfos, tlsInfo, metricCollector);
 
   auto game = std::make_unique<
       fbpcf::billionaire_problem::BillionaireProblemGame<0, true>>(
