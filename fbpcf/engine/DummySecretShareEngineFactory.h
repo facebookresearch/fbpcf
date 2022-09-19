@@ -31,7 +31,9 @@ inline std::unique_ptr<DummySecretShareEngineFactory> getDummyEngineFactory(
     int myId,
     [[maybe_unused]] int numberOfParty,
     [[maybe_unused]] communication::IPartyCommunicationAgentFactory&
-        communicationAgentFactory) {
+        communicationAgentFactory,
+    [[maybe_unused]] std::shared_ptr<fbpcf::util::MetricCollector>
+        metricCollector) {
   return std::make_unique<DummySecretShareEngineFactory>(myId);
 }
 

@@ -20,11 +20,16 @@ namespace fbpcf::engine::tuple_generator::insecure {
 
 class DummyTupleGeneratorFactory final : public ITupleGeneratorFactory {
  public:
+  explicit DummyTupleGeneratorFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ITupleGeneratorFactory(metricCollector) {}
   /**
    * Create a dummy tuple generator;
    */
   std::unique_ptr<ITupleGenerator> create() override {
-    return std::make_unique<DummyTupleGenerator>();
+    auto recorder = std::make_shared<TuplesMetricRecorder>();
+    metricCollector_->addNewRecorder("tuple_generator", recorder);
+    return std::make_unique<DummyTupleGenerator>(recorder);
   }
 };
 

@@ -25,8 +25,10 @@ class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
           rcotFactory,
       communication::IPartyCommunicationAgentFactory& agentFactory,
       int myId,
-      uint64_t bufferSize)
-      : rcotFactory_{std::move(rcotFactory)},
+      uint64_t bufferSize,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ITupleGeneratorFactory(metricCollector),
+        rcotFactory_{std::move(rcotFactory)},
         agentFactory_{agentFactory},
         myId_(myId),
         bufferSize_(bufferSize) {}
@@ -61,6 +63,7 @@ class TwoPartyTupleGeneratorFactory final : public ITupleGeneratorFactory {
               otherId, "two_party_tuple_generator_traffic_as_ot_sender"));
     }
     auto recorder = std::make_shared<TuplesMetricRecorder>();
+    metricCollector_->addNewRecorder("tuple_generator", recorder);
 
     return std::make_unique<TwoPartyTupleGenerator>(
         std::move(senderRcot),

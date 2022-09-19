@@ -27,8 +27,10 @@ class TupleGeneratorFactory final : public ITupleGeneratorFactory {
       std::unique_ptr<util::IPrgFactory> prgFactory,
       int bufferSize,
       int myId,
-      int numberOfParty)
-      : productShareFactory_(std::move(productShareFactory)),
+      int numberOfParty,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ITupleGeneratorFactory(metricCollector),
+        productShareFactory_(std::move(productShareFactory)),
         prgFactory_(std::move(prgFactory)),
         bufferSize_(bufferSize),
         myId_(myId),
@@ -46,6 +48,8 @@ class TupleGeneratorFactory final : public ITupleGeneratorFactory {
       }
     }
     auto recorder = std::make_shared<TuplesMetricRecorder>();
+    metricCollector_->addNewRecorder("tuple_generator", recorder);
+
     return std::make_unique<TupleGenerator>(
         std::move(productShareGeneratorMap),
         prgFactory_->create(util::getRandomM128iFromSystemNoise()),

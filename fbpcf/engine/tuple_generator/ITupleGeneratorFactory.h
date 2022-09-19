@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::engine::tuple_generator {
 
@@ -18,12 +19,18 @@ namespace fbpcf::engine::tuple_generator {
 
 class ITupleGeneratorFactory {
  public:
+  explicit ITupleGeneratorFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : metricCollector_(metricCollector) {}
   virtual ~ITupleGeneratorFactory() = default;
 
   /**
    * Create a tuple generator with all party.
    */
   virtual std::unique_ptr<ITupleGenerator> create() = 0;
+
+ protected:
+  std::shared_ptr<fbpcf::util::MetricCollector> metricCollector_;
 };
 
 } // namespace fbpcf::engine::tuple_generator
