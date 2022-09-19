@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <future>
 #include <memory>
 
@@ -39,59 +40,83 @@ getInMemoryAgentFactory(int numberOfParty) {
   return rst;
 }
 
+inline std::vector<
+    std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>&
+getSocketFactoriesForMultipleParties(
+    int numParties,
+    SocketPartyCommunicationAgent::TlsInfo& tlsInfo,
+    std::vector<std::unique_ptr<
+        communication::SocketPartyCommunicationAgentFactoryForTests>>&
+        factories) {
+  std::vector<std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo>>
+      partyInfoVec(numParties);
+
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo;
+  std::vector<std::map<int, int>> boundPorts(numParties);
+
+  // 1. Create partyInfo that contains an entry for all parties
+  for (size_t i = 0; i < numParties; i++) {
+    partyInfo.insert({i, {"127.0.0.1", 0}});
+  }
+
+  // 2. Create a Socket agent for each party, and retrieve its ports
+  for (size_t i = 0; i < numParties; i++) {
+    partyInfoVec.at(i) = partyInfo;
+    factories.at(i) =
+        std::make_unique<SocketPartyCommunicationAgentFactoryForTests>(
+            i,
+            partyInfo,
+            tlsInfo,
+            std::make_shared<fbpcf::util::MetricCollector>(
+                "Party_" + std::to_string(i)));
+    boundPorts.at(i) = factories.at(i)->getBoundPorts();
+  }
+
+  // 3. Point each party to the bound port for all other parties
+  for (size_t i = 0; i < numParties; i++) {
+    for (size_t j = 0; j < numParties; j++) {
+      if (j > i) {
+        partyInfoVec.at(j).at(i).portNo = boundPorts.at(i).at(j);
+      }
+    }
+  }
+
+  // 4. Define all futures to complete networking connection
+  auto task =
+      [](std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests> factory,
+         std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo>
+             partyInfo) {
+        factory->completeNetworkingSetup(partyInfo);
+        return factory;
+      };
+
+  std::vector<std::future<
+      std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>>
+      futures(numParties);
+  for (size_t i = 0; i < numParties; i++) {
+    futures.at(i) =
+        std::async(task, std::move(factories.at(i)), partyInfoVec.at(i));
+  }
+
+  // 5. Wait for all futures
+  for (size_t i = 0; i < numParties; i++) {
+    factories.at(i) = futures.at(i).get();
+  }
+
+  return factories;
+}
+
 inline std::pair<
     std::unique_ptr<communication::IPartyCommunicationAgentFactory>,
     std::unique_ptr<communication::IPartyCommunicationAgentFactory>>
 getSocketAgentFactoryPair(
     fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo&
         tlsInfo) {
-  std::map<
-      int,
-      fbpcf::engine::communication::SocketPartyCommunicationAgentFactory::
-          PartyInfo>
-      partyInfosAlice({{1, {"", 0}}});
+  std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
+      factories(2);
+  getSocketFactoriesForMultipleParties(2, tlsInfo, factories);
 
-  auto communicationAgentFactoryAlice =
-      std::make_unique<fbpcf::engine::communication::
-                           SocketPartyCommunicationAgentFactoryForTests>(
-          0,
-          partyInfosAlice,
-          tlsInfo,
-          std::make_shared<fbpcf::util::MetricCollector>(
-              "aggregation_test_traffic"));
-
-  std::map<
-      int,
-      fbpcf::engine::communication::SocketPartyCommunicationAgentFactory::
-          PartyInfo>
-      partyInfosBob({{0, {"127.0.0.1", 0}}});
-
-  auto boundPorts = communicationAgentFactoryAlice->getBoundPorts();
-  partyInfosBob.at(0).portNo =
-      boundPorts.at(1); // tell partner how to connect to publisher
-
-  auto communicationAgentFactoryBob =
-      std::make_unique<fbpcf::engine::communication::
-                           SocketPartyCommunicationAgentFactoryForTests>(
-          1,
-          partyInfosBob,
-          tlsInfo,
-          std::make_shared<fbpcf::util::MetricCollector>(
-              "aggregation_test_traffic"));
-
-  auto task =
-      [](std::unique_ptr<fbpcf::engine::communication::
-                             SocketPartyCommunicationAgentFactoryForTests>
-             factory) {
-        factory->completeNetworkingSetup();
-        return factory;
-      };
-
-  auto futureAlice =
-      std::async(task, std::move(communicationAgentFactoryAlice));
-  auto futureBob = std::async(task, std::move(communicationAgentFactoryBob));
-
-  return {futureAlice.get(), futureBob.get()};
+  return {std::move(factories.at(0)), std::move(factories.at(1))};
 };
 
 } // namespace fbpcf::engine::communication
