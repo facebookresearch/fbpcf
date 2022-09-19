@@ -60,8 +60,8 @@ class SocketPartyCommunicationAgentFactoryForTests final
     return ports;
   }
 
-  void completeNetworkingSetup() {
-    setupInitialConnection(partyInfos_);
+  void completeNetworkingSetup(std::map<int, PartyInfo> partyInfos) {
+    setupInitialConnection(partyInfos);
   }
 };
 

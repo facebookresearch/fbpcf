@@ -103,43 +103,23 @@ TEST(InMemoryPartyCommunicationAgentTest, testSendAndReceive) {
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
   auto createdDir = setUpTlsFiles();
 
-  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
-  auto port02 = port01 + 4;
-  auto port12 = port01 + 8;
-
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
-      {1, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port02}}};
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
-      {0, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port12}}};
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo2 = {
-      {0, {"127.0.0.1", port02}}, {1, {"127.0.0.1", port12}}};
-
   fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
   tlsInfo.certPath = createdDir + "/cert.pem";
   tlsInfo.keyPath = createdDir + "/key.pem";
   tlsInfo.passphrasePath = createdDir + "/passphrase.pem";
   tlsInfo.useTls = true;
 
-  auto factory1 = std::async([&partyInfo1, &createdDir, &tlsInfo]() {
-    return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, tlsInfo, "Party_1");
-  });
-
-  auto factory2 = std::async([&partyInfo2, &createdDir, &tlsInfo]() {
-    return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, tlsInfo, "Party_2");
-  });
-
-  auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, tlsInfo, "Party_0");
+  std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
+      factories(3);
+  getSocketFactoriesForMultipleParties(3, tlsInfo, factories);
 
   int size = 1048576; // 1024 ^ 2
-  auto thread0 =
-      std::thread(testAgentFactory, 0, 3, size, std::move(factory0), "Party_0");
-  auto thread1 =
-      std::thread(testAgentFactory, 1, 3, size, factory1.get(), "Party_1");
-  auto thread2 =
-      std::thread(testAgentFactory, 2, 3, size, factory2.get(), "Party_2");
+  auto thread0 = std::thread(
+      testAgentFactory, 0, 3, size, std::move(factories.at(0)), "Party_0");
+  auto thread1 = std::thread(
+      testAgentFactory, 1, 3, size, std::move(factories.at(1)), "Party_1");
+  auto thread2 = std::thread(
+      testAgentFactory, 2, 3, size, std::move(factories.at(2)), "Party_2");
 
   thread2.join();
   thread1.join();
@@ -149,44 +129,24 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
 }
 
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
-  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
-  auto port02 = port01 + 4;
-  auto port12 = port01 + 8;
-
   fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
   tlsInfo.certPath = "";
   tlsInfo.keyPath = "";
   tlsInfo.passphrasePath = "";
   tlsInfo.useTls = false;
 
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
-      {1, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port02}}};
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
-      {0, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port12}}};
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo2 = {
-      {0, {"127.0.0.1", port02}}, {1, {"127.0.0.1", port12}}};
-
-  auto factory1 = std::async([&partyInfo1, &tlsInfo]() {
-    return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, tlsInfo, "Party_1");
-  });
-
-  auto factory2 = std::async([&partyInfo2, &tlsInfo]() {
-    return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, tlsInfo, "Party_2");
-  });
-
-  auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, tlsInfo, "Party_0");
+  std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
+      factories(3);
+  getSocketFactoriesForMultipleParties(3, tlsInfo, factories);
 
   int size = 1048576; // 1024 ^ 2
 
-  auto thread0 =
-      std::thread(testAgentFactory, 0, 3, size, std::move(factory0), "Party_0");
-  auto thread1 =
-      std::thread(testAgentFactory, 1, 3, size, factory1.get(), "Party_1");
-  auto thread2 =
-      std::thread(testAgentFactory, 2, 3, size, factory2.get(), "Party_2");
+  auto thread0 = std::thread(
+      testAgentFactory, 0, 3, size, std::move(factories.at(0)), "Party_0");
+  auto thread1 = std::thread(
+      testAgentFactory, 1, 3, size, std::move(factories.at(1)), "Party_1");
+  auto thread2 = std::thread(
+      testAgentFactory, 2, 3, size, std::move(factories.at(2)), "Party_2");
 
   thread2.join();
   thread1.join();
