@@ -76,6 +76,12 @@ TwoPartyTupleGenerator::getCompositeTuple(
             std::move(sender0Messages),
             std::move(receiverMessages),
             tupleSize));
+    if (tupleSize > kCompositeTupleExpansionThreshold) {
+      recorder_->addCompositeTuplesRequiringExpansionRequested(
+          count, tupleSize);
+    } else {
+      recorder_->addCompositeTuplesWithoutExpansionRequested(count, tupleSize);
+    }
   }
   return tuples;
 }
@@ -214,7 +220,7 @@ TwoPartyTupleGenerator::expandRCOTResults(
       result[i] = BooleanTuple(a, b, c);
     }
   } else {
-    if (requestedTupleSize <= 128) {
+    if (requestedTupleSize <= kCompositeTupleExpansionThreshold) {
       // H(k0) / H(l0)
       hashFromAes_.inPlaceHash(sender0Messages);
       // H(k1) / H(l1)

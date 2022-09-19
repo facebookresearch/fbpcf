@@ -45,6 +45,13 @@ class DummyTupleGenerator final : public ITupleGenerator {
             std::vector<bool>(tupleSize, 0),
             std::vector<bool>(tupleSize, 0));
       }
+      if (tupleSize > kCompositeTupleExpansionThreshold) {
+        recorder_->addCompositeTuplesRequiringExpansionRequested(
+            tupleCount, tupleSize);
+      } else {
+        recorder_->addCompositeTuplesWithoutExpansionRequested(
+            tupleCount, tupleSize);
+      }
     }
 
     return result;
