@@ -25,6 +25,7 @@
 #include "fbpcf/engine/SecretShareEngineFactory.h"
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::engine {
 
@@ -38,22 +39,29 @@ T testHelper(
     std::function<std::unique_ptr<ISecretShareEngineFactory>(
         int myId,
         int numberOfParty,
-        communication::IPartyCommunicationAgentFactory& agentFactory)>
+        communication::IPartyCommunicationAgentFactory& agentFactory,
+        std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)>
         engineFactory,
     void (*assertPartyResultsConsistent)(T base, T comparison)) {
   auto agentFactories = communication::getInMemoryAgentFactory(numberOfParty);
 
   std::vector<std::future<T>> futures;
   for (auto i = 0; i < numberOfParty; ++i) {
+    auto partyMetricCollector = std::make_shared<fbpcf::util::MetricCollector>(
+        "metric_collector_party_i");
     futures.push_back(std::async(
         [i, numberOfParty, test, engineFactory](
             std::reference_wrapper<
-                communication::IPartyCommunicationAgentFactory> agentFactory) {
-          auto engine = engineFactory(i, numberOfParty, agentFactory)->create();
+                communication::IPartyCommunicationAgentFactory> agentFactory,
+            std::shared_ptr<fbpcf::util::MetricCollector> metricCollector) {
+          auto engine =
+              engineFactory(i, numberOfParty, agentFactory, metricCollector)
+                  ->create();
           return test(std::move(engine), i, numberOfParty);
         },
         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
-            *agentFactories.at(i))));
+            *agentFactories.at(i)),
+        partyMetricCollector));
   }
   auto rst = futures.at(0).get();
   for (auto i = 1; i < numberOfParty; ++i) {
@@ -933,8 +941,9 @@ class NonFreeMultAndANDTestFixture
           std::function<std::unique_ptr<SecretShareEngineFactory>(
               int myId,
               int numberOfParty,
-              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
-};
+              communication::IPartyCommunicationAgentFactory& agentFactory,
+              std::shared_ptr<fbpcf::util::MetricCollector>
+                  metricCollector)>>> {};
 
 INSTANTIATE_TEST_SUITE_P(
     SecretShareEngineTest,
@@ -946,7 +955,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "InsecureEngineWithDummyTupleGenerator",
             2,
             getInsecureEngineFactoryWithDummyTupleGenerator),
@@ -956,7 +967,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "InsecureEngineWithDummyTupleGenerator",
             4,
             getInsecureEngineFactoryWithDummyTupleGenerator),
@@ -966,7 +979,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "SecureEngineWithFerret",
             2,
             getSecureEngineFactoryWithBooleanAndIntegerTupleGenerator)),
@@ -1079,8 +1094,9 @@ class NonFreeAndTestFixture
           std::function<std::unique_ptr<SecretShareEngineFactory>(
               int myId,
               int numberOfParty,
-              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
-};
+              communication::IPartyCommunicationAgentFactory& agentFactory,
+              std::shared_ptr<fbpcf::util::MetricCollector>
+                  metricCollector)>>> {};
 
 INSTANTIATE_TEST_SUITE_P(
     SecretShareEngineTest,
@@ -1092,7 +1108,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "InsecureEngineWithDummyTupleGenerator",
             2,
             getInsecureEngineFactoryWithDummyTupleGenerator),
@@ -1102,7 +1120,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "InsecureEngineWithDummyTupleGenerator",
             4,
             getInsecureEngineFactoryWithDummyTupleGenerator),
@@ -1112,7 +1132,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "SecureEngineWithFerret",
             2,
             getSecureEngineFactoryWithFERRET),
@@ -1122,7 +1144,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "SecureEngineWithFerret",
             3,
             getSecureEngineFactoryWithFERRET)),
@@ -1220,8 +1244,9 @@ class NonFreeMultTestFixture
           std::function<std::unique_ptr<SecretShareEngineFactory>(
               int myId,
               int numberOfParty,
-              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
-};
+              communication::IPartyCommunicationAgentFactory& agentFactory,
+              std::shared_ptr<fbpcf::util::MetricCollector>
+                  metricCollector)>>> {};
 
 INSTANTIATE_TEST_SUITE_P(
     SecretShareEngineTest,
@@ -1233,7 +1258,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "InsecureEngineWithDummyTupleGenerator",
             2,
             getInsecureEngineFactoryWithDummyTupleGenerator),
@@ -1243,7 +1270,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "InsecureEngineWithDummyTupleGenerator",
             4,
             getInsecureEngineFactoryWithDummyTupleGenerator),
@@ -1253,7 +1282,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "SecureEngineWithFerret",
             2,
             getSecureEngineFactoryWithIntegerOnlyTupleGenerator),
@@ -1263,7 +1294,9 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<SecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "SecureEngineWithFerret",
             3,
             getSecureEngineFactoryWithIntegerOnlyTupleGenerator)),
@@ -1573,8 +1606,9 @@ class DummyNonFreeAndTestFixture
           std::function<std::unique_ptr<DummySecretShareEngineFactory>(
               int myId,
               int numberOfParty,
-              communication::IPartyCommunicationAgentFactory& agentFactory)>>> {
-};
+              communication::IPartyCommunicationAgentFactory& agentFactory,
+              std::shared_ptr<fbpcf::util::MetricCollector>
+                  metricCollector)>>> {};
 
 INSTANTIATE_TEST_SUITE_P(
     DummySecretShareEngineTest,
@@ -1586,17 +1620,18 @@ INSTANTIATE_TEST_SUITE_P(
             std::function<std::unique_ptr<DummySecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
-            "DummyEngine",
-            2,
-            getDummyEngineFactory),
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>("DummyEngine", 2, getDummyEngineFactory),
         std::make_tuple<
             std::string,
             size_t,
             std::function<std::unique_ptr<DummySecretShareEngineFactory>(
                 int myId,
                 int numberOfParty,
-                communication::IPartyCommunicationAgentFactory& agentFactory)>>(
+                communication::IPartyCommunicationAgentFactory& agentFactory,
+                std::shared_ptr<fbpcf::util::MetricCollector>
+                    metricCollector)>>(
             "DummyEngine",
             5,
             getDummyEngineFactory)),

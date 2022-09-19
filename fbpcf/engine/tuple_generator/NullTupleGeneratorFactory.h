@@ -17,6 +17,9 @@ namespace fbpcf::engine::tuple_generator {
 
 class NullTupleGeneratorFactory final : public ITupleGeneratorFactory {
  public:
+  explicit NullTupleGeneratorFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : ITupleGeneratorFactory(metricCollector) {}
   /**
    * Create a null tuple generator;
    */

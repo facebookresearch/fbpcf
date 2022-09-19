@@ -16,6 +16,7 @@
 #include "fbpcf/engine/util/AesPrgFactory.h"
 #include "fbpcf/engine/util/test/benchmarks/BenchmarkHelper.h"
 #include "fbpcf/engine/util/test/benchmarks/NetworkedBenchmark.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::engine::tuple_generator {
 
@@ -161,7 +162,9 @@ class TupleGeneratorBenchmark final : public BaseTupleGeneratorBenchmark {
         std::make_unique<util::AesPrgFactory>(),
         bufferSize_,
         myId,
-        2);
+        2,
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "tuple_generator_benchmark"));
   }
 };
 
@@ -180,7 +183,9 @@ class TwoPartyTupleGeneratorBenchmark final
         oblivious_transfer::createFerretRcotFactory(),
         agentFactory,
         myId,
-        bufferSize_);
+        bufferSize_,
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "tuple_generator_benchmark"));
   }
 };
 
@@ -204,7 +209,9 @@ class TwoPartyCompositeTupleGeneratorBenchmark
         oblivious_transfer::createFerretRcotFactory(),
         agentFactory,
         myId,
-        bufferSize_);
+        bufferSize_,
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "tuple_generator_benchmark"));
   }
   void runSender() override {
     sender_->getCompositeTuple(tupleSizes_);

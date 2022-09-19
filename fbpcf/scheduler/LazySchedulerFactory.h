@@ -58,7 +58,7 @@ getLazySchedulerFactoryWithInsecureEngine(
             "default_metric_collector")) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
       engine::getInsecureEngineFactoryWithDummyTupleGenerator(
-          myId, 2, communicationAgentFactory);
+          myId, 2, communicationAgentFactory, metricCollector);
 
   return std::make_unique<LazySchedulerFactory<unsafe>>(
       std::move(engineFactory), metricCollector);
@@ -74,7 +74,7 @@ getLazySchedulerFactoryWithClassicOT(
             "default_metric_collector")) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
       engine::getSecureEngineFactoryWithClassicOt(
-          myId, 2, communicationAgentFactory);
+          myId, 2, communicationAgentFactory, metricCollector);
 
   return std::make_unique<LazySchedulerFactory</* unsafe */ true>>(
       std::move(engineFactory), metricCollector);
@@ -90,7 +90,7 @@ getLazySchedulerFactoryWithRealEngine(
             "default_metric_collector")) {
   std::unique_ptr<engine::ISecretShareEngineFactory> engineFactory =
       engine::getSecureEngineFactoryWithFERRET(
-          myId, 2, communicationAgentFactory);
+          myId, 2, communicationAgentFactory, metricCollector);
 
   return std::make_unique<LazySchedulerFactory</* unsafe */ true>>(
       std::move(engineFactory), metricCollector);

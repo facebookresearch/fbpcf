@@ -24,10 +24,18 @@ class BaseSecretShareEngineBenchmark : public util::NetworkedBenchmark {
 
     // We intentionally use a dummy tuple generator here to measure only the
     // network traffic incurred by the secret share engine.
-    senderFactory_ =
-        getInsecureEngineFactoryWithDummyTupleGenerator(0, 2, *agentFactory0_);
-    receiverFactory_ =
-        getInsecureEngineFactoryWithDummyTupleGenerator(1, 2, *agentFactory1_);
+    senderFactory_ = getInsecureEngineFactoryWithDummyTupleGenerator(
+        0,
+        2,
+        *agentFactory0_,
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "default_metric_collector_sender"));
+    receiverFactory_ = getInsecureEngineFactoryWithDummyTupleGenerator(
+        1,
+        2,
+        *agentFactory1_,
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "default_metric_collector_receiver"));
 
     // Set up randomized inputs
     batchInput0_ = util::getRandomBoolVector(batchSize_);

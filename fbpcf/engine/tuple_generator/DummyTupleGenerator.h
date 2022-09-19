@@ -15,11 +15,16 @@ namespace fbpcf::engine::tuple_generator::insecure {
  */
 class DummyTupleGenerator final : public ITupleGenerator {
  public:
+  explicit DummyTupleGenerator(std::shared_ptr<TuplesMetricRecorder> recorder)
+      : recorder_(recorder) {}
+
   std::vector<BooleanTuple> getBooleanTuple(uint32_t size) override {
     std::vector<BooleanTuple> result;
     for (size_t i = 0; i < size; i++) {
       result.push_back(BooleanTuple(0, 0, 0));
     }
+    recorder_->addTuplesConsumed(size);
+    recorder_->addTuplesGenerated(size);
     return result;
   }
 
@@ -70,6 +75,9 @@ class DummyTupleGenerator final : public ITupleGenerator {
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return {0, 0};
   }
+
+ private:
+  std::shared_ptr<TuplesMetricRecorder> recorder_;
 };
 
 } // namespace fbpcf::engine::tuple_generator::insecure

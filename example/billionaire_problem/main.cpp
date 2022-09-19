@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
   auto game = std::make_unique<
       fbpcf::billionaire_problem::BillionaireProblemGame<0, true>>(
       fbpcf::scheduler::getLazySchedulerFactoryWithRealEngine(
-          FLAGS_party, *factory)
+          FLAGS_party, *factory, metricCollector)
           ->create());
 
   const int size = 32;
