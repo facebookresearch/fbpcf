@@ -35,15 +35,54 @@ using ArithmeticTupleGeneratorFactoryCreator =
 template <bool testCompositeTuples>
 void assertTuplesMetricResults(
     std::shared_ptr<fbpcf::util::MetricCollector> metricCollector,
-    int expectedTupleCount) {
-  auto metrics = metricCollector->collectMetrics();
+    int expectedTupleCount,
+    std::map<size_t, uint32_t> expectedCompositeTuplesSizes) {
   auto collectorPrefix = metricCollector->getPrefix();
-  folly::dynamic expectMetrics = folly::dynamic::object;
 
-  ASSERT_EQ(
-      metrics[collectorPrefix + "." + "tuple_generator"]
-             ["boolean_tuples_consumed"],
-      expectedTupleCount);
+  auto tuplesMetricObject =
+      metricCollector
+          ->collectMetrics()[collectorPrefix + "." + "tuple_generator"];
+
+  ASSERT_EQ(tuplesMetricObject["boolean_tuples_consumed"], expectedTupleCount);
+
+  if constexpr (testCompositeTuples) {
+    uint64_t compositeTuplesWithoutExpansionRequested = 0,
+             compositeTuplesRequiringExpansionRequested = 0,
+             miniTuplesWithoutExpansionRequested = 0,
+             miniTuplesRequiringExpansionRequested = 0;
+    for (auto& compositeSizeToCount : expectedCompositeTuplesSizes) {
+      size_t compositeSize = compositeSizeToCount.first;
+      uint32_t tupleCount = compositeSizeToCount.second;
+      if (compositeSize > kCompositeTupleExpansionThreshold) {
+        compositeTuplesRequiringExpansionRequested += tupleCount;
+        miniTuplesRequiringExpansionRequested += tupleCount * compositeSize;
+      } else {
+        compositeTuplesWithoutExpansionRequested += tupleCount;
+        miniTuplesWithoutExpansionRequested += tupleCount * compositeSize;
+      }
+    }
+
+    ASSERT_EQ(
+        tuplesMetricObject["composite_tuples_requested"],
+        compositeTuplesWithoutExpansionRequested +
+            compositeTuplesRequiringExpansionRequested);
+
+    ASSERT_EQ(
+        tuplesMetricObject["composite_tuples_without_expansion_requested"],
+        compositeTuplesWithoutExpansionRequested);
+
+    ASSERT_EQ(
+        tuplesMetricObject["composite_tuples_requiring_expansion_requested"],
+        compositeTuplesRequiringExpansionRequested);
+
+    ASSERT_EQ(
+        tuplesMetricObject["mini_tuples_without_expansion_requested"],
+        miniTuplesWithoutExpansionRequested);
+
+    ASSERT_EQ(
+        tuplesMetricObject["mini_tuples_requiring_expansion_requested"],
+        miniTuplesRequiringExpansionRequested);
+  }
 }
 
 template <bool testCompositeTuples>
@@ -68,7 +107,7 @@ void assertResults(
 
   for (int i = 0; i < numberOfParty; i++) {
     assertTuplesMetricResults<testCompositeTuples>(
-        metricCollectors[i], expectedTupleCount);
+        metricCollectors[i], expectedTupleCount, expectedCompositeTuplesSizes);
   }
 
   for (int i = 0; i < expectedTupleCount; i++) {

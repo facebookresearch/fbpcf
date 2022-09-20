@@ -18,13 +18,20 @@ namespace fbpcf::engine::tuple_generator {
 
 const uint64_t kDefaultBufferSize = 16384;
 
+const size_t kCompositeTupleExpansionThreshold = 128;
+
 /**
  * This object is a metric recorder
  */
 class TuplesMetricRecorder final : public fbpcf::util::IMetricRecorder {
  public:
   TuplesMetricRecorder()
-      : tuplesGenerated_(0), tuplesConsumed_(0), tuplesUnused_(0) {}
+      : tuplesGenerated_(0),
+        tuplesConsumed_(0),
+        compositeTuplesWithoutExpansionRequested_(0),
+        compositeTuplesRequiringExpansionRequested_(0),
+        miniTuplesWithoutExpansionRequested_(0),
+        miniTuplesRequiringExpansionRequested_(0) {}
 
   void addTuplesGenerated(uint64_t size) {
     tuplesGenerated_ += size;
@@ -34,18 +41,56 @@ class TuplesMetricRecorder final : public fbpcf::util::IMetricRecorder {
     tuplesConsumed_ += size;
   }
 
+  void addCompositeTuplesWithoutExpansionRequested(
+      uint64_t count,
+      size_t size) {
+    compositeTuplesWithoutExpansionRequested_ += count;
+    miniTuplesWithoutExpansionRequested_ += count * size;
+  }
+
+  void addCompositeTuplesRequiringExpansionRequested(
+      uint64_t count,
+      size_t size) {
+    compositeTuplesRequiringExpansionRequested_ += count;
+    miniTuplesRequiringExpansionRequested_ += count * size;
+  }
+
   folly::dynamic getMetrics() const override {
     return folly::dynamic::object(
         "boolean_tuples_generated", tuplesGenerated_.load())(
         "boolean_tuples_consumed", tuplesConsumed_.load())(
         "boolean_tuples_unused",
-        tuplesGenerated_.load() - tuplesConsumed_.load());
+        tuplesGenerated_.load() - tuplesConsumed_.load())(
+        "composite_tuples_requested",
+        compositeTuplesWithoutExpansionRequested_.load() + compositeTuplesRequiringExpansionRequested_.load())(
+        "composite_tuples_without_expansion_requested",
+        compositeTuplesWithoutExpansionRequested_.load())(
+        "composite_tuples_requiring_expansion_requested",
+        compositeTuplesRequiringExpansionRequested_.load())(
+        "mini_tuples_without_expansion_requested",
+        miniTuplesWithoutExpansionRequested_.load())(
+        "mini_tuples_requiring_expansion_requested",
+        miniTuplesRequiringExpansionRequested_.load());
   }
 
  private:
   std::atomic_uint64_t tuplesGenerated_;
   std::atomic_uint64_t tuplesConsumed_;
-  std::atomic_uint64_t tuplesUnused_;
+
+  /**
+   * The following metrics are related to composite tuple generation.
+   * The first two record the number of composite tuple requests
+   * that do/don't require expansion from RCOT.
+   * The next two record the number of "mini tuples" from composite
+   * requests that do/don't require expansion from RCOT.
+   * Example: if a total of 3 requests have tupleSize = 20, 40, 150, and
+   * expansion is required for tupleSize > 128. Then the metrics are (2, 60,
+   * 150, 2, 1).
+   */
+  std::atomic_uint64_t compositeTuplesWithoutExpansionRequested_;
+  std::atomic_uint64_t compositeTuplesRequiringExpansionRequested_;
+  std::atomic_uint64_t miniTuplesWithoutExpansionRequested_;
+  std::atomic_uint64_t miniTuplesRequiringExpansionRequested_;
 };
 
 /**
