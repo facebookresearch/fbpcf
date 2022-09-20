@@ -18,6 +18,7 @@
 #include "fbpcf/scheduler/NetworkPlaintextScheduler.h"
 #include "fbpcf/scheduler/WireKeeper.h"
 #include "fbpcf/scheduler/gate_keeper/GateKeeper.h"
+#include "fbpcf/util/MetricCollector.h"
 
 namespace fbpcf::scheduler {
 
@@ -63,7 +64,11 @@ inline std::unique_ptr<IScheduler> createEagerSchedulerWithRealEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getSecureEngineFactoryWithFERRET(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   return std::make_unique<EagerScheduler>(
       engineFactory->create(),
@@ -76,7 +81,11 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithRealEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getSecureEngineFactoryWithFERRET(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   std::shared_ptr<IWireKeeper> wireKeeper =
       WireKeeper::createWithVectorArena</*unsafe*/ true>();
@@ -92,7 +101,11 @@ inline std::unique_ptr<IScheduler> createEagerSchedulerWithClassicOT(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getSecureEngineFactoryWithClassicOt(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   return std::make_unique<EagerScheduler>(
       engineFactory->create(),
@@ -104,7 +117,11 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithClassicOT(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getSecureEngineFactoryWithClassicOt(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   std::shared_ptr<IWireKeeper> wireKeeper =
       WireKeeper::createWithVectorArena</*unsafe*/ true>();
@@ -122,7 +139,11 @@ inline std::unique_ptr<IScheduler> createEagerSchedulerWithInsecureEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getInsecureEngineFactoryWithDummyTupleGenerator(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   return std::make_unique<EagerScheduler>(
       engineFactory->create(), WireKeeper::createWithVectorArena<unsafe>());
@@ -136,7 +157,11 @@ createArithmeticEagerSchedulerWithInsecureEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getInsecureEngineFactoryWithDummyTupleGenerator(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   return std::make_unique<EagerScheduler>(
       engineFactory->create(), WireKeeper::createWithVectorArena<unsafe>());
@@ -149,7 +174,11 @@ inline std::unique_ptr<IScheduler> createLazySchedulerWithInsecureEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getInsecureEngineFactoryWithDummyTupleGenerator(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   std::shared_ptr<IWireKeeper> wireKeeper =
       WireKeeper::createWithVectorArena<unsafe>();
@@ -168,7 +197,11 @@ createArithmeticLazySchedulerWithInsecureEngine(
     engine::communication::IPartyCommunicationAgentFactory&
         communicationAgentFactory) {
   auto engineFactory = engine::getInsecureEngineFactoryWithDummyTupleGenerator(
-      myId, 2, communicationAgentFactory);
+      myId,
+      2,
+      communicationAgentFactory,
+      std::make_shared<fbpcf::util::MetricCollector>(
+          "default_metric_collector"));
 
   std::shared_ptr<IWireKeeper> wireKeeper =
       WireKeeper::createWithVectorArena<unsafe>();

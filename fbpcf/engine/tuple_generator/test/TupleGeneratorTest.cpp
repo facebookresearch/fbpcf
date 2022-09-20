@@ -12,7 +12,6 @@
 #include <map>
 #include <memory>
 #include <thread>
-
 #include "fbpcf/engine/tuple_generator/DummyProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/IArithmeticTupleGenerator.h"
 #include "fbpcf/engine/tuple_generator/ITupleGenerator.h"
@@ -24,13 +23,28 @@ using TupleGeneratorFactoryCreator =
     std::unique_ptr<tuple_generator::ITupleGeneratorFactory>(
         int numberOfParty,
         int myId,
-        communication::IPartyCommunicationAgentFactory& agentFactory);
+        communication::IPartyCommunicationAgentFactory& agentFactory,
+        std::shared_ptr<fbpcf::util::MetricCollector> metricCollector);
 
 using ArithmeticTupleGeneratorFactoryCreator =
     std::unique_ptr<tuple_generator::IArithmeticTupleGeneratorFactory>(
         int numberOfParty,
         int myId,
         communication::IPartyCommunicationAgentFactory& agentFactory);
+
+template <bool testCompositeTuples>
+void assertTuplesMetricResults(
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector,
+    int expectedTupleCount) {
+  auto metrics = metricCollector->collectMetrics();
+  auto collectorPrefix = metricCollector->getPrefix();
+  folly::dynamic expectMetrics = folly::dynamic::object;
+
+  ASSERT_EQ(
+      metrics[collectorPrefix + "." + "tuple_generator"]
+             ["boolean_tuples_consumed"],
+      expectedTupleCount);
+}
 
 template <bool testCompositeTuples>
 void assertResults(
@@ -41,13 +55,20 @@ void assertResults(
             map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>>>&
         futures,
     int expectedTupleCount,
-    std::map<size_t, uint32_t> expectedCompositeTuplesSizes) {
+    std::map<size_t, uint32_t> expectedCompositeTuplesSizes,
+    std::vector<std::shared_ptr<fbpcf::util::MetricCollector>>
+        metricCollectors) {
   std::vector<std::pair<
       std::vector<ITupleGenerator::BooleanTuple>,
       std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>>
       results;
   for (int i = 0; i < numberOfParty; i++) {
     results.push_back(futures[i].get());
+  }
+
+  for (int i = 0; i < numberOfParty; i++) {
+    assertTuplesMetricResults<testCompositeTuples>(
+        metricCollectors[i], expectedTupleCount);
   }
 
   for (int i = 0; i < expectedTupleCount; i++) {
@@ -133,9 +154,12 @@ void testTupleGenerator(
          int myId,
          std::reference_wrapper<communication::IPartyCommunicationAgentFactory>
              agentFactory,
+         std::shared_ptr<fbpcf::util::MetricCollector> metricCollector,
          uint32_t tupleSize,
          std::map<size_t, uint32_t> compositeTupleSizes) {
-        auto generator = creator(numberOfParty, myId, agentFactory)->create();
+        auto generator =
+            creator(numberOfParty, myId, agentFactory, metricCollector)
+                ->create();
         if constexpr (testCompositeTuples) {
           return generator->getNormalAndCompositeBooleanTuples(
               tupleSize, compositeTupleSizes);
@@ -165,7 +189,11 @@ void testTupleGenerator(
       std::vector<ITupleGenerator::BooleanTuple>,
       std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>>>
       futures;
+
+  std::vector<std::shared_ptr<fbpcf::util::MetricCollector>> metricCollectors;
   for (int i = 0; i < numberOfParty; i++) {
+    metricCollectors.push_back(std::make_shared<fbpcf::util::MetricCollector>(
+        "tuple_generator_test_{}" + std::to_string(i)));
     futures.push_back(std::async(
         task,
         creator,
@@ -173,11 +201,16 @@ void testTupleGenerator(
         i,
         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
             *agentFactories.at(i)),
+        metricCollectors.back(),
         tupleSize,
         compositeTuplesSizes));
   }
   assertResults<testCompositeTuples>(
-      numberOfParty, futures, tupleSize, compositeTuplesSizes);
+      numberOfParty,
+      futures,
+      tupleSize,
+      compositeTuplesSizes,
+      metricCollectors);
 }
 
 void testArithmeticTupleGenerator(
@@ -276,9 +309,11 @@ void testTupleGeneratorThreadSynchronization(
                  std::reference_wrapper<
                      communication::IPartyCommunicationAgentFactory>
                      agentFactory,
+                 std::shared_ptr<fbpcf::util::MetricCollector> metricCollector,
                  uint32_t tupleSize,
                  std::map<size_t, uint32_t> compositeTupleSizes) {
-    auto generator = creator(numberOfParty, myId, agentFactory)->create();
+    auto generator =
+        creator(numberOfParty, myId, agentFactory, metricCollector)->create();
     std::vector<ITupleGenerator::BooleanTuple> normalResults;
     std::vector<ITupleGenerator::CompositeBooleanTuple> compositeResults;
     for (size_t i = 0; i < kTestBufferSize; i++) {
@@ -310,7 +345,12 @@ void testTupleGeneratorThreadSynchronization(
       std::vector<ITupleGenerator::BooleanTuple>,
       std::map<size_t, std::vector<ITupleGenerator::CompositeBooleanTuple>>>>>
       futures;
+
+  std::vector<std::shared_ptr<fbpcf::util::MetricCollector>> metricCollectors;
+
   for (int i = 0; i < numberOfParty; i++) {
+    metricCollectors.push_back(std::make_shared<fbpcf::util::MetricCollector>(
+        "tuple_generator_test_{}" + std::to_string(i)));
     futures.push_back(std::async(
         task,
         creator,
@@ -318,12 +358,17 @@ void testTupleGeneratorThreadSynchronization(
         i,
         std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
             *agentFactories.at(i)),
+        metricCollectors.back(),
         tupleSize,
         compositeTupleSizes));
   }
 
   assertResults<true>(
-      numberOfParty, futures, kTestBufferSize, {{8, kTestBufferSize}});
+      numberOfParty,
+      futures,
+      kTestBufferSize,
+      {{8, kTestBufferSize}},
+      metricCollectors);
 }
 
 TEST(

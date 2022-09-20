@@ -33,6 +33,10 @@ class MetricCollector {
     return result;
   }
 
+  std::string getPrefix() {
+    return prefix_;
+  }
+
   folly::dynamic aggregateMetrics() const {
     folly::dynamic result = folly::dynamic::object;
 

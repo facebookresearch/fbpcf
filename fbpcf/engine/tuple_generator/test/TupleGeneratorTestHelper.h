@@ -49,15 +49,20 @@ const uint64_t kTestBufferSize = 1024;
 inline std::unique_ptr<ITupleGeneratorFactory> createDummyTupleGeneratorFactory(
     int /*numberOfParty*/,
     int /*myId*/,
-    communication::IPartyCommunicationAgentFactory& /*agentFactory*/) {
-  return std::make_unique<insecure::DummyTupleGeneratorFactory>();
+    communication::IPartyCommunicationAgentFactory& /*agentFactory*/,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
+  return std::make_unique<insecure::DummyTupleGeneratorFactory>(
+      metricCollector);
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
 createTupleGeneratorFactoryWithDummyProductShareGenerator(
     int numberOfParty,
     int myId,
-    communication::IPartyCommunicationAgentFactory& agentFactory) {
+    communication::IPartyCommunicationAgentFactory& agentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
   return std::make_unique<TupleGeneratorFactory>(
       std::unique_ptr<IProductShareGeneratorFactory>(
           std::make_unique<insecure::DummyProductShareGeneratorFactory>(
@@ -65,14 +70,17 @@ createTupleGeneratorFactoryWithDummyProductShareGenerator(
       std::make_unique<util::AesPrgFactory>(kTestBufferSize),
       kTestBufferSize,
       myId,
-      numberOfParty);
+      numberOfParty,
+      metricCollector);
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
 createTupleGeneratorFactoryWithRealProductShareGenerator(
     int numberOfParty,
     int myId,
-    communication::IPartyCommunicationAgentFactory& agentFactory) {
+    communication::IPartyCommunicationAgentFactory& agentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
   auto otFactory = std::make_unique<
       oblivious_transfer::RcotBasedBidirectionObliviousTransferFactory>(
       myId,
@@ -90,7 +98,8 @@ createTupleGeneratorFactoryWithRealProductShareGenerator(
       std::make_unique<util::AesPrgFactory>(kTestBufferSize),
       kTestBufferSize,
       myId,
-      numberOfParty);
+      numberOfParty,
+      metricCollector);
 }
 
 inline std::unique_ptr<IArithmeticTupleGeneratorFactory>
@@ -137,7 +146,9 @@ inline std::unique_ptr<ITupleGeneratorFactory>
 createTwoPartyTupleGeneratorFactoryWithDummyRcot(
     int /*numberOfParty*/,
     int myId,
-    communication::IPartyCommunicationAgentFactory& agentFactory) {
+    communication::IPartyCommunicationAgentFactory& agentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
   auto rcot = std::unique_ptr<
       oblivious_transfer::IRandomCorrelatedObliviousTransferFactory>(
       std::make_unique<oblivious_transfer::insecure::
@@ -147,28 +158,34 @@ createTwoPartyTupleGeneratorFactoryWithDummyRcot(
       std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
           agentFactory),
       myId,
-      kTestBufferSize);
+      kTestBufferSize,
+      metricCollector);
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
 createTwoPartyTupleGeneratorFactoryWithRealOt(
     int /*numberOfParty*/,
     int myId,
-    communication::IPartyCommunicationAgentFactory& agentFactory) {
+    communication::IPartyCommunicationAgentFactory& agentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
   auto rcot = oblivious_transfer::createClassicRcotFactory();
   return std::make_unique<TwoPartyTupleGeneratorFactory>(
       std::move(rcot),
       std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
           agentFactory),
       myId,
-      kTestBufferSize);
+      kTestBufferSize,
+      metricCollector);
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
 createTwoPartyTupleGeneratorFactoryWithRcotExtender(
     int /*numberOfParty*/,
     int myId,
-    communication::IPartyCommunicationAgentFactory& agentFactory) {
+    communication::IPartyCommunicationAgentFactory& agentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
   auto rcot = oblivious_transfer::createFerretRcotFactory(
       kTestExtendedSize, kTestBaseSize, kTestWeight);
   return std::make_unique<TwoPartyTupleGeneratorFactory>(
@@ -176,14 +193,17 @@ createTwoPartyTupleGeneratorFactoryWithRcotExtender(
       std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
           agentFactory),
       myId,
-      kTestBufferSize);
+      kTestBufferSize,
+      metricCollector);
 }
 
 inline std::unique_ptr<ITupleGeneratorFactory>
 createTwoPartyTupleGeneratorFactoryWithRcotExtenderAndSmallBuffer(
     int /*numberOfParty*/,
     int myId,
-    communication::IPartyCommunicationAgentFactory& agentFactory) {
+    communication::IPartyCommunicationAgentFactory& agentFactory,
+    std::shared_ptr<fbpcf::util::MetricCollector> metricCollector =
+        std::make_shared<fbpcf::util::MetricCollector>("tuple_generator")) {
   auto rcot = oblivious_transfer::createFerretRcotFactory(
       kTestExtendedSize, kTestBaseSize, kTestWeight);
   return std::make_unique<TwoPartyTupleGeneratorFactory>(
@@ -191,7 +211,8 @@ createTwoPartyTupleGeneratorFactoryWithRcotExtenderAndSmallBuffer(
       std::reference_wrapper<communication::IPartyCommunicationAgentFactory>(
           agentFactory),
       myId,
-      1);
+      1,
+      metricCollector);
 }
 
 } // namespace fbpcf::engine::tuple_generator
