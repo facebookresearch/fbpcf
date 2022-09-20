@@ -485,11 +485,11 @@ class BitStringGame : public MpcGame<schedulerId> {
     if constexpr (usingBatch) {
       b1 = BitString(
           std::vector<std::vector<bool>>(
-              batchSize, std::vector<bool>(size, true)),
+              size, std::vector<bool>(batchSize, true)),
           0);
       b2 = BitString(
           std::vector<std::vector<bool>>(
-              batchSize, std::vector<bool>(size, false)),
+              size, std::vector<bool>(batchSize, false)),
           1);
     } else {
       b1 = BitString(std::vector<bool>(size, true), 0);

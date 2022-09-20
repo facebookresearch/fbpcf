@@ -61,8 +61,12 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
 
   explicit BitString(size_t size) : data_(size) {}
 
+  // For batch type constructor, inner vector size should be the batch size.
+  // Outer vector size is BitString length.
   explicit BitString(const std::vector<BoolType>& data);
 
+  // For batch type constructor, inner vector size should be the batch size.
+  // Outer vector size is BitString length.
   BitString(const std::vector<BoolType>& data, int partyId);
 
   explicit BitString(ExtractedString&& extractedString);
@@ -75,7 +79,9 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   BitString<false, schedulerId, usingBatch> openToParty(int partyId) const;
 
   /**
-   * get the plaintext value associated with this BitString
+   * get the plaintext value associated with this BitString.
+   * For batch type constructor, inner vector size is the batch size.
+   * Outer vector size is BitString length.
    */
   std::vector<BoolType> getValue() const;
 
@@ -156,9 +162,6 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
   std::vector<Bit<isSecret, schedulerId, usingBatch>> data_;
 
   friend class BitString<!isSecret, schedulerId, usingBatch>;
-
-  static std::vector<std::vector<bool>> transposeVector(
-      const std::vector<std::vector<bool>>& src);
 };
 
 } // namespace fbpcf::frontend

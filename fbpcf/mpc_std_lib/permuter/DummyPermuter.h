@@ -24,26 +24,49 @@ class DummyPermuter final
   using SecBatchType = typename util::SecBatchType<T, schedulerId>::type;
   DummyPermuter(int myId, int partnerId) : myId_(myId), partnerId_(partnerId) {}
 
-  SecBatchType permute(const SecBatchType& src, size_t /*size*/)
-      const override {
-    auto placeHolder =
-        util::MpcAdapters<T, schedulerId>::openToParty(src, partnerId_);
+  SecBatchType permute(const SecBatchType& src, size_t size) const override {
+    std::vector<SecBatchType> unbatched =
+        util::MpcAdapters<T, schedulerId>::unbatching(
+            src, std::make_shared<std::vector<uint32_t>>(size, 1));
+    std::vector<std::vector<T>> placeHolders(size);
+    for (int i = 0; i < size; i++) {
+      placeHolders[i] = util::MpcAdapters<T, schedulerId>::openToParty(
+          unbatched[i], partnerId_);
+    }
 
-    return util::MpcAdapters<T, schedulerId>::processSecretInputs(
-        placeHolder, partnerId_);
+    std::vector<SecBatchType> permuted(size);
+    for (size_t i = 0; i < size; i++) {
+      permuted[i] = util::MpcAdapters<T, schedulerId>::processSecretInputs(
+          placeHolders[i], partnerId_);
+    }
+
+    auto front = permuted[0];
+    permuted.erase(permuted.begin());
+    return util::MpcAdapters<T, schedulerId>::batchingWith(front, permuted);
   }
 
   SecBatchType permute(
       const SecBatchType& src,
-      size_t /*size*/,
+      size_t size,
       const std::vector<uint32_t>& order) const override {
-    auto plaintext = util::MpcAdapters<T, schedulerId>::openToParty(src, myId_);
-    auto permuted = plaintext;
-    for (size_t i = 0; i < order.size(); i++) {
-      permuted[i] = plaintext.at(order.at(i));
+    std::vector<SecBatchType> unbatched =
+        util::MpcAdapters<T, schedulerId>::unbatching(
+            src, std::make_shared<std::vector<uint32_t>>(size, 1));
+    std::vector<std::vector<T>> plaintext(size);
+    for (int i = 0; i < size; i++) {
+      plaintext[i] =
+          util::MpcAdapters<T, schedulerId>::openToParty(unbatched[i], myId_);
     }
-    return util::MpcAdapters<T, schedulerId>::processSecretInputs(
-        permuted, myId_);
+
+    std::vector<SecBatchType> permuted(size);
+    for (size_t i = 0; i < size; i++) {
+      permuted[i] = util::MpcAdapters<T, schedulerId>::processSecretInputs(
+          plaintext.at(order.at(i)), myId_);
+    }
+
+    auto front = permuted[0];
+    permuted.erase(permuted.begin());
+    return util::MpcAdapters<T, schedulerId>::batchingWith(front, permuted);
   }
 
  private:
