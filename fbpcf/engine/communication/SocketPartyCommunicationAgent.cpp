@@ -19,6 +19,7 @@
 #include <cerrno>
 #include <fstream>
 #include <istream>
+#include <stdexcept>
 
 #include <folly/String.h>
 #include "folly/logging/xlog.h"
@@ -199,6 +200,9 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   method = TLS_server_method();
   ctx = SSL_CTX_new(method);
 
+  // ensure we use TLS 1.3
+  SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
+
   // Set passphrase for reading key.pem
   SSL_CTX_set_default_passwd_cb(ctx, passwordCallback);
 
@@ -255,6 +259,9 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
 
   method = TLS_server_method();
   ctx = SSL_CTX_new(method);
+
+  // ensure we use TLS 1.3
+  SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
 
   // Set passphrase for reading key.pem
   SSL_CTX_set_default_passwd_cb(ctx, passwordCallback);
@@ -313,6 +320,9 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   const SSL_METHOD* method = TLS_client_method();
   SSL_CTX* ctx = SSL_CTX_new(method);
 
+  // ensure we use TLS 1.3
+  SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
+
   // set cert verification callback for self signed certs
   // comment above has more information
   SSL_CTX_set_cert_verify_callback(
@@ -349,7 +359,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
 void SocketPartyCommunicationAgent::openClientPortWithTls(
     const std::string& serverAddress,
     int portNo,
-    TlsInfo /* tlsInfo */) {
+    TlsInfo tlsInfo) {
   XLOGF(
       INFO,
       "try to connect as client to {} at port {} with TLS",
@@ -357,6 +367,9 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
       portNo);
   const SSL_METHOD* method = TLS_client_method();
   SSL_CTX* ctx = SSL_CTX_new(method);
+
+  // ensure we use TLS 1.3
+  SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
 
   // set cert verification callback for self signed certs
   // comment above has more information
