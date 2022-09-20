@@ -19,18 +19,9 @@ namespace fbpcf::frontend {
 template <bool isSecret, int schedulerId, bool usingBatch>
 BitString<isSecret, schedulerId, usingBatch>::BitString(
     const std::vector<BoolType>& data) {
-  if constexpr (usingBatch) {
-    data_ =
-        std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.at(0).size());
-    auto transposed = transposeVector(data);
-    for (size_t i = 0; i < data_.size(); i++) {
-      data_[i] = Bit<isSecret, schedulerId, usingBatch>(transposed.at(i));
-    }
-  } else {
-    data_ = std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.size());
-    for (size_t i = 0; i < data_.size(); i++) {
-      data_[i] = Bit<isSecret, schedulerId, usingBatch>(data.at(i));
-    }
+  data_ = std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.size());
+  for (size_t i = 0; i < data_.size(); i++) {
+    data_[i] = Bit<isSecret, schedulerId, usingBatch>(data.at(i));
   }
 }
 
@@ -38,19 +29,9 @@ template <bool isSecret, int schedulerId, bool usingBatch>
 BitString<isSecret, schedulerId, usingBatch>::BitString(
     const std::vector<BoolType>& data,
     int partyId) {
-  if constexpr (usingBatch) {
-    data_ =
-        std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.at(0).size());
-    auto transposed = transposeVector(data);
-    for (size_t i = 0; i < data_.size(); i++) {
-      data_[i] =
-          Bit<isSecret, schedulerId, usingBatch>(transposed.at(i), partyId);
-    }
-  } else {
-    data_ = std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.size());
-    for (size_t i = 0; i < data_.size(); i++) {
-      data_[i] = Bit<isSecret, schedulerId, usingBatch>(data.at(i), partyId);
-    }
+  data_ = std::vector<Bit<isSecret, schedulerId, usingBatch>>(data.size());
+  for (size_t i = 0; i < data_.size(); i++) {
+    data_[i] = Bit<isSecret, schedulerId, usingBatch>(data.at(i), partyId);
   }
 }
 
@@ -83,11 +64,7 @@ BitString<isSecret, schedulerId, usingBatch>::getValue() const {
   for (size_t i = 0; i < size(); i++) {
     plaintext[i] = data_.at(i).getValue();
   }
-  if constexpr (usingBatch) {
-    return transposeVector(std::move(plaintext));
-  } else {
-    return plaintext;
-  }
+  return plaintext;
 }
 
 template <bool isSecret, int schedulerId, bool usingBatch>
@@ -236,24 +213,6 @@ size_t BitString<isSecret, schedulerId, usingBatch>::getBatchSize() const {
     throw std::runtime_error("Cannot query batch size on an empty BitString!");
   }
   return data_[0].getBatchSize();
-}
-
-template <bool isSecret, int schedulerId, bool usingBatch>
-std::vector<std::vector<bool>>
-BitString<isSecret, schedulerId, usingBatch>::transposeVector(
-    const std::vector<std::vector<bool>>& src) {
-  size_t outerSize = src.size();
-  size_t innerSize = src.at(0).size();
-  std::vector<std::vector<bool>> rst(innerSize, std::vector<bool>(outerSize));
-  for (size_t i = 0; i < outerSize; i++) {
-    if (src.at(i).size() != innerSize) {
-      throw std::runtime_error("All batches have to have the same size!");
-    }
-    for (size_t j = 0; j < innerSize; j++) {
-      rst[j][i] = src.at(i).at(j);
-    }
-  }
-  return rst;
 }
 
 } // namespace fbpcf::frontend

@@ -28,15 +28,22 @@ std::tuple<
     std::vector<std::vector<bool>>,
     std::vector<uint32_t>,
     std::vector<std::vector<bool>>>
-getPermuterTestData(size_t size) {
-  std::vector<std::vector<bool>> originalData(size);
-  for (size_t i = 0; i < size; i++) {
-    originalData[i] = util::Adapters<uint32_t>::convertToBits(i);
+getPermuterTestData(size_t batchSize) {
+  size_t width = util::Adapters<uint32_t>::widthForUint32;
+  std::vector<std::vector<bool>> originalData(
+      width, std::vector<bool>(batchSize));
+  for (size_t i = 0; i < batchSize; i++) {
+    std::vector<bool> bits = util::Adapters<uint32_t>::convertToBits(i);
+    for (size_t j = 0; j < width; j++) {
+      originalData[j][i] = bits[j];
+    }
   }
-  auto order = util::generateRandomPermutation(size);
-  std::vector<std::vector<bool>> expectedResult(size);
-  for (size_t i = 0; i < size; i++) {
-    expectedResult[i] = originalData.at(order.at(i));
+  auto order = util::generateRandomPermutation(batchSize);
+  std::vector<std::vector<bool>> expectedResult(
+      width, std::vector<bool>(batchSize));
+  for (size_t i = 0; i < width; i++) {
+    for (size_t j = 0; j < batchSize; j++)
+      expectedResult[i][j] = originalData[i][order[j]];
   }
   return {originalData, order, expectedResult};
 }
@@ -47,8 +54,8 @@ party0Task(
     const std::vector<std::vector<bool>>& data,
     const std::vector<uint32_t>& order) {
   frontend::BitString<true, 0, true> bits(data, 0);
-  auto permuted0 = permuter->permute(bits, data.size(), order);
-  auto permuted1 = permuter->permute(bits, data.size());
+  auto permuted0 = permuter->permute(bits, data[0].size(), order);
+  auto permuted1 = permuter->permute(bits, data[0].size());
   auto rst0 = permuted0.openToParty(0).getValue();
   auto rst1 = permuted1.openToParty(0).getValue();
   return {rst0, rst1};
@@ -59,8 +66,8 @@ void party1Task(
     const std::vector<std::vector<bool>>& data,
     const std::vector<uint32_t>& order) {
   frontend::BitString<true, 1, true> bits(data, 0);
-  auto permuted0 = permuter->permute(bits, data.size());
-  auto permuted1 = permuter->permute(bits, data.size(), order);
+  auto permuted0 = permuter->permute(bits, data[0].size());
+  auto permuted1 = permuter->permute(bits, data[0].size(), order);
   permuted0.openToParty(0);
   permuted1.openToParty(0);
 }

@@ -34,7 +34,7 @@ std::vector<std::vector<bool>> task(
         shuffler,
     const std::vector<std::vector<bool>>& data) {
   frontend::BitString<true, schedulerId, true> bits(data, 0);
-  auto shuffled = shuffler->shuffle(bits, data.size());
+  auto shuffled = shuffler->shuffle(bits, data[0].size());
   auto rst = shuffled.openToParty(0).getValue();
   return rst;
 }
@@ -46,20 +46,30 @@ void shufflerTest(
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   auto shuffler0 = shufflerFactory0.create();
   auto shuffler1 = shufflerFactory1.create();
-  size_t size = 16;
-  auto data = util::generateRandomPermutation(size);
-  std::vector<std::vector<bool>> bitData(size);
-  for (size_t i = 0; i < size; i++) {
-    bitData[i] = util::Adapters<uint32_t>::convertToBits(data.at(i));
+  size_t batchSize = 16;
+  auto data = util::generateRandomPermutation(batchSize);
+  std::vector<std::vector<bool>> bitData(
+      testIntWidth, std::vector<bool>(batchSize));
+  for (size_t i = 0; i < batchSize; i++) {
+    std::vector<bool> bits =
+        util::Adapters<uint32_t>::convertToBits(data.at(i));
+    for (size_t j = 0; j < testIntWidth; j++) {
+      bitData[j][i] = bits[j];
+    }
   }
   auto future0 = std::async(task<0>, std::move(shuffler0), bitData);
   auto future1 = std::async(task<1>, std::move(shuffler1), bitData);
   auto bitRst = future0.get();
   future1.get();
-  ASSERT_EQ(data.size(), bitRst.size());
-  std::vector<uint32_t> rst(size);
-  for (size_t i = 0; i < size; i++) {
-    rst[i] = util::Adapters<uint32_t>::convertFromBits(bitRst.at(i));
+  ASSERT_EQ(bitRst.size(), testIntWidth);
+  ASSERT_EQ(bitRst[0].size(), data.size());
+  std::vector<uint32_t> rst(batchSize);
+  for (size_t i = 0; i < batchSize; i++) {
+    std::vector<bool> bits(testIntWidth);
+    for (size_t j = 0; j < testIntWidth; j++) {
+      bits[j] = bitRst[j][i];
+    }
+    rst[i] = util::Adapters<uint32_t>::convertFromBits(bits);
   }
 
   for (size_t i = 0; i < data.size(); i++) {
