@@ -26,6 +26,7 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
     std::string certPath;
     std::string keyPath;
     std::string passphrasePath;
+    std::string rootCaCertPath;
   };
   /**
    * Create as socket server, optionally with TLS.

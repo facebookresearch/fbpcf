@@ -371,6 +371,14 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   // ensure we use TLS 1.3
   SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
 
+  // specify the trusted root CA
+  if (!tlsInfo.rootCaCertPath.empty()) {
+    if (SSL_CTX_load_verify_locations(
+            ctx, nullptr, tlsInfo.rootCaCertPath.c_str()) == 0) {
+      throw std::runtime_error("failed to set root CA");
+    }
+  }
+
   // set cert verification callback for self signed certs
   // comment above has more information
   SSL_CTX_set_cert_verify_callback(
@@ -399,7 +407,15 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
     throw std::runtime_error("could not complete tls handshake");
   }
 
-  XLOGF(INFO, "connected as client to {} at port {}", serverAddress, portNo);
+  X509* cert = SSL_get_peer_certificate(ssl);
+  char* line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
+  XLOGF(INFO, "Server certificate issuer: {}", line);
+
+  XLOGF(
+      INFO,
+      "connected as client to {} at port {} with TLS",
+      serverAddress,
+      portNo);
 
   ssl_ = ssl;
 }
