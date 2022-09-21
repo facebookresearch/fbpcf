@@ -154,84 +154,49 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithoutTls) {
 }
 
 TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithJammedPort) {
-  {
-    // jam port 5000
-    struct sockaddr_in servAddr;
-
-    memset((char*)&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = INADDR_ANY;
-
-    servAddr.sin_port = htons(5000);
-    auto sockfd1 = socket(AF_INET, SOCK_STREAM, 0);
-    ::bind(sockfd1, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in));
-  }
-
-  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
-  // make sure a port larger than 5000 is found.
-  ASSERT_GE(port01, 5000);
-
-  auto port02 = port01 + 4;
-  auto port12 = port01 + 8;
-
   fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
   tlsInfo.certPath = "";
   tlsInfo.keyPath = "";
   tlsInfo.passphrasePath = "";
   tlsInfo.useTls = false;
 
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
-      {1, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port02}}};
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
-      {0, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port12}}};
-  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo2 = {
-      {0, {"127.0.0.1", port02}}, {1, {"127.0.0.1", port12}}};
+  std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
+      factories(3);
+  getSocketFactoriesForMultipleParties(3, tlsInfo, factories);
 
-  {
-    // jam the ports here
-    struct sockaddr_in servAddr;
-
-    memset((char*)&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = INADDR_ANY;
-
-    servAddr.sin_port = htons(port01 + 1);
-    auto sockfd1 = socket(AF_INET, SOCK_STREAM, 0);
-    ::bind(sockfd1, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in));
-
-    servAddr.sin_port = htons(port02 + 1);
-    auto sockfd2 = socket(AF_INET, SOCK_STREAM, 0);
-    ::bind(sockfd2, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in));
-
-    servAddr.sin_port = htons(port12 + 1);
-    auto sockfd3 = socket(AF_INET, SOCK_STREAM, 0);
-    ::bind(sockfd3, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in));
+  std::vector<std::map<int, int>> boundPorts(3);
+  for (size_t i = 0; i < factories.size(); i++) {
+    boundPorts.at(i) = factories.at(i)->getBoundPorts();
   }
 
-  auto factory1 = std::async([&partyInfo1, &tlsInfo]() {
-    return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, tlsInfo, "Party_1");
-  });
+  auto createAgent = [](IPartyCommunicationAgentFactory* factory,
+                        int myId,
+                        int otherParty) {
+    XLOGF(INFO, "Creating agent. MyID: {}, otherPartyID: {}", myId, otherParty);
+    return factory->create(otherParty, "");
+  };
 
-  auto factory2 = std::async([&partyInfo2, &tlsInfo]() {
-    return std::make_unique<SocketPartyCommunicationAgentFactory>(
-        2, partyInfo2, tlsInfo, "Party_2");
-  });
+  // we expect the below to not time out. if it returns
+  // that means an agent has successfully been created
 
-  auto factory0 = std::make_unique<SocketPartyCommunicationAgentFactory>(
-      0, partyInfo0, tlsInfo, "Party_0");
+  // create agent between party 0 and 1
+  auto agent01 = std::async(createAgent, factories.at(0).get(), 0, 1);
+  auto agent10 = std::async(createAgent, factories.at(1).get(), 1, 0);
 
-  int size = 1048576; // 1024 ^ 2
-  auto thread0 =
-      std::thread(testAgentFactory, 0, 3, size, std::move(factory0), "Party_0");
-  auto thread1 =
-      std::thread(testAgentFactory, 1, 3, size, factory1.get(), "Party_1");
-  auto thread2 =
-      std::thread(testAgentFactory, 2, 3, size, factory2.get(), "Party_2");
+  // create agent between party 0 and 2
+  auto agent02 = std::async(createAgent, factories.at(0).get(), 0, 2);
+  auto agent20 = std::async(createAgent, factories.at(2).get(), 2, 0);
 
-  thread2.join();
-  thread1.join();
-  thread0.join();
+  // create agent between party 1 and 2
+  auto agent12 = std::async(createAgent, factories.at(1).get(), 1, 2);
+  auto agent21 = std::async(createAgent, factories.at(2).get(), 2, 1);
+
+  EXPECT_NE(agent01.get(), nullptr);
+  EXPECT_NE(agent10.get(), nullptr);
+  EXPECT_NE(agent02.get(), nullptr);
+  EXPECT_NE(agent20.get(), nullptr);
+  EXPECT_NE(agent12.get(), nullptr);
+  EXPECT_NE(agent21.get(), nullptr);
 }
 
 } // namespace fbpcf::engine::communication
