@@ -66,8 +66,10 @@ SocketPartyCommunicationAgentFactory::createSocketFromMaybeFreePort(
   // instead
   if (::bind(sockfd, (struct sockaddr*)&servAddr, sizeof(struct sockaddr_in)) <
       0) {
-    XLOG(INFO)
-        << "Failed to bind on the assigned port, binding to a free one instead.";
+    XLOGF(
+        INFO,
+        "Failed to bind on the assigned port: {}, binding to a free one instead.",
+        portNo);
     portNo = 0;
     servAddr.sin_port = htons(portNo);
     if (::bind(
