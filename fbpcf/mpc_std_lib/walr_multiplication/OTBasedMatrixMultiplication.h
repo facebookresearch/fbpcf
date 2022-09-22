@@ -23,6 +23,41 @@
 
 namespace fbpcf::mpc_std_lib::walr {
 
+/**
+ * This object is a metric recorder
+ */
+class OTBasedMatrixMultiplicationMetricRecorder final
+    : public WalrMatrixMultiplicationMetricRecorder {
+ public:
+  OTBasedMatrixMultiplicationMetricRecorder()
+      : otMessagesUsed_(0), columnsSent_(0), columnsReceived_(0) {}
+
+  void addOtMessagesUsed(uint64_t size) {
+    otMessagesUsed_ += size;
+  }
+
+  void addColumnsSent(uint64_t size) {
+    columnsSent_ += size;
+  }
+
+  void addColumnsReceived(uint64_t size) {
+    columnsReceived_ += size;
+  }
+
+  folly::dynamic getMetrics() const override {
+    return folly::dynamic::object("ot_messages_used", otMessagesUsed_.load())(
+        "columns_sent", columnsSent_.load())(
+        "columns_received", columnsReceived_.load())(
+        "features_sent", featuresSent_.load())(
+        "features_received", featuresReceived_.load());
+  }
+
+ private:
+  std::atomic_uint64_t otMessagesUsed_;
+  std::atomic_uint64_t columnsSent_;
+  std::atomic_uint64_t columnsReceived_;
+};
+
 template <int schedulerId, typename FixedPointType>
 class OTBasedMatrixMultiplication final
     : public IWalrMatrixMultiplication<schedulerId> {
@@ -34,14 +69,16 @@ class OTBasedMatrixMultiplication final
       uint64_t divisor, // The precision loss will be roughly 1 / divisor
       std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent,
       std::unique_ptr<engine::util::IPrgFactory> prgFactory,
-      std::unique_ptr<util::COTWithRandomMessage> cotWRM)
+      std::unique_ptr<util::COTWithRandomMessage> cotWRM,
+      std::shared_ptr<OTBasedMatrixMultiplicationMetricRecorder> recorder)
       : myId_(myId),
         partnerId_(partnerId),
         isFeatureOwner_(isFeatureOwner),
         numberMapper_(util::NumberMapper<FixedPointType>(divisor)),
         agent_(std::move(agent)),
         prgFactory_(std::move(prgFactory)),
-        cotWRM_(std::move(cotWRM)) {}
+        cotWRM_(std::move(cotWRM)),
+        recorder_(recorder) {}
 
   void setDivisor(uint64_t divisor) {
     numberMapper_.setDivisor(divisor);
@@ -72,6 +109,7 @@ class OTBasedMatrixMultiplication final
   std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent_;
   std::unique_ptr<engine::util::IPrgFactory> prgFactory_;
   std::unique_ptr<util::COTWithRandomMessage> cotWRM_;
+  std::shared_ptr<OTBasedMatrixMultiplicationMetricRecorder> recorder_;
 };
 } // namespace fbpcf::mpc_std_lib::walr
 
