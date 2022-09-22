@@ -36,7 +36,7 @@ inline uint64_t getLast64Bits(__m128i src) {
  * Extracts the last n bits in a 128 bit integer to the passed in boolean
  * vector. The order of bits will be from least significant to most significant.
  */
-inline void extractLnbToVector(__m128i& src, std::vector<bool>& data) {
+inline void extractLnbToVector(const __m128i& src, std::vector<bool>& data) {
   if (data.size() > sizeof(src) * 8) {
     throw std::runtime_error("Vector size is larger than __m128i size");
   }
