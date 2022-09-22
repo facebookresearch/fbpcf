@@ -8,13 +8,21 @@
 #pragma once
 
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplication.h"
+#include "fbpcf/util/MetricCollector.h"
+
 namespace fbpcf::mpc_std_lib::walr {
 
 template <int schedulerId>
 class IWalrMatrixMultiplicationFactory {
  public:
+  explicit IWalrMatrixMultiplicationFactory(
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : metricCollector_(metricCollector) {}
   virtual ~IWalrMatrixMultiplicationFactory() = default;
   virtual std::unique_ptr<IWalrMatrixMultiplication<schedulerId>> create() = 0;
+
+ protected:
+  std::shared_ptr<fbpcf::util::MetricCollector> metricCollector_;
 };
 
 } // namespace fbpcf::mpc_std_lib::walr
