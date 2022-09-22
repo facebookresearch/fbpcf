@@ -23,7 +23,12 @@ namespace fbpcf::mpc_std_lib::walr {
 template <int schedulerId, typename FixedPointType>
 class OTBasedMatrixMultiplicationFactory final
     : public IWalrMatrixMultiplicationFactory<schedulerId> {
+  using IWalrMatrixMultiplicationFactory<schedulerId>::metricCollector_;
+
  public:
+  const std::string metricRecorderNamePrefix = "ot_based_matrix_multiplication";
+
+  // The following constructor will be deprecated once we updated all APP codes
   explicit OTBasedMatrixMultiplicationFactory(
       int myId,
       int partnerId,
@@ -32,7 +37,26 @@ class OTBasedMatrixMultiplicationFactory final
       engine::communication::IPartyCommunicationAgentFactory& agentFactory,
       std::unique_ptr<engine::util::IPrgFactory> prgFactory,
       std::unique_ptr<util::COTWithRandomMessageFactory> cotWRMFactory)
-      : myId_(myId),
+      : IWalrMatrixMultiplicationFactory<schedulerId>(nullptr),
+        myId_(myId),
+        partnerId_(partnerId),
+        isFeatureOwner_(isFeatureOwner),
+        divisor_(divisor),
+        agentFactory_(agentFactory),
+        prgFactory_(std::move(prgFactory)),
+        cotWRMFactory_(std::move(cotWRMFactory)) {}
+
+  explicit OTBasedMatrixMultiplicationFactory(
+      int myId,
+      int partnerId,
+      bool isFeatureOwner,
+      uint64_t divisor,
+      engine::communication::IPartyCommunicationAgentFactory& agentFactory,
+      std::unique_ptr<engine::util::IPrgFactory> prgFactory,
+      std::unique_ptr<util::COTWithRandomMessageFactory> cotWRMFactory,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector)
+      : IWalrMatrixMultiplicationFactory<schedulerId>(metricCollector),
+        myId_(myId),
         partnerId_(partnerId),
         isFeatureOwner_(isFeatureOwner),
         divisor_(divisor),
@@ -63,6 +87,16 @@ class OTBasedMatrixMultiplicationFactory final
 
     auto recorder =
         std::make_shared<OTBasedMatrixMultiplicationMetricRecorder>();
+
+    // For backward compatibility we currently allow a null metric collector.
+    // The condition will be removed later when we change all apps to use a
+    // metric collector.
+    if (metricCollector_ != nullptr) {
+      std::string role = isFeatureOwner_ ? "feature_owner" : "label_owner";
+      metricCollector_->addNewRecorder(
+          metricRecorderNamePrefix + "_" + role, recorder);
+    }
+
     return std::make_unique<
         OTBasedMatrixMultiplication<schedulerId, FixedPointType>>(
         myId_,
