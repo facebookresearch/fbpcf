@@ -61,7 +61,11 @@ class COTWithRandomMessage {
    * @return a pair of (sent, received) data in bytes.
    */
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const {
-    return agent_->getTrafficStatistics();
+    auto rcotTraffic = rcot_->getTrafficStatistics();
+    auto nonRcotTraffic = agent_->getTrafficStatistics();
+    return {
+        rcotTraffic.first + nonRcotTraffic.first,
+        rcotTraffic.second + nonRcotTraffic.second};
   }
 
  private:
