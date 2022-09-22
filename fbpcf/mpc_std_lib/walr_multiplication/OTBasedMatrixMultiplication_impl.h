@@ -55,6 +55,7 @@ std::vector<double> OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
   auto [sender0Messages, sender1Messages] = cotWRM_->send(nLabels);
   assert(sender0Messages.size() == nLabels);
   assert(sender1Messages.size() == nLabels);
+  recorder_->addOtMessagesUsed(nLabels); // record num of OT messages used
 
   // Now we run the protocol
   std::vector<FixedPointType> totalNoise(nFeatures, 0);
@@ -133,10 +134,15 @@ std::vector<double> OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
         std::plus<FixedPointType>());
 
     agent_->sendT<FixedPointType>(correction1);
+    recorder_->addColumnsSent(1); // record column sent
+    recorder_->addFeaturesSent(nFeatures); // record num features sent
   }
 
   // receive the sum (with dp noise) from the other party
   auto maskedResult = agent_->receiveT<FixedPointType>(nFeatures);
+  recorder_->addColumnsReceived(1); // record column received
+  recorder_->addFeaturesReceived(nFeatures); // record num features received
+
   // remove the additive noise
   std::transform(
       maskedResult.cbegin(),
@@ -166,11 +172,14 @@ void OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
   auto choice = labels.extractBit().getValue();
   auto receiverMessages = cotWRM_->receive(choice);
   assert(receiverMessages.size() == nLabels);
+  recorder_->addOtMessagesUsed(nLabels); // record OT msgs used
 
   // Run the matrix multiplication protocol
   std::vector<FixedPointType> rst(nFeatures, 0);
   for (size_t i = 0; i < nLabels; ++i) {
     auto correction1 = agent_->receiveT<FixedPointType>(nFeatures);
+    recorder_->addColumnsReceived(1); // record column received
+    recorder_->addFeaturesReceived(nFeatures); // record num features received
 
     // correct the received feature vector
     auto prg = prgFactory_->create(receiverMessages.at(i));
@@ -212,6 +221,8 @@ void OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
 
   // share the final result with the other party
   agent_->sendT<FixedPointType>(rst);
+  recorder_->addColumnsSent(1); // record column sent
+  recorder_->addFeaturesSent(nFeatures); // record num features sent
 }
 
 } // namespace fbpcf::mpc_std_lib::walr
