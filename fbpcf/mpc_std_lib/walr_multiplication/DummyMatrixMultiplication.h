@@ -29,12 +29,14 @@ class DummyMatrixMultiplication final
       std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent)
       : myId_(myId), partnerId_(partnerId), agent_(std::move(agent)) {}
 
-  /**
-   * @inherit doc
-   */
-  std::vector<double> matrixVectorMultiplication(
+  std::pair<uint64_t, uint64_t> getNonEngineTrafficStatistics() const override {
+    return agent_->getTrafficStatistics();
+  }
+
+ protected:
+  std::vector<double> matrixVectorMultiplicationImpl(
       const std::vector<std::vector<double>>& features,
-      const frontend::Bit<true, schedulerId, true>& labels) const {
+      const frontend::Bit<true, schedulerId, true>& labels) const override {
     // Each features[i] represents a column vector of the feature matrix.
     // There are `nLabels` such column vectors.
     size_t nLabels = labels.getBatchSize();
@@ -75,12 +77,9 @@ class DummyMatrixMultiplication final
     return rst;
   }
 
-  /**
-   * @inherit doc
-   */
-  void matrixVectorMultiplication(
+  void matrixVectorMultiplicationImpl(
       const frontend::Bit<true, schedulerId, true>& labels,
-      const std::vector<double>& dpNoise) const {
+      const std::vector<double>& dpNoise) const override {
     labels.openToParty(partnerId_).getValue();
     agent_->sendT<double>(dpNoise);
   }

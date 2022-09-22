@@ -17,7 +17,7 @@ namespace fbpcf::mpc_std_lib::walr {
 
 template <int schedulerId, typename FixedPointType>
 std::vector<double> OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
-    matrixVectorMultiplication(
+    matrixVectorMultiplicationImpl(
         const std::vector<std::vector<double>>& features,
         const frontend::Bit<true, schedulerId, true>& labels) const {
   if (!isFeatureOwner_) {
@@ -151,7 +151,7 @@ std::vector<double> OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
 
 template <int schedulerId, typename FixedPointType>
 void OTBasedMatrixMultiplication<schedulerId, FixedPointType>::
-    matrixVectorMultiplication(
+    matrixVectorMultiplicationImpl(
         const frontend::Bit<true, schedulerId, true>& labels,
         const std::vector<double>& dpNoise) const {
   if (isFeatureOwner_) {

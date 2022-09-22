@@ -47,19 +47,22 @@ class OTBasedMatrixMultiplication final
     numberMapper_.setDivisor(divisor);
   }
 
-  /**
-   * @inherit doc
-   */
-  std::vector<double> matrixVectorMultiplication(
-      const std::vector<std::vector<double>>& features,
-      const frontend::Bit<true, schedulerId, true>& labels) const;
+  std::pair<uint64_t, uint64_t> getNonEngineTrafficStatistics() const override {
+    auto cotWRMTraffic = cotWRM_->getTrafficStatistics();
+    auto otherTraffic = agent_->getTrafficStatistics();
+    return {
+        cotWRMTraffic.first + otherTraffic.first,
+        cotWRMTraffic.second + otherTraffic.second};
+  }
 
-  /**
-   * @inherit doc
-   */
-  void matrixVectorMultiplication(
+ protected:
+  std::vector<double> matrixVectorMultiplicationImpl(
+      const std::vector<std::vector<double>>& features,
+      const frontend::Bit<true, schedulerId, true>& labels) const override;
+
+  void matrixVectorMultiplicationImpl(
       const frontend::Bit<true, schedulerId, true>& labels,
-      const std::vector<double>& dpNoise) const;
+      const std::vector<double>& dpNoise) const override;
 
  private:
   int myId_;
