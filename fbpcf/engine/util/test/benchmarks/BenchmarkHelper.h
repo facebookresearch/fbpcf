@@ -57,11 +57,17 @@ getSocketAgents() {
   auto factory1Future = std::async([&partyInfo1, &tlsInfo]() {
     return std::make_unique<
         communication::SocketPartyCommunicationAgentFactory>(
-        1, partyInfo1, tlsInfo, "party_1_unit_test_traffic");
+        1,
+        partyInfo1,
+        std::make_shared<fbpcf::util::MetricCollector>(
+            "party_1_unit_test_metrics"));
   });
   auto factory0 =
       std::make_unique<communication::SocketPartyCommunicationAgentFactory>(
-          0, partyInfo0, tlsInfo, "party_0_unit_test_traffic");
+          0,
+          partyInfo0,
+          std::make_shared<fbpcf::util::MetricCollector>(
+              "party_0_unit_test_metrics"));
   auto factory1 = factory1Future.get();
 
   auto task = [](std::unique_ptr<communication::IPartyCommunicationAgentFactory>
