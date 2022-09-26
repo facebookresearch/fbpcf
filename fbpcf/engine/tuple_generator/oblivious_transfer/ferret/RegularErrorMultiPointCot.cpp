@@ -34,6 +34,9 @@ void RegularErrorMultiPointCot::senderInit(
     __m128i delta,
     int64_t length,
     int64_t weight) {
+  if (!util::getLsb(delta)) {
+    throw std::invalid_argument("The LSB of delta must be 1.");
+  }
   init(length, weight);
   role_ = util::Role::sender;
   delta_ = delta;

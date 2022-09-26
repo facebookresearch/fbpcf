@@ -17,6 +17,9 @@
 namespace fbpcf::engine::tuple_generator::oblivious_transfer::ferret::insecure {
 
 void DummySinglePointCot::senderInit(__m128i delta) {
+  if (!util::getLsb(delta)) {
+    throw std::invalid_argument("The LSB of delta must be 1.");
+  }
   delta_ = delta;
   role_ = util::Role::sender;
 }
