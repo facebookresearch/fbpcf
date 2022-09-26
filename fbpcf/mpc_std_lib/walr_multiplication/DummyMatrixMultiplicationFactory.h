@@ -25,13 +25,15 @@ class DummyMatrixMultiplicationFactory final
       : myId_(myId), partnerId_(partnerId), agentFactory_(agentFactory) {}
 
   std::unique_ptr<IWalrMatrixMultiplication<schedulerId>> create() override {
+    auto recorder = std::make_shared<WalrMatrixMultiplicationMetricRecorder>();
     return std::make_unique<DummyMatrixMultiplication<schedulerId>>(
         myId_,
         partnerId_,
         agentFactory_.create(
             partnerId_,
             "walr_matrix_multiplication_traffic_to_party " +
-                std::to_string(partnerId_)));
+                std::to_string(partnerId_)),
+        recorder);
   }
 
  private:

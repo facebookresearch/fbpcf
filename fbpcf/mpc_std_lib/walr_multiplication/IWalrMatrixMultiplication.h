@@ -12,8 +12,35 @@
 
 #include "fbpcf/frontend/Bit.h"
 #include "fbpcf/scheduler/IScheduler.h"
+#include "fbpcf/util/IMetricRecorder.h"
 
 namespace fbpcf::mpc_std_lib::walr {
+
+/**
+ * The metric recorder for the IWalrMatrixMultiplication class
+ */
+class WalrMatrixMultiplicationMetricRecorder
+    : public fbpcf::util::IMetricRecorder {
+ public:
+  WalrMatrixMultiplicationMetricRecorder()
+      : featuresSent_(0), featuresReceived_(0) {}
+
+  void addFeaturesSent(uint64_t size) {
+    featuresSent_ += size;
+  }
+  void addFeaturesReceived(uint64_t size) {
+    featuresReceived_ += size;
+  }
+
+  folly::dynamic getMetrics() const override {
+    return folly::dynamic::object("features_sent", featuresSent_.load())(
+        "features_received", featuresReceived_.load());
+  }
+
+ protected:
+  std::atomic_uint64_t featuresSent_;
+  std::atomic_uint64_t featuresReceived_;
+};
 
 template <int schedulerId>
 class IWalrMatrixMultiplication {

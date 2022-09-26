@@ -61,6 +61,8 @@ class OTBasedMatrixMultiplicationFactory final
           cotWRMFactory_->create(std::move(cotWRMAgent), std::move(rcotAgent));
     }
 
+    auto recorder =
+        std::make_shared<OTBasedMatrixMultiplicationMetricRecorder>();
     return std::make_unique<
         OTBasedMatrixMultiplication<schedulerId, FixedPointType>>(
         myId_,
@@ -72,7 +74,8 @@ class OTBasedMatrixMultiplicationFactory final
             "walr_matrix_multiplication_traffic_to_party " +
                 std::to_string(partnerId_)),
         std::move(prgFactory_),
-        std::move(cotWRM));
+        std::move(cotWRM),
+        recorder);
   }
 
  private:

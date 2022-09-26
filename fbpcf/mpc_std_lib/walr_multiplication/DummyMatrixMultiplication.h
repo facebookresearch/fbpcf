@@ -26,8 +26,12 @@ class DummyMatrixMultiplication final
   explicit DummyMatrixMultiplication(
       int myId,
       int partnerId,
-      std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent)
-      : myId_(myId), partnerId_(partnerId), agent_(std::move(agent)) {}
+      std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent,
+      std::shared_ptr<WalrMatrixMultiplicationMetricRecorder> recorder)
+      : myId_(myId),
+        partnerId_(partnerId),
+        agent_(std::move(agent)),
+        recorder_(recorder) {}
 
   std::pair<uint64_t, uint64_t> getNonEngineTrafficStatistics() const override {
     return agent_->getTrafficStatistics();
@@ -68,6 +72,8 @@ class DummyMatrixMultiplication final
 
     // receive the DP noise from the label owner
     std::vector<double> dpNoise = agent_->receiveT<double>(nFeatures);
+    recorder_->addFeaturesReceived(
+        dpNoise.size()); // record num features received
     std::transform( // add the DP noise to rst
         rst.cbegin(),
         rst.cend(),
@@ -82,11 +88,13 @@ class DummyMatrixMultiplication final
       const std::vector<double>& dpNoise) const override {
     labels.openToParty(partnerId_).getValue();
     agent_->sendT<double>(dpNoise);
+    recorder_->addFeaturesSent(dpNoise.size()); // record num features sent
   }
 
  private:
   int myId_;
   int partnerId_;
   std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent_;
+  std::shared_ptr<WalrMatrixMultiplicationMetricRecorder> recorder_;
 };
 } // namespace fbpcf::mpc_std_lib::walr::insecure
