@@ -134,6 +134,8 @@ void matrixVectorMultiplicationTestHelper(
         featureOwnerFactory,
     std::unique_ptr<IWalrMatrixMultiplicationFactory<labelOwnerSchedulerId>>
         labelOwnerFactory,
+    std::function<void(size_t, size_t)> featureOwnerMetricTester,
+    std::function<void(size_t, size_t)> labelOwnerMetricTester,
     const std::vector<std::vector<double>>& testFeatures,
     const std::vector<bool>& testLabelValues,
     const std::vector<double>& testDpNoise,
@@ -172,6 +174,10 @@ void matrixVectorMultiplicationTestHelper(
   future1.get();
 
   testVectorAlmostEq(rst, expectedOutput, tolerance);
+  auto nLabels = testFeatures.size();
+  auto nFeatures = testFeatures.at(0).size();
+  featureOwnerMetricTester(nFeatures, nLabels);
+  labelOwnerMetricTester(nFeatures, nLabels);
 }
 
 template <
@@ -184,6 +190,8 @@ void matrixVectorMultiplicationNoNoiseTest(
         featureOwnerFactory,
     std::unique_ptr<IWalrMatrixMultiplicationFactory<labelOwnerSchedulerId>>
         labelOwnerFactory,
+    std::function<void(size_t, size_t)> featureOwnerMetricTester,
+    std::function<void(size_t, size_t)> labelOwnerMetricTester,
     double tolerance = 1e-7) {
   // generate test data
   size_t nFeatures = 150;
@@ -202,6 +210,8 @@ void matrixVectorMultiplicationNoNoiseTest(
       labelOwnerId>(
       std::move(featureOwnerFactory),
       std::move(labelOwnerFactory),
+      featureOwnerMetricTester,
+      labelOwnerMetricTester,
       testFeatures,
       testLabelValues,
       std::vector<double>(nFeatures, 0.0), // no DP noise
@@ -220,6 +230,8 @@ void matrixVectorMultiplicationUniformNoiseTest(
         featureOwnerFactory,
     std::unique_ptr<IWalrMatrixMultiplicationFactory<labelOwnerSchedulerId>>
         labelOwnerFactory,
+    std::function<void(size_t, size_t)> featureOwnerMetricTester,
+    std::function<void(size_t, size_t)> labelOwnerMetricTester,
     double tolerance = 1e-7) {
   // generate test data
   size_t nFeatures = 200;
@@ -252,6 +264,8 @@ void matrixVectorMultiplicationUniformNoiseTest(
       labelOwnerId>(
       std::move(featureOwnerFactory),
       std::move(labelOwnerFactory),
+      featureOwnerMetricTester,
+      labelOwnerMetricTester,
       testFeatures,
       testLabelValues,
       uniformNoise,
@@ -259,19 +273,92 @@ void matrixVectorMultiplicationUniformNoiseTest(
       tolerance);
 }
 
+auto metricTesterForDummyMM(
+    std::shared_ptr<fbpcf::util::MetricCollector> featureOwnerCollector,
+    std::shared_ptr<fbpcf::util::MetricCollector> labelOwnerCollector) {
+  std::string name = "dummy_matrix_multiplication";
+
+  auto tester0 = [=](size_t nFeatures, [[maybe_unused]] size_t nLabels) {
+    auto metrics = featureOwnerCollector->collectMetrics();
+    auto collectorPrefix = featureOwnerCollector->getPrefix();
+    ASSERT_EQ(metrics[collectorPrefix + "." + name]["features_sent"], 0);
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name]["features_received"], nFeatures);
+  };
+
+  auto tester1 = [=](size_t nFeatures, [[maybe_unused]] size_t nLabels) {
+    auto metrics = labelOwnerCollector->collectMetrics();
+    auto collectorPrefix = labelOwnerCollector->getPrefix();
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name]["features_sent"], nFeatures);
+    ASSERT_EQ(metrics[collectorPrefix + "." + name]["features_received"], 0);
+  };
+
+  return std::make_pair(tester0, tester1);
+}
+
+auto metricTesterForOTBasedMM(
+    std::shared_ptr<fbpcf::util::MetricCollector> featureOwnerCollector,
+    std::shared_ptr<fbpcf::util::MetricCollector> labelOwnerCollector) {
+  // recorder names
+  std::string name0 = "ot_based_matrix_multiplication_feature_owner";
+  std::string name1 = "ot_based_matrix_multiplication_label_owner";
+
+  auto tester0 = [=](size_t nFeatures, size_t nLabels) {
+    auto metrics = featureOwnerCollector->collectMetrics();
+    auto collectorPrefix = featureOwnerCollector->getPrefix();
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name0]["ot_messages_used"], nLabels);
+    ASSERT_EQ(metrics[collectorPrefix + "." + name0]["columns_sent"], nLabels);
+    ASSERT_EQ(metrics[collectorPrefix + "." + name0]["columns_received"], 1);
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name0]["features_sent"],
+        nFeatures * nLabels);
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name0]["features_received"], nFeatures);
+  };
+
+  auto tester1 = [=](size_t nFeatures, size_t nLabels) {
+    auto metrics = labelOwnerCollector->collectMetrics();
+    auto collectorPrefix = labelOwnerCollector->getPrefix();
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name1]["ot_messages_used"], nLabels);
+    ASSERT_EQ(metrics[collectorPrefix + "." + name1]["columns_sent"], 1);
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name1]["columns_received"], nLabels);
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name1]["features_sent"], nFeatures);
+    ASSERT_EQ(
+        metrics[collectorPrefix + "." + name1]["features_received"],
+        nFeatures * nLabels);
+  };
+
+  return std::make_pair(tester0, tester1);
+}
+
 TEST(matrixVectorMultiplicationNoNoiseTest, testDummyMatrixMultiplication) {
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   // feature owner is party 0 and uses scheduler 0
   // label owner is party 1 and uses scheduler 1
+  auto collector0 = std::make_shared<fbpcf::util::MetricCollector>(
+      "dummy_matrix_multiplication_no_noise_test_party_0");
+  auto collector1 = std::make_shared<fbpcf::util::MetricCollector>(
+      "dummy_matrix_multiplication_no_noise_test_party_1");
+  auto [tester0, tester1] = metricTesterForDummyMM(collector0, collector1);
+
   auto featureOwnerFactory =
       std::make_unique<insecure::DummyMatrixMultiplicationFactory<0>>(
-          0, 1, *agentFactories[0]);
+          0, 1, *agentFactories[0], collector0);
   auto labelOwnerFactory =
       std::make_unique<insecure::DummyMatrixMultiplicationFactory<1>>(
-          1, 0, *agentFactories[1]);
+          1, 0, *agentFactories[1], collector1);
 
   matrixVectorMultiplicationNoNoiseTest<0, 1, 0, 1>(
-      std::move(featureOwnerFactory), std::move(labelOwnerFactory), 1e-7);
+      std::move(featureOwnerFactory),
+      std::move(labelOwnerFactory),
+      tester0,
+      tester1,
+      1e-7);
 }
 
 TEST(
@@ -280,15 +367,25 @@ TEST(
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   // feature owner is party 0 and uses scheduler 0
   // label owner is party 1 and uses scheduler 1
+  auto collector0 = std::make_shared<fbpcf::util::MetricCollector>(
+      "dummy_matrix_multiplication_uniform_noise_test_party_0");
+  auto collector1 = std::make_shared<fbpcf::util::MetricCollector>(
+      "dummy_matrix_multiplication_uniform_noise_test_party_1");
+  auto [tester0, tester1] = metricTesterForDummyMM(collector0, collector1);
+
   auto featureOwnerFactory =
       std::make_unique<insecure::DummyMatrixMultiplicationFactory<0>>(
-          0, 1, *agentFactories[0]);
+          0, 1, *agentFactories[0], collector0);
   auto labelOwnerFactory =
       std::make_unique<insecure::DummyMatrixMultiplicationFactory<1>>(
-          1, 0, *agentFactories[1]);
+          1, 0, *agentFactories[1], collector1);
 
   matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
-      std::move(featureOwnerFactory), std::move(labelOwnerFactory), 1e-7);
+      std::move(featureOwnerFactory),
+      std::move(labelOwnerFactory),
+      tester0,
+      tester1,
+      1e-7);
 }
 
 TEST(
@@ -315,6 +412,12 @@ TEST(
   auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
       std::move(rcotFactory1));
 
+  auto collector0 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_no_noise_with_dummy_rcot_test_party_0");
+  auto collector1 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_no_noise_with_dummy_rcot_test_party_1");
+  auto [tester0, tester1] = metricTesterForOTBasedMM(collector0, collector1);
+
   auto featureOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
           0,
@@ -323,7 +426,8 @@ TEST(
           divisor,
           *agentFactories[0],
           std::move(prgFactory0),
-          std::move(cotWRMFactory0));
+          std::move(cotWRMFactory0),
+          collector0);
   auto labelOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
           1,
@@ -332,10 +436,15 @@ TEST(
           divisor,
           *agentFactories[1],
           std::move(prgFactory1),
-          std::move(cotWRMFactory1));
+          std::move(cotWRMFactory1),
+          collector1);
 
   matrixVectorMultiplicationNoNoiseTest<0, 1, 0, 1>(
-      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+      std::move(featureOwnerFactory),
+      std::move(labelOwnerFactory),
+      tester0,
+      tester1,
+      tolerance);
 }
 
 TEST(
@@ -362,6 +471,12 @@ TEST(
   auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
       std::move(rcotFactory1));
 
+  auto collector0 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_uniform_noise_with_dummy_rcot_test_party_0");
+  auto collector1 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_uniform_noise_with_dummy_rcot_test_party_1");
+  auto [tester0, tester1] = metricTesterForOTBasedMM(collector0, collector1);
+
   auto featureOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
           0,
@@ -370,7 +485,8 @@ TEST(
           divisor,
           *agentFactories[0],
           std::move(prgFactory0),
-          std::move(cotWRMFactory0));
+          std::move(cotWRMFactory0),
+          collector0);
   auto labelOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
           1,
@@ -379,10 +495,15 @@ TEST(
           divisor,
           *agentFactories[1],
           std::move(prgFactory1),
-          std::move(cotWRMFactory1));
+          std::move(cotWRMFactory1),
+          collector1);
 
   matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
-      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+      std::move(featureOwnerFactory),
+      std::move(labelOwnerFactory),
+      tester0,
+      tester1,
+      tolerance);
 }
 
 TEST(
@@ -437,6 +558,12 @@ TEST(
   auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
       std::move(rcotFactory1));
 
+  auto collector0 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_no_noise_with_ferret_rcot_test_party_0");
+  auto collector1 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_no_noise_with_ferret_rcot_test_party_1");
+  auto [tester0, tester1] = metricTesterForOTBasedMM(collector0, collector1);
+
   auto featureOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
           0,
@@ -445,7 +572,8 @@ TEST(
           divisor,
           *agentFactories[0],
           std::move(prgFactory0),
-          std::move(cotWRMFactory0));
+          std::move(cotWRMFactory0),
+          collector0);
   auto labelOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
           1,
@@ -454,10 +582,15 @@ TEST(
           divisor,
           *agentFactories[1],
           std::move(prgFactory1),
-          std::move(cotWRMFactory1));
+          std::move(cotWRMFactory1),
+          collector1);
 
   matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
-      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+      std::move(featureOwnerFactory),
+      std::move(labelOwnerFactory),
+      tester0,
+      tester1,
+      tolerance);
 }
 
 TEST(
@@ -512,6 +645,12 @@ TEST(
   auto cotWRMFactory1 = std::make_unique<util::COTWithRandomMessageFactory>(
       std::move(rcotFactory1));
 
+  auto collector0 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_uniform_noise_with_ferret_rcot_test_party_0");
+  auto collector1 = std::make_shared<fbpcf::util::MetricCollector>(
+      "ot_based_matrix_multiplication_uniform_noise_with_ferret_rcot_test_party_1");
+  auto [tester0, tester1] = metricTesterForOTBasedMM(collector0, collector1);
+
   auto featureOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<0, uint64_t>>(
           0,
@@ -520,7 +659,8 @@ TEST(
           divisor,
           *agentFactories[0],
           std::move(prgFactory0),
-          std::move(cotWRMFactory0));
+          std::move(cotWRMFactory0),
+          collector0);
   auto labelOwnerFactory =
       std::make_unique<OTBasedMatrixMultiplicationFactory<1, uint64_t>>(
           1,
@@ -529,9 +669,14 @@ TEST(
           divisor,
           *agentFactories[1],
           std::move(prgFactory1),
-          std::move(cotWRMFactory1));
+          std::move(cotWRMFactory1),
+          collector1);
 
   matrixVectorMultiplicationUniformNoiseTest<0, 1, 0, 1>(
-      std::move(featureOwnerFactory), std::move(labelOwnerFactory), tolerance);
+      std::move(featureOwnerFactory),
+      std::move(labelOwnerFactory),
+      tester0,
+      tester1,
+      tolerance);
 }
 } // namespace fbpcf::mpc_std_lib::walr
