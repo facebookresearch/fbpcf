@@ -8,6 +8,7 @@
 #include <emmintrin.h>
 #include <string.h>
 #include <memory>
+#include <stdexcept>
 
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/SinglePointCot.h"
 #include "fbpcf/engine/util/util.h"
@@ -61,6 +62,9 @@ std::vector<__m128i> SinglePointCot::constructALayerOfKeyForReceiver(
 }
 
 void SinglePointCot::senderInit(__m128i delta) {
+  if (!util::getLsb(delta)) {
+    throw std::invalid_argument("The LSB of delta must be 1.");
+  }
   delta_ = delta;
   role_ = util::Role::sender;
 }

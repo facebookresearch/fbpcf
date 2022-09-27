@@ -20,6 +20,9 @@ void DummyMultiPointCot::senderInit(
     __m128i delta,
     int64_t length,
     int64_t weight) {
+  if (!util::getLsb(delta)) {
+    throw std::invalid_argument("The LSB of delta must be 1.");
+  }
   delta_ = delta;
   length_ = length;
   weight_ = weight;
