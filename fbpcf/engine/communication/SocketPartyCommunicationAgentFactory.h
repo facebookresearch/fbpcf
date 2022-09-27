@@ -104,7 +104,7 @@ establishing multiple connections (>3) between each party pair.
     setupInitialConnection(partyInfos);
   }
 
-  SocketPartyCommunicationAgentFactory(
+  [[deprecated("Use the constructor with metricCollector instead.")]] SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
       SocketPartyCommunicationAgent::TlsInfo tlsInfo,
