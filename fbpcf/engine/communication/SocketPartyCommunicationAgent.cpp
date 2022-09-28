@@ -491,17 +491,25 @@ int SocketPartyCommunicationAgent::connectToHost(
 }
 
 int SocketPartyCommunicationAgent::receiveFromClient(int sockfd) {
-  struct sockaddr_in cli_addr;
-  socklen_t clilen = sizeof(struct sockaddr_in);
-  auto acceptedConnection =
-      accept(sockfd, (struct sockaddr*)&cli_addr, &clilen);
+  struct timeval tv;
+  fd_set rfds;
+  FD_ZERO(&rfds);
+  FD_SET(sockfd, &rfds);
+  tv.tv_sec = (long)timeoutInSec_;
+  tv.tv_usec = 0;
 
-  if (acceptedConnection < 0) {
-    throw std::runtime_error("error on accepting");
+  if (select(sockfd + 1, &rfds, (fd_set*)0, (fd_set*)0, &tv) > 0) {
+    auto acceptedConnection = accept(sockfd, nullptr, nullptr);
+    if (acceptedConnection < 0) {
+      throw std::runtime_error("error on accepting");
+    }
+
+    close(sockfd);
+    return acceptedConnection;
+  } else {
+    throw std::runtime_error(
+        "Timeout when trying to establish a connection as server.");
   }
-  close(sockfd);
-
-  return acceptedConnection;
 }
 
 } // namespace fbpcf::engine::communication

@@ -224,10 +224,28 @@ TEST(SocketPartyCommunicationAgentTest, testTimeout) {
 
   EXPECT_THROW(
       std::make_unique<SocketPartyCommunicationAgentFactory>(
+          1,
+          partyInfo1,
+          tlsInfo,
+          std::make_shared<fbpcf::util::MetricCollector>("Party_1"),
+          10),
+      std::runtime_error);
+
+  EXPECT_THROW(
+      std::make_unique<SocketPartyCommunicationAgentFactory>(
           2,
           partyInfo2,
           tlsInfo,
           std::make_shared<fbpcf::util::MetricCollector>("Party_2"),
+          10),
+      std::runtime_error);
+
+  EXPECT_THROW(
+      std::make_unique<SocketPartyCommunicationAgentFactory>(
+          0,
+          partyInfo0,
+          tlsInfo,
+          std::make_shared<fbpcf::util::MetricCollector>("Party_0"),
           10),
       std::runtime_error);
 }
