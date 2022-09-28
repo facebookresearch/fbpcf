@@ -53,7 +53,8 @@ establishing multiple connections (>3) between each party pair.
         myId_(myId),
         useTls_(false),
         tlsDir_(""),
-        partyInfos_(partyInfos) {
+        partyInfos_(partyInfos),
+        timeoutInSec_(1800 /* add a default value to avoid error*/) {
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = false;
     tlsInfo.certPath = "";
@@ -72,7 +73,8 @@ establishing multiple connections (>3) between each party pair.
         myId_(myId),
         useTls_(false),
         tlsDir_(""),
-        partyInfos_(partyInfos) {
+        partyInfos_(partyInfos),
+        timeoutInSec_(1800 /* add a default value to avoid error*/) {
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = false;
     tlsInfo.certPath = "";
@@ -93,7 +95,8 @@ establishing multiple connections (>3) between each party pair.
         myId_(myId),
         useTls_(useTls),
         tlsDir_(tlsDir),
-        partyInfos_(partyInfos) {
+        partyInfos_(partyInfos),
+        timeoutInSec_(1800 /* add a default value to avoid error*/) {
     SocketPartyCommunicationAgent::TlsInfo tlsInfo;
     tlsInfo.useTls = useTls;
     tlsInfo.certPath = tlsDir + "/cert.pem";
@@ -112,7 +115,8 @@ establishing multiple connections (>3) between each party pair.
       : IPartyCommunicationAgentFactory(myname),
         myId_(myId),
         tlsInfo_(tlsInfo),
-        partyInfos_(partyInfos) {
+        partyInfos_(partyInfos),
+        timeoutInSec_(1800 /* add a default value to avoid error*/) {
     setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
@@ -125,7 +129,23 @@ establishing multiple connections (>3) between each party pair.
       : IPartyCommunicationAgentFactory(metricCollector),
         myId_(myId),
         tlsInfo_(tlsInfo),
-        partyInfos_(partyInfos) {
+        partyInfos_(partyInfos),
+        timeoutInSec_(1800 /* add a default value to avoid error*/) {
+    setupInitialSockets(partyInfos);
+    setupInitialConnection(partyInfos);
+  }
+
+  SocketPartyCommunicationAgentFactory(
+      int myId,
+      std::map<int, PartyInfo> partyInfos,
+      SocketPartyCommunicationAgent::TlsInfo tlsInfo,
+      std::shared_ptr<fbpcf::util::MetricCollector> metricCollector,
+      int timeoutInSec)
+      : IPartyCommunicationAgentFactory(metricCollector),
+        myId_(myId),
+        tlsInfo_(tlsInfo),
+        partyInfos_(partyInfos),
+        timeoutInSec_(timeoutInSec) {
     setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
@@ -151,7 +171,8 @@ establishing multiple connections (>3) between each party pair.
       : IPartyCommunicationAgentFactory(metricCollector),
         myId_(myId),
         tlsInfo_(tlsInfo),
-        partyInfos_(partyInfos) {
+        partyInfos_(partyInfos),
+        timeoutInSec_(300 /* default value for test only */) {
     setupInitialSockets(partyInfos);
   }
 
@@ -184,6 +205,8 @@ establishing multiple connections (>3) between each party pair.
 
   SocketPartyCommunicationAgent::TlsInfo tlsInfo_;
   std::map<int, PartyInfo> partyInfos_;
+
+  int timeoutInSec_;
 };
 
 } // namespace fbpcf::engine::communication
