@@ -59,7 +59,9 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     bool useTls,
     std::string tlsDir,
     std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
-    : recorder_(recorder), ssl_(nullptr) {
+    : recorder_(recorder),
+      ssl_(nullptr),
+      timeoutInSec_(1800 /* use a defaule value to avoid error*/) {
   if (useTls) {
     openServerPortWithTls(sockFd, portNo, tlsDir);
   } else {
@@ -71,8 +73,12 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     int sockFd,
     int portNo,
     TlsInfo tlsInfo,
-    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
-    : recorder_(recorder), ssl_(nullptr), tlsInfo_(tlsInfo) {
+    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder,
+    int timeoutInSec)
+    : recorder_(recorder),
+      ssl_(nullptr),
+      tlsInfo_(tlsInfo),
+      timeoutInSec_(timeoutInSec) {
   if (tlsInfo.useTls) {
     openServerPortWithTls(sockFd, portNo, tlsInfo);
   } else {
@@ -86,7 +92,9 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     bool useTls,
     std::string tlsDir,
     std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
-    : recorder_(recorder), ssl_(nullptr) {
+    : recorder_(recorder),
+      ssl_(nullptr),
+      timeoutInSec_(1800 /* use a defaule value to avoid error*/) {
   if (useTls) {
     openClientPortWithTls(serverAddress, portNo, tlsDir);
   } else {
@@ -98,8 +106,12 @@ SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     const std::string& serverAddress,
     int portNo,
     TlsInfo tlsInfo,
-    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder)
-    : recorder_(recorder), ssl_(nullptr), tlsInfo_(tlsInfo) {
+    std::shared_ptr<PartyCommunicationAgentTrafficRecorder> recorder,
+    int timeoutInSec)
+    : recorder_(recorder),
+      ssl_(nullptr),
+      tlsInfo_(tlsInfo),
+      timeoutInSec_(timeoutInSec) {
   if (tlsInfo.useTls) {
     openClientPortWithTls(serverAddress, portNo, tlsInfo);
   } else {

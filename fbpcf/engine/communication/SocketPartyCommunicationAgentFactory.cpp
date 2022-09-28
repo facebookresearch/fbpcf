@@ -33,11 +33,15 @@ SocketPartyCommunicationAgentFactory::create(int id, std::string name) {
       auto [socket, portNo] = createSocketFromMaybeFreePort(assignedPortNo);
       iter->second.second->sendSingleT<int>(portNo);
       return std::make_unique<SocketPartyCommunicationAgent>(
-          socket, portNo, tlsInfo_, recorder);
+          socket, portNo, tlsInfo_, recorder, timeoutInSec_);
     } else {
       auto portNo = iter->second.second->receiveSingleT<int>();
       return std::make_unique<SocketPartyCommunicationAgent>(
-          iter->second.first.address, portNo, tlsInfo_, recorder);
+          iter->second.first.address,
+          portNo,
+          tlsInfo_,
+          recorder,
+          timeoutInSec_);
     }
   }
 }
@@ -131,7 +135,8 @@ void SocketPartyCommunicationAgentFactory::setupInitialConnection(
                    sockets_.at(partyId),
                    partyInfo.portNo,
                    tlsInfo_,
-                   recorder))});
+                   recorder,
+                   timeoutInSec_))});
 
     } else if (myId_ > partyId) {
       auto recorder =
@@ -144,7 +149,11 @@ void SocketPartyCommunicationAgentFactory::setupInitialConnection(
            std::make_pair(
                partyInfo,
                std::make_unique<SocketPartyCommunicationAgent>(
-                   partyInfo.address, partyInfo.portNo, tlsInfo_, recorder))});
+                   partyInfo.address,
+                   partyInfo.portNo,
+                   tlsInfo_,
+                   recorder,
+                   timeoutInSec_))});
     }
   }
 }
