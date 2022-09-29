@@ -199,4 +199,37 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithJammedPort) {
   EXPECT_NE(agent21.get(), nullptr);
 }
 
+TEST(SocketPartyCommunicationAgentTest, testTimeout) {
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = "";
+  tlsInfo.keyPath = "";
+  tlsInfo.passphrasePath = "";
+  tlsInfo.useTls = false;
+
+  /* We use not-so-reliable ports since we expect the constructors to throw.
+   * It's OK if those ports are occupied. */
+  auto port01 = SocketInTestHelper::findNextOpenPort(5000);
+  // make sure a port larger than 5000 is found.
+  ASSERT_GE(port01, 5000);
+
+  auto port02 = port01 + 4;
+  auto port12 = port01 + 8;
+
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo0 = {
+      {1, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port02}}};
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo1 = {
+      {0, {"127.0.0.1", port01}}, {2, {"127.0.0.1", port12}}};
+  std::map<int, SocketPartyCommunicationAgentFactory::PartyInfo> partyInfo2 = {
+      {0, {"127.0.0.1", port02}}, {1, {"127.0.0.1", port12}}};
+
+  EXPECT_THROW(
+      std::make_unique<SocketPartyCommunicationAgentFactory>(
+          2,
+          partyInfo2,
+          tlsInfo,
+          std::make_shared<fbpcf::util::MetricCollector>("Party_2"),
+          10),
+      std::runtime_error);
+}
+
 } // namespace fbpcf::engine::communication

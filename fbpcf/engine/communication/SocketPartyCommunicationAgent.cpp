@@ -17,9 +17,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <cerrno>
+#include <chrono>
 #include <fstream>
 #include <istream>
 #include <stdexcept>
+#include <thread>
 
 #include <folly/String.h>
 #include "folly/logging/xlog.h"
@@ -471,11 +473,16 @@ int SocketPartyCommunicationAgent::connectToHost(
     XLOG(INFO) << "setsockopt(SO_REUSEADDR) failed";
   }
 
+  retryCount = timeoutInSec_ * 10;
   while (connect(sockfd, addrs->ai_addr, addrs->ai_addrlen) < 0) {
     // wait a second and retry
-    usleep(1000);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     close(sockfd);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (retryCount-- < 0) {
+      throw std::runtime_error(
+          "Timeout when trying to establish a connection as client.");
+    }
   }
 
   freeaddrinfo(addrs);
