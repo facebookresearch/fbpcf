@@ -107,6 +107,9 @@ jobs:
     - name: Tag Docker image
       run: |
         docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.vars.outputs.ref }}
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.major }}
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.major }}.${{ steps.create_version.outputs.minor }}
+        docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.major }}.${{ steps.create_version.outputs.minor }}.${{ steps.create_version.outputs.patch }}
         docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ steps.create_version.outputs.version_tag }}
         docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:latest
 
