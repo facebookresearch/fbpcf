@@ -571,7 +571,11 @@ void LazyScheduler::decreaseReferenceCountBatch(
 }
 
 std::pair<uint64_t, uint64_t> LazyScheduler::getTrafficStatistics() const {
-  return engine_->getTrafficStatistics();
+  if (engine_) {
+    return engine_->getTrafficStatistics();
+  } else {
+    return engineTrafficStatisticsBuffer_;
+  }
 }
 
 // band a number of batches into one batch.
@@ -672,6 +676,11 @@ size_t LazyScheduler::getBatchSize(
 size_t LazyScheduler::getBatchSize(
     IScheduler::WireId<IScheduler::Arithmetic> id) const {
   return wireKeeper_->getBatchSize(id);
+}
+
+void LazyScheduler::deleteEngine() {
+  engineTrafficStatisticsBuffer_ = engine_->getTrafficStatistics();
+  engine_ = nullptr;
 }
 
 } // namespace fbpcf::scheduler

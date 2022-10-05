@@ -386,6 +386,13 @@ class IScheduler {
   virtual size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const = 0;
 
+  /*
+   * Waiting for all the computations in the engine to finish and delete the
+   * engine. This API should be called before retrieving the metrics for the
+   * last time to avoid race condition.
+   */
+  virtual void deleteEngine() = 0;
+
  protected:
   uint64_t nonFreeGates_ = 0;
   uint64_t freeGates_ = 0;
@@ -421,6 +428,10 @@ class SchedulerKeeper {
  public:
   static void setScheduler(std::unique_ptr<IScheduler> scheduler) {
     scheduler_ = std::move(scheduler);
+  }
+
+  static void deleteEngine() {
+    scheduler_->deleteEngine();
   }
 
   static void freeScheduler() {

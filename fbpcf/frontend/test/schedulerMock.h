@@ -337,6 +337,8 @@ class schedulerMock final : public scheduler::IScheduler {
           WireId<Boolean>,
           std::shared_ptr<std::vector<uint32_t>>));
 
+  MOCK_METHOD0(deleteEngine, void());
+
   std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
     return {0, 0};
   }

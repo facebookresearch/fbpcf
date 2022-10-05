@@ -123,6 +123,7 @@ void testInputAndOutput(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
   if (myID == 0) {
     EXPECT_TRUE(wire7);
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 2);
   EXPECT_EQ(gateCount.second, 5);
@@ -162,6 +163,7 @@ void testIntegerInputAndOutput(
   if (myID == 0) {
     EXPECT_EQ(wire7, 79);
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 2);
   EXPECT_EQ(gateCount.second, 5);
@@ -202,6 +204,7 @@ void testInputAndOutputBatch(
     testVectorEq(wire7, {true, false});
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 4);
   EXPECT_EQ(gateCount.second, 10);
@@ -243,6 +246,7 @@ void testIntegerInputAndOutputBatch(
     testVectorEq(wire7, {1, 51});
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 4);
   EXPECT_EQ(gateCount.second, 10);
@@ -283,6 +287,7 @@ void testAnd(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
       }
     }
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 12);
   EXPECT_EQ(gateCount.second, 32);
@@ -326,6 +331,7 @@ void testAndBatch(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
     }
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 24);
   EXPECT_EQ(gateCount.second, 64);
@@ -366,6 +372,7 @@ void testMult(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
       }
     }
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 12);
   EXPECT_EQ(gateCount.second, 32);
@@ -411,6 +418,7 @@ void testMultBatch(
     }
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 24);
   EXPECT_EQ(gateCount.second, 64);
@@ -451,6 +459,7 @@ void testXor(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
       }
     }
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 8);
   EXPECT_EQ(gateCount.second, 36);
@@ -494,6 +503,7 @@ void testXorBatch(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
     }
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 16);
   EXPECT_EQ(gateCount.second, 72);
@@ -534,6 +544,7 @@ void testPlus(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
       }
     }
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 8);
   EXPECT_EQ(gateCount.second, 36);
@@ -579,6 +590,7 @@ void testPlusBatch(
     }
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 16);
   EXPECT_EQ(gateCount.second, 72);
@@ -601,6 +613,7 @@ void testNot(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
     auto wire2 = scheduler->notPublic(scheduler->publicBooleanInput(v1));
     EXPECT_EQ(scheduler->getBooleanValue(wire2), !v1);
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 2);
   EXPECT_EQ(gateCount.second, 8);
@@ -628,6 +641,7 @@ void testNotBatch(std::unique_ptr<IScheduler> scheduler, int8_t myID) {
     testVectorEq(scheduler->getBooleanValueBatch(wire2), {!v1, v1});
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 4);
   EXPECT_EQ(gateCount.second, 16);
@@ -650,6 +664,7 @@ void testNeg(std::unique_ptr<IArithmeticScheduler> scheduler, int8_t myID) {
     auto wire2 = scheduler->negPublic(scheduler->publicIntegerInput(v1));
     EXPECT_EQ(scheduler->getIntegerValue(wire2), -v1);
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 2);
   EXPECT_EQ(gateCount.second, 8);
@@ -679,6 +694,7 @@ void testNegBatch(
     testVectorEq(scheduler->getIntegerValueBatch(wire2), {-v1, v1});
   }
 
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 4);
   EXPECT_EQ(gateCount.second, 16);
@@ -1073,6 +1089,7 @@ void testCompositeAND(
       }
     }
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 8 * compositeSize);
   EXPECT_EQ(gateCount.second, 4 + 10 * compositeSize);
@@ -1181,6 +1198,7 @@ void testCompositeANDBatch(
       }
     }
   }
+  scheduler->deleteEngine();
   auto gateCount = scheduler->getGateStatistics();
   EXPECT_EQ(gateCount.first, 24 * compositeSize);
   EXPECT_EQ(gateCount.second, 12 + 30 * compositeSize);

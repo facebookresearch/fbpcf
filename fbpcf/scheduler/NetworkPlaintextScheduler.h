@@ -135,6 +135,8 @@ class NetworkPlaintextScheduler final : public PlaintextScheduler {
   size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const override;
 
+  void deleteEngine() override {}
+
  private:
   int myId_;
   std::

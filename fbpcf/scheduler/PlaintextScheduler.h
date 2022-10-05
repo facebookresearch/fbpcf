@@ -534,6 +534,8 @@ class PlaintextScheduler : public IArithmeticScheduler {
   size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const override;
 
+  void deleteEngine() override {}
+
  protected:
   std::unique_ptr<IWireKeeper> wireKeeper_;
   std::shared_ptr<util::MetricCollector> collector_;

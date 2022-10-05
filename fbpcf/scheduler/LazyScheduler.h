@@ -533,8 +533,12 @@ class LazyScheduler final : public IArithmeticScheduler {
   size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const override;
 
+  void deleteEngine() override;
+
  private:
   std::unique_ptr<engine::ISecretShareEngine> engine_;
+  std::pair<uint64_t, uint64_t> engineTrafficStatisticsBuffer_;
+
   std::shared_ptr<IWireKeeper> wireKeeper_;
   std::unique_ptr<IGateKeeper> gateKeeper_;
   std::shared_ptr<util::MetricCollector> collector_;
