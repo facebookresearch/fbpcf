@@ -44,17 +44,6 @@ passwordCallback(char* buf, int size, int /* rwflag */, void* userdata) {
   return strlen((char*)userdata);
 }
 
-/*
-This function is only used temporarily since we only have self
-signed certificates available. In the future, when we implement
-a Private CA, this callback should not be used.
-*/
-static int callbackToSkipVerificationOfSelfSignedCert_UNSAFE(
-    X509_STORE_CTX* /* ctx */,
-    void* /* data */) {
-  return 1; // always pass cert verification
-}
-
 SocketPartyCommunicationAgent::SocketPartyCommunicationAgent(
     int sockFd,
     int portNo,
@@ -337,11 +326,6 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   // ensure we use TLS 1.3
   SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
 
-  // set cert verification callback for self signed certs
-  // comment above has more information
-  SSL_CTX_set_cert_verify_callback(
-      ctx, callbackToSkipVerificationOfSelfSignedCert_UNSAFE, nullptr);
-
   if (ctx == nullptr) {
     LOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not create tls context");
@@ -392,11 +376,6 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
       throw std::runtime_error("failed to set root CA");
     }
   }
-
-  // set cert verification callback for self signed certs
-  // comment above has more information
-  SSL_CTX_set_cert_verify_callback(
-      ctx, callbackToSkipVerificationOfSelfSignedCert_UNSAFE, nullptr);
 
   if (ctx == nullptr) {
     LOG(INFO) << folly::errnoStr(errno);
