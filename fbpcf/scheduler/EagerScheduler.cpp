@@ -665,7 +665,11 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>> EagerScheduler::unbatching(
 }
 
 std::pair<uint64_t, uint64_t> EagerScheduler::getTrafficStatistics() const {
-  return engine_->getTrafficStatistics();
+  if (engine_) {
+    return engine_->getTrafficStatistics();
+  } else {
+    return engineTrafficStatisticsBuffer_;
+  }
 }
 
 size_t EagerScheduler::getBatchSize(
@@ -676,6 +680,11 @@ size_t EagerScheduler::getBatchSize(
 size_t EagerScheduler::getBatchSize(
     IScheduler::WireId<IScheduler::Arithmetic> id) const {
   return wireKeeper_->getBatchSize(id);
+}
+
+void EagerScheduler::deleteEngine() {
+  engineTrafficStatisticsBuffer_ = engine_->getTrafficStatistics();
+  engine_.reset(nullptr);
 }
 
 } // namespace fbpcf::scheduler

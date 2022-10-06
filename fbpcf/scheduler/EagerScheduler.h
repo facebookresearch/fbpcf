@@ -530,8 +530,11 @@ class EagerScheduler final : public IArithmeticScheduler {
   size_t getBatchSize(
       IScheduler::WireId<IScheduler::Arithmetic> id) const override;
 
+  void deleteEngine() override;
+
  private:
   std::unique_ptr<engine::ISecretShareEngine> engine_;
+  std::pair<uint64_t, uint64_t> engineTrafficStatisticsBuffer_;
   std::unique_ptr<IWireKeeper> wireKeeper_;
   std::shared_ptr<util::MetricCollector> collector_;
 };
