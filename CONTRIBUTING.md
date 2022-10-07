@@ -1,4 +1,4 @@
-# Contributing to FBPCF
+# Contributing to PCF
 We want to make contributing to this project as easy and transparent as
 possible.
 
@@ -25,7 +25,7 @@ Complete your CLA here: <https://code.facebook.com/cla>
 We use GitHub issues to track public bugs. Please ensure your description is
 clear and has sufficient instructions to be able to reproduce the issue.
 
-Facebook has a [bounty program](https://www.facebook.com/whitehat/) for the safe
+Meta has a [bounty program](https://www.facebook.com/whitehat/) for the safe
 disclosure of security bugs. In those cases, please go through the process
 outlined on that page and do not file a public issue.
 
@@ -35,5 +35,5 @@ outlined on that page and do not file a public issue.
 * ...
 
 ## License
-By contributing to FBPCF, you agree that your contributions will be licensed
+By contributing to PCF, you agree that your contributions will be licensed
 under the LICENSE file in the root directory of this source tree.

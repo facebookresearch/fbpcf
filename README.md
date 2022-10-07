@@ -1,4 +1,4 @@
-# FBPCF (Facebook Private Computation Framework)
+# PCF (Private Computation Framework)
 
 ## Project Description
 Private Computation Framework (PCF) is the application framework for writing MPC "games" (applications) that are secure and private.  The games are typically created in C++ using private data structures provided by PCF, and evaluated using an MPC backend that operates much like a virtual machine.
