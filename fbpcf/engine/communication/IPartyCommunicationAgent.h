@@ -104,8 +104,8 @@ class IPartyCommunicationAgent {
    * @param size the expected size;
    * @return the received content
    */
-  std::vector<bool> receiveBool(int size) {
-    int compressedSize = (size + 7) >> 3;
+  std::vector<bool> receiveBool(size_t size) {
+    size_t compressedSize = (size + 7) >> 3;
     auto compressed = receive(compressedSize);
     auto decompressed = decompressToBits(std::move(compressed));
     decompressed.erase(decompressed.begin() + size, decompressed.end());
