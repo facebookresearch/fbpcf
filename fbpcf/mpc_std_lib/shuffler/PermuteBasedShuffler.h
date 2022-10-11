@@ -30,7 +30,7 @@ class PermuteBasedShuffler final : public IShuffler<T> {
         permuter_(std::move(permuter)),
         prg_(std::move(prg)) {}
 
-  T shuffle(const T& src, size_t size) const override {
+  T shuffle(const T& src, uint32_t size) const override {
     auto myRandomPermutation = generateRandomPermutation(size);
     if (myId_ < partnerId_) {
       auto tmp = permuter_->permute(src, size, myRandomPermutation);
@@ -44,12 +44,12 @@ class PermuteBasedShuffler final : public IShuffler<T> {
   }
 
  private:
-  std::vector<uint32_t> generateRandomPermutation(size_t size) const {
+  std::vector<uint32_t> generateRandomPermutation(uint32_t size) const {
     std::vector<uint32_t> rst(size);
     for (size_t i = 0; i < size; i++) {
       rst[i] = i;
     }
-    for (size_t i = size; i > 0; i--) {
+    for (size_t i = size; i > 1; i--) {
       auto randomBytes = prg_->getRandomBytes(8);
       auto tmp = reinterpret_cast<uint64_t*>(randomBytes.data());
       auto position = (*tmp) % i;

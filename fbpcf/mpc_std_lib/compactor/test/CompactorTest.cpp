@@ -69,7 +69,7 @@ std::pair<std::vector<T>, std::vector<bool>> task(
         typename util::SecBatchType<bool, schedulerId>::type>> compactor,
     const std::vector<T>& value,
     const std::vector<bool>& label,
-    size_t size,
+    uint32_t size,
     bool shouldRevealSize) {
   auto secValue =
       util::MpcAdapters<T, schedulerId>::processSecretInputs(value, 0);
@@ -98,7 +98,7 @@ void compactorTest(
   auto compactor0 = compactorFactory0.create();
   auto compactor1 = compactorFactory1.create();
 
-  size_t batchSize = 11;
+  uint32_t batchSize = 11;
   bool shouldRevealSize = true;
 
   // Generate test data
