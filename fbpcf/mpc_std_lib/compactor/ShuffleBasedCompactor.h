@@ -44,7 +44,7 @@ class ShuffleBasedCompactor final
   std::pair<SecBatchSrcType, SecBatchLabelType> compaction(
       const SecBatchSrcType& src,
       const SecBatchLabelType& label,
-      size_t size,
+      uint32_t size,
       bool shouldRevealSize) const {
     if (!shouldRevealSize) {
       throw std::runtime_error("shouldRevealSize should be true");

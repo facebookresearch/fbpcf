@@ -28,7 +28,7 @@ std::tuple<
     std::vector<std::vector<bool>>,
     std::vector<uint32_t>,
     std::vector<std::vector<bool>>>
-getPermuterTestData(size_t batchSize) {
+getPermuterTestData(uint32_t batchSize) {
   size_t width = util::Adapters<uint32_t>::widthForUint32;
   std::vector<std::vector<bool>> originalData(
       width, std::vector<bool>(batchSize));
@@ -79,7 +79,7 @@ void permuterTest(
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   auto permuter0 = permuterFactory0.create();
   auto permuter1 = permuterFactory1.create();
-  size_t size = 17;
+  uint32_t size = 17;
   auto [originalData, order, expectedOutput] = getPermuterTestData(size);
   auto future0 =
       std::async(party0Task, std::move(permuter0), originalData, order);

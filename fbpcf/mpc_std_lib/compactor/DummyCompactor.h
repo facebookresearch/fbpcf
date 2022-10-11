@@ -38,7 +38,7 @@ class DummyCompactor final
   std::pair<SecBatchType, SecBatchLabelType> compaction(
       const SecBatchType& src,
       const SecBatchLabelType& label,
-      size_t size,
+      uint32_t size,
       bool /*shouldRevealSize*/) const override {
     auto party0 =
         (myId_ < partnerId_) ? myId_ : partnerId_; // a party with a smaller id

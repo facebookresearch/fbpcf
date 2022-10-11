@@ -43,7 +43,7 @@ class ICompactor {
   virtual std::pair<T, LabelT> compaction(
       const T& src,
       const LabelT& label,
-      size_t size,
+      uint32_t size,
       bool shouldRevealSize) const = 0;
 };
 

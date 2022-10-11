@@ -8,6 +8,9 @@
 #pragma once
 
 #include <fbpcf/mpc_std_lib/util/util.h>
+
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuter.h"
+
 namespace fbpcf::mpc_std_lib::permuter {
 
 template <typename T, int schedulerId>
