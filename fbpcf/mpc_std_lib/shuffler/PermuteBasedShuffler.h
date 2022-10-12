@@ -49,12 +49,21 @@ class PermuteBasedShuffler final : public IShuffler<T> {
     for (size_t i = 0; i < size; i++) {
       rst[i] = i;
     }
+
+    BN_CTX* ctx = BN_CTX_new();
+    if (ctx == nullptr) {
+      throw std::runtime_error(
+          "BN_CTX initialization failed: " + std::to_string(ERR_get_error()));
+    }
+
     for (size_t i = size; i > 1; i--) {
-      auto randomBytes = prg_->getRandomBytes(8);
-      auto tmp = reinterpret_cast<uint64_t*>(randomBytes.data());
-      auto position = (*tmp) % i;
+      // Max permutation size + 128 bit security parameter
+      auto randomBytes =
+          prg_->getRandomBytes(sizeof(uint32_t) + sizeof(__m128i));
+      auto position = engine::util::mod(randomBytes, i, ctx);
       std::swap(rst[position], rst[i - 1]);
     }
+    BN_CTX_free(ctx);
     return rst;
   }
 
