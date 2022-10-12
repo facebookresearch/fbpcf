@@ -49,4 +49,31 @@ TEST(UtilTest, setLsb) {
     EXPECT_EQ(util::getLsb(val), true);
   }
 }
+
+TEST(UtilTest, testBigNumMod) {
+  BN_CTX* ctx = BN_CTX_new();
+  std::vector<uint8_t> num{25};
+  EXPECT_EQ(mod(num, 4, ctx), 1);
+  EXPECT_EQ(mod(num, 7, ctx), 4);
+
+  for (uint64_t i = 0; i <= 251; i++) {
+    num = {
+        (uint8_t)i,
+        (uint8_t)(i + 1),
+        (uint8_t)(i + 2),
+        (uint8_t)(i + 3),
+        (uint8_t)(i + 4),
+    };
+
+    auto remainder = mod(num, 10000, ctx);
+
+    uint32_t expected = (i + ((i + 1) << 8) + ((i + 2) << 16) +
+                         ((i + 3) << 24) + ((i + 4) << 32)) %
+        10000;
+
+    EXPECT_EQ(remainder, expected);
+  }
+
+  BN_CTX_free(ctx);
+}
 } // namespace fbpcf::engine::util

@@ -24,7 +24,6 @@
 #include "folly/logging/xlog.h"
 
 namespace fbpcf::engine::util {
-
 inline bool getLsb(__m128i src) {
   return _mm_extract_epi8(src, 0) & 1;
 }
@@ -34,7 +33,8 @@ inline uint64_t getLast64Bits(__m128i src) {
 }
 /*
  * Extracts the last n bits in a 128 bit integer to the passed in boolean
- * vector. The order of bits will be from least significant to most significant.
+ * vector. The order of bits will be from least significant to most
+ * significant.
  */
 inline void extractLnbToVector(const __m128i& src, std::vector<bool>& data) {
   if (data.size() > sizeof(src) * 8) {
@@ -130,6 +130,49 @@ inline __m128i getRandomM128iFromSystemNoise() {
     throw std::runtime_error("No sufficient entropy to initialize the seed.");
   }
   return buildM128i(buf);
+}
+
+inline void loadBytesIntoBignum(
+    const std::vector<unsigned char>& data,
+    BIGNUM* num) {
+  for (size_t i = data.size(); i > 0; i--) {
+    if (!BN_lshift(num, num, 8)) {
+      throw std::runtime_error(
+          "BN_lshift failed at index " + std::to_string(i) +
+          " Error:  " + std::to_string(ERR_get_error()));
+    }
+    if (!BN_add_word(num, data[i - 1])) {
+      throw std::runtime_error(
+          "BN_add_word failed at index " + std::to_string(i) +
+          " Error:  " + std::to_string(ERR_get_error()));
+    }
+  }
+}
+
+inline uint32_t
+mod(const std::vector<unsigned char>& data, uint32_t modulo, BN_CTX* ctx) {
+  BN_CTX_start(ctx);
+  BIGNUM* num = BN_CTX_get(ctx);
+
+  if (num == nullptr) {
+    throw std::runtime_error(
+        "Temp BIGNUM initialization failed: " +
+        std::to_string(ERR_get_error()));
+  }
+
+  loadBytesIntoBignum(data, num);
+
+  BN_ULONG rst = BN_mod_word(num, modulo);
+  BN_ULONG bn_zero = 0;
+
+  // invalidates num
+  BN_CTX_end(ctx);
+
+  if (rst == (bn_zero - 1)) {
+    throw std::runtime_error(
+        "BIGNUM mod failed: " + std::to_string(ERR_get_error()));
+  }
+  return rst;
 }
 
 // this class is to determine the role in OT/RCOT/MPCOT/SPCOT where the
