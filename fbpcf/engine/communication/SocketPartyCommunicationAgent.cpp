@@ -282,6 +282,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   }
 
   // Load the certificate file
+  XLOGF(INFO, "Using certificate file at: {}", tlsInfo.certPath);
   if (SSL_CTX_use_certificate_file(
           ctx, (tlsInfo.certPath).c_str(), SSL_FILETYPE_PEM) <= 0) {
     LOG(INFO) << folly::errnoStr(errno);
@@ -289,6 +290,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   }
 
   // Load the private key file
+  XLOGF(INFO, "Using private key file at: {}", tlsInfo.keyPath);
   if (SSL_CTX_use_PrivateKey_file(
           ctx, (tlsInfo.keyPath).c_str(), SSL_FILETYPE_PEM) <= 0) {
     LOG(INFO) << folly::errnoStr(errno);
@@ -370,6 +372,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
 
   // specify the trusted root CA
+  XLOGF(INFO, "Using root CA cert file at: {}", tlsInfo.rootCaCertPath);
   if (!tlsInfo.rootCaCertPath.empty()) {
     if (SSL_CTX_load_verify_locations(
             ctx, nullptr, tlsInfo.rootCaCertPath.c_str()) == 0) {
