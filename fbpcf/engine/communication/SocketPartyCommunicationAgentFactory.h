@@ -121,7 +121,7 @@ establishing multiple connections (>3) between each party pair.
     setupInitialConnection(partyInfos);
   }
 
-  SocketPartyCommunicationAgentFactory(
+  [[deprecated("Use the constructor with a timeout instead.")]] SocketPartyCommunicationAgentFactory(
       int myId,
       std::map<int, PartyInfo> partyInfos,
       SocketPartyCommunicationAgent::TlsInfo tlsInfo,
@@ -146,6 +146,14 @@ establishing multiple connections (>3) between each party pair.
         tlsInfo_(tlsInfo),
         partyInfos_(partyInfos),
         timeoutInSec_(timeoutInSec) {
+    XLOGF(
+        INFO,
+        "use_tls: {}, ca_cert_path: {}, server_cert_path: {}, key_path: {}, passphrase_path: {}",
+        tlsInfo.useTls,
+        tlsInfo.rootCaCertPath,
+        tlsInfo.certPath,
+        tlsInfo.keyPath,
+        tlsInfo.passphrasePath);
     setupInitialSockets(partyInfos);
     setupInitialConnection(partyInfos);
   }
