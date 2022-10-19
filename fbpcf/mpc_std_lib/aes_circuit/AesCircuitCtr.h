@@ -33,3 +33,5 @@ class AesCircuitCtr final : public IAesCircuitCtr<BitType> {
 };
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
+
+#include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr_impl.h"
