@@ -47,7 +47,8 @@ RUN curl -sSL https://github.com/abseil/abseil-cpp/archive/20210324.2.tar.gz | \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
       -DBUILD_TESTING=OFF \
-      -DBUILD_SHARED_LIBS=yes \
+      -DBUILD_SHARED_LIBS=OFF \
+      -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
       -DCMAKE_CXX_STANDARD=11 \
       -H. -Bcmake-out && \
     cmake --build cmake-out -- -j "$(nproc)" && \
@@ -61,7 +62,7 @@ RUN curl -sSL https://github.com/protocolbuffers/protobuf/archive/v3.19.0.tar.gz
     tar -xzf - --strip-components=1 && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=yes \
+        -DBUILD_SHARED_LIBS=OFF \
         -Dprotobuf_BUILD_TESTS=OFF \
         -Hcmake -Bcmake-out && \
     cmake --build cmake-out -- -j "$(nproc)" && \
@@ -75,6 +76,8 @@ RUN curl -sSL https://github.com/grpc/grpc/archive/v1.41.1.tar.gz | \
     tar -xzf - --strip-components=1 && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
         -DgRPC_INSTALL=ON \
         -DgRPC_BUILD_TESTS=OFF \
         -DgRPC_ABSL_PROVIDER=package \
@@ -95,7 +98,7 @@ RUN curl -sSL https://github.com/google/crc32c/archive/1.1.2.tar.gz | \
     tar -xzf - --strip-components=1 && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=yes \
+        -DBUILD_SHARED_LIBS=OFF \
         -DCRC32C_BUILD_TESTS=OFF \
         -DCRC32C_BUILD_BENCHMARKS=OFF \
         -DCRC32C_USE_GLOG=OFF \
@@ -111,7 +114,7 @@ RUN curl -sSL https://github.com/nlohmann/json/archive/v3.10.4.tar.gz | \
     tar -xzf - --strip-components=1 && \
     cmake \
       -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_SHARED_LIBS=yes \
+      -DBUILD_SHARED_LIBS=OFF \
       -DBUILD_TESTING=OFF \
       -H. -Bcmake-out/nlohmann/json && \
     cmake --build cmake-out/nlohmann/json --target install -- -j "$(nproc)" && \
@@ -121,6 +124,7 @@ RUN curl -sSL https://github.com/nlohmann/json/archive/v3.10.4.tar.gz | \
 WORKDIR ${HOME}/google-cloud-cpp
 RUN cmake \
         -DBUILD_TESTING=OFF \
+        -DBUILD_SHARED_LIBS=OFF \
         -DGOOGLE_CLOUD_CPP_ENABLE_BIGTABLE=OFF \
         -DGOOGLE_CLOUD_CPP_ENABLE_BIGQUERY=OFF \
         -DGOOGLE_CLOUD_CPP_ENABLE_SPANNER=OFF \
