@@ -13,9 +13,13 @@ namespace fbpcf::system {
 // reference: https://bduvenhage.me/rng/2019/04/06/the-intel-drng.html
 CpuId getCpuId(const uint64_t& eax) {
   CpuId info;
+#ifdef __aarch64__
+  std::memset(&info, 0, sizeof(info));
+#else
   asm volatile("cpuid"
                : "=a"(info.eax), "=b"(info.ebx), "=c"(info.ecx), "=d"(info.edx)
                : "a"(eax), "c"(0));
+#endif
 
   return info;
 }
