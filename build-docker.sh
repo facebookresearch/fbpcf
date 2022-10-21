@@ -10,7 +10,7 @@ UBUNTU_RELEASE="20.04"
 EMP_TOOL_RELEASE="0.2.3"
 EMP_RELEASE="0.2.2"
 AWS_RELEASE="1.8.177"
-GCP_RELEASE="1.32.1"
+GCP_RELEASE="v1.32.1"
 FMT_RELEASE="7.1.3"
 FOLLY_RELEASE="2021.06.28.00"
 GITHUB_PACKAGES="ghcr.io/facebookresearch"
@@ -83,7 +83,7 @@ build_dep_image "${AWS_IMAGE}" "aws-s3-core" "--build-arg os_release=${OS_RELEAS
 AWS_IMAGE="${RETURN}"
 
 GCP_IMAGE="fbpcf/${IMAGE_PREFIX}-google-cloud-cpp:${GCP_RELEASE}"
-build_dep_image "${GCP_IMAGE}" "google-cloud-cpp" "--build-arg os_release=${OS_RELEASE} --build-arg gcp_cpp_release=v${GCP_RELEASE}"
+build_dep_image "${GCP_IMAGE}" "google-cloud-cpp" "--build-arg os_release=${OS_RELEASE} --build-arg gcp_cpp_release=${GCP_RELEASE}"
 GCP_IMAGE="${RETURN}"
 
 FOLLY_IMAGE="fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE}"
