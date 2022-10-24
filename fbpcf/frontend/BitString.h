@@ -48,6 +48,14 @@ class BitString : public scheduler::SchedulerKeeper<schedulerId> {
       return data_[index];
     }
 
+    std::vector<BoolType> getValue() const {
+      std::vector<BoolType> rst(size());
+      for (size_t index = 0; index < size(); index++) {
+        rst[index] = data_[index].getValue();
+      }
+      return rst;
+    }
+
     size_t size() const {
       return data_.size();
     }
