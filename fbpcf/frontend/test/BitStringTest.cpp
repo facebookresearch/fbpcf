@@ -67,6 +67,12 @@ TEST(StringTest, testInputAndOutput) {
     testVectorEq(t4.at(i), testBatchValue.at(i));
     testVectorEq(t6.at(i), testBatchValue.at(i));
   }
+
+  auto extracted1 = v1.extractStringShare();
+  auto extracted3 = v3.extractStringShare();
+
+  testVectorEq(extracted1.getValue(), testValue);
+  testVectorEq(extracted3.getValue(), testBatchValue);
 }
 
 TEST(StringTest, testNOT) {
@@ -539,8 +545,6 @@ TEST(StringTest, testBatchSize) {
       std::make_unique<scheduler::PlaintextScheduler>(
           scheduler::WireKeeper::createWithUnorderedMap()));
 
-  using SecString = BitString<true, 0>;
-  using PubString = BitString<false, 0>;
   using SecBatchString = BitString<true, 0, true>;
   using PubBatchString = BitString<false, 0, true>;
 
@@ -555,9 +559,6 @@ TEST(StringTest, testBatchSize) {
       testBatchValue[i][j] = dBool(e);
     }
   }
-
-  SecString v1(testValue, 0);
-  PubString v2(testValue);
 
   SecBatchString v3(testBatchValue, 0);
   PubBatchString v4(testBatchValue);
