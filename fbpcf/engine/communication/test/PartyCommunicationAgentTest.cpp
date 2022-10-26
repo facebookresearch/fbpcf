@@ -13,6 +13,7 @@
 #include <memory>
 #include <mutex>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -107,6 +108,7 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
   tlsInfo.certPath = createdDir + "/cert.pem";
   tlsInfo.keyPath = createdDir + "/key.pem";
   tlsInfo.passphrasePath = createdDir + "/passphrase.pem";
+  tlsInfo.rootCaCertPath = createdDir + "/ca_cert.pem";
   tlsInfo.useTls = true;
 
   std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
@@ -124,6 +126,56 @@ TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTls) {
   thread2.join();
   thread1.join();
   thread0.join();
+
+  deleteTlsFiles(createdDir);
+}
+
+TEST(
+    SocketPartyCommunicationAgentTest,
+    testSendAndReceiveWithTlsDifferentCaCert) {
+  auto createdDir = setUpTlsFiles();
+  auto dummyCreatedDir = setUpTlsFiles();
+
+  /*
+    Here, we create two root CA certs. We pass one in as the
+    trusted cert, but we use the other one to sign the server
+    certificate. We should see an exception.
+   */
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = dummyCreatedDir + "/cert.pem";
+  tlsInfo.keyPath = dummyCreatedDir + "/key.pem";
+  tlsInfo.passphrasePath = dummyCreatedDir + "/passphrase.pem";
+  tlsInfo.rootCaCertPath = createdDir + "/ca_cert.pem";
+  tlsInfo.useTls = true;
+
+  std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
+      factories(2);
+  EXPECT_THROW(
+      getSocketFactoriesForMultipleParties(2, tlsInfo, factories),
+      std::runtime_error);
+
+  deleteTlsFiles(createdDir);
+  deleteTlsFiles(dummyCreatedDir);
+}
+
+TEST(SocketPartyCommunicationAgentTest, testSendAndReceiveWithTlsNoCaCert) {
+  auto createdDir = setUpTlsFiles();
+
+  /*
+    In this case, we don't specify a root CA certificate,
+    which should result in an exception.
+   */
+  fbpcf::engine::communication::SocketPartyCommunicationAgent::TlsInfo tlsInfo;
+  tlsInfo.certPath = createdDir + "/cert.pem";
+  tlsInfo.keyPath = createdDir + "/key.pem";
+  tlsInfo.passphrasePath = createdDir + "/passphrase.pem";
+  tlsInfo.useTls = true;
+
+  std::vector<std::unique_ptr<SocketPartyCommunicationAgentFactoryForTests>>
+      factories(2);
+  EXPECT_THROW(
+      getSocketFactoriesForMultipleParties(2, tlsInfo, factories),
+      std::runtime_error);
 
   deleteTlsFiles(createdDir);
 }
