@@ -11,6 +11,7 @@
 #include "fbpcf/engine/util/IPrg.h"
 #include "fbpcf/mpc_std_lib/permuter/IPermuter.h"
 #include "fbpcf/mpc_std_lib/shuffler/IShuffler.h"
+#include "fbpcf/mpc_std_lib/util/secureRandomPermutation.h"
 
 namespace fbpcf::mpc_std_lib::shuffler {
 
@@ -31,7 +32,8 @@ class PermuteBasedShuffler final : public IShuffler<T> {
         prg_(std::move(prg)) {}
 
   T shuffle(const T& src, uint32_t size) const override {
-    auto myRandomPermutation = generateRandomPermutation(size);
+    auto myRandomPermutation =
+        fbpcf::mpc_std_lib::util::secureRandomPermutation(size, *prg_);
     if (myId_ < partnerId_) {
       auto tmp = permuter_->permute(src, size, myRandomPermutation);
       auto rst = permuter_->permute(std::move(tmp), size);
@@ -44,29 +46,6 @@ class PermuteBasedShuffler final : public IShuffler<T> {
   }
 
  private:
-  std::vector<uint32_t> generateRandomPermutation(uint32_t size) const {
-    std::vector<uint32_t> rst(size);
-    for (size_t i = 0; i < size; i++) {
-      rst[i] = i;
-    }
-
-    BN_CTX* ctx = BN_CTX_new();
-    if (ctx == nullptr) {
-      throw std::runtime_error(
-          "BN_CTX initialization failed: " + std::to_string(ERR_get_error()));
-    }
-
-    for (size_t i = size; i > 1; i--) {
-      // Max permutation size + 128 bit security parameter
-      auto randomBytes =
-          prg_->getRandomBytes(sizeof(uint32_t) + sizeof(__m128i));
-      auto position = engine::util::mod(randomBytes, i, ctx);
-      std::swap(rst[position], rst[i - 1]);
-    }
-    BN_CTX_free(ctx);
-    return rst;
-  }
-
   int myId_;
   int partnerId_;
   std::unique_ptr<permuter::IPermuter<T>> permuter_;
