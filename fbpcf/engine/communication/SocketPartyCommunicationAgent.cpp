@@ -13,6 +13,7 @@
 #include <netinet/in.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
+#include <openssl/x509.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -375,7 +376,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   XLOGF(INFO, "Using root CA cert file at: {}", tlsInfo.rootCaCertPath);
   if (!tlsInfo.rootCaCertPath.empty()) {
     if (SSL_CTX_load_verify_locations(
-            ctx, nullptr, tlsInfo.rootCaCertPath.c_str()) == 0) {
+            ctx, tlsInfo.rootCaCertPath.c_str(), nullptr) == 0) {
       throw std::runtime_error("failed to set root CA");
     }
   }
@@ -384,6 +385,9 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
     LOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not create tls context");
   }
+
+  // make sure to verify server cert
+  SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
 
   SSL* ssl = SSL_new(ctx);
 
@@ -404,6 +408,8 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   }
 
   X509* cert = SSL_get_peer_certificate(ssl);
+  auto result = X509_verify_cert_error_string(SSL_get_verify_result(ssl));
+  XLOGF(INFO, "verify result: {}", result);
   char* line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
   XLOGF(INFO, "Server certificate issuer: {}", line);
 
