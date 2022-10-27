@@ -11,7 +11,7 @@
 #include <optional>
 #include <string>
 
-#include <google/cloud/storage/client.h>
+#include <google/cloud/storage/client.h> // @manual=fbsource//third-party/google-cloud-cpp/google/cloud/storage:google_cloud_cpp_storage
 
 namespace fbpcf::gcp {
 struct GCSClientOption {};
