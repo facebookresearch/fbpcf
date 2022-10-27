@@ -8,10 +8,10 @@
 #pragma once
 
 #include <gmock/gmock.h>
-#include <google/cloud/storage/client.h>
-#include <google/cloud/storage/download_options.h>
-#include <google/cloud/storage/object_read_stream.h>
-#include <google/cloud/storage/object_write_stream.h>
+#include <google/cloud/storage/client.h> // @manual=fbsource//third-party/google-cloud-cpp/google/cloud/storage:google_cloud_cpp_storage
+#include <google/cloud/storage/download_options.h> // @manual=fbsource//third-party/google-cloud-cpp/google/cloud/storage:google_cloud_cpp_storage
+#include <google/cloud/storage/object_read_stream.h> // @manual=fbsource//third-party/google-cloud-cpp/google/cloud/storage:google_cloud_cpp_storage
+#include <google/cloud/storage/object_write_stream.h> // @manual=fbsource//third-party/google-cloud-cpp/google/cloud/storage:google_cloud_cpp_storage
 
 namespace gcs = ::google::cloud::storage;
 
