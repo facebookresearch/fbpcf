@@ -7,7 +7,7 @@
 
 #include "fbpcf/aws/AwsSdk.h"
 
-#include <aws/s3/S3Client.h>
+#include <aws/s3/S3Client.h> // @manual
 #include <gtest/gtest.h>
 
 namespace fbpcf {

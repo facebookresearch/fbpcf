@@ -14,10 +14,10 @@
 #include <string>
 #include <vector>
 
-#include <aws/core/auth/AWSCredentials.h>
-#include <aws/core/client/ClientConfiguration.h>
-#include <aws/core/http/Scheme.h>
-#include <aws/s3/S3Client.h>
+#include <aws/core/auth/AWSCredentials.h> // @manual
+#include <aws/core/client/ClientConfiguration.h> // @manual
+#include <aws/core/http/Scheme.h> // @manual
+#include <aws/s3/S3Client.h> // @manual
 
 #include <boost/algorithm/string.hpp>
 #include <folly/Format.h>
