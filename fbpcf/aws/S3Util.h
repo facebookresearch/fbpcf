@@ -11,7 +11,7 @@
 #include <optional>
 #include <string>
 
-#include <aws/s3/S3Client.h>
+#include <aws/s3/S3Client.h> // @manual
 
 namespace fbpcf::aws {
 // referencee of environment variables:

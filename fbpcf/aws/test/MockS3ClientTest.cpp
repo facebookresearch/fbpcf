@@ -8,7 +8,7 @@
 #include "fbpcf/aws/MockS3Client.h"
 #include "fbpcf/aws/AwsSdk.h"
 
-#include <aws/s3/S3Client.h>
+#include <aws/s3/S3Client.h> // @manual
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 

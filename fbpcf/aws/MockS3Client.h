@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <aws/s3/S3Client.h>
-#include <aws/s3/model/GetObjectRequest.h>
-#include <aws/s3/model/PutObjectRequest.h>
+#include <aws/s3/S3Client.h> // @manual
+#include <aws/s3/model/GetObjectRequest.h> // @manual
+#include <aws/s3/model/PutObjectRequest.h> // @manual
 #include <gmock/gmock.h>
 
 namespace fbpcf {
