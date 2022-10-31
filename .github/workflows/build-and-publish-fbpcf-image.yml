@@ -1,0 +1,128 @@
+name: Build and Publish the FBPCF image
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: The branch we want to build.
+        required: true
+        type: string
+      version_tag:
+        description: The version tag to use for the new release. In the format of v{major}.{minor}.{patch}
+        required: true
+        type: string
+      docker_tags:
+        description: 'A comma separated list of tags to apply to the produced docker image. Example: latest,main,2.1,2.1.3'
+        required: true
+        type: string
+
+env:
+  BRANCH_NAME: ${{ inputs.branch }}
+  REGISTRY: ghcr.io
+  LOCAL_IMAGE_NAME: ${{ github.event.repository.name }}/ubuntu
+  REGISTRY_IMAGE_NAME: ghcr.io/${{ github.repository }}/ubuntu
+  VERSION_TAG: latest-build
+
+jobs:
+  build_and_publish_fbpcf_image:
+    if: startsWith(inputs.branch, 'hotfix/release-') || inputs.branch == 'main'
+    name: Build and Publish Hotfix Image
+    runs-on: [self-hosted, e2e_test_runner]
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+
+      - name: Build fbpcf docker image
+        run: |
+          ./build-docker.sh -u
+
+      - name: Sanity check fbpcf library (v1)
+        timeout-minutes: 3
+        run: |
+          ./run-sanity_check.sh -u -v 1
+        working-directory: fbpcf/tests/github/
+
+      - name: Sanity check fbpcf library (v2)
+        timeout-minutes: 3
+        run: |
+          ./run-sanity_check.sh -u -v 2
+        working-directory: fbpcf/tests/github/
+
+      - name: Run Edit Distance E2E Test
+        timeout-minutes: 10
+        run: |
+          ./run-edit_distance_validation.sh -u
+          working-directory: fbpcf/tests/github/
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone latest stable fbpcs
+        run: |
+          git clone https://github.com/facebookresearch/fbpcs
+          cd fbpcs
+          git reset --hard $(curl \
+          --header 'content-type: application/json' \
+          "https://api.github.com/repos/facebookresearch/fbpcs/actions/workflows/12965519/runs?per_page=1&status=success" | jq \
+          ".workflow_runs[0] .head_sha" | tr -d '"')
+
+      - name: Build fbpcs image (this uses the locally built fbpcf image as a dependency)
+        run: |
+          cd fbpcs
+          ./build-docker.sh onedocker -t ${{ env.VERSION_TAG }}
+
+      - name: Tag fbpcf docker image
+        run: |
+          docker tag ${{ env.LOCAL_IMAGE_NAME }} ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Push fbpcf image to registry
+        run: |
+          docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
+
+      - name: Add tag to commit
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          custom_tag: ${{ inputs.version_tag }}
+          tag_prefix: ""
+
+      - name: Pull image for this commit from registry
+        run: |
+          docker pull ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Tag Docker image
+        run: |
+          tags=($(echo ${{ inputs.docker_tags }} | tr ',' ' '))
+          for t in ${tags[@]}; do
+            docker tag ${{ env.REGISTRY_IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY_IMAGE_NAME }}:$t
+          done
+
+      - name: Push Docker image
+        run: |
+          docker push --all-tags ${{ env.REGISTRY_IMAGE_NAME }}
+
+      - name: Create release
+        uses: "actions/create-release@v1"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          release_name: ${{ inputs.version_tag }}
+          tag_name: ${{ inputs.version_tag }}
+
+      - name: Cleanup
+        run: |
+          # remove all images
+          docker image prune -af
+
+          # stop and remove all containers
+          docker kill $(docker ps -q) || echo "No running containers to stop."
+          docker rm $(docker ps -a -q) || echo "No containers to delete."
