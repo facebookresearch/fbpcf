@@ -1,0 +1,42 @@
+name: Publish Hotfix Image
+
+on:
+  push:
+    branches:
+      - hotfix/release-*
+
+jobs:
+  get_base_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      base_tag: ${{ steps.get_base_tag.outputs.base_tag }}
+    steps:
+      - name: Get Base Tag
+        id: get_base_tag
+        run: echo "base_tag=$(echo ${{ github.ref_name }} | tr 'hotfix/release-' '')" >> $GITHUB_OUTPUT
+
+  create_version:
+    name: Create new Hotfix Version
+    runs-on: ubuntu-latest
+    needs: get_base_tag
+    outputs:
+      version_tag: ${{ steps.create_version.outputs.version_tag }}
+      docker_version_tag: ${{ steps.create_version.outputs.docker_version_tag }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Create version
+        id: create_version
+        run: |
+          increment="$(git rev-list --count ${{ needs.get_base_tag.outputs.base_tag }}..HEAD)"
+          version="${{ needs.get_base_tag.outputs.base_tag }}.${increment}"
+          echo "version_tag=${version}" >> $GITHUB_OUTPUT
+          echo "docker_version_tag="${version:1}"" >> $GITHUB_OUTPUT
+
+  build_and_publish_fbpcf_image:
+    name: Build and Publish Hotfix Image
+    needs: create_version
+    uses: ./.github/workflows/build-and-publish-fbpcf-image.yml
+    with:
+      branch: ${{ github.ref_name }}
+      version_tag: ${{ needs.create_version.outputs.version_tag }}
+      docker_tags: ${{ needs.create_version.outputs.docker_version_tag }}
