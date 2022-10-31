@@ -1,0 +1,41 @@
+name: Create Hotfix
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_tag:
+        description: "The tag that we want to base the hotfix on. This should be in the format of v1.2.3."
+        required: true
+        type: string
+      hotfix_commits:
+        description: "A comma separated list of commits to patch into the base revision"
+        required: true
+        type: string
+
+env:
+  BRANCH_NAME: hotfix/release-${{ inputs.base_tag }}
+
+jobs:
+  create_hotfix:
+    name: Create hotfix commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Git config settings
+        run: |
+          git config --global user.name "GithubActions CreateHotfix"
+          git config --global user.email "pc_release@fb.com"
+
+      - name: Create and checkout hotfix branch
+        run: git show-branch remotes/origin/${{ env.BRANCH_NAME }} &>/dev/null && git checkout ${{ env.BRANCH_NAME }} || git checkout ${{ inputs.base_tag }} -b ${{ env.BRANCH_NAME }} && git push -u origin ${{ env.BRANCH_NAME }}
+
+      - name: Cherry pick hotfix commit
+        run: |
+          commits=$(echo ${{ github.event.inputs.hotfix_commits }} | tr ',' ' ')
+          git cherry-pick $commits
+
+      - name: Push hotfix commit to origin
+        run: git push origin ${{ env.BRANCH_NAME }}
