@@ -7,7 +7,7 @@
 
 #include "folly/Random.h"
 
-#include "./MillionaireApp.h"
+#include "fbpcf/mpc/test/test_apps/millionaire/MillionaireApp.h"
 
 namespace fbpcf {
 

@@ -9,8 +9,8 @@
 
 #include <emp-sh2pc/emp-sh2pc.h>
 
-#include "./MillionaireGame.h"
 #include "fbpcf/mpc/EmpApp.h"
+#include "fbpcf/mpc/test/test_apps/millionaire/MillionaireGame.h"
 
 namespace fbpcf {
 class MillionaireApp : public EmpApp<MillionaireGame<emp::NetIO>, int, bool> {
