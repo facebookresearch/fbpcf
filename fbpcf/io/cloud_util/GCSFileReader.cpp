@@ -7,7 +7,7 @@
 
 #include "fbpcf/io/cloud_util/GCSFileReader.h"
 #include <fbpcf/gcp/GCSUtil.h>
-#include <google/cloud/storage/download_options.h>
+#include <google/cloud/storage/download_options.h> // @manual
 #include "fbpcf/exception/GcpException.h"
 
 namespace fbpcf::cloudio {

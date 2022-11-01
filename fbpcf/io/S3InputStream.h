@@ -9,7 +9,7 @@
 
 #include <istream>
 
-#include <aws/s3/model/GetObjectResult.h>
+#include <aws/s3/model/GetObjectResult.h> // @manual
 
 #include "IInputStream.h"
 

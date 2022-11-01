@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <aws/s3/S3Client.h>
-#include <aws/s3/model/CompletedPart.h>
+#include <aws/s3/S3Client.h> // @manual
+#include <aws/s3/model/CompletedPart.h> // @manual
 #include <memory>
 #include "fbpcf/io/cloud_util/IFileUploader.h"
 

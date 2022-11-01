@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <google/cloud/storage/object_read_stream.h>
+#include <google/cloud/storage/object_read_stream.h> // @manual
 #include <istream>
 
 #include "fbpcf/io/IInputStream.h"
