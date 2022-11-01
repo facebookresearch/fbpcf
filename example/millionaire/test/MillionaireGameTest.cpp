@@ -10,7 +10,7 @@
 #include <emp-sh2pc/emp-sh2pc.h>
 #include <gtest/gtest.h>
 
-#include "../MillionaireGame.h"
+#include "../MillionaireGame.h" // @manual
 #include "fbpcf/mpc/EmpTestUtil.h"
 #include "fbpcf/system/CpuUtil.h"
 

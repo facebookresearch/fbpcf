@@ -11,7 +11,7 @@
 
 #include "folly/Random.h"
 
-#include "../MillionaireApp.h"
+#include "../MillionaireApp.h" // @manual
 
 namespace fbpcf {
 
