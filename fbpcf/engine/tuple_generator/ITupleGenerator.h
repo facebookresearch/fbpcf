@@ -158,12 +158,12 @@ class ITupleGenerator {
     }
 
     // get the vector of B bit shares
-    std::vector<bool> getB() {
+    const std::vector<bool>& getB() {
       return b_;
     }
 
     // get the vector of C bit shares
-    std::vector<bool> getC() {
+    const std::vector<bool>& getC() {
       return c_;
     }
 
