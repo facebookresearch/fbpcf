@@ -24,6 +24,13 @@
 
 namespace fbpcf::engine::communication {
 
+SocketPartyCommunicationAgent::TlsInfo getTlsInfoFromArgs(
+    bool useTls,
+    std::string ca_cert_path,
+    std::string server_cert_path,
+    std::string private_key_path,
+    std::string passphrase_path);
+
 /**
  * An communication factory API
  */
