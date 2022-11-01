@@ -12,8 +12,8 @@
 #include <memory>
 #include <sstream>
 
-#include <aws/s3/model/GetObjectRequest.h>
-#include <aws/s3/model/PutObjectRequest.h>
+#include <aws/s3/model/GetObjectRequest.h> // @manual
+#include <aws/s3/model/PutObjectRequest.h> // @manual
 #include <string>
 
 #include "LocalFileManager.h"

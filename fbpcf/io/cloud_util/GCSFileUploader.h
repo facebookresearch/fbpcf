@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-#include <google/cloud/storage/client.h>
+#include <google/cloud/storage/client.h> // @manual
 #include "fbpcf/io/cloud_util/IFileUploader.h"
 
 namespace fbpcf::cloudio {

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <google/cloud/storage/client.h>
+#include <google/cloud/storage/client.h> // @manual
 
 #include <memory>
 #include <sstream>

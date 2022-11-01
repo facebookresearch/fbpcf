@@ -6,11 +6,11 @@
  */
 
 #include "fbpcf/io/cloud_util/S3FileUploader.h"
-#include <aws/s3/model/AbortMultipartUploadRequest.h>
-#include <aws/s3/model/CompleteMultipartUploadRequest.h>
-#include <aws/s3/model/CompletedMultipartUpload.h>
-#include <aws/s3/model/CreateMultipartUploadRequest.h>
-#include <aws/s3/model/UploadPartRequest.h>
+#include <aws/s3/model/AbortMultipartUploadRequest.h> // @manual
+#include <aws/s3/model/CompleteMultipartUploadRequest.h> // @manual
+#include <aws/s3/model/CompletedMultipartUpload.h> // @manual
+#include <aws/s3/model/CreateMultipartUploadRequest.h> // @manual
+#include <aws/s3/model/UploadPartRequest.h> // @manual
 #include <folly/logging/xlog.h>
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/AwsException.h"
