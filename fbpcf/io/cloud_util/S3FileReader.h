@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include <aws/s3/S3Client.h>
+#include <aws/s3/S3Client.h> // @manual
 #include "fbpcf/io/cloud_util/IFileReader.h"
 
 namespace fbpcf::cloudio {

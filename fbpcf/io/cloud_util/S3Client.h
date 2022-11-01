@@ -9,8 +9,8 @@
 
 #include <memory>
 
-#include <aws/core/Aws.h>
-#include <aws/s3/S3Client.h>
+#include <aws/core/Aws.h> // @manual
+#include <aws/s3/S3Client.h> // @manual
 #include "fbpcf/aws/S3Util.h"
 
 namespace fbpcf::cloudio {

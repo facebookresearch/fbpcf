@@ -7,14 +7,14 @@
 
 #pragma once
 
-#include <google/cloud/storage/client.h>
+#include <google/cloud/storage/client.h> // @manual
 
 #include <fbpcf/exception/GcpException.h>
 #include <fbpcf/gcp/GCSUtil.h>
 #include "IInputStream.h"
 #include "fbpcf/io/IFileManager.h"
 
-#include <google/cloud/storage/download_options.h>
+#include <google/cloud/storage/download_options.h> // @manual
 #include <memory>
 #include <sstream>
 

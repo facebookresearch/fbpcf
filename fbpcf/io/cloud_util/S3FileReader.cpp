@@ -6,8 +6,8 @@
  */
 
 #include "fbpcf/io/cloud_util/S3FileReader.h"
-#include <aws/s3/model/GetObjectRequest.h>
-#include <aws/s3/model/HeadObjectRequest.h>
+#include <aws/s3/model/GetObjectRequest.h> // @manual
+#include <aws/s3/model/HeadObjectRequest.h> // @manual
 #include <string>
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/AwsException.h"

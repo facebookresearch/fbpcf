@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include <google/cloud/storage/client.h>
+#include <google/cloud/storage/client.h> // @manual
 #include <re2/re2.h>
 
 #include "fbpcf/aws/S3Util.h"

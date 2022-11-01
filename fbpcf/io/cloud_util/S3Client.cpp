@@ -7,8 +7,8 @@
 
 #include "fbpcf/io/cloud_util/S3Client.h"
 
-#include <aws/core/Aws.h>
-#include <aws/s3/S3Client.h>
+#include <aws/core/Aws.h> // @manual
+#include <aws/s3/S3Client.h> // @manual
 
 namespace fbpcf::cloudio {
 S3Client& S3Client::getInstance(const fbpcf::aws::S3ClientOption& option) {
