@@ -21,7 +21,10 @@ class IAllocator {
  public:
   virtual ~IAllocator() = default;
 
-  // Allocate a value of type T and return an ID reference to it.
+  /* Allocate a value of type T and return an ID reference to it.
+   * This method invalidates any references returned by get or
+   * getWritableReference
+   */
   virtual uint64_t allocate(T&& value) = 0;
 
   // Free the object with the given ID reference.

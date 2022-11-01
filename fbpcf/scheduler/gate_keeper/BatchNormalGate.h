@@ -59,7 +59,7 @@ class BatchNormalGate final : public INormalGate {
     switch (gateType_) {
         // Free gates
       case GateType::AsymmetricNot: {
-        auto values = wireKeeper_.getBatchBooleanValue(left_);
+        auto& values = wireKeeper_.getBatchBooleanValue(left_);
         numberOfResults_ = values.size();
         wireKeeper_.setBatchBooleanValue(
             wireID_, engine.computeBatchAsymmetricNOT(values));
@@ -67,8 +67,8 @@ class BatchNormalGate final : public INormalGate {
       }
 
       case GateType::AsymmetricXOR: {
-        auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
-        auto rightValues = wireKeeper_.getBatchBooleanValue(right_);
+        auto& leftValues = wireKeeper_.getBatchBooleanValue(left_);
+        auto& rightValues = wireKeeper_.getBatchBooleanValue(right_);
         numberOfResults_ = leftValues.size();
         wireKeeper_.setBatchBooleanValue(
             wireID_, engine.computeBatchAsymmetricXOR(leftValues, rightValues));
@@ -76,8 +76,8 @@ class BatchNormalGate final : public INormalGate {
       }
 
       case GateType::FreeAnd: {
-        auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
-        auto rightValues = wireKeeper_.getBatchBooleanValue(right_);
+        auto& leftValues = wireKeeper_.getBatchBooleanValue(left_);
+        auto& rightValues = wireKeeper_.getBatchBooleanValue(right_);
         numberOfResults_ = leftValues.size();
         wireKeeper_.setBatchBooleanValue(
             wireID_, engine.computeBatchFreeAND(leftValues, rightValues));
@@ -88,7 +88,7 @@ class BatchNormalGate final : public INormalGate {
         break;
 
       case GateType::SymmetricNot: {
-        auto values = wireKeeper_.getBatchBooleanValue(left_);
+        auto& values = wireKeeper_.getBatchBooleanValue(left_);
         numberOfResults_ = values.size();
         wireKeeper_.setBatchBooleanValue(
             wireID_, engine.computeBatchSymmetricNOT(values));
@@ -96,8 +96,8 @@ class BatchNormalGate final : public INormalGate {
       }
 
       case GateType::SymmetricXOR: {
-        auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
-        auto rightValues = wireKeeper_.getBatchBooleanValue(right_);
+        auto& leftValues = wireKeeper_.getBatchBooleanValue(left_);
+        auto& rightValues = wireKeeper_.getBatchBooleanValue(right_);
         numberOfResults_ = leftValues.size();
         wireKeeper_.setBatchBooleanValue(
             wireID_, engine.computeBatchSymmetricXOR(leftValues, rightValues));
@@ -114,15 +114,15 @@ class BatchNormalGate final : public INormalGate {
         auto& secretShares = secretSharesByParty.at(partyID_).booleanSecrets;
         scheduledResultIndex_ = secretShares.size();
 
-        auto values = wireKeeper_.getBatchBooleanValue(left_);
+        auto& values = wireKeeper_.getBatchBooleanValue(left_);
         numberOfResults_ = values.size();
         secretShares.insert(secretShares.end(), values.begin(), values.end());
         break;
       }
 
       case GateType::NonFreeAnd: {
-        auto leftValues = wireKeeper_.getBatchBooleanValue(left_);
-        auto rightValues = wireKeeper_.getBatchBooleanValue(right_);
+        auto& leftValues = wireKeeper_.getBatchBooleanValue(left_);
+        auto& rightValues = wireKeeper_.getBatchBooleanValue(right_);
 
         numberOfResults_ = leftValues.size();
         if (numberOfResults_ == 0) {
