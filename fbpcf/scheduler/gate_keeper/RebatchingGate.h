@@ -139,9 +139,11 @@ class RebatchingBooleanGate : public IGate {
     std::vector<bool> dst(totalSize);
 
     for (size_t i = 0; i < individualWireIDs_.size(); i++) {
-      for (size_t j = 0; j < batchValues.at(i).get().size(); j++) {
-        dst[batchIndex++] = batchValues.at(i).get().at(j);
-      }
+      std::copy(
+          batchValues.at(i).get().begin(),
+          batchValues.at(i).get().end(),
+          dst.begin() + batchIndex);
+      batchIndex += batchValues.at(i).get().size();
     }
     wireKeeper_.setBatchBooleanValue(batchWireID_, dst);
   }
@@ -151,9 +153,11 @@ class RebatchingBooleanGate : public IGate {
     auto& src = wireKeeper_.getBatchBooleanValue(batchWireID_);
     for (size_t i = 0; i < unbatchingStrategy_->size(); i++) {
       std::vector<bool> dst(unbatchingStrategy_->at(i));
-      for (size_t j = 0; j < dst.size(); j++) {
-        dst[j] = src.at(batchIndex++);
-      }
+      std::copy(
+          src.begin() + batchIndex,
+          src.begin() + batchIndex + dst.size(),
+          dst.begin());
+      batchIndex += dst.size();
       wireKeeper_.setBatchBooleanValue(individualWireIDs_.at(i), dst);
     }
   }
