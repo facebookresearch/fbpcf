@@ -23,6 +23,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.PUSH_KEY }}
 
       - name: Git config settings
         run: |
@@ -30,7 +31,7 @@ jobs:
           git config --global user.email "pc_release@fb.com"
 
       - name: Create and checkout hotfix branch
-        run: git show-branch remotes/origin/${{ env.BRANCH_NAME }} &>/dev/null && git checkout ${{ env.BRANCH_NAME }} || git checkout ${{ inputs.base_tag }} -b ${{ env.BRANCH_NAME }} && git push -u origin ${{ env.BRANCH_NAME }}
+        run: git show-branch remotes/origin/${{ env.BRANCH_NAME }} &>/dev/null && git checkout ${{ env.BRANCH_NAME }} || git checkout ${{ inputs.base_tag }} -b ${{ env.BRANCH_NAME }}
 
       - name: Cherry pick hotfix commit
         run: |
@@ -38,4 +39,4 @@ jobs:
           git cherry-pick $commits
 
       - name: Push hotfix commit to origin
-        run: git push origin ${{ env.BRANCH_NAME }}
+        run: git push -u origin ${{ env.BRANCH_NAME }}
