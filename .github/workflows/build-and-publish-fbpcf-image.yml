@@ -56,7 +56,7 @@ jobs:
         timeout-minutes: 10
         run: |
           ./run-edit_distance_validation.sh -u
-          working-directory: fbpcf/tests/github/
+        working-directory: fbpcf/tests/github/
 
       - name: Log into registry ${{ env.REGISTRY }}
         uses: docker/login-action@v1
