@@ -148,3 +148,5 @@ class AsWaksmanParameterCalculator {
 } // namespace fbpcf::mpc_std_lib::permuter
 
 #include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuter_impl.h"
+
+#include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuterForBitString_impl.h"
