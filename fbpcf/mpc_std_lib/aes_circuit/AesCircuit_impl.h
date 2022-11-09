@@ -78,11 +78,65 @@ std::vector<BitType> AesCircuit<BitType>::encrypt_impl(
   return convertFromWords(plaintextBlocks);
 }
 
+// implementation based on https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture8.pdf
 template <typename BitType>
 std::vector<BitType> AesCircuit<BitType>::decrypt_impl(
-    const std::vector<BitType>& /* ciphertext */,
-    const std::vector<BitType>& /* expandedDecKey */) const {
-  throw std::runtime_error("Not implemented!");
+    const std::vector<BitType>& ciphertext,
+    const std::vector<BitType>& expandedDecKey) const {
+  // prepare input
+  auto ciphertextBlocks = convertToWords(ciphertext);
+  auto roundKeys = convertToWords(expandedDecKey);
+  size_t blockNo = ciphertextBlocks.size();
+
+  int round = 10;
+  // pre-round
+  for (int block = 0; block < blockNo; ++block) {
+    for (int word = 0; word < 4; ++word) {
+      for (int byte = 0; byte < 4; ++byte) {
+        for (int bit = 0; bit < 8; ++bit) {
+          ciphertextBlocks[block][word][byte][bit] =
+              ciphertextBlocks[block][word][byte][bit] ^
+              roundKeys[round][word][byte][bit];
+        }
+      }
+    }
+  }
+  // rounds 1 - 10
+  for (int round = 9; round >= 0; --round) {
+    // InverseShiftRows
+    for (int block = 0; block < blockNo; ++block) {
+      inverseShiftRowInPlace(ciphertextBlocks[block]);
+    }
+    // InverseSbox
+    for (int block = 0; block < blockNo; ++block) {
+      for (int word = 0; word < 4; ++word) {
+        for (int byte = 0; byte < 4; ++byte) {
+          inverseSBoxInPlace(ciphertextBlocks[block][word][byte]);
+        }
+      }
+    }
+    // AddRoundKey
+    for (int block = 0; block < blockNo; ++block) {
+      for (int word = 0; word < 4; ++word) {
+        for (int byte = 0; byte < 4; ++byte) {
+          for (int bit = 0; bit < 8; ++bit) {
+            ciphertextBlocks[block][word][byte][bit] =
+                ciphertextBlocks[block][word][byte][bit] ^
+                roundKeys[round][word][byte][bit];
+          }
+        }
+      }
+    }
+    // InverseMixColumns except for 10-th Round
+    if (round != 0) {
+      for (int block = 0; block < blockNo; ++block) {
+        for (int word = 0; word < 4; ++word) {
+          inverseMixColumnsInPlace(ciphertextBlocks[block][word]);
+        }
+      }
+    }
+  }
+  return convertFromWords(ciphertextBlocks);
 }
 
 template <typename BitType>
@@ -492,6 +546,25 @@ void AesCircuit<BitType>::shiftRowInPlace(std::array<WordType, 4>& src) const {
   std::swap(src[3][row], src[2][row]);
   std::swap(src[2][row], src[1][row]);
   std::swap(src[1][row], src[0][row]);
+}
+
+template <typename BitType>
+void AesCircuit<BitType>::inverseShiftRowInPlace(
+    std::array<WordType, 4>& src) const {
+  // 1st row is not shifted, 2nd row shifted right by 1
+  int row = 1;
+  std::swap(src[2][row], src[3][row]);
+  std::swap(src[1][row], src[2][row]);
+  std::swap(src[0][row], src[1][row]);
+  // 3rd row shifted right by 2
+  row++;
+  std::swap(src[0][row], src[2][row]);
+  std::swap(src[1][row], src[3][row]);
+  // 4th row shifted right by 3
+  row++;
+  std::swap(src[0][row], src[1][row]);
+  std::swap(src[1][row], src[2][row]);
+  std::swap(src[2][row], src[3][row]);
 }
 
 } // namespace fbpcf::mpc_std_lib::aes_circuit
