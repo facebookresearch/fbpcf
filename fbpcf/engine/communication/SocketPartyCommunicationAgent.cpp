@@ -389,6 +389,11 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   // make sure to verify server cert
   SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
 
+  // and verify the domain name
+  auto params = SSL_CTX_get0_param(ctx);
+  X509_VERIFY_PARAM_set1_host(
+      params, serverAddress.c_str(), serverAddress.size());
+
   SSL* ssl = SSL_new(ctx);
 
   if (ssl == nullptr) {
@@ -402,15 +407,18 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
 
   // initiate handshake with server
   const int status = SSL_connect(ssl);
+  X509* cert = SSL_get_peer_certificate(ssl);
+  auto result = X509_verify_cert_error_string(SSL_get_verify_result(ssl));
+  XLOGF(INFO, "verify result: {}", result);
+
   if (status != 1) {
     LOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not complete tls handshake");
   }
 
-  X509* cert = SSL_get_peer_certificate(ssl);
-  auto result = X509_verify_cert_error_string(SSL_get_verify_result(ssl));
-  XLOGF(INFO, "verify result: {}", result);
-  char* line = X509_NAME_oneline(X509_get_issuer_name(cert), 0, 0);
+  auto line = X509_NAME_oneline(X509_get_subject_name(cert), nullptr, 0);
+  XLOGF(INFO, "Server certificate: {}", line);
+  line = X509_NAME_oneline(X509_get_issuer_name(cert), nullptr, 0);
   XLOGF(INFO, "Server certificate issuer: {}", line);
 
   XLOGF(

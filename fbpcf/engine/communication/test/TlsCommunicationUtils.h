@@ -118,7 +118,13 @@ inline std::string setUpTlsFiles() {
   X509_NAME_add_entry_by_txt(
       name_for_server, "O", MBSTRING_ASC, (unsigned char*)"", -1, -1, 0);
   X509_NAME_add_entry_by_txt(
-      name_for_server, "CN", MBSTRING_ASC, (unsigned char*)"", -1, -1, 0);
+      name_for_server,
+      "CN",
+      MBSTRING_ASC,
+      (unsigned char*)"127.0.0.1",
+      -1,
+      -1,
+      0);
   X509_set_issuer_name(x509_for_server, name_for_ca);
   X509_sign(x509_for_server, pkey_for_ca, EVP_sha1());
 
