@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Get Base Tag
         id: get_base_tag
-        run: echo "base_tag=$(echo ${{ github.ref_name }} | tr 'hotfix/release-' '')" >> $GITHUB_OUTPUT
+        run: echo "base_tag=$(echo ${{ github.ref_name }} | tr -d 'hotfix/release-')" >> $GITHUB_OUTPUT
 
   create_version:
     name: Create new Hotfix Version
@@ -24,13 +24,16 @@ jobs:
       docker_version_tag: ${{ steps.create_version.outputs.docker_version_tag }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Create version
         id: create_version
         run: |
           increment="$(git rev-list --count ${{ needs.get_base_tag.outputs.base_tag }}..HEAD)"
           version="${{ needs.get_base_tag.outputs.base_tag }}.${increment}"
           echo "version_tag=${version}" >> $GITHUB_OUTPUT
-          echo "docker_version_tag="${version:1}"" >> $GITHUB_OUTPUT
+          echo "docker_version_tag=${version:1}" >> $GITHUB_OUTPUT
 
   build_and_publish_fbpcf_image:
     name: Build and Publish Hotfix Image
