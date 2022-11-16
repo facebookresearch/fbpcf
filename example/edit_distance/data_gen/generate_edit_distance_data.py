@@ -28,7 +28,7 @@ import io
 import os
 import random
 
-import schema
+import schema  # @manual
 from docopt import docopt
 from fbpcf.public_tld.example.edit_distance.data_gen.edit_distance_calculator import (
     EditDistanceCalculator,
