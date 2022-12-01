@@ -28,8 +28,7 @@ class OTBasedMatrixMultiplicationFactory final
  public:
   const std::string metricRecorderNamePrefix = "ot_based_matrix_multiplication";
 
-  // The following constructor will be deprecated once we updated all APP codes
-  explicit OTBasedMatrixMultiplicationFactory(
+  [[deprecated("Use the constructor with MetricCollector instead.")]] explicit OTBasedMatrixMultiplicationFactory(
       int myId,
       int partnerId,
       bool isFeatureOwner,
