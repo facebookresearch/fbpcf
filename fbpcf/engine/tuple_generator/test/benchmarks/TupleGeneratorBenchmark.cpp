@@ -63,10 +63,6 @@ class ProductShareGeneratorBenchmark : public util::NetworkedBenchmark {
     receiver_->generateBooleanProductShares(receiverLeft_, receiverRight_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
-  }
-
  private:
   size_t size_ = 10000000;
 
@@ -123,10 +119,6 @@ class BaseTupleGeneratorBenchmark : public util::NetworkedBenchmark {
 
   void runReceiver() override {
     receiver_->getBooleanTuple(size_);
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
   }
 
   virtual std::unique_ptr<ITupleGeneratorFactory> getTupleGeneratorFactory(

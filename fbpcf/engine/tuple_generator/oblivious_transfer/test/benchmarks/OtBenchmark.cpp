@@ -57,10 +57,6 @@ class NpBaseObliviousTransferBenchmark : public util::NetworkedBenchmark {
     receiver_->receive(choice_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
-  }
-
  private:
   size_t size_ = 1024;
 
@@ -108,10 +104,6 @@ class RandomCorrelatedObliviousTransferBenchmark
 
   void runReceiver() override {
     receiver_->rcot(size_);
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
   }
 
   std::unique_ptr<IRandomCorrelatedObliviousTransferFactory> factory_;
@@ -247,10 +239,6 @@ class BidirectionObliviousTransferBenchmark : public util::NetworkedBenchmark {
 
   void runReceiver() override {
     receiver_->biDirectionOT(receiverInput0_, receiverInput1_, receiverChoice_);
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
   }
 
   virtual std::unique_ptr<IRandomCorrelatedObliviousTransferFactory>

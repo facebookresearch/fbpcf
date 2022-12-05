@@ -55,10 +55,6 @@ class FrontendBenchmark : public engine::util::NetworkedBenchmark {
     receiver_->play();
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
-  }
-
  private:
   std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
