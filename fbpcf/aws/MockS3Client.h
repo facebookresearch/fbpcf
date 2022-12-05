@@ -24,5 +24,23 @@ class MockS3Client : public Aws::S3::S3Client {
       PutObject,
       Aws::S3::Model::PutObjectOutcome(
           const Aws::S3::Model::PutObjectRequest& request));
+
+  MOCK_METHOD(
+      Aws::S3::Model::CreateMultipartUploadOutcome,
+      CreateMultipartUpload,
+      (const Aws::S3::Model::CreateMultipartUploadRequest&),
+      (const));
+
+  MOCK_METHOD(
+      Aws::S3::Model::UploadPartOutcome,
+      UploadPart,
+      (const Aws::S3::Model::UploadPartRequest&),
+      (const));
+
+  MOCK_METHOD(
+      Aws::S3::Model::CompleteMultipartUploadOutcome,
+      CompleteMultipartUpload,
+      (const Aws::S3::Model::CompleteMultipartUploadRequest&),
+      (const));
 };
 } // namespace fbpcf
