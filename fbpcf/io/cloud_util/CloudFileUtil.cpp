@@ -7,6 +7,7 @@
 
 #include "fbpcf/io/cloud_util/CloudFileUtil.h"
 
+#include <memory>
 #include <string>
 
 #include <google/cloud/storage/client.h> // @manual
@@ -64,8 +65,10 @@ std::unique_ptr<IFileReader> getCloudFileReader(const std::string& filePath) {
   auto fileType = getCloudFileType(filePath);
   if (fileType == CloudFileType::S3) {
     const auto& ref = fbpcf::aws::uriToObjectReference(filePath);
-    return std::make_unique<S3FileReader>(fbpcf::aws::createS3Client(
-        fbpcf::aws::S3ClientOption{.region = ref.region}));
+    return std::make_unique<S3FileReader>(
+        fbpcf::cloudio::S3Client::getInstance(
+            fbpcf::aws::S3ClientOption{.region = ref.region})
+            ->getS3Client());
   } else if (fileType == CloudFileType::GCS) {
     return std::make_unique<GCSFileReader>(fbpcf::gcp::createGCSClient());
   } else {
@@ -81,7 +84,7 @@ std::unique_ptr<IFileUploader> getCloudFileUploader(
     return std::make_unique<S3FileUploader>(
         fbpcf::cloudio::S3Client::getInstance(
             fbpcf::aws::S3ClientOption{.region = ref.region})
-            .getS3Client(),
+            ->getS3Client(),
         filePath);
   } else if (fileType == CloudFileType::GCS) {
     return std::make_unique<GCSFileUploader>(
