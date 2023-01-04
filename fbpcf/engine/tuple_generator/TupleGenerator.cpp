@@ -56,7 +56,7 @@ std::vector<TupleGenerator::BooleanTuple> TupleGenerator::generateTuples(
   std::vector<TupleGenerator::BooleanTuple> booleanTuples(size);
   for (size_t i = 0; i < size; i++) {
     booleanTuples[i] = BooleanTuple(
-        vectorA[i], vectorB[i], (vectorA[i] & vectorB[i]) ^ vectorC[i]);
+        vectorA[i], vectorB[i], (vectorA[i] && vectorB[i]) ^ vectorC[i]);
   }
 
   recorder_->addTuplesGenerated(size);
