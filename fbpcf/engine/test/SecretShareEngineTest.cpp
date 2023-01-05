@@ -1009,16 +1009,16 @@ TEST_P(NonFreeMultAndANDTestFixture, TestMultAndAND) {
   ASSERT_EQ(andResult.size(), 2 * size);
   for (int i = 0; i < size / 2; i++) {
     EXPECT_EQ(
-        andResult[i], boolInputs[i].first & boolInputs[i + size / 2].first);
+        andResult[i], boolInputs[i].first && boolInputs[i + size / 2].first);
     EXPECT_EQ(
         andResult[i + size / 2],
-        boolInputs[i].first & boolInputs[i + size / 2].first);
+        boolInputs[i].first && boolInputs[i + size / 2].first);
     EXPECT_EQ(
         andResult[i + size],
-        boolInputs[i].first & boolInputs[i + size / 2].first);
+        boolInputs[i].first && boolInputs[i + size / 2].first);
     EXPECT_EQ(
         andResult[i + size / 2 + size],
-        boolInputs[i].first & boolInputs[i + size / 2].first);
+        boolInputs[i].first && boolInputs[i + size / 2].first);
   }
 
   int composite15EndIndex = size / 16;
@@ -1032,10 +1032,10 @@ TEST_P(NonFreeMultAndANDTestFixture, TestMultAndAND) {
     for (int j = 0; j < 15; j++) {
       EXPECT_EQ(
           compositeAndResult[i][j],
-          boolInputs[i].first & boolInputs[size / 16 + 15 * i + j].first);
+          boolInputs[i].first && boolInputs[size / 16 + 15 * i + j].first);
       EXPECT_EQ(
           compositeAndResult[j + composite3EndIndex][i],
-          boolInputs[i].first & boolInputs[size / 16 + 15 * i + j].first);
+          boolInputs[i].first && boolInputs[size / 16 + 15 * i + j].first);
     }
   }
 
@@ -1043,10 +1043,10 @@ TEST_P(NonFreeMultAndANDTestFixture, TestMultAndAND) {
     for (int j = 0; j < 7; j++) {
       EXPECT_EQ(
           compositeAndResult[i + composite15EndIndex][j],
-          boolInputs[i].first & boolInputs[size / 8 + 7 * i + j].first);
+          boolInputs[i].first && boolInputs[size / 8 + 7 * i + j].first);
       EXPECT_EQ(
           compositeAndResult[j + batchComposite15EndIndex][i],
-          boolInputs[i].first & boolInputs[size / 8 + 7 * i + j].first);
+          boolInputs[i].first && boolInputs[size / 8 + 7 * i + j].first);
     }
   }
 
@@ -1055,10 +1055,10 @@ TEST_P(NonFreeMultAndANDTestFixture, TestMultAndAND) {
     for (int j = 0; j < 3; j++) {
       EXPECT_EQ(
           compositeAndResult[i + composite7EndIndex][j],
-          boolInputs[i].first & boolInputs[size / 4 + 3 * i + j].first);
+          boolInputs[i].first && boolInputs[size / 4 + 3 * i + j].first);
       EXPECT_EQ(
           compositeAndResult[j + batchComposite7EndIndex][i],
-          boolInputs[i].first & boolInputs[size / 4 + 3 * i + j].first);
+          boolInputs[i].first && boolInputs[size / 4 + 3 * i + j].first);
     }
   }
 
@@ -1169,14 +1169,14 @@ TEST_P(NonFreeAndTestFixture, TestAnd) {
   auto compositeAndResult = std::get<1>(rst);
   ASSERT_EQ(andResult.size(), 2 * size);
   for (int i = 0; i < size / 2; i++) {
-    EXPECT_EQ(andResult[i], inputs[i].first & inputs[i + size / 2].first);
+    EXPECT_EQ(andResult[i], inputs[i].first && inputs[i + size / 2].first);
     EXPECT_EQ(
-        andResult[i + size / 2], inputs[i].first & inputs[i + size / 2].first);
+        andResult[i + size / 2], inputs[i].first && inputs[i + size / 2].first);
     EXPECT_EQ(
-        andResult[i + size], inputs[i].first & inputs[i + size / 2].first);
+        andResult[i + size], inputs[i].first && inputs[i + size / 2].first);
     EXPECT_EQ(
         andResult[i + size / 2 + size],
-        inputs[i].first & inputs[i + size / 2].first);
+        inputs[i].first && inputs[i + size / 2].first);
   }
 
   // Ordering of composite results
@@ -1198,10 +1198,10 @@ TEST_P(NonFreeAndTestFixture, TestAnd) {
     for (int j = 0; j < 15; j++) {
       EXPECT_EQ(
           compositeAndResult[i][j],
-          inputs[i].first & inputs[size / 16 + 15 * i + j].first);
+          inputs[i].first && inputs[size / 16 + 15 * i + j].first);
       EXPECT_EQ(
           compositeAndResult[j + composite3EndIndex][i],
-          inputs[i].first & inputs[size / 16 + 15 * i + j].first);
+          inputs[i].first && inputs[size / 16 + 15 * i + j].first);
     }
   }
 
@@ -1209,10 +1209,10 @@ TEST_P(NonFreeAndTestFixture, TestAnd) {
     for (int j = 0; j < 7; j++) {
       EXPECT_EQ(
           compositeAndResult[i + composite15EndIndex][j],
-          inputs[i].first & inputs[size / 8 + 7 * i + j].first);
+          inputs[i].first && inputs[size / 8 + 7 * i + j].first);
       EXPECT_EQ(
           compositeAndResult[j + batchComposite15EndIndex][i],
-          inputs[i].first & inputs[size / 8 + 7 * i + j].first);
+          inputs[i].first && inputs[size / 8 + 7 * i + j].first);
     }
   }
 
@@ -1221,10 +1221,10 @@ TEST_P(NonFreeAndTestFixture, TestAnd) {
     for (int j = 0; j < 3; j++) {
       EXPECT_EQ(
           compositeAndResult[i + composite7EndIndex][j],
-          inputs[i].first & inputs[size / 4 + 3 * i + j].first);
+          inputs[i].first && inputs[size / 4 + 3 * i + j].first);
       EXPECT_EQ(
           compositeAndResult[j + batchComposite7EndIndex][i],
-          inputs[i].first & inputs[size / 4 + 3 * i + j].first);
+          inputs[i].first && inputs[size / 4 + 3 * i + j].first);
     }
   }
 }
@@ -1360,8 +1360,8 @@ TEST(SecretShareEngineTest, TestFreeANDWithDummyComponents) {
   EXPECT_EQ(rst1.size(), size / 2);
   EXPECT_EQ(rst2.size(), size / 2);
   for (int i = 0; i < size / 2; i++) {
-    EXPECT_EQ(rst1[i], inputs1[i].first & inputs1[i + size / 2].first);
-    EXPECT_EQ(rst2[i], inputs2[i].first & inputs2[i + size / 2].first);
+    EXPECT_EQ(rst1[i], inputs1[i].first && inputs1[i + size / 2].first);
+    EXPECT_EQ(rst2[i], inputs2[i].first && inputs2[i + size / 2].first);
   }
 }
 
@@ -1396,8 +1396,8 @@ TEST(SecretShareEngineTest, TestBatchFreeANDWithDummyComponents) {
       assertPartyResultsConsistent);
   EXPECT_EQ(rst1.size(), size / 2);
   for (int i = 0; i < size / 2; i++) {
-    EXPECT_EQ(rst1[i], inputs1[i].first & inputs1[i + size / 2].first);
-    EXPECT_EQ(rst2[i], inputs2[i].first & inputs2[i + size / 2].first);
+    EXPECT_EQ(rst1[i], inputs1[i].first && inputs1[i + size / 2].first);
+    EXPECT_EQ(rst2[i], inputs2[i].first && inputs2[i + size / 2].first);
   }
 }
 
