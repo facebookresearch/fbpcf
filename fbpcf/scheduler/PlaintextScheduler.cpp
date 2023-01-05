@@ -174,7 +174,8 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateAndPrivate(
     WireId<IScheduler::Boolean> right) {
   nonFreeGates_++;
   return wireKeeper_->allocateBooleanValue(
-      wireKeeper_->getBooleanValue(left) & wireKeeper_->getBooleanValue(right));
+      wireKeeper_->getBooleanValue(left) &&
+      wireKeeper_->getBooleanValue(right));
 }
 
 IScheduler::WireId<IScheduler::Boolean>
@@ -189,7 +190,7 @@ PlaintextScheduler::privateAndPrivateBatch(
   nonFreeGates_ += leftValue.size();
   std::vector<bool> rst(leftValue.size());
   for (size_t i = 0; i < leftValue.size(); i++) {
-    rst[i] = leftValue[i] & rightValue[i];
+    rst[i] = leftValue[i] && rightValue[i];
   }
   return wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size());
 }
@@ -199,7 +200,8 @@ IScheduler::WireId<IScheduler::Boolean> PlaintextScheduler::privateAndPublic(
     WireId<IScheduler::Boolean> right) {
   freeGates_++;
   return wireKeeper_->allocateBooleanValue(
-      wireKeeper_->getBooleanValue(left) & wireKeeper_->getBooleanValue(right));
+      wireKeeper_->getBooleanValue(left) &&
+      wireKeeper_->getBooleanValue(right));
 }
 
 IScheduler::WireId<IScheduler::Boolean>
@@ -214,7 +216,7 @@ PlaintextScheduler::privateAndPublicBatch(
   freeGates_ += leftValue.size();
   std::vector<bool> rst(leftValue.size());
   for (size_t i = 0; i < leftValue.size(); i++) {
-    rst[i] = leftValue.at(i) & rightValue.at(i);
+    rst[i] = leftValue.at(i) && rightValue.at(i);
   }
   return wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size());
 }
@@ -547,7 +549,7 @@ PlaintextScheduler::computeCompositeAND(
   std::vector<IScheduler::WireId<IScheduler::Boolean>> rst;
   for (auto rightWire : rights) {
     rst.push_back(wireKeeper_->allocateBooleanValue(
-        leftValue & wireKeeper_->getBooleanValue(rightWire)));
+        leftValue && wireKeeper_->getBooleanValue(rightWire)));
   }
 
   return rst;
@@ -609,7 +611,7 @@ PlaintextScheduler::validateAndComputeBatchCompositeAND(
     }
     std::vector<bool> rst;
     for (size_t i = 0; i < leftValue.size(); i++) {
-      rst.push_back(leftValue[i] & rightValue[i]);
+      rst.push_back(leftValue[i] && rightValue[i]);
     }
     returnWires.push_back(
         wireKeeper_->allocateBatchBooleanValue(rst, leftValue.size()));

@@ -214,7 +214,7 @@ TwoPartyTupleGenerator::expandRCOTResults(
       //    = H(kr) + H(lr) /
       // c2 = (H(l0) ^ H(l1)) & p ^ H(l0) + H(kp)
       //    = H(lp) + H(kp)
-      auto c = (a & b) ^ util::getLsb(sender0Messages.at(i)) ^
+      auto c = (a && b) ^ util::getLsb(sender0Messages.at(i)) ^
           util::getLsb(receiverMessages.at(i));
 
       result[i] = BooleanTuple(a, b, c);
@@ -266,7 +266,7 @@ TwoPartyTupleGenerator::expandRCOTResults(
         std::vector<bool> c(requestedTupleSize);
         for (size_t j = 0; j < requestedTupleSize; j++) {
           b[j] = sender0Gen[j] ^ sender1Gen[j];
-          c[j] = (b[j] & a) ^ sender0Gen[j] ^ receiverGen[j];
+          c[j] = (b[j] && a) ^ sender0Gen[j] ^ receiverGen[j];
         }
         result[i] = CompositeBooleanTuple(a, b, c);
       }
