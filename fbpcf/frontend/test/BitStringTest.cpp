@@ -183,11 +183,11 @@ TEST(StringTest, testAND) {
   auto t8 = (v4 & u4).getValue();
 
   for (size_t i = 0; i < testValue1.size(); i++) {
-    testValue1[i] = testValue1[i] & testValue2[i];
+    testValue1[i] = testValue1[i] && testValue2[i];
   }
   for (size_t i = 0; i < testBatchValue1.size(); i++) {
     for (size_t j = 0; j < testBatchValue1.at(0).size(); j++) {
-      testBatchValue1[i][j] = testBatchValue1[i][j] & testBatchValue2[i][j];
+      testBatchValue1[i][j] = testBatchValue1[i][j] && testBatchValue2[i][j];
     }
   }
 
@@ -437,11 +437,11 @@ TEST(StringTest, testResizeWithAND) {
   auto t8 = (v4 & u4).getValue();
 
   for (size_t i = 0; i < testValue1.size(); i++) {
-    testValue1[i] = testValue1[i] & testValue2[i];
+    testValue1[i] = testValue1[i] && testValue2[i];
   }
   for (size_t i = 0; i < testBatchValue1.size(); i++) {
     for (size_t j = 0; j < testBatchValue1.at(0).size(); j++) {
-      testBatchValue1[i][j] = testBatchValue1[i][j] & testBatchValue2[i][j];
+      testBatchValue1[i][j] = testBatchValue1[i][j] && testBatchValue2[i][j];
     }
   }
 

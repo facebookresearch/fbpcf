@@ -70,7 +70,7 @@ void testGenerator(
   for (int i = 0; i < size; i++) {
     EXPECT_EQ(
         result0[i] ^ result1[i],
-        (left0[i] & right1[i]) ^ (left1[i] & right0[i]));
+        (left0[i] && right1[i]) ^ (left1[i] && right0[i]));
   }
 }
 
