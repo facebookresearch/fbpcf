@@ -3,9 +3,10 @@ name: Build and publish folly dependency
 on:
   workflow_dispatch:
     inputs:
-      name:
-        description: "Build and publish an fbpcf/folly image for a particular version"
-        default: "Run"
+      image_tag:
+        description: "The tag to apply to the folly image. Previously this was the folly version (e.g. 2021.03.29.00)"
+        required: true
+        type: string
       folly_release:
         description: "The folly version to build and publish (e.g. 2021.03.29.00)"
         required: true
@@ -17,12 +18,12 @@ on:
       os:
         description: "Which os to use. Currently only supports ubuntu"
         required: false
-        type: str
+        type: string
         default: "ubuntu"
       os_release:
         description: "The os version to use (e.g. 20.04 for ubuntu)"
         required: false
-        type: str
+        type: string
         default: "20.04"
 
 env:
@@ -48,17 +49,17 @@ jobs:
       - name: Build image
         run: |
           docker build \
-          --build-arg os_release=${{ github.event.inputs.os_release }} \
-          --build-arg folly_release=${{ github.event.inputs.folly_release }} \
-          --build-arg fmt_release=${{ github.event.inputs.fmt_release }} \
-          -t "fbpcf/${{ github.event.inputs.os }}-folly:${{ github.event.inputs.folly_release }}" \
-          -f "docker/folly/Dockerfile.${{ github.event.inputs.os }}" .
+          --build-arg os_release=${{ inputs.os_release }} \
+          --build-arg folly_release=${{ inputs.folly_release }} \
+          --build-arg fmt_release=${{ inputs.fmt_release }} \
+          -t "fbpcf/${{ inputs.os }}-folly:${{ inputs.image_tag }}" \
+          -f "docker/folly/Dockerfile.${{ inputs.os }}" .
 
       - name: Tag image
         run: |
-          docker tag fbpcf/${{ github.event.inputs.os }}-folly:${{ github.event.inputs.folly_release }} \
-          ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-folly:${{ github.event.inputs.folly_release }}
+          docker tag fbpcf/${{ inputs.os }}-folly:${{ inputs.follimage_tagy_release }} \
+          ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-folly:${{ inputs.image_tag }}
 
       - name: Publish image
         run: |
-          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-folly
+          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-folly
