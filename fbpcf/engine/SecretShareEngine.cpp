@@ -290,7 +290,7 @@ std::vector<uint64_t> SecretShareEngine::computeBatchSymmetricNeg(
 //======== Below are free AND computation API's: ========
 
 bool SecretShareEngine::computeFreeAND(bool left, bool right) const {
-  return left & right;
+  return left && right;
 }
 
 std::vector<bool> SecretShareEngine::computeBatchFreeAND(
@@ -304,7 +304,7 @@ std::vector<bool> SecretShareEngine::computeBatchFreeAND(
   }
   std::vector<bool> rst(left.size());
   for (size_t i = 0; i < left.size(); i++) {
-    rst[i] = left[i] & right[i];
+    rst[i] = left[i] && right[i];
   }
   return rst;
 }
@@ -798,11 +798,12 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
 
     for (size_t j = 0; j < compositeSize; j++) {
       bool val = tuple.getC()[j] ^
-          (openedSecrets.at(leftSecretIndex) & tuple.getB()[j]) ^
-          (openedSecrets.at(secretIndex) & tuple.getA());
+          (openedSecrets.at(leftSecretIndex) && tuple.getB()[j]) ^
+          (openedSecrets.at(secretIndex) && tuple.getA());
       if (myId_ == 0) {
         val = val ^
-            (openedSecrets.at(leftSecretIndex) & openedSecrets.at(secretIndex));
+            (openedSecrets.at(leftSecretIndex) &&
+             openedSecrets.at(secretIndex));
       }
       rst[j] = (val);
       secretIndex++;
@@ -824,8 +825,8 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
 
       for (int k = 0; k < compositeSize; k++) {
         bool val = tuple.getC().at(k) ^
-            (openedSecrets.at(leftSecretIndex) & tuple.getB()[k]) ^
-            (openedSecrets.at(secretIndex) & tuple.getA());
+            (openedSecrets.at(leftSecretIndex) && tuple.getB()[k]) ^
+            (openedSecrets.at(secretIndex) && tuple.getA());
         if (myId_ == 0) {
           val = val ^
               (openedSecrets.at(leftSecretIndex) &
@@ -936,11 +937,11 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
 
   for (size_t i = 0; i < ands.size(); i++) {
     bool val = tuples.at(index).getC() ^
-        (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
-        (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
+        (openedSecrets.at(2 * index) && tuples.at(index).getB()) ^
+        (openedSecrets.at(2 * index + 1) && tuples.at(index).getA());
     if (myId_ == 0) {
-      val =
-          val ^ (openedSecrets.at(2 * index) & openedSecrets.at(2 * index + 1));
+      val = val ^
+          (openedSecrets.at(2 * index) && openedSecrets.at(2 * index + 1));
     }
     andResults.push_back(val);
     index++;
@@ -952,11 +953,11 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
     std::vector<bool> rst(batchSize);
     for (size_t j = 0; j < batchSize; j++) {
       bool val = tuples.at(index).getC() ^
-          (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
-          (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
+          (openedSecrets.at(2 * index) && tuples.at(index).getB()) ^
+          (openedSecrets.at(2 * index + 1) && tuples.at(index).getA());
       if (myId_ == 0) {
         val = val ^
-            (openedSecrets.at(2 * index) & openedSecrets.at(2 * index + 1));
+            (openedSecrets.at(2 * index) && openedSecrets.at(2 * index + 1));
       }
       rst[j] = val;
       index++;
@@ -969,11 +970,11 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
     std::vector<bool> rst(outputSize);
     for (size_t j = 0; j < outputSize; j++) {
       bool val = tuples.at(index).getC() ^
-          (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
-          (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
+          (openedSecrets.at(2 * index) && tuples.at(index).getB()) ^
+          (openedSecrets.at(2 * index + 1) && tuples.at(index).getA());
       if (myId_ == 0) {
         val = val ^
-            (openedSecrets.at(2 * index) & openedSecrets.at(2 * index + 1));
+            (openedSecrets.at(2 * index) && openedSecrets.at(2 * index + 1));
       }
       rst[j] = (val);
       index++;
@@ -990,11 +991,11 @@ SecretShareEngine::computeExecutionResultsFromOpenedSharesLegacy(
       std::vector<bool> innerBatchResult(batchSize);
       for (size_t k = 0; k < batchSize; k++) {
         bool val = tuples.at(index).getC() ^
-            (openedSecrets.at(2 * index) & tuples.at(index).getB()) ^
-            (openedSecrets.at(2 * index + 1) & tuples.at(index).getA());
+            (openedSecrets.at(2 * index) && tuples.at(index).getB()) ^
+            (openedSecrets.at(2 * index + 1) && tuples.at(index).getA());
         if (myId_ == 0) {
           val = val ^
-              (openedSecrets.at(2 * index) & openedSecrets.at(2 * index + 1));
+              (openedSecrets.at(2 * index) && openedSecrets.at(2 * index + 1));
         }
         innerBatchResult[k] = val;
         index++;

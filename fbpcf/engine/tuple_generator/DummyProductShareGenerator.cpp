@@ -22,7 +22,7 @@ std::vector<bool> DummyProductShareGenerator::generateBooleanProductShares(
 
   std::vector<bool> rst(left.size());
   for (size_t i = 0; i < left.size(); i++) {
-    rst[i] = left[i] & partnerRight[i];
+    rst[i] = left[i] && partnerRight[i];
   }
   return rst;
 }
