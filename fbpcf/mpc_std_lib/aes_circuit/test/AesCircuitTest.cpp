@@ -62,6 +62,27 @@ class AesCircuitTests : public AesCircuit<BitType> {
     }
   }
 
+  void testInverseShiftRowInPlace(std::vector<bool> plaintext) {
+    std::array<std::array<std::array<bool, 8>, 4>, 4> block;
+    for (int k = 0; k < 4; ++k) {
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 8; j++) {
+          block[k][i][j] = plaintext[32 * k + 8 * i + j];
+        }
+      }
+    }
+
+    AesCircuit<bool>::shiftRowInPlace(block);
+    AesCircuit<bool>::inverseShiftRowInPlace(block);
+    for (int k = 0; k < 4; ++k) {
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 8; j++) {
+          EXPECT_EQ(block[k][i][j], plaintext[32 * k + 8 * i + j]);
+        }
+      }
+    }
+  }
+
   void testWordConversion() {
     using ByteType = std::array<bool, 8>;
     using WordType = std::array<ByteType, 4>;
@@ -157,6 +178,12 @@ TEST(AesCircuitTest, testShiftRowInPlace) {
   auto plaintext = generateRandomPlaintext();
   AesCircuitTests<bool> test;
   test.testShiftRowInPlace(plaintext);
+}
+
+TEST(AesCircuitTest, testInverseShiftRowInPlace) {
+  auto plaintext = generateRandomPlaintext();
+  AesCircuitTests<bool> test;
+  test.testInverseShiftRowInPlace(plaintext);
 }
 
 TEST(AesCircuitTest, testWordConversion) {
@@ -348,8 +375,71 @@ void testAesCircuitEncrypt(
   testVectorEq(ciphertextBits, cipherextBitsTruth);
 }
 
+void testAesCircuitDecrypt(
+    std::shared_ptr<AesCircuitFactory<bool>> AesCircuitFactory) {
+  auto AesCircuit = AesCircuitFactory->create();
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<uint8_t> dist(0, 0xFF);
+  size_t blockNo = dist(e);
+
+  // generate random key
+  __m128i key = _mm_set_epi32(dist(e), dist(e), dist(e), dist(e));
+  // generate random plaintext
+  std::vector<uint8_t> plaintext;
+  plaintext.reserve(blockNo * 16);
+  for (int i = 0; i < blockNo * 16; ++i) {
+    plaintext.push_back(dist(e));
+  }
+  std::vector<__m128i> plaintextAES;
+  loadValueToLocalAes(plaintext, plaintextAES);
+
+  // expend key
+  engine::util::Aes truthAes(key);
+  auto expendedKey = truthAes.expandEncryptionKey(key);
+  auto expendedDecryptionKey = truthAes.expandDecryptionKey(key);
+
+  // extract key and plaintext
+  std::vector<uint8_t> extractedKeys;
+  extractedKeys.reserve(176);
+  for (auto keyb : expendedKey) {
+    loadValueFromLocalAes(keyb, extractedKeys);
+  }
+  std::vector<uint8_t> extractedDecryptionKeys;
+  extractedDecryptionKeys.reserve(176);
+  for (auto keyb : expendedDecryptionKey) {
+    loadValueFromLocalAes(keyb, extractedDecryptionKeys);
+  }
+
+  // convert key and plaintext into bool vector
+  std::vector<bool> keyBits;
+  keyBits.reserve(1408);
+  int8VecToBinaryVec(extractedKeys, keyBits);
+  std::vector<bool> keyDecryptionBits;
+  keyDecryptionBits.reserve(1408);
+  int8VecToBinaryVec(extractedDecryptionKeys, keyDecryptionBits);
+  std::vector<bool> plaintextBits;
+  plaintextBits.reserve(blockNo * 128);
+  int8VecToBinaryVec(plaintext, plaintextBits);
+
+  // encrypt in real aes and aes circuit
+  truthAes.encryptInPlace(plaintextAES);
+  auto ciphertextBits = AesCircuit->encrypt(plaintextBits, keyBits);
+
+  // decrypt ciphertextBits
+  auto plaintextBitsDecrypted =
+      AesCircuit->decrypt(ciphertextBits, keyDecryptionBits);
+
+  testVectorEq(plaintextBits, plaintextBitsDecrypted);
+}
+
 TEST(AesCircuitTest, testAesCircuitEncrypt) {
   testAesCircuitEncrypt(std::make_unique<AesCircuitFactory<bool>>());
+}
+
+TEST(AesCircuitTest, testAesCircuitDecrypt) {
+  testAesCircuitDecrypt(std::make_unique<AesCircuitFactory<bool>>());
 }
 
 void testAesCircuitCtr(
