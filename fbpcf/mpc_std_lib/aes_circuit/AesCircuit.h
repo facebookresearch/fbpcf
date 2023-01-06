@@ -49,6 +49,7 @@ class AesCircuit : public IAesCircuit<BitType> {
   void inverseMixColumnsInPlace(WordType& src) const;
 
   void shiftRowInPlace(std::array<WordType, 4>& src) const;
+  void inverseShiftRowInPlace(std::array<WordType, 4>& src) const;
 
 #ifdef AES_CIRCUIT_TEST_FRIENDS
   AES_CIRCUIT_TEST_FRIENDS;
