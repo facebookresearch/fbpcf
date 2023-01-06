@@ -171,7 +171,7 @@ cd folly || exit
 git checkout v2020.10.12.00
 mkdir _build
 cd _build || exit
-cmake .. -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=native"
+cmake .. -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=x86-64"
 make
 sudo make install
 ```

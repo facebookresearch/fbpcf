@@ -46,7 +46,7 @@ RUN git clone https://github.com/facebook/folly.git
 WORKDIR /root/build/folly
 RUN git checkout tags/v${folly_release} -b v${folly_release}
 
-RUN cmake DBUILD_SHARED_LIBS=OFF -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=native" .
+RUN cmake DBUILD_SHARED_LIBS=OFF -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=x86-64" .
 RUN make && make install
 
 FROM ubuntu:${os_release}
