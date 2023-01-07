@@ -749,13 +749,13 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
 
   for (size_t i = 0; i < ands.size(); i++) {
     bool val = normalTuples.at(normalTupleIndex).getC() ^
-        (openedSecrets.at(2 * normalTupleIndex) &
+        (openedSecrets.at(2 * normalTupleIndex) &&
          normalTuples.at(normalTupleIndex).getB()) ^
-        (openedSecrets.at(2 * normalTupleIndex + 1) &
+        (openedSecrets.at(2 * normalTupleIndex + 1) &&
          normalTuples.at(normalTupleIndex).getA());
     if (myId_ == 0) {
       val = val ^
-          (openedSecrets.at(2 * normalTupleIndex) &
+          (openedSecrets.at(2 * normalTupleIndex) &&
            openedSecrets.at(2 * normalTupleIndex + 1));
     }
     andResults.push_back(val);
@@ -768,13 +768,13 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
     std::vector<bool> rst(batchSize);
     for (int j = 0; j < batchSize; j++) {
       bool val = normalTuples.at(normalTupleIndex).getC() ^
-          (openedSecrets.at(2 * normalTupleIndex) &
+          (openedSecrets.at(2 * normalTupleIndex) &&
            normalTuples.at(normalTupleIndex).getB()) ^
-          (openedSecrets.at(2 * normalTupleIndex + 1) &
+          (openedSecrets.at(2 * normalTupleIndex + 1) &&
            normalTuples.at(normalTupleIndex).getA());
       if (myId_ == 0) {
         val = val ^
-            (openedSecrets.at(2 * normalTupleIndex) &
+            (openedSecrets.at(2 * normalTupleIndex) &&
              openedSecrets.at(2 * normalTupleIndex + 1));
       }
       rst[j] = val;
@@ -829,7 +829,7 @@ SecretShareEngine::computeExecutionResultsFromOpenedShares(
             (openedSecrets.at(secretIndex) && tuple.getA());
         if (myId_ == 0) {
           val = val ^
-              (openedSecrets.at(leftSecretIndex) &
+              (openedSecrets.at(leftSecretIndex) &&
                openedSecrets.at(secretIndex));
         }
         compositeResult[k][j] = val;
