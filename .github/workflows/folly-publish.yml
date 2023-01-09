@@ -57,7 +57,7 @@ jobs:
 
       - name: Tag image
         run: |
-          docker tag fbpcf/${{ inputs.os }}-folly:${{ inputs.follimage_tagy_release }} \
+          docker tag fbpcf/${{ inputs.os }}-folly:${{ inputs.image_tag }} \
           ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-folly:${{ inputs.image_tag }}
 
       - name: Publish image
