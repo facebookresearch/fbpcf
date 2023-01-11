@@ -74,12 +74,12 @@ void party1Task(
 
 void permuterTest(
     IPermuterFactory<frontend::BitString<true, 0, true>>& permuterFactory0,
-    IPermuterFactory<frontend::BitString<true, 1, true>>& permuterFactory1) {
+    IPermuterFactory<frontend::BitString<true, 1, true>>& permuterFactory1,
+    uint32_t size) {
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   auto permuter0 = permuterFactory0.create();
   auto permuter1 = permuterFactory1.create();
-  uint32_t size = 17;
   auto [originalData, order, expectedOutput] = getPermuterTestData(size);
   auto future0 =
       std::async(party0Task, std::move(permuter0), originalData, order);
@@ -95,14 +95,21 @@ TEST(permuterTest, testDummyPermuter) {
   insecure::DummyPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
   insecure::DummyPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
 
-  permuterTest(factory0, factory1);
+  permuterTest(factory0, factory1, 17);
 }
 
 TEST(permuterTest, testAsWaksmanPermuter) {
   AsWaksmanPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
   AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
 
-  permuterTest(factory0, factory1);
+  permuterTest(factory0, factory1, 17);
+}
+
+TEST(permuterTest, testAsWaksmanPermuterSingleValue) {
+  AsWaksmanPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
+  AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
+
+  permuterTest(factory0, factory1, 1);
 }
 
 void testAsWaksmanParameter() {
