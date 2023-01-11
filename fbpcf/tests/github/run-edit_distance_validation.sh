@@ -34,6 +34,8 @@ else
 fi
 
 DATA_DIRECTORY=https://fbpcf-e2e-github-workflow.s3.us-west-2.amazonaws.com/edit_distance
+# Using a different bucket to test multi-region S3 access
+PARAMS_DIRECTORY=https://fbpcf-e2e-github-workflow-2.s3.us-west-1.amazonaws.com/edit_distance
 GLOBAL_PARAMS=edit_distance_200_params.csv
 PLAYER_0_INPUT=edit_distance_200_player_1_input.csv
 PLAYER_0_OUTPUT=edit_distance_200_output_1.json
@@ -50,7 +52,7 @@ docker run --rm \
     --server_ip=127.0.0.1 \
     --port=5001 \
     --input_path=${DATA_DIRECTORY}/inputs/${PLAYER_0_INPUT} \
-    --input_params=${DATA_DIRECTORY}/inputs/${GLOBAL_PARAMS} \
+    --input_params=${PARAMS_DIRECTORY}/inputs/${GLOBAL_PARAMS} \
     --output_file_path="${DATA_DIRECTORY}/outputs/${TEMP_DIR}/${PLAYER_0_OUTPUT}" \
     2>&1 player0 & # Fork to background so other party can run below
 
@@ -61,7 +63,7 @@ if docker run --rm \
     --server_ip=127.0.0.1 \
     --port=5001 \
     --input_path=${DATA_DIRECTORY}/inputs/${PLAYER_1_INPUT}.csv \
-    --input_params=${DATA_DIRECTORY}/inputs/${GLOBAL_PARAMS} \
+    --input_params=${PARAMS_DIRECTORY}/inputs/${GLOBAL_PARAMS} \
     --output_file_path="${DATA_DIRECTORY}/outputs/${TEMP_DIR}/${PLAYER_1_OUTPUT}"; then
   printf "Edit Distance Ran Successfully\n"
   printf "Outputs saved to %s/outputs/%s\n" "$DATA_DIRECTORY" "$TEMP_DIR"
