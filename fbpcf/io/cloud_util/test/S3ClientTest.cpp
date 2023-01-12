@@ -57,6 +57,7 @@ TEST(S3ClientTest, testGetInstance) {
       S3Client::getInstance(fbpcf::aws::S3ClientOption{.region = "us-east-1"});
 
   ASSERT_EQ(s3Client1, s3Client2);
+  S3Client::setS3ClientFactory(nullptr);
 }
 
 } // namespace fbpcf::cloudio
