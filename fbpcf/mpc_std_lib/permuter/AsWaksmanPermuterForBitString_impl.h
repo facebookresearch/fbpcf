@@ -111,7 +111,9 @@ AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
   }
   auto length = vectorOfVectors.at(0).size();
   std::vector<std::vector<bool>> rst;
-  rst.reserve(2 * (std::ceil(log2(order.size()))) - 1);
+  if (order.size() > 2) {
+    rst.reserve(2 * (std::ceil(log2(order.size()))) - 1);
+  }
   computeChoiceVectors(
       std::vector<std::vector<uint32_t>>(1, order), rst, order.size());
 
