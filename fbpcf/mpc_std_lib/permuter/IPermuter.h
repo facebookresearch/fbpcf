@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <stdexcept>
+#include "folly/Format.h"
+
 #include "fbpcf/mpc_std_lib/util/util.h"
 
 namespace fbpcf::mpc_std_lib::permuter {
@@ -32,7 +35,9 @@ class IPermuter {
    * @param size the size of the batch
    * @return the permuted values in batch
    */
-  virtual T permute(const T& src, size_t size) const = 0;
+  T permute(const T& src, size_t size) {
+    return permute_impl(src, size);
+  }
 
   /**
    * permute a batch of secret values to the provided order.
@@ -41,7 +46,42 @@ class IPermuter {
    * @param order the order to permute
    * @return the permuted values in batch
    */
-  virtual T permute(
+  virtual T
+  permute(const T& src, size_t size, const std::vector<uint32_t>& order) {
+    if (order.size() != size) {
+      throw std::runtime_error(folly::sformat(
+          "Permuter called with invalid size. Got size {} but only {} elements in order",
+          size,
+          order.size()));
+    }
+
+    std::vector<bool> seen(order.size(), false);
+
+    for (uint32_t i = 0; i < order.size(); i++) {
+      uint32_t permutationIndex = order[i];
+      if (permutationIndex < 0 || permutationIndex >= order.size()) {
+        throw std::runtime_error(folly::sformat(
+            "Permutation index out of bounds at index {} (Got {})",
+            i,
+            permutationIndex));
+      }
+      if (seen[permutationIndex]) {
+        throw std::runtime_error(folly::sformat(
+            "Permutation index seen a second time at index {} (Target index was {})",
+            i,
+            permutationIndex));
+      }
+
+      seen[permutationIndex] = true;
+    }
+
+    return permute_impl(src, size, order);
+  }
+
+ private:
+  virtual T permute_impl(const T& src, size_t size) const = 0;
+
+  virtual T permute_impl(
       const T& src,
       size_t size,
       const std::vector<uint32_t>& order) const = 0;

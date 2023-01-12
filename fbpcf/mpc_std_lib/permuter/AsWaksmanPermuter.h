@@ -26,9 +26,10 @@ class AsWaksmanPermuter final
   AsWaksmanPermuter(int myId, int partnerId)
       : myId_(myId), partnerId_(partnerId) {}
 
-  SecBatchType permute(const SecBatchType& src, size_t size) const override;
+  SecBatchType permute_impl(const SecBatchType& src, size_t size)
+      const override;
 
-  SecBatchType permute(
+  SecBatchType permute_impl(
       const SecBatchType& src,
       size_t size,
       const std::vector<uint32_t>& order) const override;

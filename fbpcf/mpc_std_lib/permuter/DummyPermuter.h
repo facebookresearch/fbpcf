@@ -24,7 +24,8 @@ class DummyPermuter final
   using SecBatchType = typename util::SecBatchType<T, schedulerId>::type;
   DummyPermuter(int myId, int partnerId) : myId_(myId), partnerId_(partnerId) {}
 
-  SecBatchType permute(const SecBatchType& src, size_t size) const override {
+  SecBatchType permute_impl(const SecBatchType& src, size_t size)
+      const override {
     std::vector<SecBatchType> unbatched =
         util::MpcAdapters<T, schedulerId>::unbatching(
             src, std::make_shared<std::vector<uint32_t>>(size, 1));
@@ -45,7 +46,7 @@ class DummyPermuter final
     return util::MpcAdapters<T, schedulerId>::batchingWith(front, permuted);
   }
 
-  SecBatchType permute(
+  SecBatchType permute_impl(
       const SecBatchType& src,
       size_t size,
       const std::vector<uint32_t>& order) const override {
