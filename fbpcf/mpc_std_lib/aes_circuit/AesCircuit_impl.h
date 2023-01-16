@@ -345,6 +345,8 @@ void AesCircuit<BitType>::sharedSBoxInPlace(
     const std::array<BitType, 28>& T,
     const BitType& D,
     std::array<BitType, 64>& M) const {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wbitwise-instead-of-logical"
   M[1] = T[13] & T[6];
   M[2] = T[23] & T[8];
   M[3] = T[14] ^ M[1];
@@ -408,6 +410,7 @@ void AesCircuit<BitType>::sharedSBoxInPlace(
   M[61] = M[42] & T[1];
   M[62] = M[45] & T[4];
   M[63] = M[41] & T[2];
+#pragma clang diagnostic pop
 }
 
 // implemented as per eprint.iacr.org/2019/833
