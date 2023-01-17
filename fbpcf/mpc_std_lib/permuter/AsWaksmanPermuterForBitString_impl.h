@@ -30,11 +30,11 @@ class AsWaksmanPermuter<std::vector<bool>, schedulerId> final
   AsWaksmanPermuter(int myId, int partnerId)
       : myId_(myId), partnerId_(partnerId) {}
 
-  frontend::BitString<true, schedulerId, true> permute(
+  frontend::BitString<true, schedulerId, true> permute_impl(
       const frontend::BitString<true, schedulerId, true>& src,
       size_t size) const override;
 
-  frontend::BitString<true, schedulerId, true> permute(
+  frontend::BitString<true, schedulerId, true> permute_impl(
       const frontend::BitString<true, schedulerId, true>& src,
       size_t size,
       const std::vector<uint32_t>& order) const override;
@@ -43,7 +43,7 @@ class AsWaksmanPermuter<std::vector<bool>, schedulerId> final
   std::vector<std::vector<bool>> computingBatchAndWithMpc(
       const std::vector<bool>& left,
       const std::vector<std::vector<bool>>& right) const;
-  void permute(
+  void permute_impl(
       std::vector<std::vector<bool>>& src,
       std::vector<size_t> batches,
       size_t totalSize,
@@ -82,7 +82,7 @@ class AsWaksmanPermuter<std::vector<bool>, schedulerId> final
 
 template <int schedulerId>
 frontend::BitString<true, schedulerId, true>
-AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
+AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute_impl(
     const frontend::BitString<true, schedulerId, true>& src,
     size_t size) const {
   std::vector<std::vector<bool>> vectorOfVectors =
@@ -93,7 +93,8 @@ AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
   auto length = vectorOfVectors.at(0).size();
   std::vector<std::vector<bool>> dummyChoice;
 
-  permute(vectorOfVectors, std::vector<size_t>(1, length), length, dummyChoice);
+  permute_impl(
+      vectorOfVectors, std::vector<size_t>(1, length), length, dummyChoice);
   return frontend::BitString<true, schedulerId, true>(
       typename frontend::BitString<true, schedulerId, true>::ExtractedString(
           vectorOfVectors));
@@ -101,7 +102,7 @@ AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
 
 template <int schedulerId>
 frontend::BitString<true, schedulerId, true>
-AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
+AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute_impl(
     const frontend::BitString<true, schedulerId, true>& src,
     size_t size,
     const std::vector<uint32_t>& order) const {
@@ -117,7 +118,7 @@ AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
   computeChoiceVectors(
       std::vector<std::vector<uint32_t>>(1, order), rst, order.size());
 
-  permute(vectorOfVectors, std::vector<size_t>(1, length), length, rst);
+  permute_impl(vectorOfVectors, std::vector<size_t>(1, length), length, rst);
   return frontend::BitString<true, schedulerId, true>(
       typename frontend::BitString<true, schedulerId, true>::ExtractedString(
           vectorOfVectors));
@@ -147,7 +148,7 @@ AsWaksmanPermuter<std::vector<bool>, schedulerId>::computingBatchAndWithMpc(
 }
 
 template <int schedulerId>
-void AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
+void AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute_impl(
     std::vector<std::vector<bool>>& src,
     std::vector<size_t> batches,
     size_t totalSize,
@@ -166,7 +167,7 @@ void AsWaksmanPermuter<std::vector<bool>, schedulerId>::permute(
 
     // do some pre-swap
     swapInALayer(src, batches, givenChoices, false);
-    permute(src, newBatches, totalSize, givenChoices);
+    permute_impl(src, newBatches, totalSize, givenChoices);
     // do some post-swap
     swapInALayer(src, batches, givenChoices, true);
   }

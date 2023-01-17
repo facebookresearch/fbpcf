@@ -45,6 +45,7 @@ getPermuterTestData(uint32_t batchSize) {
     for (size_t j = 0; j < batchSize; j++)
       expectedResult[i][j] = originalData[i][order[j]];
   }
+
   return {originalData, order, expectedResult};
 }
 
@@ -61,6 +62,13 @@ party0Task(
   return {rst0, rst1};
 }
 
+void party0ExceptionTask(
+    std::unique_ptr<IPermuter<frontend::BitString<true, 0, true>>> permuter,
+    const std::vector<uint32_t>& order) {
+  frontend::BitString<true, 0, true> bits({{0, 0, 1, 1}, {0, 1, 0, 1}}, 0);
+  auto permuted0 = permuter->permute(bits, 4, order);
+}
+
 void party1Task(
     std::unique_ptr<IPermuter<frontend::BitString<true, 1, true>>> permuter,
     const std::vector<std::vector<bool>>& data,
@@ -75,7 +83,7 @@ void party1Task(
 void permuterTest(
     IPermuterFactory<frontend::BitString<true, 0, true>>& permuterFactory0,
     IPermuterFactory<frontend::BitString<true, 1, true>>& permuterFactory1,
-    uint32_t size) {
+    size_t size) {
   auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
   setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
   auto permuter0 = permuterFactory0.create();
@@ -89,6 +97,18 @@ void permuterTest(
   future1.get();
   testVectorEq(rst0, expectedOutput);
   testVectorEq(rst1, expectedOutput);
+}
+
+void singlePermuterTestForError(
+    IPermuterFactory<frontend::BitString<true, 0, true>>& permuterFactory0,
+    IPermuterFactory<frontend::BitString<true, 1, true>>& permuterFactory1,
+    std::vector<uint32_t> order) {
+  auto agentFactories = engine::communication::getInMemoryAgentFactory(2);
+  setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
+  auto permuter0 = permuterFactory0.create();
+  auto permuter1 = permuterFactory1.create();
+  EXPECT_THROW(
+      party0ExceptionTask(std::move(permuter0), order), std::runtime_error);
 }
 
 TEST(permuterTest, testDummyPermuter) {
@@ -110,6 +130,27 @@ TEST(permuterTest, testAsWaksmanPermuterSingleValue) {
   AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
 
   permuterTest(factory0, factory1, 1);
+}
+
+TEST(permuterTest, testAsWaksmanPermuterPermutationSizeMismatch) {
+  AsWaksmanPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
+  AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
+
+  singlePermuterTestForError(factory0, factory1, {0, 1, 2, 3, 4});
+}
+
+TEST(permuterTest, testAsWaksmanPermuterOutOfBoundsPermutationValue) {
+  AsWaksmanPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
+  AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
+
+  singlePermuterTestForError(factory0, factory1, {0, 5, 1, 3});
+}
+
+TEST(permuterTest, testAsWaksmanPermuterDuplicatePermutationValue) {
+  AsWaksmanPermuterFactory<std::vector<bool>, 0> factory0(0, 1);
+  AsWaksmanPermuterFactory<std::vector<bool>, 1> factory1(1, 0);
+
+  singlePermuterTestForError(factory0, factory1, {0, 1, 1, 2});
 }
 
 void testAsWaksmanParameter() {

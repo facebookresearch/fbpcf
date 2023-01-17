@@ -15,8 +15,9 @@ namespace fbpcf::mpc_std_lib::permuter {
 
 template <typename T, int schedulerId>
 typename AsWaksmanPermuter<T, schedulerId>::SecBatchType
-AsWaksmanPermuter<T, schedulerId>::permute(const SecBatchType& src, size_t size)
-    const {
+AsWaksmanPermuter<T, schedulerId>::permute_impl(
+    const SecBatchType& src,
+    size_t size) const {
   if (size == 1) {
     return src;
   }
@@ -32,8 +33,8 @@ AsWaksmanPermuter<T, schedulerId>::permute(const SecBatchType& src, size_t size)
 
   auto [first, second] =
       preSubPermutationSwap(src, std::move(firstSwapConditions), size);
-  auto permutedFirst = permute(std::move(first), size / 2);
-  auto permutedSecond = permute(std::move(second), size - size / 2);
+  auto permutedFirst = permute_impl(std::move(first), size / 2);
+  auto permutedSecond = permute_impl(std::move(second), size - size / 2);
 
   placeHolder.resize((size - 1) / 2);
   frontend::Bit<true, schedulerId, true> secondSwapConditions(
@@ -48,7 +49,7 @@ AsWaksmanPermuter<T, schedulerId>::permute(const SecBatchType& src, size_t size)
 
 template <typename T, int schedulerId>
 typename AsWaksmanPermuter<T, schedulerId>::SecBatchType
-AsWaksmanPermuter<T, schedulerId>::permute(
+AsWaksmanPermuter<T, schedulerId>::permute_impl(
     const SecBatchType& src,
     size_t size,
     const std::vector<uint32_t>& order) const {
@@ -68,10 +69,10 @@ AsWaksmanPermuter<T, schedulerId>::permute(
   auto [first, second] =
       preSubPermutationSwap(src, std::move(firstSwapConditions), size);
 
-  auto permutedFirst =
-      permute(std::move(first), size / 2, calculator.getFirstSubPermuteOrder());
+  auto permutedFirst = permute_impl(
+      std::move(first), size / 2, calculator.getFirstSubPermuteOrder());
 
-  auto permutedSecond = permute(
+  auto permutedSecond = permute_impl(
       std::move(second),
       size - size / 2,
       calculator.getSecondSubPermuteOrder());
