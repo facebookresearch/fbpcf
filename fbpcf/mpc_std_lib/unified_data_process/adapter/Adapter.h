@@ -30,7 +30,7 @@ class Adapter final : public IAdapter {
         party1Id_(party1Id),
         shuffler_(std::move(shuffler)) {}
 
-  std::vector<int32_t> adapt(
+  std::vector<int32_t> adapt_impl(
       const std::vector<int32_t>& unionMap) const override;
 
  private:

@@ -11,6 +11,7 @@
 #include <future>
 #include <memory>
 #include <random>
+#include <stdexcept>
 #include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
@@ -19,7 +20,6 @@
 #include "fbpcf/test/TestHelper.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::adapter {
-
 std::vector<int32_t> generateShuffledIndex(size_t size) {
   std::vector<int32_t> rst(size);
   for (size_t i = 0; i < size; i++) {
@@ -108,6 +108,12 @@ void adapterTest(
   checkOutput(rst0, rst1, expectedOutput);
 }
 
+void singleAdapterTestWithError(
+    std::unique_ptr<IAdapter> adapter0,
+    std::vector<int32_t> p0Input) {
+  EXPECT_THROW(adapter0->adapt(p0Input), std::runtime_error);
+}
+
 TEST(AdapterTest, testAdapterWithNonShuffler) {
   auto agentFactories =
       fbpcf::engine::communication::getInMemoryAgentFactory(2);
@@ -137,6 +143,26 @@ TEST(AdapterTest, testAdapterWithSecurePermuteBasedShuffler) {
   auto factory1 = getAdapterFactoryWithAsWaksmanBasedShuffler<1>(false, 1, 0);
 
   adapterTest(factory0->create(), factory1->create());
+}
+
+TEST(AdapterTest, testAdapterValidationOutOfBounds) {
+  auto agentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+  fbpcf::setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
+  auto factory0 = getAdapterFactoryWithAsWaksmanBasedShuffler<0>(true, 0, 1);
+
+  singleAdapterTestWithError(factory0->create(), {0, -2, 1});
+  singleAdapterTestWithError(factory0->create(), {0, 3, -1});
+}
+
+TEST(AdapterTest, testAdapterValidationDuplicateUnionIndex) {
+  auto agentFactories =
+      fbpcf::engine::communication::getInMemoryAgentFactory(2);
+  fbpcf::setupRealBackend<0, 1>(*agentFactories[0], *agentFactories[1]);
+  auto factory0 = getAdapterFactoryWithAsWaksmanBasedShuffler<0>(true, 0, 1);
+
+  singleAdapterTestWithError(factory0->create(), {-1, 0, 2, 0});
+  singleAdapterTestWithError(factory0->create(), {-1, 2, 1, 2});
 }
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::adapter

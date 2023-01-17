@@ -14,7 +14,7 @@
 namespace fbpcf::mpc_std_lib::unified_data_process::adapter {
 
 template <int schedulerId>
-std::vector<int32_t> Adapter<schedulerId>::adapt(
+std::vector<int32_t> Adapter<schedulerId>::adapt_impl(
     const std::vector<int32_t>& unionMap) const {
   auto unionSize = unionMap.size();
 
