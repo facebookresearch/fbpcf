@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <stdexcept>
+#include "folly/Format.h"
+
 #include <stdint.h>
 #include <vector>
 
@@ -30,7 +33,34 @@ class IAdapter {
    * in the output represents the index of peer's element that corresponds to
    * the i-th element in the intersection.
    */
-  virtual std::vector<int32_t> adapt(
+  std::vector<int32_t> adapt(const std::vector<int32_t>& unionMap) {
+    std::vector<bool> seen(unionMap.size(), false);
+
+    for (size_t i = 0; i < unionMap.size(); i++) {
+      auto unionIndex = unionMap[i];
+
+      if (unionIndex != -1) {
+        if (unionIndex < 0 || unionIndex >= unionMap.size()) {
+          throw std::runtime_error(folly::sformat(
+              "Union index out of bounds at index {} (Got {})", i, unionIndex));
+        }
+
+        if (seen[unionIndex]) {
+          throw std::runtime_error(folly::sformat(
+              "Union index seen a second time at index {} (Target index was {})",
+              i,
+              unionIndex));
+        }
+
+        seen[unionIndex] = true;
+      }
+    }
+
+    return adapt_impl(unionMap);
+  }
+
+ private:
+  virtual std::vector<int32_t> adapt_impl(
       const std::vector<int32_t>& unionMap) const = 0;
 };
 
