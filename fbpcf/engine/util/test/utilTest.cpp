@@ -9,6 +9,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <smmintrin.h>
+#include <random>
 
 namespace fbpcf::engine::util {
 
@@ -16,6 +17,41 @@ TEST(UtilTest, testGetLsb) {
   for (size_t i = 0; i < 1024; i++) {
     __m128i val = getRandomM128iFromSystemNoise();
     EXPECT_EQ(util::getLsb(val), _mm_extract_epi64(val, 0) % 2 != 0);
+  }
+}
+
+TEST(UtilTest, testGetMsb) {
+  for (size_t i = 0; i < 1024; i++) {
+    __m128i val = getRandomM128iFromSystemNoise();
+    EXPECT_EQ(
+        util::getMsb(val), (_mm_extract_epi64(val, 1) & ((long)1 << 63)) != 0);
+  }
+}
+
+TEST(UtilTest, testlShiftByBitsInPlace) {
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<unsigned char> dist(0, 0xFF);
+  for (size_t i = 0; i < 10; i++) {
+    std::vector<unsigned char> randomVal(16);
+    for (size_t j = 0; j < randomVal.size(); ++j) {
+      randomVal[j] = dist(e);
+    }
+    std::vector<unsigned char> randomValOriginal(randomVal);
+    for (int offset = 1; offset < 128; offset++) {
+      __m128i val = buildM128i(randomValOriginal);
+      lShiftByBitsInPlace(val, offset);
+      // left shift char array by 1 bit accordingly
+      for (int j = 15; j >= 0; j--) {
+        int carry = randomVal[j] >> 7 & 1;
+        randomVal[j] = randomVal[j] << 1;
+        if (j != 15)
+          randomVal[j + 1] |= carry;
+      }
+      __m128i valShifted = buildM128i(randomVal);
+      EXPECT_EQ(_mm_extract_epi64(val, 0), _mm_extract_epi64(valShifted, 0));
+      EXPECT_EQ(_mm_extract_epi64(val, 1), _mm_extract_epi64(valShifted, 1));
+    }
   }
 }
 
