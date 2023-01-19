@@ -16,6 +16,7 @@
 #include <vector>
 #include "fbpcf/engine/util/util.h"
 #include "fbpcf/primitive/mac/AesCmacFactory.h"
+#include "fbpcf/primitive/mac/S2vFactory.h"
 
 namespace fbpcf::primitive::mac {
 
@@ -146,5 +147,21 @@ TEST(AesCMacTest, testConsistency) {
 
 TEST(AesCMacTest, testEmptyInput) {
   testEmptyInput(std::make_unique<AesCmacFactory>());
+}
+
+TEST(S2vTest, testGetMacM128i) {
+  testGetMacM128i(std::make_unique<S2vFactory>());
+}
+
+TEST(S2vTest, testGetMac128) {
+  testGetMac128(std::make_unique<S2vFactory>());
+}
+
+TEST(S2vTest, testConsistency) {
+  testConsistency(std::make_unique<S2vFactory>());
+}
+
+TEST(S2vTest, testEmptyInput) {
+  testEmptyInput(std::make_unique<S2vFactory>());
 }
 } // namespace fbpcf::primitive::mac
