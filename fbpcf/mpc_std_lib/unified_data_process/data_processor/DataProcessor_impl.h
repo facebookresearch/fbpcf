@@ -7,6 +7,8 @@
 
 #pragma once
 
+#include <emmintrin.h>
+#include <fbpcf/engine/util/util.h>
 #include "fbpcf/engine/util/aes.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/DataProcessor.h"
@@ -25,11 +27,13 @@ DataProcessor<schedulerId>::processMyData(
   auto keyAndCiphertext = localEncryption(plaintextData);
   auto& expandedKeyM128i = std::get<0>(keyAndCiphertext);
   auto& ciphertextByte = std::get<1>(keyAndCiphertext);
+  auto& s2vByte = std::get<2>(keyAndCiphertext);
 
-  // 2a. send encryted data to peer
+  // 2a. send encryted data and IV to peer
   for (auto& item : ciphertextByte) {
     agent_->send(item);
   }
+  agent_->send(s2vByte);
 
   // 1b. (peer)receive encryted data from peer
   // 2b. (peer)pick desired ciphertext blocks
@@ -84,6 +88,9 @@ DataProcessor<schedulerId>::processPeersData(
   for (size_t i = 0; i < dataSize; i++) {
     ciphertextByte[i] = agent_->receive(dataWidth);
   }
+  std::vector<unsigned char> s2vVec(16);
+  s2vVec = agent_->receive(16);
+  __m128i s2vM128 = engine::util::buildM128i(s2vVec);
 
   // 2b. pick desired ciphertext blocks
   std::vector<std::vector<unsigned char>> intersection(
@@ -109,6 +116,8 @@ DataProcessor<schedulerId>::processPeersData(
     for (uint64_t j = 0; j < cipherBlocks; ++j) {
       filteredCountersM128i[i][j] =
           _mm_set_epi64x(0, indexes[i] * cipherBlocks + j);
+      filteredCountersM128i[i][j] =
+          _mm_add_epi64(s2vM128, filteredCountersM128i[i][j]);
     }
   }
   auto filteredCounters =
@@ -136,7 +145,10 @@ DataProcessor<schedulerId>::processPeersData(
 }
 
 template <int schedulerId>
-std::tuple<std::array<__m128i, 11>, std::vector<std::vector<uint8_t>>>
+std::tuple<
+    std::array<__m128i, 11>,
+    std::vector<std::vector<uint8_t>>,
+    std::vector<uint8_t>>
 DataProcessor<schedulerId>::localEncryption(
     const std::vector<std::vector<unsigned char>>& plaintextData) {
   size_t rowCounts = plaintextData.size();
@@ -147,10 +159,27 @@ DataProcessor<schedulerId>::localEncryption(
   fbpcf::engine::util::Aes localAes(keyM128i);
   auto expandedKeyM128i = localAes.expandEncryptionKey(keyM128i);
   // generate counters for each block
+  const primitive::mac::S2vFactory s2vFactory;
+  std::vector<unsigned char> keyByte(16);
+  _mm_storeu_si128((__m128i*)keyByte.data(), keyM128i);
+  const auto s2v = s2vFactory.create(keyByte);
+  std::vector<unsigned char> plaintextCombined;
+  plaintextCombined.reserve(rowSize * rowCounts);
+  std::for_each(
+      plaintextData.begin(),
+      plaintextData.end(),
+      [&plaintextCombined](const auto& v) {
+        std::copy(v.begin(), v.end(), std::back_inserter(plaintextCombined));
+      });
+  __m128i s2vRes = s2v->getMacM128i(plaintextCombined);
   std::vector<__m128i> counterM128i(rowCounts * rowBlocks);
   for (uint64_t i = 0; i < counterM128i.size(); ++i) {
     counterM128i[i] = _mm_set_epi64x(0, i);
+    counterM128i[i] = _mm_add_epi64(s2vRes, counterM128i[i]);
   }
+  std::vector<unsigned char> s2vVec(16);
+  _mm_storeu_si128((__m128i*)s2vVec.data(), s2vRes);
+
   // encrypt counters
   localAes.encryptInPlace(counterM128i);
 
@@ -170,7 +199,7 @@ DataProcessor<schedulerId>::localEncryption(
           plaintextData[i][j] ^ maskByte[i * rowBlocks * 16 + j];
     }
   }
-  return {expandedKeyM128i, ciphertextByte};
+  return {expandedKeyM128i, ciphertextByte, s2vVec};
 }
 
 template <int schedulerId>
