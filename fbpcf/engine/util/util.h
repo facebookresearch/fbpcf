@@ -28,6 +28,27 @@ inline bool getLsb(__m128i src) {
   return _mm_extract_epi8(src, 0) & 1;
 }
 
+inline bool getMsb(__m128i src) {
+  return (_mm_extract_epi8(src, 15) >> 7);
+}
+
+/*
+ * Left shift a value in m128i by an arbitery(offset) bits. This is needed as
+ * there's no instruction for this functionality AFAIK.
+ */
+inline void lShiftByBitsInPlace(__m128i& src, int offset) {
+  __m128i v1, v2;
+  if (offset >= 64) {
+    src = _mm_slli_si128(src, 8);
+    src = _mm_slli_epi64(src, offset - 64);
+  } else {
+    v1 = _mm_slli_epi64(src, offset);
+    v2 = _mm_slli_si128(src, 8);
+    v2 = _mm_srli_epi64(v2, 64 - offset);
+    src = _mm_or_si128(v1, v2);
+  }
+}
+
 inline uint64_t getLast64Bits(__m128i src) {
   return _mm_extract_epi64(src, 0);
 }
