@@ -12,6 +12,8 @@
 #include "fbpcf/engine/util/util.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/IDataProcessor.h"
+#include "fbpcf/primitive/mac/S2v.h"
+#include "fbpcf/primitive/mac/S2vFactory.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 
@@ -59,7 +61,10 @@ class DataProcessor final : public IDataProcessor<schedulerId> {
 
  protected:
   // locally encrypt the plaintext, output expanded keys and ciphertext
-  std::tuple<std::array<__m128i, 11>, std::vector<std::vector<uint8_t>>>
+  std::tuple<
+      std::array<__m128i, 11>,
+      std::vector<std::vector<uint8_t>>,
+      std::vector<uint8_t>>
   localEncryption(const std::vector<std::vector<unsigned char>>& plaintextData);
 
   // privately share the input byte stream from party inputPartyID into vector
