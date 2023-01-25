@@ -54,10 +54,12 @@ COPY docker/CMakeLists.txt .
 COPY docker/cmake/ ./cmake
 COPY fbpcf/ ./fbpcf
 COPY example/ ./example
+COPY docker/utils/get_make_options.sh .
+
 # Link all libraries post-install
 RUN ldconfig
 
 RUN cmake . -DTHREADING=ON -DEMP_USE_RANDOM_DEVICE=ON
-RUN make && make install
+RUN . /root/build/fbpcf/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 CMD ["/bin/bash"]
