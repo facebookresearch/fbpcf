@@ -3,9 +3,10 @@ name: Build and publish emp dependency
 on:
   workflow_dispatch:
     inputs:
-      name:
-        description: "Build and publish an fbpcf/emp image for a particular version"
-        default: "Run"
+      image_tag:
+        description: "The tag to apply to the emp image. Previously this was the emp tool release version (e.g. 0.2.3)"
+        required: true
+        type: string
       emp_release:
         description: "The emp version to build and publish (e.g. 0.2.2)"
         required: true
@@ -48,17 +49,17 @@ jobs:
       - name: Build image
         run: |
           docker build \
-          --build-arg os_release=${{ github.event.inputs.os_release }} \
-          --build-arg emp_tool_release=${{ github.event.inputs.emp_tool_release }} \
-          --build-arg emp_release=${{ github.event.inputs.emp_release }} \
-          -t "fbpcf/${{ github.event.inputs.os }}-emp:${{ github.event.inputs.emp_tool_release }}" \
-          -f "docker/emp/Dockerfile.${{ github.event.inputs.os }}" .
+          --build-arg os_release=${{ inputs.os_release }} \
+          --build-arg emp_tool_release=${{ inputs.emp_tool_release }} \
+          --build-arg emp_release=${{ inputs.emp_release }} \
+          -t "fbpcf/${{ inputs.os }}-emp:${{ inputs.image_tag }}" \
+          -f "docker/emp/Dockerfile.${{ inputs.os }}" .
 
       - name: Tag image
         run: |
-          docker tag fbpcf/${{ github.event.inputs.os }}-emp:${{ github.event.inputs.emp_tool_release }} \
-          ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-emp:${{ github.event.inputs.emp_tool_release }}
+          docker tag fbpcf/${{ inputs.os }}-emp:${{ inputs.image_tag }} \
+          ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-emp:${{ inputs.image_tag }}
 
       - name: Publish image
         run: |
-          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-emp
+          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-emp

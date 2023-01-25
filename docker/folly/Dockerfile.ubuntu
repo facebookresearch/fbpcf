@@ -47,7 +47,8 @@ RUN git clone https://github.com/facebook/folly.git
 WORKDIR /root/build/folly
 RUN git checkout tags/v${folly_release} -b v${folly_release}
 
-RUN cmake DBUILD_SHARED_LIBS=OFF -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=x86-64" .
+RUN cmake DBUILD_SHARED_LIBS=OFF -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=haswell" .
+
 RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 FROM ubuntu:${os_release}
