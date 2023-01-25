@@ -18,13 +18,14 @@ RUN apt-get -y update && apt-get install --no-install-recommends -y \
 RUN mkdir /root/build
 WORKDIR /root/build
 
+COPY docker/utils/get_make_options.sh .
+
 # fmt build and install
 RUN git clone https://github.com/fmtlib/fmt.git
 WORKDIR /root/build/fmt
 RUN git checkout tags/${fmt_release} -b ${fmt_release}
 RUN cmake .
-RUN make
-RUN make install
+RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 WORKDIR /root/build
 
@@ -47,7 +48,7 @@ WORKDIR /root/build/folly
 RUN git checkout tags/v${folly_release} -b v${folly_release}
 
 RUN cmake DBUILD_SHARED_LIBS=OFF -DFOLLY_USE_JEMALLOC=0 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-march=x86-64" .
-RUN make && make install
+RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 FROM ubuntu:${os_release}
 COPY --from=builder /usr/local/include/. /usr/local/include/.
