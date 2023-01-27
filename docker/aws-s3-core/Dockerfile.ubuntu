@@ -26,7 +26,7 @@ WORKDIR /root/build/aws-sdk-cpp
 RUN git checkout tags/${aws_release} -b ${aws_release}
 # -DCUSTOM_MEMORY_MANAGEMENT=0 is added to avoid Aws::String and std::string issue
 # -DENABLE_TESTING=OFF for a weird failing test HttpClientTest.TestRandomURLWithProxyAndOtherDeclaredAsNonProxyHost
-RUN cmake . -DBUILD_ONLY="s3;core" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCUSTOM_MEMORY_MANAGEMENT=0 -DENABLE_TESTING=OFF
+RUN cmake . -DBUILD_ONLY="s3;core" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_SHARED_LIBS=OFF -DCUSTOM_MEMORY_MANAGEMENT=0 -DENABLE_TESTING=OFF -DCMAKE_CXX_FLAGS="-march=haswell"
 RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make install -j $MAKE_JOBS -l $MAKE_MAX_LOAD
 
 FROM ubuntu:${os_release}

@@ -3,9 +3,10 @@ name: Build and publish aws s3 dependency
 on:
   workflow_dispatch:
     inputs:
-      name:
-        description: "Build and publish an fbpcf/aws-s3-core image for a particular version"
-        default: "Run"
+      image_tag:
+        description: "The tag to apply to the AWS SDK image. Previously this was the AWS SDK release version (e.g. 1.8.177)"
+        required: true
+        type: string
       aws_release:
         description: "The aws s3 version to build and publish (e.g. 1.8.177)"
         required: true
@@ -44,16 +45,16 @@ jobs:
       - name: Build image
         run: |
           docker build \
-          --build-arg os_release=${{ github.event.inputs.os_release }} \
-          --build-arg aws_release=${{ github.event.inputs.aws_release }} \
-          -t "fbpcf/${{ github.event.inputs.os }}-aws-s3-core:${{ github.event.inputs.aws_release }}" \
-          -f "docker/aws-s3-core/Dockerfile.${{ github.event.inputs.os }}" .
+          --build-arg os_release=${{ inputs.os_release }} \
+          --build-arg aws_release=${{ inputs.aws_release }} \
+          -t "fbpcf/${{ inputs.os }}-aws-s3-core:${{ inputs.image_tag }}" \
+          -f "docker/aws-s3-core/Dockerfile.${{ inputs.os }}" .
 
       - name: Tag image
         run: |
-          docker tag fbpcf/${{ github.event.inputs.os }}-aws-s3-core:${{ github.event.inputs.aws_release }} \
-          ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-aws-s3-core:${{ github.event.inputs.aws_release }}
+          docker tag fbpcf/${{ inputs.os }}-aws-s3-core:${{ inputs.image_tag }} \
+          ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-aws-s3-core:${{ inputs.image_tag }}
 
       - name: Publish image
         run: |
-          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ github.event.inputs.os }}-aws-s3-core
+          docker push --all-tags ${{ env.REGISTRY }}/${{ github.repository }}/${{ inputs.os }}-aws-s3-core

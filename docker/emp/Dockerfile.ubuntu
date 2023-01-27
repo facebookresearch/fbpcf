@@ -33,21 +33,21 @@ RUN git clone -b${emp_tool_release} https://github.com/emp-toolkit/emp-tool.git
 WORKDIR /root/build/emp-tool
 RUN sed -i "s/SHARED/STATIC/" CMakeLists.txt
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
-RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
+RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD CFLAGS="-march=haswell" CXXFLAGS="-march=haswell" && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 # emp-ot build and install
 WORKDIR /root/build
 RUN git clone -b${emp_release} https://github.com/emp-toolkit/emp-ot.git
 WORKDIR /root/build/emp-ot
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
-RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
+RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD CFLAGS="-march=haswell" CXXFLAGS="-march=haswell" && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 # emp-sh2pc build and install
 WORKDIR /root/build
 RUN git clone -b${emp_release} https://github.com/emp-toolkit/emp-sh2pc.git
 WORKDIR /root/build/emp-sh2pc
 RUN cmake -DBUILD_SHARED_LIBS=OFF -DTHREADING=ON .
-RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
+RUN . /root/build/get_make_options.sh && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD CFLAGS="-march=haswell" CXXFLAGS="-march=haswell" && make -j $MAKE_JOBS -l $MAKE_MAX_LOAD install
 
 FROM ubuntu:${os_release}
 RUN mkdir /usr/local/cmake
