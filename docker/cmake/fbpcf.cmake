@@ -37,3 +37,4 @@ find_library(re2 libre2.so)
 # since emp-tool is compiled with cc++11 and our games needs c++17 overwrite the
 # compile option to c++17
 add_compile_options(-std=c++17)
+add_compile_options(-march=haswell)
