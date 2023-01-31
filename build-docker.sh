@@ -9,10 +9,13 @@ set -e
 UBUNTU_RELEASE="20.04"
 EMP_TOOL_RELEASE="0.2.3"
 EMP_RELEASE="0.2.2"
+EMP_IMAGE_TAG="0.2.3-haswell"
 AWS_RELEASE="1.8.177"
+AWS_IMAGE_TAG="1.8.177-haswell"
 GCP_RELEASE="v1.32.1"
 FMT_RELEASE="7.1.3"
 FOLLY_RELEASE="2021.06.28.00"
+FOLLY_IMAGE_TAG="2021.06.28.00-haswell"
 GITHUB_PACKAGES="ghcr.io/facebookresearch"
 
 PROG_NAME=$0
@@ -74,11 +77,11 @@ build_dep_image() {
   RETURN="${IMAGE}"
 }
 
-EMP_IMAGE="fbpcf/${IMAGE_PREFIX}-emp:${EMP_TOOL_RELEASE}"
+EMP_IMAGE="fbpcf/${IMAGE_PREFIX}-emp:${EMP_IMAGE_TAG}"
 build_dep_image "${EMP_IMAGE}" "emp" "--build-arg os_release=${OS_RELEASE} --build-arg emp_tool_release=${EMP_TOOL_RELEASE} --build-arg emp_release=${EMP_RELEASE}"
 EMP_IMAGE="${RETURN}"
 
-AWS_IMAGE="fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_RELEASE}"
+AWS_IMAGE="fbpcf/${IMAGE_PREFIX}-aws-s3-core:${AWS_IMAGE_TAG}"
 build_dep_image "${AWS_IMAGE}" "aws-s3-core" "--build-arg os_release=${OS_RELEASE} --build-arg aws_release=${AWS_RELEASE}"
 AWS_IMAGE="${RETURN}"
 
@@ -86,7 +89,7 @@ GCP_IMAGE="fbpcf/${IMAGE_PREFIX}-google-cloud-cpp:${GCP_RELEASE}"
 build_dep_image "${GCP_IMAGE}" "google-cloud-cpp" "--build-arg os_release=${OS_RELEASE} --build-arg gcp_cpp_release=${GCP_RELEASE}"
 GCP_IMAGE="${RETURN}"
 
-FOLLY_IMAGE="fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_RELEASE}"
+FOLLY_IMAGE="fbpcf/${IMAGE_PREFIX}-folly:${FOLLY_IMAGE_TAG}"
 build_dep_image "${FOLLY_IMAGE}" "folly" "--build-arg os_release=${OS_RELEASE} --build-arg folly_release=${FOLLY_RELEASE} --build-arg fmt_release=${FMT_RELEASE}"
 FOLLY_IMAGE="${RETURN}"
 
