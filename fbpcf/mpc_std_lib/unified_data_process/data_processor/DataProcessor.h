@@ -58,38 +58,6 @@ class DataProcessor final : public IDataProcessor<schedulerId> {
   std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
       agent_;
   std::unique_ptr<AesCtr> aesCircuitCtr_;
-
- protected:
-  // locally encrypt the plaintext, output expanded keys and ciphertext
-  std::tuple<
-      std::array<__m128i, 11>,
-      std::vector<std::vector<uint8_t>>,
-      std::vector<uint8_t>>
-  localEncryption(const std::vector<std::vector<unsigned char>>& plaintextData);
-
-  // privately share the input byte stream from party inputPartyID into vector
-  // of batched Bit. Also padding the Bit vector to make its size be mulitple
-  // of 128
-  std::vector<typename IDataProcessor<schedulerId>::SecBit>
-  privatelyShareByteStream(
-      const std::vector<std::vector<unsigned char>>& localData,
-      int inputPartyID);
-
-  // privately share a 2d vector of __m128i from party inputPartyID into vector
-  // of batched Bit.
-  std::vector<typename IDataProcessor<schedulerId>::SecBit>
-  privatelyShareM128iStream(
-      const std::vector<std::vector<__m128i>>& localDataM128i,
-      int inputPartyID);
-
-  // privately share the expanded key from party inputPartyID into vector
-  // of batched Bit. Each bit from the expanded key will be convert into a
-  // batched Bit with a specified bathcSize
-  std::vector<typename IDataProcessor<schedulerId>::SecBit>
-  privatelyShareExpandedKey(
-      const std::vector<__m128i>& localKeyM128i,
-      size_t batchSize,
-      int inputPartyID);
 };
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
