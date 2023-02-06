@@ -12,6 +12,7 @@
 #include "fbpcf/engine/util/util.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/IDataProcessor.h"
+#include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpEncryption.h"
 #include "fbpcf/primitive/mac/S2v.h"
 #include "fbpcf/primitive/mac/S2vFactory.h"
 
@@ -34,7 +35,7 @@ class DataProcessor final : public IDataProcessor<schedulerId> {
       std::unique_ptr<AesCtr> aesCircuitCtr)
       : myId_(myId),
         partnerId_(partnerId),
-        agent_(std::move(agent)),
+        encrypter_(std::move(agent)),
         aesCircuitCtr_(std::move(aesCircuitCtr)) {}
 
   /**
@@ -55,8 +56,7 @@ class DataProcessor final : public IDataProcessor<schedulerId> {
  private:
   int32_t myId_;
   int32_t partnerId_;
-  std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
-      agent_;
+  UdpEncryption encrypter_;
   std::unique_ptr<AesCtr> aesCircuitCtr_;
 };
 
