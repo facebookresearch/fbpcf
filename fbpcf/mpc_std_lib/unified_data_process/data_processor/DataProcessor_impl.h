@@ -12,6 +12,7 @@
 #include "fbpcf/engine/util/aes.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/DataProcessor.h"
+
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpUtil.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
@@ -24,29 +25,19 @@ DataProcessor<schedulerId>::processMyData(
   size_t dataSize = plaintextData.size();
   size_t dataWidth = plaintextData.at(0).size();
 
-  // 1a. encrypt my data locally
-  __m128i keyM128i = fbpcf::engine::util::getRandomM128iFromSystemNoise();
-  auto [ciphertextByte, s2vByte] =
-      UdpUtil::localEncryption(plaintextData, keyM128i);
-  auto expandedKeyM128i = engine::util::Aes::expandEncryptionKey(keyM128i);
-
-  // 2a. send encryted data and IV to peer
-  for (auto& item : ciphertextByte) {
-    agent_->send(item);
-  }
-  agent_->send(s2vByte);
+  encrypter_.prepareToProcessMyData(dataWidth);
+  encrypter_.processMyData(plaintextData);
 
   // 1b. (peer)receive encryted data from peer
   // 2b. (peer)pick desired ciphertext blocks
   // 3a. share key
-  std::vector<__m128i> expandedKeyVectorM128i(
-      expandedKeyM128i.begin(), expandedKeyM128i.end());
+  std::vector<__m128i> expandedKeyVectorM128i = encrypter_.getExpandedKey();
   auto keyString = UdpUtil::privatelyShareExpandedKey<schedulerId>(
       expandedKeyVectorM128i, outputSize, myId_);
 
   // 3b. (peer)share ciphertext and mask
   std::vector<std::vector<unsigned char>> ciphertextPlaceholder(
-      outputSize, std::vector<unsigned char>(ciphertextByte.at(0).size()));
+      outputSize, std::vector<unsigned char>(dataWidth));
   auto filteredCiphertext = UdpUtil::privatelyShareByteStream<schedulerId>(
       ciphertextPlaceholder, partnerId_);
 
@@ -80,26 +71,12 @@ DataProcessor<schedulerId>::processPeersData(
     size_t dataSize,
     const std::vector<int32_t>& indexes,
     size_t dataWidth) {
-  // 1a. (peer)encrypt my data locally
-  // 2a. (peer)send encryted data to peer
-  // 1b. receive encryted data from peer
-  size_t intersectionSize = indexes.size();
-  std::vector<std::vector<unsigned char>> ciphertextByte(
-      dataSize, std::vector<unsigned char>(dataWidth));
-  for (size_t i = 0; i < dataSize; i++) {
-    ciphertextByte[i] = agent_->receive(dataWidth);
-  }
-  std::vector<unsigned char> s2vVec(16);
-  s2vVec = agent_->receive(16);
-  __m128i s2vM128 = engine::util::buildM128i(s2vVec);
+  encrypter_.prepareToProcessPeerData(dataWidth, indexes);
+  encrypter_.processPeerData(dataSize);
 
-  // 2b. pick desired ciphertext blocks
-  std::vector<std::vector<unsigned char>> intersection(
-      intersectionSize, std::vector<unsigned char>(dataWidth));
-  for (size_t i = 0; i < intersectionSize; ++i) {
-    intersection[i] = ciphertextByte[indexes[i]];
-  }
+  auto [intersection, nonces, _] = encrypter_.getProcessedData();
 
+  size_t intersectionSize = intersection.size();
   // 3a. (peer)share key
   std::vector<__m128i> keyPlaceholderM128i(11);
   auto keyString = UdpUtil::privatelyShareExpandedKey<schedulerId>(
@@ -119,7 +96,7 @@ DataProcessor<schedulerId>::processPeersData(
       filteredCountersM128i[i][j] =
           _mm_set_epi64x(0, indexes[i] * cipherBlocks + j);
       filteredCountersM128i[i][j] =
-          _mm_add_epi64(s2vM128, filteredCountersM128i[i][j]);
+          _mm_add_epi64(nonces.at(0), filteredCountersM128i[i][j]);
     }
   }
   auto filteredCounters = UdpUtil::privatelyShareM128iStream<schedulerId>(
