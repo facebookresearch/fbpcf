@@ -12,6 +12,7 @@
 #include "fbpcf/engine/util/aes.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/DataProcessor.h"
+#include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpUtil.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 
@@ -24,10 +25,10 @@ DataProcessor<schedulerId>::processMyData(
   size_t dataWidth = plaintextData.at(0).size();
 
   // 1a. encrypt my data locally
-  auto keyAndCiphertext = localEncryption(plaintextData);
-  auto& expandedKeyM128i = std::get<0>(keyAndCiphertext);
-  auto& ciphertextByte = std::get<1>(keyAndCiphertext);
-  auto& s2vByte = std::get<2>(keyAndCiphertext);
+  __m128i keyM128i = fbpcf::engine::util::getRandomM128iFromSystemNoise();
+  auto [ciphertextByte, s2vByte] =
+      UdpUtil::localEncryption(plaintextData, keyM128i);
+  auto expandedKeyM128i = engine::util::Aes::expandEncryptionKey(keyM128i);
 
   // 2a. send encryted data and IV to peer
   for (auto& item : ciphertextByte) {
@@ -40,19 +41,19 @@ DataProcessor<schedulerId>::processMyData(
   // 3a. share key
   std::vector<__m128i> expandedKeyVectorM128i(
       expandedKeyM128i.begin(), expandedKeyM128i.end());
-  auto keyString =
-      privatelyShareExpandedKey(expandedKeyVectorM128i, outputSize, myId_);
+  auto keyString = UdpUtil::privatelyShareExpandedKey<schedulerId>(
+      expandedKeyVectorM128i, outputSize, myId_);
 
   // 3b. (peer)share ciphertext and mask
   std::vector<std::vector<unsigned char>> ciphertextPlaceholder(
       outputSize, std::vector<unsigned char>(ciphertextByte.at(0).size()));
-  auto filteredCiphertext =
-      privatelyShareByteStream(ciphertextPlaceholder, partnerId_);
+  auto filteredCiphertext = UdpUtil::privatelyShareByteStream<schedulerId>(
+      ciphertextPlaceholder, partnerId_);
 
   std::vector<std::vector<__m128i>> countersPlaceholderM128i(
       outputSize, std::vector<__m128i>(filteredCiphertext.size() / 128));
-  auto filteredCounters =
-      privatelyShareM128iStream(countersPlaceholderM128i, partnerId_);
+  auto filteredCounters = UdpUtil::privatelyShareM128iStream<schedulerId>(
+      countersPlaceholderM128i, partnerId_);
 
   // 4a/b. decryt the data jointly (input my key privately)
   auto decryptData =
@@ -101,14 +102,15 @@ DataProcessor<schedulerId>::processPeersData(
 
   // 3a. (peer)share key
   std::vector<__m128i> keyPlaceholderM128i(11);
-  auto keyString = privatelyShareExpandedKey(
+  auto keyString = UdpUtil::privatelyShareExpandedKey<schedulerId>(
       keyPlaceholderM128i, intersectionSize, partnerId_);
 
   // 3b. share ciphertext and mask
   size_t cipherWidth =
       dataWidth % 16 == 0 ? dataWidth : dataWidth + 16 - dataWidth % 16;
   size_t cipherBlocks = cipherWidth / 16;
-  auto filteredCiphertext = privatelyShareByteStream(intersection, myId_);
+  auto filteredCiphertext =
+      UdpUtil::privatelyShareByteStream<schedulerId>(intersection, myId_);
 
   std::vector<std::vector<__m128i>> filteredCountersM128i(
       intersectionSize, std::vector<__m128i>(cipherBlocks));
@@ -120,8 +122,8 @@ DataProcessor<schedulerId>::processPeersData(
           _mm_add_epi64(s2vM128, filteredCountersM128i[i][j]);
     }
   }
-  auto filteredCounters =
-      privatelyShareM128iStream(filteredCountersM128i, myId_);
+  auto filteredCounters = UdpUtil::privatelyShareM128iStream<schedulerId>(
+      filteredCountersM128i, myId_);
 
   // 4a/b. decryt the picked blocks jointly (input the ciphertext and mask
   // privately)
@@ -144,155 +146,4 @@ DataProcessor<schedulerId>::processPeersData(
   return outputShare;
 }
 
-template <int schedulerId>
-std::tuple<
-    std::array<__m128i, 11>,
-    std::vector<std::vector<uint8_t>>,
-    std::vector<uint8_t>>
-DataProcessor<schedulerId>::localEncryption(
-    const std::vector<std::vector<unsigned char>>& plaintextData) {
-  size_t rowCounts = plaintextData.size();
-  size_t rowSize = plaintextData.at(0).size();
-  size_t rowBlocks = rowSize / 16 + (rowSize % 16 != 0);
-
-  __m128i keyM128i = fbpcf::engine::util::getRandomM128iFromSystemNoise();
-  fbpcf::engine::util::Aes localAes(keyM128i);
-  auto expandedKeyM128i = localAes.expandEncryptionKey(keyM128i);
-  // generate counters for each block
-  const primitive::mac::S2vFactory s2vFactory;
-  std::vector<unsigned char> keyByte(16);
-  _mm_storeu_si128((__m128i*)keyByte.data(), keyM128i);
-  const auto s2v = s2vFactory.create(keyByte);
-  std::vector<unsigned char> plaintextCombined;
-  plaintextCombined.reserve(rowSize * rowCounts);
-  std::for_each(
-      plaintextData.begin(),
-      plaintextData.end(),
-      [&plaintextCombined](const auto& v) {
-        std::copy(v.begin(), v.end(), std::back_inserter(plaintextCombined));
-      });
-  __m128i s2vRes = s2v->getMacM128i(plaintextCombined);
-  std::vector<__m128i> counterM128i(rowCounts * rowBlocks);
-  for (uint64_t i = 0; i < counterM128i.size(); ++i) {
-    counterM128i[i] = _mm_set_epi64x(0, i);
-    counterM128i[i] = _mm_add_epi64(s2vRes, counterM128i[i]);
-  }
-  std::vector<unsigned char> s2vVec(16);
-  _mm_storeu_si128((__m128i*)s2vVec.data(), s2vRes);
-
-  // encrypt counters
-  localAes.encryptInPlace(counterM128i);
-
-  std::vector<uint8_t> maskByte;
-  maskByte.reserve(counterM128i.size() * 16);
-  for (auto unit : counterM128i) {
-    uint8_t tmparray[16];
-    _mm_storeu_si128((__m128i*)tmparray, unit);
-    maskByte.insert(maskByte.end(), &tmparray[0], &tmparray[16]);
-  }
-
-  std::vector<std::vector<uint8_t>> ciphertextByte(
-      rowCounts, std::vector<uint8_t>(rowSize));
-  for (size_t i = 0; i < rowCounts; ++i) {
-    for (size_t j = 0; j < rowSize; ++j) {
-      ciphertextByte[i][j] =
-          plaintextData[i][j] ^ maskByte[i * rowBlocks * 16 + j];
-    }
-  }
-  return {expandedKeyM128i, ciphertextByte, s2vVec};
-}
-
-template <int schedulerId>
-std::vector<typename IDataProcessor<schedulerId>::SecBit>
-DataProcessor<schedulerId>::privatelyShareByteStream(
-    const std::vector<std::vector<unsigned char>>& localData,
-    int inputPartyID) {
-  size_t unitSize = sizeof(unsigned char) * 8;
-  size_t localDataWidth = localData.at(0).size() * unitSize;
-  size_t stringWidth = localDataWidth % 128 == 0
-      ? localDataWidth
-      : localDataWidth + 128 - localDataWidth % 128;
-  size_t inputSize = localData.size();
-  std::vector<typename IDataProcessor<schedulerId>::SecBit> sharedData(
-      stringWidth);
-  for (size_t i = 0; i < localDataWidth; i++) {
-    std::vector<bool> sharedBit(inputSize);
-    for (size_t j = 0; j < inputSize; j++) {
-      sharedBit[j] =
-          (localData[j][i / unitSize] >> (unitSize - 1 - i % unitSize)) & 1;
-    }
-    sharedData[i] =
-        typename IDataProcessor<schedulerId>::SecBit(sharedBit, inputPartyID);
-  }
-  // padding
-  for (size_t i = localDataWidth; i < stringWidth; ++i) {
-    std::vector<bool> sharedBit(inputSize);
-    sharedData[i] =
-        typename IDataProcessor<schedulerId>::SecBit(sharedBit, inputPartyID);
-  }
-  return sharedData;
-}
-
-template <int schedulerId>
-std::vector<typename IDataProcessor<schedulerId>::SecBit>
-DataProcessor<schedulerId>::privatelyShareM128iStream(
-    const std::vector<std::vector<__m128i>>& localDataM128i,
-    int inputPartyID) {
-  size_t unitSize = 128;
-  size_t batchSize = localDataM128i.size();
-  size_t rowSize = localDataM128i.at(0).size();
-  std::vector<std::vector<bool>> localDataBool(
-      batchSize * rowSize, std::vector<bool>(unitSize));
-  for (size_t i = 0; i < batchSize; ++i) {
-    for (size_t j = 0; j < rowSize; ++j) {
-      // The bits extracted from extractLnbToVector() is the following order:
-      // All bytes are in a order that from most significant byte to least
-      // significant bytes. The bits in each byte is in a order that from lsb to
-      // msb.
-      fbpcf::engine::util::extractLnbToVector(
-          localDataM128i[i][j], localDataBool[i * rowSize + j]);
-    }
-  }
-  std::vector<typename IDataProcessor<schedulerId>::SecBit> sharedDataBit(
-      rowSize * 128);
-  for (size_t i = 0; i < rowSize * 128; ++i) {
-    std::vector<bool> sharedBit(batchSize);
-    for (size_t j = 0; j < batchSize; ++j) {
-      sharedBit[j] =
-          localDataBool[j * rowSize + i / 128][i % 128 / 8 * 8 + (7 - i % 8)];
-    }
-    sharedDataBit[i] =
-        typename IDataProcessor<schedulerId>::SecBit(sharedBit, inputPartyID);
-  }
-  return sharedDataBit;
-}
-
-template <int schedulerId>
-std::vector<typename IDataProcessor<schedulerId>::SecBit>
-DataProcessor<schedulerId>::privatelyShareExpandedKey(
-    const std::vector<__m128i>& localKeyM128i,
-    size_t batchSize,
-    int inputPartyID) {
-  size_t unitSize = 128;
-  size_t blockNo = localKeyM128i.size(); // should be 11
-  std::vector<std::vector<bool>> localDataBool(
-      blockNo, std::vector<bool>(unitSize));
-  for (size_t i = 0; i < blockNo; ++i) {
-    // The bits extracted from extractLnbToVector() is the following order:
-    // All bytes are in a order that from most significant byte to least
-    // significant bytes. The bits in each byte is in a order that from lsb to
-    // msb.
-    fbpcf::engine::util::extractLnbToVector(localKeyM128i[i], localDataBool[i]);
-  }
-  std::vector<typename IDataProcessor<schedulerId>::SecBit> sharedKeyBit(
-      blockNo * unitSize);
-  for (size_t i = 0; i < blockNo * unitSize; ++i) {
-    std::vector<bool> sharedBit(
-        batchSize,
-        localDataBool[i / unitSize][i % unitSize / 8 * 8 + (7 - i % 8)]);
-    sharedKeyBit[i] =
-        typename IDataProcessor<schedulerId>::SecBit(sharedBit, inputPartyID);
-  }
-  return sharedKeyBit;
-}
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
