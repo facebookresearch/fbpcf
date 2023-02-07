@@ -16,8 +16,8 @@ namespace fbpcf::mpc_std_lib::aes_circuit {
 /*
  * An AES circuit object implements the AES algorithm at a conceptual-bit level.
  * This "conceptual bit" can be anything that has an isomorphic behavior
- * regarding AND and XOR as normal bits. Currently we only support decryption.
- * We may add support for encryption in future.
+ * regarding AND and XOR as normal bits. Currently we support both encryption
+ * and decryption.
  */
 /**
  * Bit type can be either bool or any MPC Bit types.
