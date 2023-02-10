@@ -330,6 +330,10 @@ TEST(
           1024,
           128,
           8));
+}
+TEST(
+    RcotBasedBidirectionObliviousTransferTest,
+    testBiDirectionOTIntegerWithExtenderBasedRcotPoweredByFerretExtenderPoweredByDummyMpcotAnd10LocalLinearMatrixMultipler) {
   testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
           std::make_unique<
@@ -352,7 +356,6 @@ TEST(
           128,
           8));
 }
-
 TEST(
     RcotBasedBidirectionObliviousTransferTest,
     testBiDirectionOTWithExtenderBasedRcotPoweredByFerretExtenderPoweredByMpcotWithDummySpcotAnd10LocalLinearMatrixMultipler) {
@@ -432,6 +435,10 @@ TEST(
           ferret::kExtendedSize,
           ferret::kBaseSize,
           ferret::kWeight));
+}
+TEST(
+    RcotBasedBidirectionObliviousTransferTest,
+    testBiDirectionOTIntegerWithExtenderBasedRcotPoweredByFerretExtenderPoweredByMpcotWithRealSpcotAnd10LocalLinearMatrixMultipler) {
   testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
           std::make_unique<
@@ -483,6 +490,10 @@ TEST(
           ferret::kExtendedSize,
           ferret::kBaseSize,
           ferret::kWeight));
+}
+TEST(
+    RcotBasedBidirectionObliviousTransferTest,
+    testBiDirectionOTIntegerWithBootstrappedExtenderBasedRcotPoweredByFerretExtenderPoweredByMpcotWithRealSpcotAnd10LocalLinearMatrixMultipler) {
   testRcotBasedBidirectionObliviousTransferForIntegers(
       std::make_unique<ExtenderBasedRandomCorrelatedObliviousTransferFactory>(
           std::make_unique<tuple_generator::oblivious_transfer::
