@@ -76,12 +76,16 @@ std::string BufferedReader::readLine() {
     throw std::runtime_error("There are no more lines in this file.");
   }
 
+  std::string output = "";
   if (currentPosition_ == lastPosition_) {
     loadNextChunk();
+
+    if (lastPosition_ == 0) {
+      return output;
+    }
   }
 
   auto c = buffer_.at(currentPosition_++);
-  std::string output = "";
   while (c != '\n') {
     output += c;
 

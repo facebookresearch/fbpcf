@@ -148,6 +148,19 @@ TEST(BufferedReaderTest, testBufferedReaderWithReadAndReadLineNoChunkSize) {
   runBufferedReaderTestForReadAndReadLine(std::move(bufferedReader));
 }
 
+TEST(BufferedReaderTest, testBufferedReaderEmptyFile) {
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/buffered_reader_empty_file.txt");
+  auto bufferedReader =
+      std::make_unique<fbpcf::io::BufferedReader>(std::move(fileReader));
+
+  auto firstLine = bufferedReader->readLine();
+  EXPECT_TRUE(firstLine.empty());
+  EXPECT_TRUE(bufferedReader->eof());
+  bufferedReader->close();
+}
+
 INSTANTIATE_TEST_SUITE_P(
     BufferedReaderTest,
     BufferedReaderTest,
