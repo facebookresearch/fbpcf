@@ -37,9 +37,10 @@ UdpUtil::localEncryption(
 
   __m128i s2vRes;
   {
+    __m128i sivKey = fbpcf::engine::util::getRandomM128iFromSystemNoise();
     const primitive::mac::S2vFactory s2vFactory;
     std::vector<unsigned char> keyByte(kBlockSize);
-    _mm_storeu_si128((__m128i*)keyByte.data(), prgKey);
+    _mm_storeu_si128((__m128i*)keyByte.data(), sivKey);
     const auto s2v = s2vFactory.create(keyByte);
 
     std::vector<unsigned char> plaintextCombined;
