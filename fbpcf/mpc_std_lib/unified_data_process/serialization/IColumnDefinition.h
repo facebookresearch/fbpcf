@@ -21,6 +21,17 @@ class IColumnDefinition {
   using MPCTypes = frontend::MPCTypes<schedulerId, true /* usingBatch */>;
 
  public:
+  enum SupportedColumnTypes {
+    Bit = 0,
+    PackedBitField = 1,
+    UInt32 = 2,
+    Int32 = 3,
+    Int64 = 4,
+    UInt32Vec = 5,
+    Int32Vec = 6,
+    Int64Vec = 7,
+  };
+
   /* Possible return types for deserialization following UDP run */
   using DeserializeType = std::variant<
       typename MPCTypes::SecBool,
@@ -37,6 +48,8 @@ class IColumnDefinition {
   virtual std::string getColumnName() const = 0;
 
   virtual size_t getColumnSizeBytes() const = 0;
+
+  virtual SupportedColumnTypes getColumnType() const = 0;
 
   /* Pass in a single value of the column to be serialized, sequentially write
    * the bytes starting at the beginning of buf */

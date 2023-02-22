@@ -42,6 +42,11 @@ class PackedBitFieldColumn : public IColumnDefinition<schedulerId> {
     return 1;
   }
 
+  typename IColumnDefinition<schedulerId>::SupportedColumnTypes getColumnType()
+      const override {
+    return IColumnDefinition<schedulerId>::SupportedColumnTypes::PackedBitField;
+  }
+
   // input to this function is a pointer to a bool vector since memory layout
   // is not guaranteed by compiler (i.e. can not get a bool* from a
   // vector<bool>.data())
