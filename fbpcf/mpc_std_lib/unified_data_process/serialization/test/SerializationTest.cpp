@@ -299,4 +299,39 @@ TEST(SerializationTest, PackedBitFieldColumnTest) {
     testVectorEq(vals[j], rst[j]);
   }
 }
+
+TEST(erializationTest, ColumnTypeTest) {
+  using ColType = IColumnDefinition<0>::SupportedColumnTypes;
+  std::unique_ptr<IColumnDefinition<0>> col0 =
+      std::make_unique<IntegerColumn<0, true, 32>>("col0");
+  EXPECT_EQ(col0->getColumnType(), ColType::Int32);
+
+  std::unique_ptr<IColumnDefinition<0>> col1 =
+      std::make_unique<IntegerColumn<0, true, 64>>("col1");
+  EXPECT_EQ(col1->getColumnType(), ColType::Int64);
+
+  std::unique_ptr<IColumnDefinition<0>> col2 =
+      std::make_unique<IntegerColumn<0, false, 32>>("col2");
+  EXPECT_EQ(col2->getColumnType(), ColType::UInt32);
+
+  std::vector<std::string> names{"bool1", "bool2"};
+  std::unique_ptr<IColumnDefinition<0>> col3 =
+      std::make_unique<PackedBitFieldColumn<0>>("col3", names);
+  EXPECT_EQ(col3->getColumnType(), ColType::PackedBitField);
+
+  std::unique_ptr<IColumnDefinition<0>> col4 = std::make_unique<
+      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec32Int>>(
+      "col4", std::make_unique<IntegerColumn<0, true, 32>>("test"), 4);
+  EXPECT_EQ(col4->getColumnType(), ColType::Int32Vec);
+
+  std::unique_ptr<IColumnDefinition<0>> col5 = std::make_unique<
+      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec64Int>>(
+      "col4", std::make_unique<IntegerColumn<0, true, 64>>("test"), 4);
+  EXPECT_EQ(col5->getColumnType(), ColType::Int64Vec);
+
+  std::unique_ptr<IColumnDefinition<0>> col6 = std::make_unique<
+      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::SecUnsigned32Int>>(
+      "col4", std::make_unique<IntegerColumn<0, false, 32>>("test"), 4);
+  EXPECT_EQ(col6->getColumnType(), ColType::UInt32Vec);
+}
 } // namespace fbpcf::mpc_std_lib::unified_data_process::serialization
