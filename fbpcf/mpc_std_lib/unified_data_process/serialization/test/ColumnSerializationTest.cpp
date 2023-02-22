@@ -103,7 +103,7 @@ static std::vector<std::vector<bool>> deserializeAndRevealPackedBits(
   return rst;
 }
 
-TEST(SerializationTest, IntegerColumnTest) {
+TEST(ColumnSerializationTest, IntegerColumnTest) {
   auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
 
   auto schedulerFactory0 =
@@ -160,7 +160,7 @@ TEST(SerializationTest, IntegerColumnTest) {
   testVectorEq(vals, rst);
 }
 
-TEST(SerializationTest, ArrayColumnTest) {
+TEST(ColumnSerializationTest, ArrayColumnTest) {
   auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
 
   auto schedulerFactory0 =
@@ -235,7 +235,7 @@ TEST(SerializationTest, ArrayColumnTest) {
   }
 }
 
-TEST(SerializationTest, PackedBitFieldColumnTest) {
+TEST(ColumnSerializationTest, PackedBitFieldColumnTest) {
   auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
 
   auto schedulerFactory0 =
@@ -334,4 +334,5 @@ TEST(erializationTest, ColumnTypeTest) {
       "col4", std::make_unique<IntegerColumn<0, false, 32>>("test"), 4);
   EXPECT_EQ(col6->getColumnType(), ColType::UInt32Vec);
 }
+
 } // namespace fbpcf::mpc_std_lib::unified_data_process::serialization
