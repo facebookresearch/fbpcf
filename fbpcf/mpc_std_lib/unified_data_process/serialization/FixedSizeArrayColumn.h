@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include <stdexcept>
 #include "fbpcf/mpc_std_lib/unified_data_process/serialization/IColumnDefinition.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::serialization {
@@ -29,6 +30,23 @@ class FixedSizeArrayColumn : public IColumnDefinition<schedulerId> {
 
   size_t getColumnSizeBytes() const override {
     return length_ * innerType_->getColumnSizeBytes();
+  }
+
+  typename IColumnDefinition<schedulerId>::SupportedColumnTypes getColumnType()
+      const override {
+    auto innerColumnType = innerType_->getColumnType();
+
+    switch (innerColumnType) {
+      case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32:
+        return IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32Vec;
+      case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32:
+        return IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32Vec;
+      case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int64:
+        return IColumnDefinition<schedulerId>::SupportedColumnTypes::Int64Vec;
+      default:
+        throw std::runtime_error(
+            "This code should be unreachable. Tried to get invalid Array Column");
+    }
   }
 
   size_t getLength() const {
