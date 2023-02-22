@@ -495,11 +495,22 @@ int SocketPartyCommunicationAgent::receiveFromClient(int sockfd) {
   tv.tv_usec = 0;
 
   if (select(sockfd + 1, &rfds, (fd_set*)0, (fd_set*)0, &tv) > 0) {
-    auto acceptedConnection = accept(sockfd, nullptr, nullptr);
+    struct sockaddr_in cli_addr;
+    unsigned int clilen = sizeof(cli_addr);
+
+    auto acceptedConnection =
+        accept(sockfd, (struct sockaddr*)&cli_addr, &clilen);
     if (acceptedConnection < 0) {
       throw std::runtime_error("error on accepting");
     }
 
+    // Log the client IP address
+    char client_ip[INET_ADDRSTRLEN];
+    if (!inet_ntop(AF_INET, &cli_addr.sin_addr, client_ip, INET_ADDRSTRLEN)) {
+      XLOG(WARN, "Issue converting client ip address");
+    } else {
+      XLOGF(INFO, "Client connected from {}", client_ip);
+    }
     close(sockfd);
     return acceptedConnection;
   } else {
