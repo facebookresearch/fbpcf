@@ -20,7 +20,9 @@
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
 
+#include "fbpcf/mpc_std_lib/unified_data_process/serialization/FixedSizeArrayColumn.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/serialization/IntegerColumn.h"
+#include "fbpcf/mpc_std_lib/unified_data_process/serialization/PackedBitFieldColumn.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::serialization {
 
@@ -70,6 +72,32 @@ static std::vector<std::vector<int32_t>> deserializeAndRevealInt32Vector(
     std::transform(rst64.begin(), rst64.end(), rst[i].begin(), [](int64_t val) {
       return val;
     });
+  }
+
+  return rst;
+}
+
+template <int schedulerId>
+static std::vector<std::vector<bool>> deserializeAndRevealPackedBits(
+    fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
+    const std::vector<std::vector<unsigned char>>& serializedSecretShares,
+    IColumnDefinition<schedulerId>& serializer) {
+  auto scheduler = schedulerFactory.create();
+
+  fbpcf::scheduler::SchedulerKeeper<schedulerId>::setScheduler(
+      std::move(scheduler));
+
+  typename IColumnDefinition<schedulerId>::DeserializeType mpcValue =
+      serializer.deserializeSharesToMPCType(serializedSecretShares, 0);
+  std::vector<typename frontend::MPCTypes<schedulerId>::SecBool> visitedVal =
+      std::get<std::vector<typename frontend::MPCTypes<schedulerId>::SecBool>>(
+          mpcValue);
+
+  std::vector<std::vector<bool>> rst(
+      visitedVal.size(), std::vector<bool>(visitedVal[0].getBatchSize()));
+
+  for (int i = 0; i < visitedVal.size(); i++) {
+    rst[i] = visitedVal[i].openToParty(0).getValue();
   }
 
   return rst;
@@ -207,4 +235,68 @@ TEST(SerializationTest, ArrayColumnTest) {
   }
 }
 
+TEST(SerializationTest, PackedBitFieldColumnTest) {
+  auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  auto schedulerFactory0 =
+      fbpcf::scheduler::NetworkPlaintextSchedulerFactory<true>(
+          0, *factories[0]);
+
+  auto schedulerFactory1 =
+      fbpcf::scheduler::NetworkPlaintextSchedulerFactory<true>(
+          1, *factories[1]);
+
+  const size_t batchSize = 100;
+  const size_t numBits = 7;
+
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<> dist(0, 1);
+
+  PackedBitFieldColumn<0> serializer0(
+      "testColumnName", std::vector<std::string>(7, "testColumnName"));
+  PackedBitFieldColumn<1> serializer1(
+      "testColumnName", std::vector<std::string>(7, "testColumnName"));
+  EXPECT_EQ(serializer0.getColumnSizeBytes(), 1);
+
+  std::vector<std::vector<uint8_t>> bufs(
+      batchSize, std::vector<uint8_t>(serializer0.getColumnSizeBytes()));
+
+  std::vector<std::vector<bool>> vals(numBits, std::vector<bool>(batchSize));
+
+  for (int i = 0; i < batchSize; i++) {
+    std::vector<bool> val(numBits);
+    for (int j = 0; j < numBits; j++) {
+      val[j] = dist(e);
+      vals[j][i] = val[j];
+    }
+
+    serializer0.serializeColumnAsPlaintextBytes(&val, bufs[i].data());
+
+    for (int j = 0; j < numBits; j++) {
+      EXPECT_EQ((bufs[i][0] >> j) & 1, val[j]);
+    }
+  }
+
+  auto future0 = std::async([&schedulerFactory0, &bufs, &serializer0]() {
+    return deserializeAndRevealPackedBits<0>(
+        schedulerFactory0, bufs, serializer0);
+  });
+
+  auto future1 = std::async([&schedulerFactory1, &serializer1]() {
+    return deserializeAndRevealPackedBits<1>(
+        schedulerFactory1,
+        std::vector<std::vector<uint8_t>>(
+            batchSize, std::vector<uint8_t>(serializer1.getColumnSizeBytes())),
+        serializer1);
+  });
+
+  auto rst = future0.get();
+  future1.get();
+
+  EXPECT_EQ(rst.size(), numBits);
+  for (int j = 0; j < numBits; j++) {
+    testVectorEq(vals[j], rst[j]);
+  }
+}
 } // namespace fbpcf::mpc_std_lib::unified_data_process::serialization
