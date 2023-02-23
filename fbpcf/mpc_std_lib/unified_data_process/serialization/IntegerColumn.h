@@ -10,7 +10,11 @@
 #include "fbpcf/frontend/Int.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/serialization/IColumnDefinition.h"
 
+#include <stdexcept>
 #include <string>
+
+#include "folly/Format.h"
+
 namespace fbpcf::mpc_std_lib::unified_data_process::serialization {
 
 template <int schedulerId, bool isSigned, int8_t width>
@@ -49,6 +53,26 @@ class IntegerColumn : public IColumnDefinition<schedulerId> {
 
   size_t getColumnSizeBytes() const override {
     return width / 8;
+  }
+
+  typename IColumnDefinition<schedulerId>::SupportedColumnTypes getColumnType()
+      const override {
+    static_assert(
+        (isSigned && (width == 32 || width == 64)) || width == 32,
+        "For now only support int32, int64, uint64");
+    if constexpr (isSigned) {
+      if constexpr (width == 32) {
+        return IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32;
+      } else if constexpr (width == 64) {
+        return IColumnDefinition<schedulerId>::SupportedColumnTypes::Int64;
+      }
+    } else if constexpr (width == 32) {
+      return IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32;
+    }
+    throw std::runtime_error(folly::sformat(
+        "This code should be unreachable. {}int{}_t column type is not supported",
+        isSigned ? "" : "u",
+        width));
   }
 
   void serializeColumnAsPlaintextBytes(
