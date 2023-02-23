@@ -79,6 +79,11 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
       auto columnType = columnDefinition->getColumnType();
 
       switch (columnType) {
+        case IColumnDefinition<
+            schedulerId>::SupportedColumnTypes::PackedBitField:
+          serializePackedBitFieldColumn(
+              columnPointer, data, writeBuffers, numRows, byteOffset);
+          break;
         case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32:
           serializeIntegerColumn<false, 32>(
               columnPointer, data, writeBuffers, numRows, byteOffset);
@@ -177,6 +182,55 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
       }
     }
     return result;
+  }
+
+  void serializePackedBitFieldColumn(
+      const IColumnDefinition<schedulerId>* columnPointer,
+      const std::unordered_map<
+          std::string,
+          typename IRowStructureDefinition<schedulerId>::InputColumnDataType>&
+          inputData,
+      std::vector<std::vector<unsigned char>>& writeBuffers,
+      int numRows,
+      size_t byteOffset) const {
+    const PackedBitFieldColumn<schedulerId>* packedBitCol =
+        dynamic_cast<const PackedBitFieldColumn<schedulerId>*>(columnPointer);
+
+    if (packedBitCol == nullptr) {
+      throw std::runtime_error("Failed to cast to PackedBitFieldColumn");
+    }
+    std::vector<std::vector<bool>> bitPack(
+        numRows, std::vector<bool>(packedBitCol->getSubColumnNames().size()));
+
+    for (int i = 0; i < packedBitCol->getSubColumnNames().size(); i++) {
+      std::string colName = packedBitCol->getSubColumnNames()[i];
+      if (!inputData.contains(colName)) {
+        throw std::runtime_error(
+            "Column: " + colName +
+            " which was defined in the structure was not included in the input data map.");
+      }
+
+      const std::vector<bool> bitVals =
+          std::get<std::vector<bool>>(inputData.at(colName));
+
+      if (bitVals.size() != numRows) {
+        std::string err = folly::sformat(
+            "Invalid number of values for column {} .Got {} values but number of rows should be {} ",
+            colName,
+            bitVals.size(),
+            numRows);
+        throw std::runtime_error(err);
+      }
+
+      for (int j = 0; j < numRows; j++) {
+        bitPack[j][i] = bitVals[j];
+      }
+    }
+
+    for (int i = 0; i < numRows; i++) {
+      packedBitCol->serializeColumnAsPlaintextBytes(
+          bitPack.data() + i, writeBuffers[i].data() + byteOffset);
+    }
   }
 
   template <bool isSigned, int8_t width>
