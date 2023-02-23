@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <stdexcept>
 
 #include "fbpcf/io/api/BufferedReader.h"
 #include "fbpcf/io/api/FileReader.h"
@@ -146,6 +147,17 @@ TEST(BufferedReaderTest, testBufferedReaderWithReadAndReadLineNoChunkSize) {
       std::make_unique<fbpcf::io::BufferedReader>(std::move(fileReader));
 
   runBufferedReaderTestForReadAndReadLine(std::move(bufferedReader));
+}
+
+TEST(BufferedReaderTest, testBufferedReaderEmptyFile) {
+  auto fileReader = std::make_unique<fbpcf::io::FileReader>(
+      IOTestHelper::getBaseDirFromPath(__FILE__) +
+      "data/buffered_reader_empty_file.txt");
+  auto bufferedReader =
+      std::make_unique<fbpcf::io::BufferedReader>(std::move(fileReader));
+
+  EXPECT_THROW(bufferedReader->readLine(), std::runtime_error);
+  bufferedReader->close();
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -9,6 +9,7 @@
 #include <folly/logging/xlog.h>
 #include <cerrno>
 #include <cstddef>
+#include <cstdio>
 #include <fstream>
 #include <vector>
 
@@ -51,7 +52,9 @@ size_t LocalFileReader::read(std::vector<char>& buf) {
 }
 
 bool LocalFileReader::eof() {
-  return inputStream_->eof();
+  // eof() returns true only if we have already attempted to read past the end
+  // of the file
+  return inputStream_->eof() || inputStream_->peek() == EOF;
 }
 
 LocalFileReader::~LocalFileReader() {
