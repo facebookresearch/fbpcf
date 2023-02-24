@@ -31,9 +31,11 @@ std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition(
       {"int32Column", ColType::Int32},
       {"int64Column", ColType::Int64},
       {"uint32Column", ColType::UInt32},
+      {"uint64Column", ColType::UInt64},
       {"int32VecColumn", ColType::Int32Vec},
       {"int64VecColumn", ColType::Int64Vec},
       {"uint32VecColumn", ColType::UInt32Vec},
+      {"uint64VecColumn", ColType::UInt64Vec},
       {"boolColumn1", ColType::Bit},
       {"boolColumn2", ColType::Bit},
       {"boolColumn3", ColType::Bit},
@@ -47,10 +49,12 @@ std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition(
 using RevealedColumnType = std::variant<
     std::vector<bool>,
     std::vector<uint32_t>,
+    std::vector<uint64_t>,
     std::vector<int32_t>,
     std::vector<int64_t>,
     std::vector<std::vector<bool>>,
     std::vector<std::vector<uint32_t>>,
+    std::vector<std::vector<uint64_t>>,
     std::vector<std::vector<int32_t>>,
     std::vector<std::vector<int64_t>>>;
 
@@ -134,6 +138,14 @@ deserializeAndRevealAllColumns(
       [](uint64_t data) { return data; });
   rst.emplace("uint32Column", uint32Data);
 
+  std::vector<uint64_t> uint64Data =
+      std::get<typename frontend::MPCTypes<schedulerId>::SecUnsigned64Int>(
+          deserialization.at("uint64Column"))
+          .openToParty(0)
+          .getValue();
+
+  rst.emplace("uint64Column", uint64Data);
+
   std::vector<typename frontend::MPCTypes<schedulerId>::Sec32Int>
       int32VecMPCValue = std::get<
           std::vector<typename frontend::MPCTypes<schedulerId>::Sec32Int>>(
@@ -149,30 +161,41 @@ deserializeAndRevealAllColumns(
           typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>>(
           deserialization.at("uint32VecColumn"));
 
+  std::vector<typename frontend::MPCTypes<schedulerId>::SecUnsigned64Int>
+      uint64VecMPCValue = std::get<std::vector<
+          typename frontend::MPCTypes<schedulerId>::SecUnsigned64Int>>(
+          deserialization.at("uint64VecColumn"));
+
   std::vector<std::vector<int32_t>> int32VecData(
       int32Data.size(), std::vector<int32_t>(int32VecMPCValue.size()));
   std::vector<std::vector<int64_t>> int64VecData(
       int64Data.size(), std::vector<int64_t>(int64VecMPCValue.size()));
   std::vector<std::vector<uint32_t>> uint32VecData(
       uint32Data.size(), std::vector<uint32_t>(uint32VecMPCValue.size()));
+  std::vector<std::vector<uint64_t>> uint64VecData(
+      uint64Data.size(), std::vector<uint64_t>(uint64VecMPCValue.size()));
 
   std::vector<int64_t> int64Opened;
+  std::vector<uint64_t> uint64Opened;
 
   for (int i = 0; i < int32VecMPCValue.size(); i++) {
     int32Opened = int32VecMPCValue[i].openToParty(0).getValue();
     int64Opened = int64VecMPCValue[i].openToParty(0).getValue();
     uint32Opened = uint32VecMPCValue[i].openToParty(0).getValue();
+    uint64Opened = uint64VecMPCValue[i].openToParty(0).getValue();
 
     for (int j = 0; j < int32Opened.size(); j++) {
       int32VecData[j][i] = int32Opened[j];
       int64VecData[j][i] = int64Opened[j];
       uint32VecData[j][i] = uint32Opened[j];
+      uint64VecData[j][i] = uint64Opened[j];
     }
   }
 
   rst.emplace("int32VecColumn", int32VecData);
   rst.emplace("int64VecColumn", int64VecData);
   rst.emplace("uint32VecColumn", uint32VecData);
+  rst.emplace("uint64VecColumn", uint64VecData);
 
   rst.emplace(
       "boolColumn1",
@@ -219,9 +242,12 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
   std::random_device rd;
   std::mt19937_64 e(rd());
   std::uniform_int_distribution<> boolDist(0, 1);
-  std::uniform_int_distribution<int64_t> uint32Dist(
+  std::uniform_int_distribution<uint32_t> uint32Dist(
       std::numeric_limits<uint32_t>().min(),
       std::numeric_limits<uint32_t>().max());
+  std::uniform_int_distribution<uint64_t> uint64Dist(
+      std::numeric_limits<uint64_t>().min(),
+      std::numeric_limits<uint64_t>().max());
   std::uniform_int_distribution<int32_t> int32Dist(
       std::numeric_limits<int32_t>().min(),
       std::numeric_limits<int32_t>().max());
@@ -234,15 +260,17 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
   std::unique_ptr<IRowStructureDefinition<1>> serializer1 =
       createRowDefinition<1>(paddingSize);
 
-  EXPECT_EQ(serializer0->getRowSizeBytes(), 17 + 16 * paddingSize);
-  EXPECT_EQ(serializer1->getRowSizeBytes(), 17 + 16 * paddingSize);
+  EXPECT_EQ(serializer0->getRowSizeBytes(), 25 + 24 * paddingSize);
+  EXPECT_EQ(serializer1->getRowSizeBytes(), 25 + 24 * paddingSize);
 
   std::vector<int32_t> int32Data(0);
   std::vector<int64_t> int64Data(0);
   std::vector<uint32_t> uint32Data(0);
+  std::vector<uint64_t> uint64Data(0);
   std::vector<std::vector<int32_t>> int32VecData(0);
   std::vector<std::vector<int64_t>> int64VecData(0);
   std::vector<std::vector<uint32_t>> uint32VecData(0);
+  std::vector<std::vector<uint64_t>> uint64VecData(0);
   std::vector<bool> boolData1(0);
   std::vector<bool> boolData2(0);
   std::vector<bool> boolData3(0);
@@ -252,15 +280,18 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
     int32Data.push_back(int32Dist(e));
     int64Data.push_back(int64Dist(e));
     uint32Data.push_back(uint32Dist(e));
+    uint64Data.push_back(uint64Dist(e));
 
     int32VecData.push_back(std::vector<int32_t>(0));
     int64VecData.push_back(std::vector<int64_t>(0));
     uint32VecData.push_back(std::vector<uint32_t>(0));
+    uint64VecData.push_back(std::vector<uint64_t>(0));
 
     for (int j = 0; j < paddingSize; j++) {
       int32VecData[i].push_back(int32Dist(e));
       int64VecData[i].push_back(int64Dist(e));
       uint32VecData[i].push_back(uint32Dist(e));
+      uint64VecData[i].push_back(uint64Dist(e));
     }
 
     boolData1.push_back(boolDist(e));
@@ -274,9 +305,11 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
           {"int32Column", int32Data},
           {"int64Column", int64Data},
           {"uint32Column", uint32Data},
+          {"uint64Column", uint64Data},
           {"int32VecColumn", int32VecData},
           {"int64VecColumn", int64VecData},
           {"uint32VecColumn", uint32VecData},
+          {"uint64VecColumn", uint64VecData},
           {"boolColumn1", boolData1},
           {"boolColumn2", boolData2},
           {"boolColumn3", boolData3},
@@ -305,6 +338,7 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
   auto int32Rst = std::get<std::vector<int32_t>>(rst.at("int32Column"));
   auto int64Rst = std::get<std::vector<int64_t>>(rst.at("int64Column"));
   auto uint32Rst = std::get<std::vector<uint32_t>>(rst.at("uint32Column"));
+  auto uint64Rst = std::get<std::vector<uint64_t>>(rst.at("uint64Column"));
   auto boolRst1 = std::get<std::vector<bool>>(rst.at("boolColumn1"));
   auto boolRst2 = std::get<std::vector<bool>>(rst.at("boolColumn2"));
   auto boolRst3 = std::get<std::vector<bool>>(rst.at("boolColumn3"));
@@ -315,10 +349,13 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
       std::get<std::vector<std::vector<int64_t>>>(rst.at("int64VecColumn"));
   auto uint32VecRst =
       std::get<std::vector<std::vector<uint32_t>>>(rst.at("uint32VecColumn"));
+  auto uint64VecRst =
+      std::get<std::vector<std::vector<uint64_t>>>(rst.at("uint64VecColumn"));
 
   testVectorEq(int32Data, int32Rst);
   testVectorEq(int64Data, int64Rst);
   testVectorEq(uint32Data, uint32Rst);
+  testVectorEq(uint64Data, uint64Rst);
   testVectorEq(boolData1, boolRst1);
   testVectorEq(boolData2, boolRst2);
   testVectorEq(boolData3, boolRst3);
@@ -327,6 +364,7 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
     testVectorEq(int32VecData[i], int32VecRst[i]);
     testVectorEq(int64VecData[i], int64VecRst[i]);
     testVectorEq(uint32VecData[i], uint32VecRst[i]);
+    testVectorEq(uint64VecData[i], uint64VecRst[i]);
   }
 }
 

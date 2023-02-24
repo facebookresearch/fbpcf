@@ -58,8 +58,7 @@ class IntegerColumn : public IColumnDefinition<schedulerId> {
   typename IColumnDefinition<schedulerId>::SupportedColumnTypes getColumnType()
       const override {
     static_assert(
-        (isSigned && (width == 32 || width == 64)) || width == 32,
-        "For now only support int32, int64, uint64");
+        width == 32 || width == 64, "For now only support 32 and 64 bit types");
     if constexpr (isSigned) {
       if constexpr (width == 32) {
         return IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32;
@@ -68,6 +67,8 @@ class IntegerColumn : public IColumnDefinition<schedulerId> {
       }
     } else if constexpr (width == 32) {
       return IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32;
+    } else if constexpr (width == 64) {
+      return IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt64;
     }
     throw std::runtime_error(folly::sformat(
         "This code should be unreachable. {}int{}_t column type is not supported",
