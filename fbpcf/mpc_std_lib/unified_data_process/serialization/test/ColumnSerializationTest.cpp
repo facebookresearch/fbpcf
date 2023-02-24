@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <cstdint>
 #include <functional>
 #include <future>
 #include <limits>
@@ -133,14 +134,16 @@ TEST(ColumnSerializationTest, IntegerColumnTest) {
 
   for (int i = 0; i < 100; i++) {
     int32_t v = dist(e);
-
     vals[i] = v;
-    serializer0.serializeColumnAsPlaintextBytes(&v, bufs[i].data());
+  }
 
-    EXPECT_EQ(bufs[i][0], v & 255);
-    EXPECT_EQ(bufs[i][1], (v >> 8) & 255);
-    EXPECT_EQ(bufs[i][2], (v >> 16) & 255);
-    EXPECT_EQ(bufs[i][3], (v >> 24) & 255);
+  serializer0.serializeColumnAsPlaintextBytes(vals, bufs, 0);
+
+  for (int i = 0; i < 100; i++) {
+    EXPECT_EQ(bufs[i][0], vals[i] & 255);
+    EXPECT_EQ(bufs[i][1], (vals[i] >> 8) & 255);
+    EXPECT_EQ(bufs[i][2], (vals[i] >> 16) & 255);
+    EXPECT_EQ(bufs[i][3], (vals[i] >> 24) & 255);
   }
 
   auto future0 = std::async([&schedulerFactory0, &bufs, &serializer0]() {
@@ -180,36 +183,36 @@ TEST(ColumnSerializationTest, ArrayColumnTest) {
       std::numeric_limits<int32_t>().min(),
       std::numeric_limits<int32_t>().max());
 
-  FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec32Int> serializer0(
-      "testColumnName",
-      std::make_unique<IntegerColumn<0, true, 32>>("testColumnName"),
-      paddingSize);
-  FixedSizeArrayColumn<1, frontend::MPCTypes<1>::Sec32Int> serializer1(
-      "testColumnName",
-      std::make_unique<IntegerColumn<1, true, 32>>("testColumnName"),
-      paddingSize);
+  FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec32Int, int32_t> serializer0(
+      "testColumnName", paddingSize);
+  FixedSizeArrayColumn<1, frontend::MPCTypes<1>::Sec32Int, int32_t> serializer1(
+      "testColumnName", paddingSize);
   EXPECT_EQ(serializer0.getColumnSizeBytes(), paddingSize * 4);
 
   std::vector<std::vector<uint8_t>> bufs(
       batchSize, std::vector<uint8_t>(serializer0.getColumnSizeBytes()));
 
   std::vector<std::vector<int32_t>> vals(
+      batchSize, std::vector<int32_t>(paddingSize));
+
+  std::vector<std::vector<int32_t>> expected(
       paddingSize, std::vector<int32_t>(batchSize));
 
   for (int i = 0; i < batchSize; i++) {
-    std::vector<int32_t> val(paddingSize);
     for (int j = 0; j < paddingSize; j++) {
-      val[j] = dist(e);
-      vals[j][i] = val[j];
+      vals[i][j] = dist(e);
+      expected[j][i] = vals[i][j];
     }
+  }
 
-    serializer0.serializeColumnAsPlaintextBytes(val.data(), bufs[i].data());
+  serializer0.serializeColumnAsPlaintextBytes(vals, bufs, 0);
 
+  for (int i = 0; i < batchSize; i++) {
     for (int j = 0; j < paddingSize; j++) {
-      EXPECT_EQ(bufs[i][0 + j * sizeof(int32_t)], val[j] & 255);
-      EXPECT_EQ(bufs[i][1 + j * sizeof(int32_t)], (val[j] >> 8) & 255);
-      EXPECT_EQ(bufs[i][2 + j * sizeof(int32_t)], (val[j] >> 16) & 255);
-      EXPECT_EQ(bufs[i][3 + j * sizeof(int32_t)], (val[j] >> 24) & 255);
+      EXPECT_EQ(bufs[i][0 + j * sizeof(int32_t)], vals[i][j] & 255);
+      EXPECT_EQ(bufs[i][1 + j * sizeof(int32_t)], (vals[i][j] >> 8) & 255);
+      EXPECT_EQ(bufs[i][2 + j * sizeof(int32_t)], (vals[i][j] >> 16) & 255);
+      EXPECT_EQ(bufs[i][3 + j * sizeof(int32_t)], (vals[i][j] >> 24) & 255);
     }
   }
 
@@ -231,7 +234,7 @@ TEST(ColumnSerializationTest, ArrayColumnTest) {
 
   EXPECT_EQ(rst.size(), paddingSize);
   for (int j = 0; j < paddingSize; j++) {
-    testVectorEq(vals[j], rst[j]);
+    testVectorEq(expected[j], rst[j]);
   }
 }
 
@@ -262,19 +265,21 @@ TEST(ColumnSerializationTest, PackedBitFieldColumnTest) {
   std::vector<std::vector<uint8_t>> bufs(
       batchSize, std::vector<uint8_t>(serializer0.getColumnSizeBytes()));
 
-  std::vector<std::vector<bool>> vals(numBits, std::vector<bool>(batchSize));
+  std::vector<std::vector<bool>> vals(batchSize, std::vector<bool>(numBits));
+  std::vector<std::vector<bool>> expected(
+      numBits, std::vector<bool>(batchSize));
 
   for (int i = 0; i < batchSize; i++) {
-    std::vector<bool> val(numBits);
     for (int j = 0; j < numBits; j++) {
-      val[j] = dist(e);
-      vals[j][i] = val[j];
+      vals[i][j] = dist(e);
+      expected[j][i] = vals[i][j];
     }
+  }
 
-    serializer0.serializeColumnAsPlaintextBytes(&val, bufs[i].data());
-
+  serializer0.serializeColumnAsPlaintextBytes(vals, bufs, 0);
+  for (int i = 0; i < batchSize; i++) {
     for (int j = 0; j < numBits; j++) {
-      EXPECT_EQ((bufs[i][0] >> j) & 1, val[j]);
+      EXPECT_EQ((bufs[i][0] >> j) & 1, vals[i][j]);
     }
   }
 
@@ -296,7 +301,7 @@ TEST(ColumnSerializationTest, PackedBitFieldColumnTest) {
 
   EXPECT_EQ(rst.size(), numBits);
   for (int j = 0; j < numBits; j++) {
-    testVectorEq(vals[j], rst[j]);
+    testVectorEq(expected[j], rst[j]);
   }
 }
 
@@ -320,18 +325,20 @@ TEST(erializationTest, ColumnTypeTest) {
   EXPECT_EQ(col3->getColumnType(), ColType::PackedBitField);
 
   std::unique_ptr<IColumnDefinition<0>> col4 = std::make_unique<
-      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec32Int>>(
-      "col4", std::make_unique<IntegerColumn<0, true, 32>>("test"), 4);
+      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec32Int, int32_t>>(
+      "col4", 4);
   EXPECT_EQ(col4->getColumnType(), ColType::Int32Vec);
 
   std::unique_ptr<IColumnDefinition<0>> col5 = std::make_unique<
-      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec64Int>>(
-      "col4", std::make_unique<IntegerColumn<0, true, 64>>("test"), 4);
+      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::Sec64Int, int64_t>>(
+      "col4", 4);
   EXPECT_EQ(col5->getColumnType(), ColType::Int64Vec);
 
-  std::unique_ptr<IColumnDefinition<0>> col6 = std::make_unique<
-      FixedSizeArrayColumn<0, frontend::MPCTypes<0>::SecUnsigned32Int>>(
-      "col4", std::make_unique<IntegerColumn<0, false, 32>>("test"), 4);
+  std::unique_ptr<IColumnDefinition<0>> col6 =
+      std::make_unique<FixedSizeArrayColumn<
+          0,
+          frontend::MPCTypes<0>::SecUnsigned32Int,
+          uint32_t>>("col4", 4);
   EXPECT_EQ(col6->getColumnType(), ColType::UInt32Vec);
 }
 
