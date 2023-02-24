@@ -7,6 +7,7 @@
 
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <string>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/frontend/MPCTypes.h"
@@ -25,59 +26,28 @@ namespace fbpcf::mpc_std_lib::unified_data_process::serialization {
 template <int schedulerId>
 std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition(
     size_t paddingSize) {
-  auto columnDefs = std::make_unique<
-      std::vector<typename std::unique_ptr<IColumnDefinition<schedulerId>>>>(0);
-
-  columnDefs->push_back(
-      std::make_unique<IntegerColumn<schedulerId, true, 32>>("int32Column"));
-  columnDefs->push_back(
-      std::make_unique<IntegerColumn<schedulerId, true, 64>>("int64Column"));
-  columnDefs->push_back(
-      std::make_unique<IntegerColumn<schedulerId, false, 32>>("uint32Column"));
-  columnDefs->push_back(
-      std::make_unique<FixedSizeArrayColumn<
-          schedulerId,
-          typename frontend::MPCTypes<schedulerId>::Sec32Int>>(
-          "int32VecColumn",
-          std::make_unique<IntegerColumn<schedulerId, true, 32>>(
-              "testColumnName"),
-          paddingSize));
-  columnDefs->push_back(
-      std::make_unique<FixedSizeArrayColumn<
-          schedulerId,
-          typename frontend::MPCTypes<schedulerId>::Sec64Int>>(
-          "int64VecColumn",
-          std::make_unique<IntegerColumn<schedulerId, true, 64>>(
-              "testColumnName"),
-          paddingSize));
-  columnDefs->push_back(
-      std::make_unique<FixedSizeArrayColumn<
-          schedulerId,
-          typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>>(
-          "uint32VecColumn",
-          std::make_unique<IntegerColumn<schedulerId, false, 32>>(
-              "testColumnName"),
-          paddingSize));
-
-  std::vector<std::string> bitColumnNames = {
-      "boolColumn1", "boolColumn2", "boolColumn3", "boolColumn4"};
-  columnDefs->push_back(std::make_unique<PackedBitFieldColumn<schedulerId>>(
-      "packedBits", bitColumnNames));
-
+  using ColType = typename IColumnDefinition<schedulerId>::SupportedColumnTypes;
+  std::map<std::string, ColType> colDefs{
+      {"int32Column", ColType::Int32},
+      {"int64Column", ColType::Int64},
+      {"uint32Column", ColType::UInt32},
+      {"int32VecColumn", ColType::Int32Vec},
+      {"int64VecColumn", ColType::Int64Vec},
+      {"uint32VecColumn", ColType::UInt32Vec},
+      {"boolColumn1", ColType::Bit},
+      {"boolColumn2", ColType::Bit},
+      {"boolColumn3", ColType::Bit},
+      {"boolColumn4", ColType::Bit},
+  };
   auto serializer = std::make_unique<RowStructureDefinition<schedulerId>>(
-      std::move(columnDefs));
+      colDefs, paddingSize);
   return std::move(serializer);
 }
 
 template <int schedulerId>
-std::unordered_map<
-    std::string,
-    typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
-deserializeAndRevealAllColumns(
+typename frontend::BitString<true, schedulerId, true> deserializeIntoSecString(
     fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
-    const std::vector<std::vector<unsigned char>>& serializedSecretShares,
-    const std::unique_ptr<IRowStructureDefinition<schedulerId>>&
-        rowDefinition) {
+    const std::vector<std::vector<unsigned char>>& serializedSecretShares) {
   auto scheduler = schedulerFactory.create();
 
   fbpcf::scheduler::SchedulerKeeper<schedulerId>::setScheduler(
@@ -102,9 +72,22 @@ deserializeAndRevealAllColumns(
 
   frontend::BitString<true, schedulerId, true> udpOutput(bitSharesTranspose, 0);
 
+  return udpOutput;
+}
+
+template <int schedulerId>
+std::unordered_map<
+    std::string,
+    typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
+deserializeAndRevealAllColumns(
+    fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
+    const std::vector<std::vector<unsigned char>>& serializedSecretShares,
+    const std::unique_ptr<IRowStructureDefinition<schedulerId>>&
+        rowDefinition) {
+  auto udpOutput = deserializeIntoSecString<schedulerId>(
+      schedulerFactory, serializedSecretShares);
   auto deserialization =
       rowDefinition.get()->deserializeUDPOutputIntoMPCTypes(udpOutput);
-
   std::unordered_map<
       std::string,
       typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
@@ -185,15 +168,30 @@ deserializeAndRevealAllColumns(
   rst.emplace("int64VecColumn", int64VecData);
   rst.emplace("uint32VecColumn", uint32VecData);
 
-  std::vector<typename frontend::MPCTypes<schedulerId>::SecBool>
-      packedBitsMPCValue = std::get<
-          std::vector<typename frontend::MPCTypes<schedulerId>::SecBool>>(
-          deserialization.at("packedBits"));
-
-  rst.emplace("boolColumn1", packedBitsMPCValue[0].openToParty(0).getValue());
-  rst.emplace("boolColumn2", packedBitsMPCValue[1].openToParty(0).getValue());
-  rst.emplace("boolColumn3", packedBitsMPCValue[2].openToParty(0).getValue());
-  rst.emplace("boolColumn4", packedBitsMPCValue[3].openToParty(0).getValue());
+  rst.emplace(
+      "boolColumn1",
+      std::get<typename frontend::MPCTypes<schedulerId>::SecBool>(
+          deserialization.at("boolColumn1"))
+          .openToParty(0)
+          .getValue());
+  rst.emplace(
+      "boolColumn2",
+      std::get<typename frontend::MPCTypes<schedulerId>::SecBool>(
+          deserialization.at("boolColumn2"))
+          .openToParty(0)
+          .getValue());
+  rst.emplace(
+      "boolColumn3",
+      std::get<typename frontend::MPCTypes<schedulerId>::SecBool>(
+          deserialization.at("boolColumn3"))
+          .openToParty(0)
+          .getValue());
+  rst.emplace(
+      "boolColumn4",
+      std::get<typename frontend::MPCTypes<schedulerId>::SecBool>(
+          deserialization.at("boolColumn4"))
+          .openToParty(0)
+          .getValue());
 
   return rst;
 }
@@ -327,4 +325,124 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
     testVectorEq(uint32VecData[i], uint32VecRst[i]);
   }
 }
+
+template <int schedulerId>
+std::unique_ptr<IRowStructureDefinition<schedulerId>> createBitRowDefinition(
+    size_t bitColumns) {
+  using ColType = typename IColumnDefinition<schedulerId>::SupportedColumnTypes;
+  std::map<std::string, ColType> colDefs;
+
+  for (int i = 0; i < bitColumns; i++) {
+    std::string colName = "boolColumn" + std::to_string(i);
+    colDefs.emplace(colName, ColType::Bit);
+  };
+
+  auto serializer =
+      std::make_unique<RowStructureDefinition<schedulerId>>(colDefs, 1);
+  return std::move(serializer);
+}
+
+template <int schedulerId>
+std::unordered_map<
+    std::string,
+    typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
+deserializeAndRevealBitColumns(
+    fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
+    const std::vector<std::vector<unsigned char>>& serializedSecretShares,
+    const std::unique_ptr<IRowStructureDefinition<schedulerId>>& rowDefinition,
+    size_t bitColumns) {
+  auto udpOutput = deserializeIntoSecString<schedulerId>(
+      schedulerFactory, serializedSecretShares);
+
+  auto deserialization =
+      rowDefinition.get()->deserializeUDPOutputIntoMPCTypes(udpOutput);
+  std::unordered_map<
+      std::string,
+      typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
+      rst;
+
+  for (int i = 0; i < bitColumns; i++) {
+    std::string colName = "boolColumn" + std::to_string(i);
+    rst.emplace(
+        colName,
+        std::get<typename frontend::MPCTypes<schedulerId>::SecBool>(
+            deserialization.at(colName))
+            .openToParty(0)
+            .getValue());
+  }
+
+  return rst;
+}
+
+TEST(RowSerializationTest, ManyBitsTest) {
+  auto factories = fbpcf::engine::communication::getInMemoryAgentFactory(2);
+
+  auto schedulerFactory0 =
+      fbpcf::scheduler::NetworkPlaintextSchedulerFactory<true>(
+          0, *factories[0]);
+
+  auto schedulerFactory1 =
+      fbpcf::scheduler::NetworkPlaintextSchedulerFactory<true>(
+          1, *factories[1]);
+
+  const size_t batchSize = 100;
+  const size_t bitColumns = 95;
+  std::random_device rd;
+  std::mt19937_64 e(rd());
+  std::uniform_int_distribution<> boolDist(0, 1);
+
+  std::unique_ptr<IRowStructureDefinition<0>> serializer0 =
+      createBitRowDefinition<0>(bitColumns);
+  std::unique_ptr<IRowStructureDefinition<1>> serializer1 =
+      createBitRowDefinition<1>(bitColumns);
+
+  EXPECT_EQ(
+      serializer0->getRowSizeBytes(),
+      bitColumns / 8 + (bitColumns % 8 == 0 ? 0 : 1));
+  EXPECT_EQ(
+      serializer1->getRowSizeBytes(),
+      bitColumns / 8 + (bitColumns % 8 == 0 ? 0 : 1));
+
+  std::vector<std::vector<bool>> boolData(
+      bitColumns, std::vector<bool>(batchSize));
+
+  std::unordered_map<
+      std::string,
+      IRowStructureDefinition<0>::InputColumnDataType>
+      inputData;
+  for (int i = 0; i < bitColumns; i++) {
+    for (int j = 0; j < batchSize; j++) {
+      boolData[i][j] = boolDist(e);
+    }
+    inputData.emplace("boolColumn" + std::to_string(i), boolData[i]);
+  }
+
+  auto serializedBytes =
+      serializer0->serializeDataAsBytesForUDP(inputData, batchSize);
+
+  auto future0 =
+      std::async([&schedulerFactory0, &serializedBytes, &serializer0]() {
+        return deserializeAndRevealBitColumns<0>(
+            schedulerFactory0, serializedBytes, serializer0, bitColumns);
+      });
+
+  auto future1 = std::async([&schedulerFactory1, &serializer1]() {
+    return deserializeAndRevealBitColumns<1>(
+        schedulerFactory1,
+        std::vector<std::vector<unsigned char>>(
+            batchSize, std::vector<uint8_t>(serializer1->getRowSizeBytes())),
+        serializer1,
+        bitColumns);
+  });
+
+  auto rst = future0.get();
+  future1.get();
+
+  for (int i = 0; i < bitColumns; i++) {
+    std::string colName = "boolColumn" + std::to_string(i);
+    auto values = std::get<std::vector<bool>>(rst.at(colName));
+    testVectorEq(values, boolData[i]);
+  }
+}
+
 } // namespace fbpcf::mpc_std_lib::unified_data_process::serialization
