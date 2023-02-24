@@ -19,12 +19,14 @@ template <int schedulerId, typename InnerMPCType, typename InnerPlaintextType>
 class FixedSizeArrayColumn : public IColumnDefinition<schedulerId> {
   static_assert(
       std::is_same<InnerPlaintextType, uint32_t>::value ||
+          std::is_same<InnerPlaintextType, uint64_t>::value ||
           std::is_same<InnerPlaintextType, int32_t>::value ||
           std::is_same<InnerPlaintextType, int64_t>::value,
       "Currently only supported types are vec<int32>, vec<uint32_t>, vec<int64>");
 
   using ShareType = typename std::conditional<
-      std::is_same<InnerPlaintextType, uint32_t>::value,
+      std::is_same<InnerPlaintextType, uint32_t>::value ||
+          std::is_same<InnerPlaintextType, uint64_t>::value,
       uint64_t,
       int64_t>::type;
 
@@ -44,6 +46,8 @@ class FixedSizeArrayColumn : public IColumnDefinition<schedulerId> {
       const override {
     if constexpr (std::is_same<InnerPlaintextType, uint32_t>::value) {
       return IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32Vec;
+    } else if constexpr (std::is_same<InnerPlaintextType, uint64_t>::value) {
+      return IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt64Vec;
     } else if constexpr (std::is_same<InnerPlaintextType, int32_t>::value) {
       return IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32Vec;
     } else if constexpr (std::is_same<InnerPlaintextType, int64_t>::value) {

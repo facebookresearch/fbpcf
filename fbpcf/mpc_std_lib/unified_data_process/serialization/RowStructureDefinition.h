@@ -58,6 +58,11 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
               std::make_unique<IntegerColumn<schedulerId, false, 32>>(
                   columnNameToType.first));
           break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt64:
+          columnDefinitions_->push_back(
+              std::make_unique<IntegerColumn<schedulerId, false, 64>>(
+                  columnNameToType.first));
+          break;
         case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32:
           columnDefinitions_->push_back(
               std::make_unique<IntegerColumn<schedulerId, true, 32>>(
@@ -74,6 +79,13 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
                   schedulerId,
                   typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int,
                   uint32_t>>(columnNameToType.first, paddingSize));
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt64Vec:
+          columnDefinitions_->push_back(
+              std::make_unique<FixedSizeArrayColumn<
+                  schedulerId,
+                  typename frontend::MPCTypes<schedulerId>::SecUnsigned64Int,
+                  uint64_t>>(columnNameToType.first, paddingSize));
 
           break;
         case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32Vec:
