@@ -23,7 +23,8 @@
 namespace fbpcf::mpc_std_lib::unified_data_process::serialization {
 
 template <int schedulerId>
-std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition() {
+std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition(
+    size_t paddingSize) {
   auto columnDefs = std::make_unique<
       std::vector<typename std::unique_ptr<IColumnDefinition<schedulerId>>>>(0);
 
@@ -33,6 +34,30 @@ std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition() {
       std::make_unique<IntegerColumn<schedulerId, true, 64>>("int64Column"));
   columnDefs->push_back(
       std::make_unique<IntegerColumn<schedulerId, false, 32>>("uint32Column"));
+  columnDefs->push_back(
+      std::make_unique<FixedSizeArrayColumn<
+          schedulerId,
+          typename frontend::MPCTypes<schedulerId>::Sec32Int>>(
+          "int32VecColumn",
+          std::make_unique<IntegerColumn<schedulerId, true, 32>>(
+              "testColumnName"),
+          paddingSize));
+  columnDefs->push_back(
+      std::make_unique<FixedSizeArrayColumn<
+          schedulerId,
+          typename frontend::MPCTypes<schedulerId>::Sec64Int>>(
+          "int64VecColumn",
+          std::make_unique<IntegerColumn<schedulerId, true, 64>>(
+              "testColumnName"),
+          paddingSize));
+  columnDefs->push_back(
+      std::make_unique<FixedSizeArrayColumn<
+          schedulerId,
+          typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>>(
+          "uint32VecColumn",
+          std::make_unique<IntegerColumn<schedulerId, false, 32>>(
+              "testColumnName"),
+          paddingSize));
 
   std::vector<std::string> bitColumnNames = {
       "boolColumn1", "boolColumn2", "boolColumn3", "boolColumn4"};
@@ -120,6 +145,46 @@ deserializeAndRevealAllColumns(
       [](uint64_t data) { return data; });
   rst.emplace("uint32Column", uint32Data);
 
+  std::vector<typename frontend::MPCTypes<schedulerId>::Sec32Int>
+      int32VecMPCValue = std::get<
+          std::vector<typename frontend::MPCTypes<schedulerId>::Sec32Int>>(
+          deserialization.at("int32VecColumn"));
+
+  std::vector<typename frontend::MPCTypes<schedulerId>::Sec64Int>
+      int64VecMPCValue = std::get<
+          std::vector<typename frontend::MPCTypes<schedulerId>::Sec64Int>>(
+          deserialization.at("int64VecColumn"));
+
+  std::vector<typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>
+      uint32VecMPCValue = std::get<std::vector<
+          typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>>(
+          deserialization.at("uint32VecColumn"));
+
+  std::vector<std::vector<int32_t>> int32VecData(
+      int32Data.size(), std::vector<int32_t>(int32VecMPCValue.size()));
+  std::vector<std::vector<int64_t>> int64VecData(
+      int64Data.size(), std::vector<int64_t>(int64VecMPCValue.size()));
+  std::vector<std::vector<uint32_t>> uint32VecData(
+      uint32Data.size(), std::vector<uint32_t>(uint32VecMPCValue.size()));
+
+  std::vector<int64_t> int64Opened;
+
+  for (int i = 0; i < int32VecMPCValue.size(); i++) {
+    int32Opened = int32VecMPCValue[i].openToParty(0).getValue();
+    int64Opened = int64VecMPCValue[i].openToParty(0).getValue();
+    uint32Opened = uint32VecMPCValue[i].openToParty(0).getValue();
+
+    for (int j = 0; j < int32Opened.size(); j++) {
+      int32VecData[j][i] = int32Opened[j];
+      int64VecData[j][i] = int64Opened[j];
+      uint32VecData[j][i] = uint32Opened[j];
+    }
+  }
+
+  rst.emplace("int32VecColumn", int32VecData);
+  rst.emplace("int64VecColumn", int64VecData);
+  rst.emplace("uint32VecColumn", uint32VecData);
+
   std::vector<typename frontend::MPCTypes<schedulerId>::SecBool>
       packedBitsMPCValue = std::get<
           std::vector<typename frontend::MPCTypes<schedulerId>::SecBool>>(
@@ -145,6 +210,7 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
           1, *factories[1]);
 
   const size_t batchSize = 100;
+  const size_t paddingSize = 7;
 
   std::random_device rd;
   std::mt19937_64 e(rd());
@@ -160,16 +226,19 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
       std::numeric_limits<int64_t>().max());
 
   std::unique_ptr<IRowStructureDefinition<0>> serializer0 =
-      createRowDefinition<0>();
+      createRowDefinition<0>(paddingSize);
   std::unique_ptr<IRowStructureDefinition<1>> serializer1 =
-      createRowDefinition<1>();
+      createRowDefinition<1>(paddingSize);
 
-  EXPECT_EQ(serializer0->getRowSizeBytes(), 17);
-  EXPECT_EQ(serializer1->getRowSizeBytes(), 17);
+  EXPECT_EQ(serializer0->getRowSizeBytes(), 17 + 16 * paddingSize);
+  EXPECT_EQ(serializer1->getRowSizeBytes(), 17 + 16 * paddingSize);
 
   std::vector<int32_t> int32Data(0);
   std::vector<int64_t> int64Data(0);
   std::vector<uint32_t> uint32Data(0);
+  std::vector<std::vector<int32_t>> int32VecData(0);
+  std::vector<std::vector<int64_t>> int64VecData(0);
+  std::vector<std::vector<uint32_t>> uint32VecData(0);
   std::vector<bool> boolData1(0);
   std::vector<bool> boolData2(0);
   std::vector<bool> boolData3(0);
@@ -179,6 +248,16 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
     int32Data.push_back(int32Dist(e));
     int64Data.push_back(int64Dist(e));
     uint32Data.push_back(uint32Dist(e));
+
+    int32VecData.push_back(std::vector<int32_t>(0));
+    int64VecData.push_back(std::vector<int64_t>(0));
+    uint32VecData.push_back(std::vector<uint32_t>(0));
+
+    for (int j = 0; j < paddingSize; j++) {
+      int32VecData[i].push_back(int32Dist(e));
+      int64VecData[i].push_back(int64Dist(e));
+      uint32VecData[i].push_back(uint32Dist(e));
+    }
 
     boolData1.push_back(boolDist(e));
     boolData2.push_back(boolDist(e));
@@ -193,6 +272,9 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
           {"int32Column", int32Data},
           {"int64Column", int64Data},
           {"uint32Column", uint32Data},
+          {"int32VecColumn", int32VecData},
+          {"int64VecColumn", int64VecData},
+          {"uint32VecColumn", uint32VecData},
           {"boolColumn1", boolData1},
           {"boolColumn2", boolData2},
           {"boolColumn3", boolData3},
@@ -225,6 +307,12 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
   auto boolRst2 = std::get<std::vector<bool>>(rst.at("boolColumn2"));
   auto boolRst3 = std::get<std::vector<bool>>(rst.at("boolColumn3"));
   auto boolRst4 = std::get<std::vector<bool>>(rst.at("boolColumn4"));
+  auto int32VecRst =
+      std::get<std::vector<std::vector<int32_t>>>(rst.at("int32VecColumn"));
+  auto int64VecRst =
+      std::get<std::vector<std::vector<int64_t>>>(rst.at("int64VecColumn"));
+  auto uint32VecRst =
+      std::get<std::vector<std::vector<uint32_t>>>(rst.at("uint32VecColumn"));
 
   testVectorEq(int32Data, int32Rst);
   testVectorEq(int64Data, int64Rst);
@@ -233,5 +321,10 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
   testVectorEq(boolData2, boolRst2);
   testVectorEq(boolData3, boolRst3);
   testVectorEq(boolData4, boolRst4);
+  for (int i = 0; i < batchSize; i++) {
+    testVectorEq(int32VecData[i], int32VecRst[i]);
+    testVectorEq(int64VecData[i], int64VecRst[i]);
+    testVectorEq(uint32VecData[i], uint32VecRst[i]);
+  }
 }
 } // namespace fbpcf::mpc_std_lib::unified_data_process::serialization
