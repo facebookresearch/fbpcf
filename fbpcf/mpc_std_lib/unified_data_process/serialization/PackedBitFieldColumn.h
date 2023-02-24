@@ -11,6 +11,7 @@
 #include "fbpcf/mpc_std_lib/unified_data_process/serialization/IColumnDefinition.h"
 
 #include <string>
+#include "folly/Format.h"
 namespace fbpcf::mpc_std_lib::unified_data_process::serialization {
 
 template <int schedulerId>
@@ -51,19 +52,21 @@ class PackedBitFieldColumn : public IColumnDefinition<schedulerId> {
   // is not guaranteed by compiler (i.e. can not get a bool* from a
   // vector<bool>.data())
   void serializeColumnAsPlaintextBytes(
-      const void* inputData,
-      unsigned char* buf) const override {
-    const NativeType value = *((NativeType*)inputData);
-    if (value.size() != subColumnNames_.size()) {
-      throw std::runtime_error(
-          "Size mismatch between expected number of packed bits and actual data");
-    }
+      const typename IColumnDefinition<schedulerId>::InputColumnDataType&
+          inputData,
+      std::vector<std::vector<unsigned char>>& writeBuffers,
+      size_t byteOffset) const override {
+    const std::vector<NativeType>& bitPack =
+        std::get<std::reference_wrapper<std::vector<NativeType>>>(inputData)
+            .get();
 
-    unsigned char toWrite = 0;
-    for (size_t i = 0; i < value.size(); ++i) {
-      toWrite |= (value[i] << i);
+    for (size_t i = 0; i < writeBuffers.size(); i++) {
+      unsigned char toWrite = 0;
+      for (size_t j = 0; j < bitPack[i].size(); j++) {
+        toWrite |= (bitPack[i][j] << j);
+      }
+      writeBuffers[i][byteOffset] = toWrite;
     }
-    buf[0] = toWrite;
   }
 
   typename IColumnDefinition<schedulerId>::DeserializeType

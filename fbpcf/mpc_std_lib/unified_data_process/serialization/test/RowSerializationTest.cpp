@@ -44,6 +44,16 @@ std::unique_ptr<IRowStructureDefinition<schedulerId>> createRowDefinition(
   return std::move(serializer);
 }
 
+using RevealedColumnType = std::variant<
+    std::vector<bool>,
+    std::vector<uint32_t>,
+    std::vector<int32_t>,
+    std::vector<int64_t>,
+    std::vector<std::vector<bool>>,
+    std::vector<std::vector<uint32_t>>,
+    std::vector<std::vector<int32_t>>,
+    std::vector<std::vector<int64_t>>>;
+
 template <int schedulerId>
 typename frontend::BitString<true, schedulerId, true> deserializeIntoSecString(
     fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
@@ -76,9 +86,7 @@ typename frontend::BitString<true, schedulerId, true> deserializeIntoSecString(
 }
 
 template <int schedulerId>
-std::unordered_map<
-    std::string,
-    typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
+std::unordered_map<std::string, RevealedColumnType>
 deserializeAndRevealAllColumns(
     fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
     const std::vector<std::vector<unsigned char>>& serializedSecretShares,
@@ -88,10 +96,8 @@ deserializeAndRevealAllColumns(
       schedulerFactory, serializedSecretShares);
   auto deserialization =
       rowDefinition.get()->deserializeUDPOutputIntoMPCTypes(udpOutput);
-  std::unordered_map<
-      std::string,
-      typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
-      rst;
+
+  std::unordered_map<std::string, RevealedColumnType> rst;
 
   std::vector<int64_t> int32Opened =
       std::get<typename frontend::MPCTypes<schedulerId>::Sec32Int>(
@@ -263,9 +269,7 @@ TEST(RowSerializationTest, RowWithMultipleColumnsTest) {
     boolData4.push_back(boolDist(e));
   }
 
-  std::unordered_map<
-      std::string,
-      IRowStructureDefinition<0>::InputColumnDataType>
+  std::unordered_map<std::string, IColumnDefinition<0>::InputColumnDataType>
       inputData{
           {"int32Column", int32Data},
           {"int64Column", int64Data},
@@ -343,9 +347,7 @@ std::unique_ptr<IRowStructureDefinition<schedulerId>> createBitRowDefinition(
 }
 
 template <int schedulerId>
-std::unordered_map<
-    std::string,
-    typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
+std::unordered_map<std::string, RevealedColumnType>
 deserializeAndRevealBitColumns(
     fbpcf::scheduler::ISchedulerFactory<true>& schedulerFactory,
     const std::vector<std::vector<unsigned char>>& serializedSecretShares,
@@ -356,10 +358,7 @@ deserializeAndRevealBitColumns(
 
   auto deserialization =
       rowDefinition.get()->deserializeUDPOutputIntoMPCTypes(udpOutput);
-  std::unordered_map<
-      std::string,
-      typename IRowStructureDefinition<schedulerId>::InputColumnDataType>
-      rst;
+  std::unordered_map<std::string, RevealedColumnType> rst;
 
   for (int i = 0; i < bitColumns; i++) {
     std::string colName = "boolColumn" + std::to_string(i);
@@ -406,9 +405,7 @@ TEST(RowSerializationTest, ManyBitsTest) {
   std::vector<std::vector<bool>> boolData(
       bitColumns, std::vector<bool>(batchSize));
 
-  std::unordered_map<
-      std::string,
-      IRowStructureDefinition<0>::InputColumnDataType>
+  std::unordered_map<std::string, IColumnDefinition<0>::InputColumnDataType>
       inputData;
   for (int i = 0; i < bitColumns; i++) {
     for (int j = 0; j < batchSize; j++) {

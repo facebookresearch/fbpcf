@@ -32,6 +32,17 @@ class IColumnDefinition {
     Int64Vec = 7,
   };
 
+  /* Possible input types for this column. Must match the column definition */
+  using InputColumnDataType = std::variant<
+      std::reference_wrapper<std::vector<bool>>,
+      std::reference_wrapper<std::vector<uint32_t>>,
+      std::reference_wrapper<std::vector<int32_t>>,
+      std::reference_wrapper<std::vector<int64_t>>,
+      std::reference_wrapper<std::vector<std::vector<bool>>>,
+      std::reference_wrapper<std::vector<std::vector<uint32_t>>>,
+      std::reference_wrapper<std::vector<std::vector<int32_t>>>,
+      std::reference_wrapper<std::vector<std::vector<int64_t>>>>;
+
   /* Possible return types for deserialization following UDP run */
   using DeserializeType = std::variant<
       typename MPCTypes::SecBool,
@@ -51,11 +62,12 @@ class IColumnDefinition {
 
   virtual SupportedColumnTypes getColumnType() const = 0;
 
-  /* Pass in a single value of the column to be serialized, sequentially write
-   * the bytes starting at the beginning of buf */
+  /* Pass in all values of the column to be serialized, sequentially write
+   * the bytes for each row starting at the offset provided. */
   virtual void serializeColumnAsPlaintextBytes(
-      const void* inputData,
-      unsigned char* buf) const = 0;
+      const InputColumnDataType& inputData,
+      std::vector<std::vector<unsigned char>>& writeBuffers,
+      size_t byteOffset) const = 0;
 
   /* Given the secret shared output of bytes following the UDP stage,
    * load the values into the MPC type correponding to this column.
