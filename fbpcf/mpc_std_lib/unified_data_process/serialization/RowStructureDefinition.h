@@ -96,6 +96,24 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
           serializeIntegerColumn<true, 64>(
               columnPointer, data, writeBuffers, numRows, byteOffset);
           break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32Vec:
+          serializeVectorColumn<
+              std::vector<uint32_t>,
+              typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>(
+              columnPointer, data, writeBuffers, numRows, byteOffset);
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32Vec:
+          serializeVectorColumn<
+              std::vector<int32_t>,
+              typename frontend::MPCTypes<schedulerId>::Sec32Int>(
+              columnPointer, data, writeBuffers, numRows, byteOffset);
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int64Vec:
+          serializeVectorColumn<
+              std::vector<int64_t>,
+              typename frontend::MPCTypes<schedulerId>::Sec64Int>(
+              columnPointer, data, writeBuffers, numRows, byteOffset);
+          break;
         default:
           throw std::runtime_error(
               "Unknown column type while serializing data.");
@@ -270,6 +288,59 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
     for (int i = 0; i < numRows; i++) {
       columnPointer->serializeColumnAsPlaintextBytes(
           &intVals[i], writeBuffers[i].data() + byteOffset);
+    }
+  }
+
+  template <typename DataType, typename InnerColumnType>
+  void serializeVectorColumn(
+      const IColumnDefinition<schedulerId>* columnPointer,
+      const std::unordered_map<
+          std::string,
+          typename IRowStructureDefinition<schedulerId>::InputColumnDataType>&
+          inputData,
+      std::vector<std::vector<unsigned char>>& writeBuffers,
+      int numRows,
+      size_t byteOffset) const {
+    const FixedSizeArrayColumn<schedulerId, InnerColumnType>* vectorColumn =
+        dynamic_cast<const FixedSizeArrayColumn<schedulerId, InnerColumnType>*>(
+            columnPointer);
+    std::string colName = columnPointer->getColumnName();
+
+    if (vectorColumn == nullptr) {
+      throw std::runtime_error("Failed to cast to vector column type");
+    }
+
+    if (!inputData.contains(colName)) {
+      throw std::runtime_error(folly::sformat(
+          "Column {} which was defined in the structure was not included"
+          " in the input data map.",
+          vectorColumn->getColumnName()));
+    }
+
+    const std::vector<DataType> vectorVals =
+        std::get<std::vector<DataType>>(inputData.at(colName));
+
+    if (vectorVals.size() != numRows) {
+      std::string err = folly::sformat(
+          "Invalid number of values for column {}. Got {} values but number of rows should be {}",
+          colName,
+          vectorVals.size(),
+          numRows);
+      throw std::runtime_error(err);
+    }
+
+    for (int i = 0; i < numRows; i++) {
+      if (vectorVals[i].size() != vectorColumn->getLength()) {
+        std::string err = folly::sformat(
+            "Invalid number of values in array at index {}. Got {} values but number of rows should be {}",
+            i,
+            vectorVals[i].size(),
+            vectorColumn->getLength());
+        throw std::runtime_error(err);
+      }
+
+      vectorColumn->serializeColumnAsPlaintextBytes(
+          vectorVals[i].data(), writeBuffers[i].data() + byteOffset);
     }
   }
 };
