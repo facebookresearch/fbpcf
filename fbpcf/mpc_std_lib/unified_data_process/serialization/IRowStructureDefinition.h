@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cstddef>
+#include <functional>
 #include <unordered_map>
 #include <vector>
 #include "IColumnDefinition.h"
@@ -20,16 +21,6 @@ class IRowStructureDefinition {
  public:
   using SecString = frontend::BitString<true, schedulerId, true>;
 
-  using InputColumnDataType = std::variant<
-      std::vector<bool>,
-      std::vector<uint32_t>,
-      std::vector<int32_t>,
-      std::vector<int64_t>,
-      std::vector<std::vector<bool>>,
-      std::vector<std::vector<uint32_t>>,
-      std::vector<std::vector<int32_t>>,
-      std::vector<std::vector<int64_t>>>;
-
   virtual ~IRowStructureDefinition() = default;
 
   /* Returns the number of bytes to serialize a single row */
@@ -39,7 +30,9 @@ class IRowStructureDefinition {
   // definition. Each key must match the name of a column in the definition and
   // the value contains the data for that column
   virtual std::vector<std::vector<unsigned char>> serializeDataAsBytesForUDP(
-      const std::unordered_map<std::string, InputColumnDataType>& data,
+      const std::unordered_map<
+          std::string,
+          typename IColumnDefinition<schedulerId>::InputColumnDataType>& data,
       int numRows) const = 0;
 
   // Following a run of the UDP protocol, deserialize the batched BitString

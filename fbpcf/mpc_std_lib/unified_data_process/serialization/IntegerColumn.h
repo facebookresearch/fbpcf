@@ -76,11 +76,27 @@ class IntegerColumn : public IColumnDefinition<schedulerId> {
   }
 
   void serializeColumnAsPlaintextBytes(
-      const void* inputData,
-      unsigned char* buf) const override {
-    const NativeType value = *((NativeType*)inputData);
-    for (size_t i = 0; i < sizeof(NativeType); ++i) {
-      buf[i] = extractByte(value, i);
+      const typename IColumnDefinition<schedulerId>::InputColumnDataType&
+          inputData,
+      std::vector<std::vector<unsigned char>>& writeBuffers,
+      size_t byteOffset) const override {
+    const std::vector<NativeType>& intVals =
+        std::get<std::reference_wrapper<std::vector<NativeType>>>(inputData)
+            .get();
+
+    if (intVals.size() != writeBuffers.size()) {
+      std::string err = folly::sformat(
+          "Invalid number of values for column {}. Got {} values but number of rows should be {} ",
+          columnName_,
+          intVals.size(),
+          writeBuffers.size());
+      throw std::runtime_error(err);
+    }
+
+    for (size_t i = 0; i < writeBuffers.size(); i++) {
+      for (size_t j = 0; j < sizeof(NativeType); j++) {
+        writeBuffers[i][j + byteOffset] = extractByte(intVals[i], j);
+      }
     }
   }
 
