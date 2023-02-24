@@ -24,13 +24,94 @@ template <int schedulerId>
 class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
  public:
   using SecString = frontend::BitString<true, schedulerId, true>;
-  using SecBit = frontend::Bit<true, schedulerId, true>;
 
   explicit RowStructureDefinition(
-      std::unique_ptr<
-          std::vector<std::unique_ptr<IColumnDefinition<schedulerId>>>>
-          columnDefinitions)
-      : columnDefinitions_(std::move(columnDefinitions)) {}
+      std::map<
+          std::string,
+          typename IColumnDefinition<schedulerId>::SupportedColumnTypes>
+          columnDefinitions,
+      size_t paddingSize = 1) {
+    columnDefinitions_ = std::make_unique<
+        std::vector<std::unique_ptr<IColumnDefinition<schedulerId>>>>(0);
+
+    std::vector<std::string> bitColumns(0);
+    size_t bytesPacked = 0;
+
+    for (auto& columnNameToType : columnDefinitions) {
+      switch (columnNameToType.second) {
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Bit:
+          if (bitColumns.size() == 8) {
+            columnDefinitions_->push_back(
+                std::make_unique<PackedBitFieldColumn<schedulerId>>(
+                    "packedBits" + std::to_string(bytesPacked), bitColumns));
+            bitColumns.clear();
+            bytesPacked++;
+          }
+          bitColumns.push_back(columnNameToType.first);
+          break;
+        case IColumnDefinition<
+            schedulerId>::SupportedColumnTypes::PackedBitField:
+          throw std::runtime_error(
+              "Can not directly instantiate PackedBit field column. Please use Bit column instead");
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32:
+          columnDefinitions_->push_back(
+              std::make_unique<IntegerColumn<schedulerId, false, 32>>(
+                  columnNameToType.first));
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32:
+          columnDefinitions_->push_back(
+              std::make_unique<IntegerColumn<schedulerId, true, 32>>(
+                  columnNameToType.first));
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int64:
+          columnDefinitions_->push_back(
+              std::make_unique<IntegerColumn<schedulerId, true, 64>>(
+                  columnNameToType.first));
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::UInt32Vec:
+          columnDefinitions_->push_back(
+              std::make_unique<FixedSizeArrayColumn<
+                  schedulerId,
+                  typename frontend::MPCTypes<schedulerId>::SecUnsigned32Int>>(
+                  columnNameToType.first,
+                  std::make_unique<IntegerColumn<schedulerId, false, 32>>(
+                      "innerUInt32Column"),
+                  paddingSize));
+
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int32Vec:
+          columnDefinitions_->push_back(
+              std::make_unique<FixedSizeArrayColumn<
+                  schedulerId,
+                  typename frontend::MPCTypes<schedulerId>::Sec32Int>>(
+                  columnNameToType.first,
+                  std::make_unique<IntegerColumn<schedulerId, true, 32>>(
+                      "innerInt32Column"),
+                  paddingSize));
+          break;
+        case IColumnDefinition<schedulerId>::SupportedColumnTypes::Int64Vec:
+          columnDefinitions_->push_back(
+              std::make_unique<FixedSizeArrayColumn<
+                  schedulerId,
+                  typename frontend::MPCTypes<schedulerId>::Sec64Int>>(
+                  columnNameToType.first,
+                  std::make_unique<IntegerColumn<schedulerId, true, 64>>(
+                      "innerInt64Column"),
+                  paddingSize));
+          break;
+        default:
+          throw std::runtime_error(
+              "Unknown column type while serializing data.");
+      }
+    }
+
+    if (!bitColumns.empty()) {
+      columnDefinitions_->push_back(
+          std::make_unique<PackedBitFieldColumn<schedulerId>>(
+              "packedBits" + std::to_string(bytesPacked), bitColumns));
+    }
+  }
 
   /* Returns the number of bytes to serialize a single row */
   size_t getRowSizeBytes() const override {
@@ -148,10 +229,27 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
     size_t byteOffset = 0;
     for (const std::unique_ptr<IColumnDefinition<schedulerId>>&
              columnDefinition : *columnDefinitions_.get()) {
-      rst.emplace(
-          columnDefinition->getColumnName(),
-          columnDefinition->deserializeSharesToMPCType(
-              secretSharedBytes, byteOffset));
+      if (columnDefinition->getColumnType() ==
+          IColumnDefinition<
+              schedulerId>::SupportedColumnTypes::PackedBitField) {
+        const PackedBitFieldColumn<schedulerId>* packedBitCol =
+            dynamic_cast<const PackedBitFieldColumn<schedulerId>*>(
+                columnDefinition.get());
+        auto deserializedMPCValues = std::get<std::vector<
+            typename frontend::MPCTypes<schedulerId>::MPCTypes::SecBool>>(
+            columnDefinition->deserializeSharesToMPCType(
+                secretSharedBytes, byteOffset));
+        for (int i = 0; i < packedBitCol->getSubColumnNames().size(); i++) {
+          rst.emplace(
+              packedBitCol->getSubColumnNames()[i], deserializedMPCValues[i]);
+        }
+      } else {
+        rst.emplace(
+            columnDefinition->getColumnName(),
+            columnDefinition->deserializeSharesToMPCType(
+                secretSharedBytes, byteOffset));
+      }
+
       byteOffset += columnDefinition->getColumnSizeBytes();
     }
 
