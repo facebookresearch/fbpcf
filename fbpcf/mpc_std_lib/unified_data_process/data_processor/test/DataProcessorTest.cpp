@@ -140,6 +140,23 @@ std::tuple<std::vector<T>, std::vector<T>> split(
       std::vector<T>(src.begin() + cutPosition, src.end())};
 }
 
+std::vector<std::vector<uint8_t>> convertToVecs(
+    size_t rowCount,
+    size_t dataWidth,
+    const std::vector<std::vector<bool>>& src) {
+  std::vector<std::vector<uint8_t>> rst(
+      rowCount, std::vector<uint8_t>(dataWidth));
+
+  for (size_t i = 0; i < dataWidth; i++) {
+    for (uint8_t j = 0; j < 8; j++) {
+      for (size_t k = 0; k < rowCount; k++) {
+        rst.at(k).at(i) += (src.at(i * 8 + j).at(k) << j);
+      }
+    }
+  }
+  return rst;
+}
+
 void testUdpEncryptionAndDecryptionObjects(
     std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent0,
     std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent1) {
@@ -162,21 +179,28 @@ void testUdpEncryptionAndDecryptionObjects(
   auto udpDec10 = std::make_unique<UdpDecryption<2>>(0, 1);
   auto udpDec11 = std::make_unique<UdpDecryption<3>>(1, 0);
 
-  auto task0 = [numberOfInputShards](
-                   std::unique_ptr<UdpEncryption> udpEnc,
-                   std::unique_ptr<UdpDecryption<0>> udpDec0,
-                   std::unique_ptr<UdpDecryption<2>> udpDec1,
-                   const std::vector<std::vector<std::vector<unsigned char>>>&
-                       plaintextDataInShards,
-                   size_t dataWidth,
-                   size_t outputSize) {
+  auto task0 = [](std::unique_ptr<UdpEncryption> udpEnc,
+                  std::unique_ptr<UdpDecryption<0>> udpDec0,
+                  std::unique_ptr<UdpDecryption<2>> udpDec1,
+                  const std::vector<std::vector<std::vector<unsigned char>>>&
+                      plaintextDataInShards,
+                  size_t dataWidth,
+                  size_t outputSize,
+                  const std::vector<int32_t>& indexes,
+                  const std::vector<size_t>& sizes) {
     udpEnc->prepareToProcessMyData(dataWidth);
-    for (size_t i = 0; i < numberOfInputShards; i++) {
+    for (size_t i = 0; i < plaintextDataInShards.size(); i++) {
       udpEnc->processMyData(plaintextDataInShards.at(i));
     };
+    udpEnc->prepareToProcessPeerData(dataWidth, indexes);
+    for (size_t i = 0; i < sizes.size(); i++) {
+      udpEnc->processPeerData(sizes.at(i));
+    }
+
     size_t outputShard0Size = outputSize / 2;
     size_t outputShard1Size = outputSize - outputShard0Size;
     auto key = udpEnc->getExpandedKey();
+
     auto result0 = udpDec0->decryptMyData(key, dataWidth, outputShard0Size)
                        .openToParty(0)
                        .getValue();
@@ -184,47 +208,65 @@ void testUdpEncryptionAndDecryptionObjects(
                        .openToParty(0)
                        .getValue();
 
-    std::vector<std::vector<uint8_t>> rst0(
-        outputShard0Size, std::vector<uint8_t>(dataWidth));
-    for (size_t i = 0; i < dataWidth; i++) {
-      for (uint8_t j = 0; j < 8; j++) {
-        for (size_t k = 0; k < outputShard0Size; k++) {
-          rst0.at(k).at(i) += (result0.at(i * 8 + j).at(k) << j);
-        }
-      }
-    }
-
-    std::vector<std::vector<uint8_t>> rst1(
-        outputShard1Size, std::vector<uint8_t>(dataWidth));
-    for (size_t i = 0; i < dataWidth; i++) {
-      for (uint8_t j = 0; j < 8; j++) {
-        for (size_t k = 0; k < outputShard1Size; k++) {
-          rst1.at(k).at(i) += (result1.at(i * 8 + j).at(k) << j);
-        }
-      }
-    }
+    auto rst0 = convertToVecs(outputShard0Size, dataWidth, result0);
+    auto rst1 = convertToVecs(outputShard1Size, dataWidth, result1);
     rst0.insert(rst0.end(), rst1.begin(), rst1.end());
-    return rst0;
+
+    auto [intersection, nonces, pickedIndexes] = udpEnc->getProcessedData();
+
+    auto [intersection0, intersection1] = split(intersection, outputShard0Size);
+    auto [nonces0, nonces1] = split(nonces, outputShard0Size);
+    auto [indexes0, indexes1] = split(pickedIndexes, outputShard0Size);
+
+    auto rst2 = convertToVecs(
+        outputShard0Size,
+        dataWidth,
+        udpDec0->decryptPeerData(intersection0, nonces0, indexes0)
+            .openToParty(0)
+            .getValue());
+    auto rst3 = convertToVecs(
+        outputShard1Size,
+        dataWidth,
+        udpDec1->decryptPeerData(intersection1, nonces1, indexes1)
+            .openToParty(0)
+            .getValue());
+    rst2.insert(rst2.end(), rst3.begin(), rst3.end());
+    return std::make_tuple(rst0, rst2);
   };
 
-  auto task1 = [numberOfInputShards, &dataWidth](
-                   std::unique_ptr<UdpEncryption> udpEnc,
-                   std::unique_ptr<UdpDecryption<1>> udpDec0,
-                   std::unique_ptr<UdpDecryption<3>> udpDec1,
-                   const std::vector<int32_t>& indexes,
-                   const std::vector<size_t>& sizes) {
+  auto task1 = [](std::unique_ptr<UdpEncryption> udpEnc,
+                  std::unique_ptr<UdpDecryption<1>> udpDec0,
+                  std::unique_ptr<UdpDecryption<3>> udpDec1,
+                  const std::vector<int32_t>& indexes,
+                  const std::vector<size_t>& sizes,
+                  const std::vector<std::vector<std::vector<unsigned char>>>&
+                      plaintextDataInShards,
+                  size_t dataWidth) {
     udpEnc->prepareToProcessPeerData(dataWidth, indexes);
-    for (size_t i = 0; i < numberOfInputShards; i++) {
+    for (size_t i = 0; i < sizes.size(); i++) {
       udpEnc->processPeerData(sizes.at(i));
     }
+    udpEnc->prepareToProcessMyData(dataWidth);
+    for (size_t i = 0; i < plaintextDataInShards.size(); i++) {
+      udpEnc->processMyData(plaintextDataInShards.at(i));
+    };
+
     auto [intersection, nonces, pickedIndexes] = udpEnc->getProcessedData();
+
     size_t outputShard0Size = intersection.size() / 2;
+    size_t outputShard1Size = intersection.size() - outputShard0Size;
+
     auto [intersection0, intersection1] = split(intersection, outputShard0Size);
     auto [nonces0, nonces1] = split(nonces, outputShard0Size);
     auto [indexes0, indexes1] = split(pickedIndexes, outputShard0Size);
 
     udpDec0->decryptPeerData(intersection0, nonces0, indexes0).openToParty(0);
     udpDec1->decryptPeerData(intersection1, nonces1, indexes1).openToParty(0);
+
+    auto key = udpEnc->getExpandedKey();
+
+    udpDec0->decryptMyData(key, dataWidth, outputShard0Size).openToParty(0);
+    udpDec1->decryptMyData(key, dataWidth, outputShard1Size).openToParty(0);
   };
 
   auto future1 = std::async(
@@ -233,18 +275,25 @@ void testUdpEncryptionAndDecryptionObjects(
       std::move(udpDec01),
       std::move(udpDec11),
       indexes,
-      sizes);
+      sizes,
+      shard,
+      dataWidth);
   auto rst = task0(
       std::move(udpEnc0),
       std::move(udpDec00),
       std::move(udpDec10),
       shard,
       dataWidth,
-      outputSize);
+      outputSize,
+      indexes,
+      sizes);
   future1.get();
 
   for (size_t i = 0; i < outputSize; i++) {
-    fbpcf::testVectorEq(rst.at(i), expectedOutput.at(i));
+    fbpcf::testVectorEq(std::get<0>(rst).at(i), expectedOutput.at(i));
+  }
+  for (size_t i = 0; i < outputSize; i++) {
+    fbpcf::testVectorEq(std::get<1>(rst).at(i), expectedOutput.at(i));
   }
 }
 

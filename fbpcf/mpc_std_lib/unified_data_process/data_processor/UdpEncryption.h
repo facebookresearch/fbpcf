@@ -80,7 +80,8 @@ class UdpEncryption {
   std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
       agent_;
 
-  uint64_t indexOffset_;
+  uint64_t myDataIndexOffset_;
+  uint64_t peerDataIndexOffset_;
 
   size_t myDataWidth_;
   __m128i prgKey_;
