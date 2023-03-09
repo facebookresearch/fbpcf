@@ -324,10 +324,8 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
       }
     }
 
-    for (int i = 0; i < writeBuffers.size(); i++) {
-      packedBitCol->serializeColumnAsPlaintextBytes(
-          bitPack, writeBuffers, byteOffset);
-    }
+    packedBitCol->serializeColumnAsPlaintextBytes(
+        bitPack, writeBuffers, byteOffset);
   }
 };
 
