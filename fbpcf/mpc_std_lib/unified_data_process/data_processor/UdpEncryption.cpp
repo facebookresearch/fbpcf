@@ -28,7 +28,7 @@ void UdpEncryption::prepareToProcessMyData(size_t myDataWidth) {
   statusOfProcessingMyData_ = Status::inProgress;
   myDataWidth_ = myDataWidth;
   prgKey_ = fbpcf::engine::util::getRandomM128iFromSystemNoise();
-  indexOffset_ = 0;
+  myDataIndexOffset_ = 0;
 }
 
 void UdpEncryption::processMyData(
@@ -45,12 +45,12 @@ void UdpEncryption::processMyData(
         " but get " + std::to_string(plaintextData.at(0).size()));
   }
   auto [ciphertext, nonce] =
-      UdpUtil::localEncryption(plaintextData, prgKey_, indexOffset_);
+      UdpUtil::localEncryption(plaintextData, prgKey_, myDataIndexOffset_);
   agent_->send(nonce);
   for (size_t i = 0; i < ciphertext.size(); i++) {
     agent_->send(ciphertext.at(i));
   }
-  indexOffset_ += plaintextData.size();
+  myDataIndexOffset_ += plaintextData.size();
 }
 
 void UdpEncryption::prepareToProcessPeerData(
@@ -67,7 +67,7 @@ void UdpEncryption::prepareToProcessPeerData(
   }
 
   peerDataWidth_ = peerDataWidth;
-  indexOffset_ = 0;
+  peerDataIndexOffset_ = 0;
 
   cherryPickedEncryption_ =
       std::vector<std::vector<unsigned char>>(indexes.size());
@@ -87,17 +87,17 @@ void UdpEncryption::processPeerData(size_t dataSize) {
 
   for (size_t i = 0; i < dataSize; i++) {
     auto ciphertext = agent_->receive(peerDataWidth_);
-    auto pos = indexToOrderMap_.find(i + indexOffset_);
+    auto pos = indexToOrderMap_.find(i + peerDataIndexOffset_);
     if (pos != indexToOrderMap_.end()) {
       // this ciphertext should be picked up
       cherryPickedEncryption_.at(pos->second) = std::move(ciphertext);
       cherryPickedNonce_.at(pos->second) = nonce;
-      cherryPickedIndex_.at(pos->second) = i + indexOffset_;
+      cherryPickedIndex_.at(pos->second) = i + peerDataIndexOffset_;
       indexToOrderMap_.erase(pos);
       // TODO: this can be further optimized by not copying duplicated nonce.
     }
   }
-  indexOffset_ += dataSize;
+  peerDataIndexOffset_ += dataSize;
 }
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
