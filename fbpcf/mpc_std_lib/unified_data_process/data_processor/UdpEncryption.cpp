@@ -14,7 +14,6 @@
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 
 UdpEncryption::UdpEncryption(
-
     std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
         agent)
     : agent_(std::move(agent)),

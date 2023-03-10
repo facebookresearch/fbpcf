@@ -10,6 +10,7 @@
 #include <emmintrin.h>
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/util/util.h"
+#include "fbpcf/mpc_std_lib/unified_data_process/data_processor/IUdpEncryption.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpUtil.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
@@ -22,7 +23,7 @@ class DataProcessor;
  *be passed into this object in batches. This object is not thread-safe but
  *it will spin up multiple threads internally.
  **/
-class UdpEncryption {
+class UdpEncryption final : public IUdpEncryption {
   template <int schedulerId>
   friend class DataProcessor;
 
@@ -31,15 +32,15 @@ class UdpEncryption {
       std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
           agent);
 
-  void prepareToProcessMyData(size_t myDataWidth);
+  void prepareToProcessMyData(size_t myDataWidth) override;
 
   // process my data via UDP encryption. This API should be called in coordinate
   // with "ProcessPeerData" on peer's side. If this API is ever called, calling
   // "getExpandedKey" to retrive the expanded key for decryption later.
   void processMyData(
-      const std::vector<std::vector<unsigned char>>& plaintextData);
+      const std::vector<std::vector<unsigned char>>& plaintextData) override;
 
-  std::vector<__m128i> getExpandedKey() {
+  std::vector<__m128i> getExpandedKey() override {
     if (statusOfProcessingMyData_ != Status::inProgress) {
       throw std::runtime_error(
           "Can't call get ExapndedKey before preparation!");
@@ -52,19 +53,15 @@ class UdpEncryption {
 
   void prepareToProcessPeerData(
       size_t peerDataWidth,
-      const std::vector<int32_t>& indexes);
+      const std::vector<int32_t>& indexes) override;
 
   // process peer data via UDP encryption. This API should be called in
   // coordinate with "ProcessMyData" on peer's side. This API is ever called,
   // calling "getProcessedData" to retrive the cherry-picked encryption later.
-  void processPeerData(size_t dataSize);
+  void processPeerData(size_t dataSize) override;
 
   // returning the ciphertext, nonce, and index of cherry-picked rows
-  std::tuple<
-      std::vector<std::vector<unsigned char>>,
-      std::vector<__m128i>,
-      std::vector<int32_t>>
-  getProcessedData() {
+  EncryptionResuts getProcessedData() override {
     if (statusOfProcessingPeerData_ != Status::inProgress) {
       throw std::runtime_error(
           "Can't call getProcessedData before preparation!");
@@ -77,8 +74,7 @@ class UdpEncryption {
   }
 
  private:
-  std::unique_ptr<fbpcf::engine::communication::IPartyCommunicationAgent>
-      agent_;
+  std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent_;
 
   uint64_t myDataIndexOffset_;
   uint64_t peerDataIndexOffset_;
