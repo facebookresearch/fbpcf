@@ -7,8 +7,13 @@
 
 #pragma once
 
-#include "folly/dynamic.h"
-#include "folly/json.h"
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <sstream>
+#include <unordered_map>
+#include "fbpcf/io/api/FileIOWrappers.h"
 
 namespace fbpcf::mpc_std_lib::oram {
 class OramMappingConfig {
@@ -21,12 +26,38 @@ class OramMappingConfig {
         wereBreakdownsFiltered_{wereBreakdownsFiltered},
         filterIndex_{filterIndex} {}
 
-  std::string toJson() {
-    return "";
+  std::string serializeAsString() {
+    std::ostringstream s;
+    boost::archive::text_oarchive oa(s);
+
+    oa << breakdownMapping_ << wereBreakdownsFiltered_ << filterIndex_;
+    return s.str();
   }
 
-  static OramMappingConfig fromJson(std::string /* str */) {
-    throw std::runtime_error("Not implemented");
+  void writeMappingToFile(std::string fileName) {
+    fbpcf::io::FileIOWrappers::writeFile(fileName, serializeAsString());
+  }
+
+  static std::unique_ptr<OramMappingConfig> fromSerializedString(
+      std::string str) {
+    std::unordered_map<std::string, uint32_t> breakdownMapping{};
+    bool wereBreakdownsFiltered;
+    uint32_t filterIndex;
+
+    std::istringstream s(str);
+
+    boost::archive::text_iarchive ia(s);
+    ia >> breakdownMapping;
+    ia >> wereBreakdownsFiltered;
+    ia >> filterIndex;
+
+    return std::make_unique<OramMappingConfig>(
+        breakdownMapping, wereBreakdownsFiltered, filterIndex);
+  }
+
+  static std::unique_ptr<OramMappingConfig> readMappingFromFile(
+      std::string fileName) {
+    return fromSerializedString(fbpcf::io::FileIOWrappers::readFile(fileName));
   }
 
   const std::unordered_map<std::string, uint32_t>& getBreakdownMapping() const {

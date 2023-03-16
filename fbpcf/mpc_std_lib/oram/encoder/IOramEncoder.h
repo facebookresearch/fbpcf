@@ -41,8 +41,6 @@ class IOramEncoder {
   virtual std::unique_ptr<OramMappingConfig> exportMappingConfig() const = 0;
 
   virtual uint32_t getOramSize() const = 0;
-
- private:
 };
 
 } // namespace fbpcf::mpc_std_lib::oram

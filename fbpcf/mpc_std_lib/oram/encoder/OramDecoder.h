@@ -8,6 +8,7 @@
 #pragma once
 
 #include "fbpcf/mpc_std_lib/oram/encoder/OramMappingConfig.h"
+#include "folly/String.h"
 
 namespace fbpcf::mpc_std_lib::oram {
 
