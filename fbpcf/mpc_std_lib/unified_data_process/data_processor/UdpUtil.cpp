@@ -120,12 +120,12 @@ static std::vector<unsigned char> convertM128iToCharVec(
 }
 
 void writeEncryptionResultsToFile(
-    const IUdpEncryption::EncryptionResuts& EncryptionResuts,
+    const IUdpEncryption::EncryptionResults& EncryptionResults,
     const std::string& file) {
   std::ostringstream s;
   boost::archive::text_oarchive oa(s);
-  oa << EncryptionResuts.ciphertexts << EncryptionResuts.indexes
-     << convertM128iToCharVec(EncryptionResuts.nonces);
+  oa << EncryptionResults.ciphertexts << EncryptionResults.indexes
+     << convertM128iToCharVec(EncryptionResults.nonces);
 
   fbpcf::io::FileIOWrappers::writeFile(file, s.str());
 }
@@ -139,11 +139,11 @@ void writeExpandedKeyToFile(
   fbpcf::io::FileIOWrappers::writeFile(file, s.str());
 }
 
-IUdpEncryption::EncryptionResuts readEncryptionResultsFromFile(
+IUdpEncryption::EncryptionResults readEncryptionResultsFromFile(
     const std::string& file) {
   std::istringstream s(fbpcf::io::FileIOWrappers::readFile(file));
 
-  IUdpEncryption::EncryptionResuts data;
+  IUdpEncryption::EncryptionResults data;
   boost::archive::text_iarchive ia(s);
   ia >> data.ciphertexts;
   ia >> data.indexes;
@@ -162,10 +162,10 @@ std::vector<__m128i> readExpandedKeyFromFile(const std::string& file) {
   return convertCharVecToM128i(data);
 }
 
-std::vector<IUdpEncryption::EncryptionResuts> splitEncryptionResults(
-    const IUdpEncryption::EncryptionResuts& encryptionResults,
+std::vector<IUdpEncryption::EncryptionResults> splitEncryptionResults(
+    const IUdpEncryption::EncryptionResults& encryptionResults,
     int count) {
-  std::vector<IUdpEncryption::EncryptionResuts> rst;
+  std::vector<IUdpEncryption::EncryptionResults> rst;
   rst.reserve(count);
   size_t originalSize = encryptionResults.nonces.size();
   auto ciphertextIt = encryptionResults.ciphertexts.begin();
@@ -174,7 +174,7 @@ std::vector<IUdpEncryption::EncryptionResuts> splitEncryptionResults(
 
   for (size_t i = 0; i < count; i++) {
     auto shardSize = getShardSize(originalSize, i, count);
-    rst.push_back(IUdpEncryption::EncryptionResuts{
+    rst.push_back(IUdpEncryption::EncryptionResults{
         .ciphertexts = std::vector<std::vector<unsigned char>>(
             std::make_move_iterator(ciphertextIt),
             std::make_move_iterator(ciphertextIt + shardSize)),

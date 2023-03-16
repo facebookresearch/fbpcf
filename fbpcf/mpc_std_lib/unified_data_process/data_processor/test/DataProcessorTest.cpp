@@ -328,7 +328,7 @@ TEST(TestFileReadAndWrite, testExpandedKeyReadAndWrite) {
 }
 
 TEST(TestFileReadAndWrite, testEncryptionResultReadAndWrite) {
-  IUdpEncryption::EncryptionResuts results;
+  IUdpEncryption::EncryptionResults results;
 
   const int batchSize = 11;
   results.ciphertexts = std::vector<std::vector<unsigned char>>(batchSize);
@@ -366,7 +366,7 @@ TEST(TestSplit, getShardSize) {
 }
 
 TEST(TestSplit, testSplit) {
-  IUdpEncryption::EncryptionResuts results;
+  IUdpEncryption::EncryptionResults results;
   int batchSize = 11;
   results.ciphertexts = std::vector<std::vector<unsigned char>>(batchSize);
   results.indexes = std::vector<int32_t>(batchSize);

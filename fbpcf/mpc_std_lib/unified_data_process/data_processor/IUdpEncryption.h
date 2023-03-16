@@ -44,14 +44,17 @@ class IUdpEncryption {
    */
   virtual void processPeerData(size_t dataSize) = 0;
 
-  struct EncryptionResuts {
+  struct EncryptionResults {
     std::vector<std::vector<unsigned char>> ciphertexts;
     std::vector<__m128i> nonces;
     std::vector<int32_t> indexes;
   };
 
+  // temporary, avoiding break fbpcs.
+  using EncryptionResuts = EncryptionResults;
+
   // returning the ciphertext, nonce, and index of cherry-picked rows
-  virtual EncryptionResuts getProcessedData() = 0;
+  virtual EncryptionResults getProcessedData() = 0;
 };
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
