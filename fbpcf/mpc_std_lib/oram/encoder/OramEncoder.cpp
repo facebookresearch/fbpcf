@@ -15,6 +15,24 @@ std::vector<uint32_t> OramEncoder::generateORAMIndexes(
   std::vector<uint32_t> rst(0);
   rst.reserve(tuples.size());
   for (const auto& tuple : tuples) {
+    bool hasThisRowBeenFiltered = false;
+    for (const auto& filter : *filters_) {
+      if (!filter->apply(tuple)) {
+        if (!wasAnyRowFiltered_) {
+          wasAnyRowFiltered_ = true;
+          filteredValuesIndex_ = currentIndex_;
+          currentIndex_++;
+        }
+        rst.push_back(filteredValuesIndex_);
+        hasThisRowBeenFiltered = true;
+        break;
+      }
+    }
+
+    if (hasThisRowBeenFiltered) {
+      continue;
+    }
+
     std::string breakdownKey = convertBreakdownsToKey(tuple);
 
     if (breakdownMapping_.find(breakdownKey) != breakdownMapping_.end()) {

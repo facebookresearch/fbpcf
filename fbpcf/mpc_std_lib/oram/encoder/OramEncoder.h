@@ -11,13 +11,16 @@
 #include <unordered_map>
 #include "folly/String.h"
 
+#include "fbpcf/mpc_std_lib/oram/encoder/IFilter.h"
 #include "fbpcf/mpc_std_lib/oram/encoder/IOramEncoder.h"
 
 namespace fbpcf::mpc_std_lib::oram {
 
 class OramEncoder : public IOramEncoder {
  public:
-  explicit OramEncoder() : currentIndex_(1), breakdownMapping_() {}
+  explicit OramEncoder(
+      std::unique_ptr<std::vector<std::unique_ptr<IFilter>>> filters)
+      : filters_{std::move(filters)} {}
 
   std::vector<uint32_t> generateORAMIndexes(
       const std::vector<std::vector<uint32_t>>& tuples) override;
@@ -25,8 +28,12 @@ class OramEncoder : public IOramEncoder {
   std::unique_ptr<OramMappingConfig> exportMappingConfig() const override;
 
  private:
-  uint32_t currentIndex_;
-  std::unordered_map<std::string, uint32_t> breakdownMapping_;
+  std::unique_ptr<std::vector<std::unique_ptr<IFilter>>> filters_;
+
+  uint32_t filteredValuesIndex_ = 0;
+  bool wasAnyRowFiltered_ = false;
+  uint32_t currentIndex_ = 0;
+  std::unordered_map<std::string, uint32_t> breakdownMapping_{};
 
   std::string convertBreakdownsToKey(
       const std::vector<uint32_t>& breakdownValues) const {
