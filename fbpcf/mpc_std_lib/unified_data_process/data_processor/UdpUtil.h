@@ -10,6 +10,7 @@
 #include <emmintrin.h>
 #include <sys/types.h>
 #include "fbpcf/frontend/BitString.h"
+#include "fbpcf/mpc_std_lib/unified_data_process/data_processor/IUdpEncryption.h"
 #include "fbpcf/primitive/mac/S2v.h"
 #include "fbpcf/primitive/mac/S2vFactory.h"
 
@@ -47,6 +48,19 @@ class UdpUtil {
       size_t batchSize,
       int inputPartyID);
 };
+
+void writeEncryptionResultsToFile(
+    const IUdpEncryption::EncryptionResuts& encryptionResults,
+    const std::string& file);
+
+void writeExpandedKeyToFile(
+    const std::vector<__m128i>& expandedKey,
+    const std::string& file);
+
+std::vector<__m128i> readExpandedKeyFromFile(const std::string& file);
+
+IUdpEncryption::EncryptionResuts readEncryptionResultsFromFile(
+    const std::string& file);
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
 

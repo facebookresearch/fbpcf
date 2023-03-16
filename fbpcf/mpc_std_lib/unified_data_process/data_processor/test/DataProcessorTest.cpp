@@ -21,6 +21,8 @@
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/IDataProcessor.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
+#include "folly/Format.h"
+#include "folly/Random.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 
@@ -304,6 +306,57 @@ TEST(DataProcessorSubObjects, testUdpEncryptionAndDecryptionObjects) {
   testUdpEncryptionAndDecryptionObjects(
       agentFactories.at(0)->create(1, "sender"),
       agentFactories.at(1)->create(0, "receiver"));
+}
+
+TEST(TestFileReadAndWrite, testExpandedKeyReadAndWrite) {
+  const int batchSize = 11;
+  std::vector<__m128i> key(batchSize);
+  for (size_t i = 0; i < batchSize; i++) {
+    key.at(i) = _mm_set_epi32(
+        folly::Random::rand32(),
+        folly::Random::rand32(),
+        folly::Random::rand32(),
+        folly::Random::rand32());
+  }
+  const std::string expandedKeyFile =
+      folly::sformat("./expanded_key_{}", folly::Random::rand32());
+
+  writeExpandedKeyToFile(key, expandedKeyFile);
+  auto key1 = readExpandedKeyFromFile(expandedKeyFile);
+  std::remove(expandedKeyFile.c_str());
+  fbpcf::testEq(key, key1);
+}
+
+TEST(TestFileReadAndWrite, testEncryptionResultReadAndWrite) {
+  IUdpEncryption::EncryptionResuts results;
+
+  const int batchSize = 11;
+  results.ciphertexts = std::vector<std::vector<unsigned char>>(batchSize);
+  results.indexes = std::vector<int32_t>(batchSize);
+  results.nonces = std::vector<__m128i>(batchSize);
+  for (size_t i = 0; i < batchSize; i++) {
+    results.nonces.at(i) = _mm_set_epi32(
+        folly::Random::rand32(),
+        folly::Random::rand32(),
+        folly::Random::rand32(),
+        folly::Random::rand32());
+    results.indexes.at(i) = folly::Random::rand32();
+    results.ciphertexts.at(i) = std::vector<unsigned char>(60);
+    for (size_t j = 0; j < results.ciphertexts.size(); j++) {
+      results.ciphertexts.at(i).at(j) = i + j;
+    }
+  }
+  const std::string resultFile =
+      folly::sformat("./encryptionResult_{}", folly::Random::rand32());
+
+  writeEncryptionResultsToFile(results, resultFile);
+  auto results1 = readEncryptionResultsFromFile(resultFile);
+  std::remove(resultFile.c_str());
+  fbpcf::testEq(results.nonces, results1.nonces);
+  fbpcf::testVectorEq(results.indexes, results1.indexes);
+  for (size_t i = 0; i < batchSize; i++) {
+    fbpcf::testVectorEq(results.ciphertexts.at(i), results1.ciphertexts.at(i));
+  }
 }
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor

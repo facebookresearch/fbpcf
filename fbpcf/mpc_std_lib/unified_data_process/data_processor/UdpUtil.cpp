@@ -6,8 +6,12 @@
  */
 
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpUtil.h"
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
 #include <cstdint>
 #include <cstring>
+#include "fbpcf/io/api/FileIOWrappers.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 
@@ -77,6 +81,84 @@ UdpUtil::localEncryption(
   std::vector<unsigned char> s2vVec(kBlockSize);
   _mm_storeu_si128((__m128i*)s2vVec.data(), s2vRes);
   return {ciphertextByte, s2vVec};
+}
+
+static std::vector<__m128i> convertCharVecToM128i(
+    const std::vector<unsigned char>& src) {
+  if (src.size() % sizeof(__m128i) != 0) {
+    throw std::invalid_argument("Unable to convert to std::vector<__m128i>");
+  }
+  std::vector<__m128i> rst(src.size() / sizeof(__m128i));
+  for (size_t i = 0; i < rst.size(); i++) {
+    rst.at(i) = _mm_set_epi8(
+        src.at(16 * i + 15),
+        src.at(16 * i + 14),
+        src.at(16 * i + 13),
+        src.at(16 * i + 12),
+        src.at(16 * i + 11),
+        src.at(16 * i + 10),
+        src.at(16 * i + 9),
+        src.at(16 * i + 8),
+        src.at(16 * i + 7),
+        src.at(16 * i + 6),
+        src.at(16 * i + 5),
+        src.at(16 * i + 4),
+        src.at(16 * i + 3),
+        src.at(16 * i + 2),
+        src.at(16 * i + 1),
+        src.at(16 * i));
+  }
+  return rst;
+}
+
+static std::vector<unsigned char> convertM128iToCharVec(
+    const std::vector<__m128i>& src) {
+  std::vector<unsigned char> rst(src.size() * sizeof(__m128i));
+  memcpy(rst.data(), src.data(), rst.size());
+  return rst;
+}
+
+void writeEncryptionResultsToFile(
+    const IUdpEncryption::EncryptionResuts& EncryptionResuts,
+    const std::string& file) {
+  std::ostringstream s;
+  boost::archive::text_oarchive oa(s);
+  oa << EncryptionResuts.ciphertexts << EncryptionResuts.indexes
+     << convertM128iToCharVec(EncryptionResuts.nonces);
+
+  fbpcf::io::FileIOWrappers::writeFile(file, s.str());
+}
+
+void writeExpandedKeyToFile(
+    const std::vector<__m128i>& expandedKey,
+    const std::string& file) {
+  std::ostringstream s;
+  boost::archive::text_oarchive oa(s);
+  oa << convertM128iToCharVec(expandedKey);
+  fbpcf::io::FileIOWrappers::writeFile(file, s.str());
+}
+
+IUdpEncryption::EncryptionResuts readEncryptionResultsFromFile(
+    const std::string& file) {
+  std::istringstream s(fbpcf::io::FileIOWrappers::readFile(file));
+
+  IUdpEncryption::EncryptionResuts data;
+  boost::archive::text_iarchive ia(s);
+  ia >> data.ciphertexts;
+  ia >> data.indexes;
+  std::vector<unsigned char> tmp;
+  ia >> tmp;
+
+  data.nonces = convertCharVecToM128i(tmp);
+  return data;
+}
+
+std::vector<__m128i> readExpandedKeyFromFile(const std::string& file) {
+  std::vector<unsigned char> data(sizeof(__m128i) * 11);
+  std::istringstream s(fbpcf::io::FileIOWrappers::readFile(file));
+  boost::archive::text_iarchive ia(s);
+  ia >> data;
+  return convertCharVecToM128i(data);
 }
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
