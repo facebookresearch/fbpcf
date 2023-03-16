@@ -62,6 +62,17 @@ std::vector<__m128i> readExpandedKeyFromFile(const std::string& file);
 IUdpEncryption::EncryptionResuts readEncryptionResultsFromFile(
     const std::string& file);
 
+std::vector<IUdpEncryption::EncryptionResuts> splitEncryptionResults(
+    const IUdpEncryption::EncryptionResuts& encryptionResults,
+    int count);
+
+// decides the i-th shard size. i is the shard index
+inline size_t
+getShardSize(size_t totalCount, size_t shardIndex, size_t totalShard) {
+  return (totalCount * (shardIndex + 1)) / totalShard -
+      (totalCount * shardIndex) / totalShard;
+}
+
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
 
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpUtil_impl.h"
