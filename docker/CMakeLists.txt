@@ -17,6 +17,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-avx512f")
 
 include(cmake/fbpcf.cmake)
 install(DIRECTORY cmake/ DESTINATION cmake/)
+find_package(Boost REQUIRED COMPONENTS serialization)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 # Build fbpcf static library
 file(GLOB_RECURSE fbpcf_src
@@ -35,6 +37,8 @@ target_link_libraries(
   ${EMP-OT_LIBRARIES}
   google-cloud-cpp::storage
   Folly::folly
+  Boost::serialization
+  ${Boost_LIBRARIES}
   re2)
 
 # Build Edit Distance Example Library
