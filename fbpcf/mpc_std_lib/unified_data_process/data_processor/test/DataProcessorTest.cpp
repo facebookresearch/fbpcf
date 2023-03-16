@@ -359,4 +359,38 @@ TEST(TestFileReadAndWrite, testEncryptionResultReadAndWrite) {
   }
 }
 
+TEST(TestSplit, getShardSize) {
+  EXPECT_EQ(getShardSize(11, 0, 3), 3);
+  EXPECT_EQ(getShardSize(11, 1, 3), 4);
+  EXPECT_EQ(getShardSize(11, 2, 3), 4);
+}
+
+TEST(TestSplit, testSplit) {
+  IUdpEncryption::EncryptionResuts results;
+  int batchSize = 11;
+  results.ciphertexts = std::vector<std::vector<unsigned char>>(batchSize);
+  results.indexes = std::vector<int32_t>(batchSize);
+  results.nonces = std::vector<__m128i>(batchSize);
+  for (size_t i = 0; i < batchSize; i++) {
+    results.nonces.at(i) = _mm_set_epi32(
+        folly::Random::rand32(),
+        folly::Random::rand32(),
+        folly::Random::rand32(),
+        folly::Random::rand32());
+    results.indexes.at(i) = folly::Random::rand32();
+    results.ciphertexts.at(i) = std::vector<unsigned char>(60);
+    for (size_t j = 0; j < results.ciphertexts.size(); j++) {
+      results.ciphertexts.at(i).at(j) = i + j;
+    }
+  }
+  auto resultsVec = splitEncryptionResults(results, 3);
+  for (auto& it : resultsVec) {
+    EXPECT_EQ(it.ciphertexts.size(), it.nonces.size());
+    EXPECT_EQ(it.ciphertexts.size(), it.indexes.size());
+  }
+  EXPECT_EQ(resultsVec.at(0).ciphertexts.size(), 3);
+  EXPECT_EQ(resultsVec.at(1).ciphertexts.size(), 4);
+  EXPECT_EQ(resultsVec.at(2).ciphertexts.size(), 4);
+}
+
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor

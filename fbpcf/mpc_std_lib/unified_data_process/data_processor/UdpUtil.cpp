@@ -11,6 +11,7 @@
 #include <boost/serialization/vector.hpp>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include "fbpcf/io/api/FileIOWrappers.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
@@ -159,6 +160,35 @@ std::vector<__m128i> readExpandedKeyFromFile(const std::string& file) {
   boost::archive::text_iarchive ia(s);
   ia >> data;
   return convertCharVecToM128i(data);
+}
+
+std::vector<IUdpEncryption::EncryptionResuts> splitEncryptionResults(
+    const IUdpEncryption::EncryptionResuts& encryptionResults,
+    int count) {
+  std::vector<IUdpEncryption::EncryptionResuts> rst;
+  rst.reserve(count);
+  size_t originalSize = encryptionResults.nonces.size();
+  auto ciphertextIt = encryptionResults.ciphertexts.begin();
+  auto noncesIt = encryptionResults.nonces.begin();
+  auto indexesIt = encryptionResults.indexes.begin();
+
+  for (size_t i = 0; i < count; i++) {
+    auto shardSize = getShardSize(originalSize, i, count);
+    rst.push_back(IUdpEncryption::EncryptionResuts{
+        .ciphertexts = std::vector<std::vector<unsigned char>>(
+            std::make_move_iterator(ciphertextIt),
+            std::make_move_iterator(ciphertextIt + shardSize)),
+        .nonces = std::vector<__m128i>(
+            std::make_move_iterator(noncesIt),
+            std::make_move_iterator(noncesIt + shardSize)),
+        .indexes = std::vector<int32_t>(
+            std::make_move_iterator(indexesIt),
+            std::make_move_iterator(indexesIt + shardSize))});
+    ciphertextIt += shardSize;
+    noncesIt += shardSize;
+    indexesIt += shardSize;
+  }
+  return rst;
 }
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor
