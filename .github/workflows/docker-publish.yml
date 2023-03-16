@@ -63,7 +63,7 @@ jobs:
         cd fbpcs
         git reset --hard $(curl \
         --header 'content-type: application/json' \
-        "https://api.github.com/repos/facebookresearch/fbpcs/actions/workflows/12965519/runs?per_page=1&status=success" | jq \
+        "https://api.github.com/repos/facebookresearch/fbpcs/actions/workflows/12965519/runs?per_page=1&status=success&branch=main" | jq \
         ".workflow_runs[0] .head_sha" | tr -d '"')
 
     - name: Build fbpcs image (this uses the locally built fbpcf image as a dependency)
