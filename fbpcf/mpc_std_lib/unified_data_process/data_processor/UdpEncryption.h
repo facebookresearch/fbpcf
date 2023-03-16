@@ -61,7 +61,7 @@ class UdpEncryption final : public IUdpEncryption {
   void processPeerData(size_t dataSize) override;
 
   // returning the ciphertext, nonce, and index of cherry-picked rows
-  EncryptionResuts getProcessedData() override {
+  EncryptionResults getProcessedData() override {
     if (statusOfProcessingPeerData_ != Status::inProgress) {
       throw std::runtime_error(
           "Can't call getProcessedData before preparation!");

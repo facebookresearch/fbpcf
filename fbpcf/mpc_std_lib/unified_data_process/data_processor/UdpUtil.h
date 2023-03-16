@@ -50,7 +50,7 @@ class UdpUtil {
 };
 
 void writeEncryptionResultsToFile(
-    const IUdpEncryption::EncryptionResuts& encryptionResults,
+    const IUdpEncryption::EncryptionResults& encryptionResults,
     const std::string& file);
 
 void writeExpandedKeyToFile(
@@ -59,11 +59,11 @@ void writeExpandedKeyToFile(
 
 std::vector<__m128i> readExpandedKeyFromFile(const std::string& file);
 
-IUdpEncryption::EncryptionResuts readEncryptionResultsFromFile(
+IUdpEncryption::EncryptionResults readEncryptionResultsFromFile(
     const std::string& file);
 
-std::vector<IUdpEncryption::EncryptionResuts> splitEncryptionResults(
-    const IUdpEncryption::EncryptionResuts& encryptionResults,
+std::vector<IUdpEncryption::EncryptionResults> splitEncryptionResults(
+    const IUdpEncryption::EncryptionResults& encryptionResults,
     int count);
 
 // decides the i-th shard size. i is the shard index
