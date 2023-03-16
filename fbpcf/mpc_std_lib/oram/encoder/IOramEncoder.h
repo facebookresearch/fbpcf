@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "fbpcf/mpc_std_lib/oram/encoder/OramMappingConfig.h"
+
 namespace fbpcf::mpc_std_lib::oram {
 /*
  * An ORAM encoder is responsible for taking tuples of aggregation indexes
@@ -20,21 +22,6 @@ namespace fbpcf::mpc_std_lib::oram {
  */
 class IOramEncoder {
  public:
-  class OramMappingConfig {
-   public:
-    OramMappingConfig() {}
-
-    std::string toString() {
-      return "";
-    }
-
-    static OramMappingConfig fromString() {
-      return OramMappingConfig();
-    }
-
-   private:
-  };
-
   virtual ~IOramEncoder() = default;
 
   /*
@@ -52,6 +39,8 @@ class IOramEncoder {
    * Should only be called once after finishing calling generateORAMIndexes()
    */
   virtual std::unique_ptr<OramMappingConfig> exportMappingConfig() const = 0;
+
+  virtual uint32_t getOramSize() const = 0;
 
  private:
 };

@@ -47,9 +47,9 @@ std::vector<uint32_t> OramEncoder::generateORAMIndexes(
   return rst;
 }
 
-std::unique_ptr<IOramEncoder::OramMappingConfig>
-OramEncoder::exportMappingConfig() const {
-  throw std::runtime_error("Unimplemented");
+std::unique_ptr<OramMappingConfig> OramEncoder::exportMappingConfig() const {
+  return std::make_unique<OramMappingConfig>(
+      breakdownMapping_, wasAnyRowFiltered_, filteredValuesIndex_);
 }
 
 } // namespace fbpcf::mpc_std_lib::oram
