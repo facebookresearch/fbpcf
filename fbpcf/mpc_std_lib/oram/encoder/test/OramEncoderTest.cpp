@@ -12,9 +12,31 @@
 #include "fbpcf/test/TestHelper.h"
 
 #include "fbpcf/mpc_std_lib/oram/encoder/IOramEncoder.h"
+#include "fbpcf/mpc_std_lib/oram/encoder/OramDecoder.h"
 #include "fbpcf/mpc_std_lib/oram/encoder/OramEncoder.h"
 
 namespace fbpcf::mpc_std_lib::oram {
+
+void testDecoderValidity(
+    std::unique_ptr<IOramEncoder> encoder,
+    const std::vector<uint32_t>& breakdownMapping,
+    const std::vector<std::vector<uint32_t>>& expectedBreakdownValues,
+    std::optional<uint32_t> filterIndex) {
+  auto mappingConfig = encoder->exportMappingConfig();
+  OramDecoder decoder(std::move(mappingConfig));
+
+  auto decodedTuples = decoder.decodeORAMIndexes(breakdownMapping);
+
+  EXPECT_EQ(breakdownMapping.size(), decodedTuples.size());
+
+  for (int i = 0; i < decodedTuples.size(); i++) {
+    if (filterIndex.has_value() && breakdownMapping[i] == filterIndex.value()) {
+      EXPECT_EQ(decodedTuples[i], std::vector<uint32_t>(0));
+    } else {
+      EXPECT_EQ(decodedTuples[i], expectedBreakdownValues[i]);
+    }
+  }
+}
 
 TEST(OramEncoderTest, TestEncoderNoFilters) {
   auto filters = std::make_unique<std::vector<std::unique_ptr<IFilter>>>(0);
@@ -66,11 +88,15 @@ TEST(OramEncoderTest, TestEncoderNoFilters) {
         breakdownTuples[i][0] * 24 + breakdownTuples[i][1] * 8 +
             breakdownTuples[i][2] * 4 + breakdownTuples[i][3]);
   }
+
+  testDecoderValidity(
+      std::move(encoder), mapping, breakdownTuples, std::nullopt);
 }
 
 void encoderWithFiltersTest(
     std::unique_ptr<std::vector<std::unique_ptr<IFilter>>> filters,
-    const std::vector<uint32_t>& expected) {
+    const std::vector<uint32_t>& expected,
+    std::optional<uint32_t> filterIndex) {
   /*
    * Total breakdown columns: 2
    * B1: [0 - 9]
@@ -90,6 +116,9 @@ void encoderWithFiltersTest(
   auto mapping = encoder->generateORAMIndexes(breakdownTuples);
 
   testVectorEq(expected, mapping);
+
+  testDecoderValidity(
+      std::move(encoder), mapping, breakdownTuples, filterIndex);
 }
 
 TEST(OramEncoderTest, EmptyFilterTest) {
@@ -101,7 +130,7 @@ TEST(OramEncoderTest, EmptyFilterTest) {
     expected.push_back(i);
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, std::nullopt);
 }
 
 TEST(OramEncoderTest, GTFilterTest) {
@@ -121,7 +150,7 @@ TEST(OramEncoderTest, GTFilterTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 0);
 }
 
 TEST(OramEncoderTest, LTFilterTest) {
@@ -141,7 +170,7 @@ TEST(OramEncoderTest, LTFilterTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 5);
 }
 
 TEST(OramEncoderTest, GTEFilterTest) {
@@ -161,7 +190,7 @@ TEST(OramEncoderTest, GTEFilterTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 0);
 }
 
 TEST(OramEncoderTest, LTEFilterTest) {
@@ -181,7 +210,7 @@ TEST(OramEncoderTest, LTEFilterTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 6);
 }
 
 TEST(OramEncoderTest, EQFilterTest) {
@@ -201,7 +230,7 @@ TEST(OramEncoderTest, EQFilterTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 0);
 }
 
 TEST(OramEncoderTest, NEQFilterTest) {
@@ -221,7 +250,7 @@ TEST(OramEncoderTest, NEQFilterTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 0);
 }
 
 TEST(OramEncoderTest, SubsetOfTest) {
@@ -243,7 +272,7 @@ TEST(OramEncoderTest, SubsetOfTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 0);
 }
 
 TEST(OramEncoderTest, NotSubsetOfTest) {
@@ -271,7 +300,7 @@ TEST(OramEncoderTest, NotSubsetOfTest) {
     }
   }
 
-  encoderWithFiltersTest(std::move(filters), expected);
+  encoderWithFiltersTest(std::move(filters), expected, 0);
 }
 
 } // namespace fbpcf::mpc_std_lib::oram
