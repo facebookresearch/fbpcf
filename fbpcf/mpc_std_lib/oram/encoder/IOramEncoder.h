@@ -20,7 +20,20 @@ namespace fbpcf::mpc_std_lib::oram {
  */
 class IOramEncoder {
  public:
-  class OramMappingConfig {};
+  class OramMappingConfig {
+   public:
+    OramMappingConfig() {}
+
+    std::string toString() {
+      return "";
+    }
+
+    static OramMappingConfig fromString() {
+      return OramMappingConfig();
+    }
+
+   private:
+  };
 
   virtual ~IOramEncoder() = default;
 
@@ -28,7 +41,7 @@ class IOramEncoder {
    * Given the list of all breakdown column values, assign a unique ORAM index
    * to each permutation and return the mapping information that can be used to
    * retrieve the results. Can be called multiple times in batch mode and
-   * preserve the ordering.
+   * preserve the ordering. A value of 0 indicates the tuple is filtered out.
    */
   virtual std::vector<uint32_t> generateORAMIndexes(
       const std::vector<std::vector<uint32_t>>& tuples) = 0;
