@@ -41,7 +41,8 @@ class IOramEncoder {
    * Given the list of all breakdown column values, assign a unique ORAM index
    * to each permutation and return the mapping information that can be used to
    * retrieve the results. Can be called multiple times in batch mode and
-   * preserve the ordering. A value of 0 indicates the tuple is filtered out.
+   * preserve the ordering. The first value to fail the filters will re-use the
+   * same bucket for all future non-passing tuples.
    */
   virtual std::vector<uint32_t> generateORAMIndexes(
       const std::vector<std::vector<uint32_t>>& tuples) = 0;
