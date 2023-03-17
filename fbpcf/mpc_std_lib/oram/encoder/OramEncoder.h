@@ -27,6 +27,10 @@ class OramEncoder : public IOramEncoder {
 
   std::unique_ptr<OramMappingConfig> exportMappingConfig() const override;
 
+  uint32_t getOramSize() const override {
+    return currentIndex_;
+  }
+
  private:
   std::unique_ptr<std::vector<std::unique_ptr<IFilter>>> filters_;
 
