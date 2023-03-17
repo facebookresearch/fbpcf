@@ -50,9 +50,6 @@ class IUdpEncryption {
     std::vector<int32_t> indexes;
   };
 
-  // temporary, avoiding break fbpcs.
-  using EncryptionResuts = EncryptionResults;
-
   // returning the ciphertext, nonce, and index of cherry-picked rows
   virtual EncryptionResults getProcessedData() = 0;
 };
