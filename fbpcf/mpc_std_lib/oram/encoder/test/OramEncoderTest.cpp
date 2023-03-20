@@ -6,6 +6,7 @@
  */
 
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <memory>
 #include <random>
 
@@ -15,6 +16,9 @@
 #include "fbpcf/mpc_std_lib/oram/encoder/OramDecoder.h"
 #include "fbpcf/mpc_std_lib/oram/encoder/OramEncoder.h"
 
+#include "folly/Format.h"
+#include "folly/Random.h"
+
 namespace fbpcf::mpc_std_lib::oram {
 
 void testDecoderValidity(
@@ -22,10 +26,32 @@ void testDecoderValidity(
     const std::vector<uint32_t>& breakdownMapping,
     const std::vector<std::vector<uint32_t>>& expectedBreakdownValues,
     std::optional<uint32_t> filterIndex) {
+  const std::string mappingConfigFile =
+      folly::sformat("/tmp/mapping_config_{}", folly::Random::rand32());
+
   auto mappingConfig = encoder->exportMappingConfig();
+
+  mappingConfig->writeMappingToFile(mappingConfigFile);
+
   OramDecoder decoder(std::move(mappingConfig));
 
   auto decodedTuples = decoder.decodeORAMIndexes(breakdownMapping);
+
+  EXPECT_EQ(breakdownMapping.size(), decodedTuples.size());
+
+  for (int i = 0; i < decodedTuples.size(); i++) {
+    if (filterIndex.has_value() && breakdownMapping[i] == filterIndex.value()) {
+      EXPECT_EQ(decodedTuples[i], std::vector<uint32_t>(0));
+    } else {
+      EXPECT_EQ(decodedTuples[i], expectedBreakdownValues[i]);
+    }
+  }
+
+  auto deserializedMapping =
+      OramMappingConfig::readMappingFromFile(mappingConfigFile);
+
+  OramDecoder decoder2(std::move(deserializedMapping));
+  decodedTuples = decoder2.decodeORAMIndexes(breakdownMapping);
 
   EXPECT_EQ(breakdownMapping.size(), decodedTuples.size());
 
@@ -61,6 +87,8 @@ TEST(OramEncoderTest, TestEncoderNoFilters) {
   }
 
   auto mapping = encoder->generateORAMIndexes(breakdownTuples);
+
+  EXPECT_EQ(encoder->getOramSize(), 48);
 
   for (int i = 0; i < 48; i++) {
     EXPECT_EQ(mapping[i], i);
@@ -114,6 +142,10 @@ void encoderWithFiltersTest(
       std::make_unique<OramEncoder>(std::move(filters));
 
   auto mapping = encoder->generateORAMIndexes(breakdownTuples);
+
+  EXPECT_EQ(
+      encoder->getOramSize(),
+      *std::max_element(expected.begin(), expected.end()) + 1);
 
   testVectorEq(expected, mapping);
 
