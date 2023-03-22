@@ -51,9 +51,20 @@ class UdpEncryption final : public IUdpEncryption {
     return std::vector<__m128i>(expandedKey.begin(), expandedKey.end());
   }
 
+  // temp API to maintain forward/backward compactibility
   void prepareToProcessPeerData(
       size_t peerDataWidth,
-      const std::vector<int32_t>& indexes) override;
+      const std::vector<int32_t>& indexes) override {
+    std::vector<uint64_t> uint64Index(indexes.size());
+    for (size_t i = 0; i < indexes.size(); i++) {
+      uint64Index.at(i) = indexes.at(i);
+    }
+    prepareToProcessPeerData(peerDataWidth, uint64Index);
+  }
+
+  void prepareToProcessPeerData(
+      size_t peerDataWidth,
+      const std::vector<uint64_t>& indexes) override;
 
   // process peer data via UDP encryption. This API should be called in
   // coordinate with "ProcessMyData" on peer's side. This API is ever called,
@@ -94,7 +105,7 @@ class UdpEncryption final : public IUdpEncryption {
 
   std::vector<std::vector<unsigned char>> cherryPickedEncryption_;
   std::vector<__m128i> cherryPickedNonce_;
-  std::vector<int32_t> cherryPickedIndex_;
+  std::vector<uint64_t> cherryPickedIndex_;
 
   static const size_t kBlockSize = 16;
 

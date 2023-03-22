@@ -50,7 +50,7 @@ class DataProcessor final : public IDataProcessor<schedulerId> {
    */
   typename IDataProcessor<schedulerId>::SecString processPeersData(
       size_t dataSize,
-      const std::vector<int32_t>& indexes,
+      const std::vector<uint64_t>& indexes,
       size_t dataWidth) override;
 
  private:

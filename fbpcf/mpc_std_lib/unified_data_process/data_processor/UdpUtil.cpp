@@ -181,7 +181,7 @@ std::vector<IUdpEncryption::EncryptionResults> splitEncryptionResults(
         .nonces = std::vector<__m128i>(
             std::make_move_iterator(noncesIt),
             std::make_move_iterator(noncesIt + shardSize)),
-        .indexes = std::vector<int32_t>(
+        .indexes = std::vector<uint64_t>(
             std::make_move_iterator(indexesIt),
             std::make_move_iterator(indexesIt + shardSize))});
     ciphertextIt += shardSize;

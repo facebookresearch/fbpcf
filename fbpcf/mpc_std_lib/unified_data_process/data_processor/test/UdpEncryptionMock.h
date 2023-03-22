@@ -29,6 +29,11 @@ class UdpEncryptionMock final : public IUdpEncryption {
   MOCK_METHOD(
       void,
       prepareToProcessPeerData,
+      (size_t, const std::vector<uint64_t>&));
+
+  MOCK_METHOD(
+      void,
+      prepareToProcessPeerData,
       (size_t, const std::vector<int32_t>&));
 
   MOCK_METHOD(void, processPeerData, (size_t));
