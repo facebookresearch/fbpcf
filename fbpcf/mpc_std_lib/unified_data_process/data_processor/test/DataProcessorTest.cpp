@@ -28,7 +28,7 @@ namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 
 std::tuple<
     std::vector<std::vector<std::vector<uint8_t>>>,
-    std::vector<int32_t>,
+    std::vector<uint64_t>,
     std::vector<std::vector<uint8_t>>>
 generateDataProcessorTestData(size_t dataWidth, size_t numberOfShards) {
   std::random_device rd;
@@ -46,7 +46,7 @@ generateDataProcessorTestData(size_t dataWidth, size_t numberOfShards) {
       data = randomData(e);
     }
   }
-  std::vector<int32_t> index(inputSize);
+  std::vector<uint64_t> index(inputSize);
   for (size_t i = 0; i < inputSize; i++) {
     index[i] = i;
   }
@@ -95,7 +95,7 @@ void testDataProcessor(
   };
   auto task1 = [](std::unique_ptr<IDataProcessor<1>> processor,
                   size_t dataSize,
-                  const std::vector<int32_t>& indexes,
+                  const std::vector<uint64_t>& indexes,
                   size_t dataWidth) {
     auto secretSharedOutput =
         processor->processPeersData(dataSize, indexes, dataWidth);
@@ -188,7 +188,7 @@ void testUdpEncryptionAndDecryptionObjects(
                       plaintextDataInShards,
                   size_t dataWidth,
                   size_t outputSize,
-                  const std::vector<int32_t>& indexes,
+                  const std::vector<uint64_t>& indexes,
                   const std::vector<size_t>& sizes) {
     udpEnc->prepareToProcessMyData(dataWidth);
     for (size_t i = 0; i < plaintextDataInShards.size(); i++) {
@@ -239,7 +239,7 @@ void testUdpEncryptionAndDecryptionObjects(
   auto task1 = [](std::unique_ptr<UdpEncryption> udpEnc,
                   std::unique_ptr<UdpDecryption<1>> udpDec0,
                   std::unique_ptr<UdpDecryption<3>> udpDec1,
-                  const std::vector<int32_t>& indexes,
+                  const std::vector<uint64_t>& indexes,
                   const std::vector<size_t>& sizes,
                   const std::vector<std::vector<std::vector<unsigned char>>>&
                       plaintextDataInShards,
@@ -332,7 +332,7 @@ TEST(TestFileReadAndWrite, testEncryptionResultReadAndWrite) {
 
   const int batchSize = 11;
   results.ciphertexts = std::vector<std::vector<unsigned char>>(batchSize);
-  results.indexes = std::vector<int32_t>(batchSize);
+  results.indexes = std::vector<uint64_t>(batchSize);
   results.nonces = std::vector<__m128i>(batchSize);
   for (size_t i = 0; i < batchSize; i++) {
     results.nonces.at(i) = _mm_set_epi32(
@@ -369,7 +369,7 @@ TEST(TestSplit, testSplit) {
   IUdpEncryption::EncryptionResults results;
   int batchSize = 11;
   results.ciphertexts = std::vector<std::vector<unsigned char>>(batchSize);
-  results.indexes = std::vector<int32_t>(batchSize);
+  results.indexes = std::vector<uint64_t>(batchSize);
   results.nonces = std::vector<__m128i>(batchSize);
   for (size_t i = 0; i < batchSize; i++) {
     results.nonces.at(i) = _mm_set_epi32(

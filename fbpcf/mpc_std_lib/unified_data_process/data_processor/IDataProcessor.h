@@ -48,8 +48,20 @@ class IDataProcessor {
    */
   virtual SecString processPeersData(
       size_t dataSize,
-      const std::vector<int32_t>& indexes,
+      const std::vector<uint64_t>& indexes,
       size_t dataWidth) = 0;
+
+  // temp API to maintain forward/backward compactibility
+  virtual SecString processPeersData(
+      size_t dataSize,
+      const std::vector<int32_t>& indexes,
+      size_t dataWidth) {
+    std::vector<uint64_t> uint64Index(indexes.size());
+    for (size_t i = 0; i < indexes.size(); i++) {
+      uint64Index.at(i) = indexes.at(i);
+    }
+    return processPeersData(dataSize, uint64Index, dataWidth);
+  }
 };
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor

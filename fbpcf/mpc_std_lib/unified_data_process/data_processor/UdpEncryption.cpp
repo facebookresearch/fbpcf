@@ -54,7 +54,7 @@ void UdpEncryption::processMyData(
 
 void UdpEncryption::prepareToProcessPeerData(
     size_t peerDataWidth,
-    const std::vector<int32_t>& indexes) {
+    const std::vector<uint64_t>& indexes) {
   if (statusOfProcessingPeerData_ != Status::idle) {
     throw std::runtime_error(
         "Can't call prepare when already processing peer data!");
@@ -71,7 +71,7 @@ void UdpEncryption::prepareToProcessPeerData(
   cherryPickedEncryption_ =
       std::vector<std::vector<unsigned char>>(indexes.size());
   cherryPickedNonce_ = std::vector<__m128i>(indexes.size());
-  cherryPickedIndex_ = std::vector<int32_t>(indexes.size());
+  cherryPickedIndex_ = std::vector<uint64_t>(indexes.size());
 }
 
 void UdpEncryption::processPeerData(size_t dataSize) {

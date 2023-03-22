@@ -8,7 +8,9 @@
 #pragma once
 
 #include <emmintrin.h>
+#include <sys/types.h>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
@@ -32,9 +34,22 @@ class IUdpEncryption {
 
   virtual std::vector<__m128i> getExpandedKey() = 0;
 
+  // temp API to maintain forward/backward compactibility
   virtual void prepareToProcessPeerData(
       size_t peerDataWidth,
-      const std::vector<int32_t>& indexes) = 0;
+      const std::vector<int32_t>& indexes) {
+    std::vector<uint64_t> uint64Index(indexes.size());
+    std::transform(
+        indexes.begin(),
+        indexes.end(),
+        uint64Index.begin(),
+        [](int32_t c) -> uint64_t { return c; });
+    prepareToProcessPeerData(peerDataWidth, uint64Index);
+  }
+
+  virtual void prepareToProcessPeerData(
+      size_t peerDataWidth,
+      const std::vector<uint64_t>& indexes) = 0;
 
   /*
    * process peer data via UDP encryption. This API should be called in
@@ -47,7 +62,7 @@ class IUdpEncryption {
   struct EncryptionResults {
     std::vector<std::vector<unsigned char>> ciphertexts;
     std::vector<__m128i> nonces;
-    std::vector<int32_t> indexes;
+    std::vector<uint64_t> indexes;
   };
 
   // returning the ciphertext, nonce, and index of cherry-picked rows

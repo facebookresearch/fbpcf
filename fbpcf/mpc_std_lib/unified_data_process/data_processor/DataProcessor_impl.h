@@ -41,7 +41,7 @@ template <int schedulerId>
 typename IDataProcessor<schedulerId>::SecString
 DataProcessor<schedulerId>::processPeersData(
     size_t dataSize,
-    const std::vector<int32_t>& indexes,
+    const std::vector<uint64_t>& indexes,
     size_t dataWidth) {
   encrypter_.prepareToProcessPeerData(dataWidth, indexes);
   encrypter_.processPeerData(dataSize);

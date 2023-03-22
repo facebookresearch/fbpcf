@@ -35,7 +35,7 @@ template <int schedulerId>
 typename IDataProcessor<schedulerId>::SecString
 DummyDataProcessor<schedulerId>::processPeersData(
     size_t dataSize,
-    const std::vector<int32_t>& indexes,
+    const std::vector<uint64_t>& indexes,
     size_t dataWidth) {
   std::vector<std::vector<unsigned char>> plaintext;
   for (size_t i = 0; i < dataSize; i++) {
