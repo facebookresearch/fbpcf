@@ -59,18 +59,6 @@ class UdpDecryption {
   SecString decryptPeerData(
       const std::vector<std::vector<unsigned char>>& cherryPickedEncryption,
       const std::vector<__m128i>& cherryPickedNonce,
-      const std::vector<int32_t>& cherryPickedIndex) const {
-    std::vector<uint64_t> uint64Index(cherryPickedIndex.size());
-    for (size_t i = 0; i < cherryPickedIndex.size(); i++) {
-      uint64Index.at(i) = cherryPickedIndex.at(i);
-    }
-    return decryptPeerData(
-        cherryPickedEncryption, cherryPickedNonce, uint64Index);
-  }
-
-  SecString decryptPeerData(
-      const std::vector<std::vector<unsigned char>>& cherryPickedEncryption,
-      const std::vector<__m128i>& cherryPickedNonce,
       const std::vector<uint64_t>& cherryPickedIndex) const {
     size_t outputWidth = cherryPickedEncryption.at(0).size();
     size_t outputSize = cherryPickedEncryption.size();
