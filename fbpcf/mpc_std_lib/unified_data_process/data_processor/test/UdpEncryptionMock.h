@@ -22,6 +22,12 @@ class UdpEncryptionMock final : public IUdpEncryption {
   MOCK_METHOD(
       void,
       processMyData,
+      (const std::vector<std::vector<unsigned char>>&,
+       const std::vector<uint64_t>& indexes));
+
+  MOCK_METHOD(
+      void,
+      processMyData,
       (const std::vector<std::vector<unsigned char>>&));
 
   MOCK_METHOD(std::vector<__m128i>, getExpandedKey, ());
