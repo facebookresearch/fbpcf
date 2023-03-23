@@ -34,19 +34,6 @@ class IUdpEncryption {
 
   virtual std::vector<__m128i> getExpandedKey() = 0;
 
-  // temp API to maintain forward/backward compactibility
-  virtual void prepareToProcessPeerData(
-      size_t peerDataWidth,
-      const std::vector<int32_t>& indexes) {
-    std::vector<uint64_t> uint64Index(indexes.size());
-    std::transform(
-        indexes.begin(),
-        indexes.end(),
-        uint64Index.begin(),
-        [](int32_t c) -> uint64_t { return c; });
-    prepareToProcessPeerData(peerDataWidth, uint64Index);
-  }
-
   virtual void prepareToProcessPeerData(
       size_t peerDataWidth,
       const std::vector<uint64_t>& indexes) = 0;
