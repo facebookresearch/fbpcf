@@ -51,17 +51,6 @@ class UdpEncryption final : public IUdpEncryption {
     return std::vector<__m128i>(expandedKey.begin(), expandedKey.end());
   }
 
-  // temp API to maintain forward/backward compactibility
-  void prepareToProcessPeerData(
-      size_t peerDataWidth,
-      const std::vector<int32_t>& indexes) override {
-    std::vector<uint64_t> uint64Index(indexes.size());
-    for (size_t i = 0; i < indexes.size(); i++) {
-      uint64Index.at(i) = indexes.at(i);
-    }
-    prepareToProcessPeerData(peerDataWidth, uint64Index);
-  }
-
   void prepareToProcessPeerData(
       size_t peerDataWidth,
       const std::vector<uint64_t>& indexes) override;
