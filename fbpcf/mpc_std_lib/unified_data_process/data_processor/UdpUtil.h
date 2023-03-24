@@ -29,6 +29,12 @@ class UdpUtil {
       __m128i prgKey,
       uint64_t indexOffset = 0);
 
+  static std::pair<std::vector<std::vector<uint8_t>>, std::vector<uint8_t>>
+  localEncryption(
+      const std::vector<std::vector<unsigned char>>& plaintextData,
+      __m128i prgKey,
+      const std::vector<uint64_t>& indexes);
+
   static std::vector<__m128i>
   generateCounterBlocks(__m128i nonce, uint64_t startingIndex, size_t size);
 

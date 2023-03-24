@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <cstring>
 #include <iterator>
+#include <numeric>
+#include <stdexcept>
 #include "fbpcf/io/api/FileIOWrappers.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
@@ -32,6 +34,20 @@ UdpUtil::localEncryption(
     const std::vector<std::vector<unsigned char>>& plaintextData,
     __m128i prgKey,
     uint64_t indexOffset) {
+  std::vector<uint64_t> indexes(plaintextData.size());
+  std::iota(indexes.begin(), indexes.end(), 0);
+  return localEncryption(plaintextData, prgKey, indexes);
+}
+
+std::pair<std::vector<std::vector<uint8_t>>, std::vector<uint8_t>>
+UdpUtil::localEncryption(
+    const std::vector<std::vector<unsigned char>>& plaintextData,
+    __m128i prgKey,
+    const std::vector<uint64_t>& indexes) {
+  if (indexes.size() != plaintextData.size()) {
+    throw std::invalid_argument(
+        "indexes size and plaintextData size are not the same.");
+  }
   size_t rowCounts = plaintextData.size();
   size_t rowSize = plaintextData.at(0).size();
   size_t rowBlocks = (rowSize + kBlockSize - 1) / kBlockSize;
@@ -63,7 +79,7 @@ UdpUtil::localEncryption(
 
   for (uint64_t i = 0; i < counterM128i.size(); ++i) {
     counterM128i.at(i) =
-        generateCounterBlocks(s2vRes, (indexOffset + i) * rowBlocks, rowBlocks);
+        generateCounterBlocks(s2vRes, indexes.at(i) * rowBlocks, rowBlocks);
     // encrypt counters
     localAes.encryptInPlace(counterM128i.at(i));
   }
