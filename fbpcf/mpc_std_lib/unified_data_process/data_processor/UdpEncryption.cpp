@@ -31,7 +31,8 @@ void UdpEncryption::prepareToProcessMyData(size_t myDataWidth) {
 }
 
 void UdpEncryption::processMyData(
-    const std::vector<std::vector<unsigned char>>& plaintextData) {
+    const std::vector<std::vector<unsigned char>>& plaintextData,
+    const std::vector<uint64_t>& indexes) {
   if (statusOfProcessingMyData_ != Status::inProgress) {
     throw std::runtime_error("Can't call procesMyData before preparation!");
   }
@@ -43,10 +44,13 @@ void UdpEncryption::processMyData(
         "Inconsistent data width, expecting " + std::to_string(myDataWidth_) +
         " but get " + std::to_string(plaintextData.at(0).size()));
   }
+  /* will use indexes to replace myDataIndexOffset_ once the underlying change
+   * is done*/
   auto [ciphertext, nonce] =
       UdpUtil::localEncryption(plaintextData, prgKey_, myDataIndexOffset_);
   agent_->send(nonce);
   for (size_t i = 0; i < ciphertext.size(); i++) {
+    agent_->sendSingleT<uint64_t>(indexes.at(i));
     agent_->send(ciphertext.at(i));
   }
   myDataIndexOffset_ += plaintextData.size();
@@ -85,8 +89,10 @@ void UdpEncryption::processPeerData(size_t dataSize) {
   }
 
   for (size_t i = 0; i < dataSize; i++) {
+    auto index = agent_->receiveSingleT<uint64_t>();
     auto ciphertext = agent_->receive(peerDataWidth_);
-    auto pos = indexToOrderMap_.find(i + peerDataIndexOffset_);
+    auto pos = indexToOrderMap_.find(
+        i + peerDataIndexOffset_ /* will use index instead in next diff*/);
     if (pos != indexToOrderMap_.end()) {
       // this ciphertext should be picked up
       cherryPickedEncryption_.at(pos->second) = std::move(ciphertext);

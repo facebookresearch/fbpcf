@@ -9,6 +9,7 @@
 
 #include <emmintrin.h>
 #include <fbpcf/engine/util/util.h>
+#include <numeric>
 #include "fbpcf/engine/util/aes.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/AesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/DataProcessor.h"
@@ -24,9 +25,12 @@ DataProcessor<schedulerId>::processMyData(
     size_t outputSize) {
   size_t dataSize = plaintextData.size();
   size_t dataWidth = plaintextData.at(0).size();
+  std::vector<uint64_t> indexes(plaintextData.size());
+  // generate 0 to n-1 vector
+  std::iota(indexes.begin(), indexes.end(), 0);
 
   encrypter_.prepareToProcessMyData(dataWidth);
-  encrypter_.processMyData(plaintextData);
+  encrypter_.processMyData(plaintextData, indexes);
 
   // 1b. (peer)receive encryted data from peer
   // 2b. (peer)pick desired ciphertext blocks

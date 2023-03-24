@@ -30,7 +30,15 @@ class IUdpEncryption {
    * "getExpandedKey" to retrieve the expanded key for decryption later.
    */
   virtual void processMyData(
-      const std::vector<std::vector<unsigned char>>& plaintextData) = 0;
+      const std::vector<std::vector<unsigned char>>& plaintextData,
+      const std::vector<uint64_t>& indexes) = 0;
+
+  // a temp API to maintain backward compatibility
+  virtual void processMyData(
+      const std::vector<std::vector<unsigned char>>& plaintextData) {
+    processMyData(
+        plaintextData, std::vector<uint64_t>(plaintextData.size(), 0));
+  }
 
   virtual std::vector<__m128i> getExpandedKey() = 0;
 

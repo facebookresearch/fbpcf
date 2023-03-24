@@ -191,8 +191,13 @@ void testUdpEncryptionAndDecryptionObjects(
                   const std::vector<uint64_t>& indexes,
                   const std::vector<size_t>& sizes) {
     udpEnc->prepareToProcessMyData(dataWidth);
+    size_t myDataIndexOffset = 0;
     for (size_t i = 0; i < plaintextDataInShards.size(); i++) {
-      udpEnc->processMyData(plaintextDataInShards.at(i));
+      std::vector<uint64_t> u64indexes(plaintextDataInShards.at(i).size());
+      // generate 0 to n-1 vector
+      std::iota(u64indexes.begin(), u64indexes.end(), myDataIndexOffset);
+      myDataIndexOffset += plaintextDataInShards.at(i).size();
+      udpEnc->processMyData(plaintextDataInShards.at(i), u64indexes);
     };
     udpEnc->prepareToProcessPeerData(dataWidth, indexes);
     for (size_t i = 0; i < sizes.size(); i++) {
@@ -249,8 +254,13 @@ void testUdpEncryptionAndDecryptionObjects(
       udpEnc->processPeerData(sizes.at(i));
     }
     udpEnc->prepareToProcessMyData(dataWidth);
+    size_t myDataIndexOffset = 0;
     for (size_t i = 0; i < plaintextDataInShards.size(); i++) {
-      udpEnc->processMyData(plaintextDataInShards.at(i));
+      std::vector<uint64_t> u64indexes(plaintextDataInShards.at(i).size());
+      // generate 0 to n-1 vector
+      std::iota(u64indexes.begin(), u64indexes.end(), myDataIndexOffset);
+      myDataIndexOffset += plaintextDataInShards.at(i).size();
+      udpEnc->processMyData(plaintextDataInShards.at(i), u64indexes);
     };
 
     auto [intersection, nonces, pickedIndexes] = udpEnc->getProcessedData();

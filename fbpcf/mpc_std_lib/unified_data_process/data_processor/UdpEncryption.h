@@ -38,7 +38,8 @@ class UdpEncryption final : public IUdpEncryption {
   // with "ProcessPeerData" on peer's side. If this API is ever called, calling
   // "getExpandedKey" to retrive the expanded key for decryption later.
   void processMyData(
-      const std::vector<std::vector<unsigned char>>& plaintextData) override;
+      const std::vector<std::vector<unsigned char>>& plaintextData,
+      const std::vector<uint64_t>& indexes) override;
 
   std::vector<__m128i> getExpandedKey() override {
     if (statusOfProcessingMyData_ != Status::inProgress) {
