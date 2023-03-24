@@ -27,7 +27,6 @@ void UdpEncryption::prepareToProcessMyData(size_t myDataWidth) {
   statusOfProcessingMyData_ = Status::inProgress;
   myDataWidth_ = myDataWidth;
   prgKey_ = fbpcf::engine::util::getRandomM128iFromSystemNoise();
-  myDataIndexOffset_ = 0;
 }
 
 void UdpEncryption::processMyData(
@@ -44,16 +43,14 @@ void UdpEncryption::processMyData(
         "Inconsistent data width, expecting " + std::to_string(myDataWidth_) +
         " but get " + std::to_string(plaintextData.at(0).size()));
   }
-  /* will use indexes to replace myDataIndexOffset_ once the underlying change
-   * is done*/
+
   auto [ciphertext, nonce] =
-      UdpUtil::localEncryption(plaintextData, prgKey_, myDataIndexOffset_);
+      UdpUtil::localEncryption(plaintextData, prgKey_, indexes);
   agent_->send(nonce);
   for (size_t i = 0; i < ciphertext.size(); i++) {
     agent_->sendSingleT<uint64_t>(indexes.at(i));
     agent_->send(ciphertext.at(i));
   }
-  myDataIndexOffset_ += plaintextData.size();
 }
 
 void UdpEncryption::prepareToProcessPeerData(
@@ -70,7 +67,6 @@ void UdpEncryption::prepareToProcessPeerData(
   }
 
   peerDataWidth_ = peerDataWidth;
-  peerDataIndexOffset_ = 0;
 
   cherryPickedEncryption_ =
       std::vector<std::vector<unsigned char>>(indexes.size());
@@ -91,18 +87,16 @@ void UdpEncryption::processPeerData(size_t dataSize) {
   for (size_t i = 0; i < dataSize; i++) {
     auto index = agent_->receiveSingleT<uint64_t>();
     auto ciphertext = agent_->receive(peerDataWidth_);
-    auto pos = indexToOrderMap_.find(
-        i + peerDataIndexOffset_ /* will use index instead in next diff*/);
+    auto pos = indexToOrderMap_.find(index);
     if (pos != indexToOrderMap_.end()) {
       // this ciphertext should be picked up
       cherryPickedEncryption_.at(pos->second) = std::move(ciphertext);
       cherryPickedNonce_.at(pos->second) = nonce;
-      cherryPickedIndex_.at(pos->second) = i + peerDataIndexOffset_;
+      cherryPickedIndex_.at(pos->second) = index;
       indexToOrderMap_.erase(pos);
       // TODO: this can be further optimized by not copying duplicated nonce.
     }
   }
-  peerDataIndexOffset_ += dataSize;
 }
 
 } // namespace fbpcf::mpc_std_lib::unified_data_process::data_processor

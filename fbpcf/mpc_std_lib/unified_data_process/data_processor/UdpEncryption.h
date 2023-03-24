@@ -77,9 +77,6 @@ class UdpEncryption final : public IUdpEncryption {
  private:
   std::unique_ptr<engine::communication::IPartyCommunicationAgent> agent_;
 
-  uint64_t myDataIndexOffset_;
-  uint64_t peerDataIndexOffset_;
-
   size_t myDataWidth_;
   __m128i prgKey_;
 
