@@ -197,7 +197,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
     int sockFd,
     int portNo,
     std::string tlsDir) {
-  LOG(INFO) << "try to connect as server at port " << portNo << " with TLS";
+  XLOG(INFO) << "try to connect as server at port " << portNo << " with TLS";
   const SSL_METHOD* method;
   SSL_CTX* ctx;
 
@@ -218,14 +218,14 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   SSL_CTX_set_default_passwd_cb_userdata(ctx, (void*)passphrase_string.c_str());
 
   if (ctx == nullptr) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Could not create tls context");
   }
 
   // Load the certificate file
   if (SSL_CTX_use_certificate_file(
           ctx, (tlsDir + "/" + CERT_FILE).c_str(), SSL_FILETYPE_PEM) <= 0) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Error using certificate file");
   }
 
@@ -233,7 +233,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   if (SSL_CTX_use_PrivateKey_file(
           ctx, (tlsDir + "/" + PRIVATE_KEY_FILE).c_str(), SSL_FILETYPE_PEM) <=
       0) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Error using private key file");
   }
 
@@ -244,11 +244,11 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
 
   // Accept handshake from client
   if (SSL_accept(ssl) <= 0) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Error on accepting ssl");
   }
 
-  LOG(INFO) << "connected as server at port " << portNo << " with TLS";
+  XLOG(INFO) << "connected as server at port " << portNo << " with TLS";
 
   ssl_ = ssl;
 }
@@ -257,7 +257,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
     int sockFd,
     int portNo,
     TlsInfo tlsInfo) {
-  LOG(INFO) << "try to connect as server at port " << portNo << " with TLS";
+  XLOG(INFO) << "try to connect as server at port " << portNo << " with TLS";
   const SSL_METHOD* method;
   SSL_CTX* ctx;
 
@@ -278,7 +278,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   SSL_CTX_set_default_passwd_cb_userdata(ctx, (void*)passphrase_string.c_str());
 
   if (ctx == nullptr) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Could not create tls context");
   }
 
@@ -286,7 +286,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   XLOGF(INFO, "Using certificate file at: {}", tlsInfo.certPath);
   if (SSL_CTX_use_certificate_file(
           ctx, (tlsInfo.certPath).c_str(), SSL_FILETYPE_PEM) <= 0) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Error using certificate file");
   }
 
@@ -294,7 +294,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   XLOGF(INFO, "Using private key file at: {}", tlsInfo.keyPath);
   if (SSL_CTX_use_PrivateKey_file(
           ctx, (tlsInfo.keyPath).c_str(), SSL_FILETYPE_PEM) <= 0) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Error using private key file");
   }
 
@@ -305,11 +305,11 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
 
   // Accept handshake from client
   if (SSL_accept(ssl) <= 0) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("Error on accepting ssl");
   }
 
-  LOG(INFO) << "connected as server at port " << portNo << " with TLS";
+  XLOG(INFO) << "connected as server at port " << portNo << " with TLS";
 
   ssl_ = ssl;
 }
@@ -330,14 +330,14 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
 
   if (ctx == nullptr) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not create tls context");
   }
 
   SSL* ssl = SSL_new(ctx);
 
   if (ssl == nullptr) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not create tls object");
   }
 
@@ -348,7 +348,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   // initiate handshake with server
   const int status = SSL_connect(ssl);
   if (status != 1) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not complete tls handshake");
   }
 
@@ -382,7 +382,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   }
 
   if (ctx == nullptr) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not create tls context");
   }
 
@@ -397,7 +397,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   SSL* ssl = SSL_new(ctx);
 
   if (ssl == nullptr) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not create tls object");
   }
 
@@ -412,7 +412,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   XLOGF(INFO, "verify result: {}", result);
 
   if (status != 1) {
-    LOG(INFO) << folly::errnoStr(errno);
+    XLOG(INFO) << folly::errnoStr(errno);
     throw std::runtime_error("could not complete tls handshake");
   }
 
