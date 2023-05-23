@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <string>
 
@@ -89,6 +90,19 @@ class SocketPartyCommunicationAgent final : public IPartyCommunicationAgent {
       const std::string& serverAddress,
       int portNo,
       TlsInfo tlsInfo);
+
+  static std::string getErrorInfo() {
+    std::string rst;
+    unsigned long error = 0;
+    do {
+      error = ERR_get_error();
+      if (error != 0) {
+        rst += "code: " + std::to_string(error) + " " +
+            std::string(ERR_error_string(error, nullptr)) + "\n";
+      }
+    } while (error != 0);
+    return rst;
+  }
 
   /*
    * helper functions for shared code between TLS and non-TLS implementations
