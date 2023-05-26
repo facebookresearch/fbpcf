@@ -224,17 +224,29 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   }
 
   // Load the certificate file
-  if (SSL_CTX_use_certificate_file(
-          ctx, (tlsDir + "/" + CERT_FILE).c_str(), SSL_FILETYPE_PEM) <= 0) {
+  int ret;
+  XLOGF(
+      INFO,
+      "Using certificate file at: {}",
+      (tlsDir + "/" + CERT_FILE).c_str());
+  ret = SSL_CTX_use_certificate_file(
+      ctx, (tlsDir + "/" + CERT_FILE).c_str(), SSL_FILETYPE_PEM);
+  XLOGF(INFO, "Successfully loaded certificate file, return code {}.", ret);
+  if (ret <= 0) {
     auto errorMsg = getErrorInfo();
     XLOGF(INFO, "error message: {}", errorMsg);
     throw std::runtime_error("Error using certificate file " + errorMsg);
   }
 
   // Load the private key file
-  if (SSL_CTX_use_PrivateKey_file(
-          ctx, (tlsDir + "/" + PRIVATE_KEY_FILE).c_str(), SSL_FILETYPE_PEM) <=
-      0) {
+  XLOGF(
+      INFO,
+      "Using private key file at: {}",
+      (tlsDir + "/" + PRIVATE_KEY_FILE).c_str());
+  ret = SSL_CTX_use_PrivateKey_file(
+      ctx, (tlsDir + "/" + PRIVATE_KEY_FILE).c_str(), SSL_FILETYPE_PEM);
+  XLOGF(INFO, "Successfully loaded private key file, return code {}.", ret);
+  if (ret <= 0) {
     auto errorMsg = getErrorInfo();
     XLOGF(INFO, "error message: {}", errorMsg);
     throw std::runtime_error("Error using private key file " + errorMsg);
@@ -289,8 +301,11 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
 
   // Load the certificate file
   XLOGF(INFO, "Using certificate file at: {}", tlsInfo.certPath);
-  if (SSL_CTX_use_certificate_file(
-          ctx, (tlsInfo.certPath).c_str(), SSL_FILETYPE_PEM) <= 0) {
+  int ret = SSL_CTX_use_certificate_file(
+      ctx, (tlsInfo.certPath).c_str(), SSL_FILETYPE_PEM);
+  XLOGF(INFO, "Successfully loaded certificate file, return code {}.", ret);
+
+  if (ret <= 0) {
     auto errorMsg = getErrorInfo();
     XLOGF(INFO, "error message: {}", errorMsg);
     throw std::runtime_error("Error using certificate file " + errorMsg);
@@ -298,8 +313,11 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
 
   // Load the private key file
   XLOGF(INFO, "Using private key file at: {}", tlsInfo.keyPath);
-  if (SSL_CTX_use_PrivateKey_file(
-          ctx, (tlsInfo.keyPath).c_str(), SSL_FILETYPE_PEM) <= 0) {
+  ret = SSL_CTX_use_PrivateKey_file(
+      ctx, (tlsInfo.keyPath).c_str(), SSL_FILETYPE_PEM);
+  XLOGF(INFO, "Successfully loaded private key file, return code {}.", ret);
+
+  if (ret <= 0) {
     auto errorMsg = getErrorInfo();
     XLOGF(INFO, "error message: {}", errorMsg);
     throw std::runtime_error("Error using private key file " + errorMsg);
