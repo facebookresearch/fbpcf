@@ -243,6 +243,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   auto acceptedConnection = receiveFromClient(sockFd);
 
   const auto ssl = SSL_new(ctx);
+  SSL_CTX_free(ctx);
   SSL_set_fd(ssl, acceptedConnection);
 
   // Accept handshake from client
@@ -308,6 +309,7 @@ void SocketPartyCommunicationAgent::openServerPortWithTls(
   auto acceptedConnection = receiveFromClient(sockFd);
 
   const auto ssl = SSL_new(ctx);
+  SSL_CTX_free(ctx);
   SSL_set_fd(ssl, acceptedConnection);
 
   // Accept handshake from client
@@ -344,7 +346,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
   }
 
   SSL* ssl = SSL_new(ctx);
-
+  SSL_CTX_free(ctx);
   if (ssl == nullptr) {
     auto errorMsg = getErrorInfo();
     XLOGF(INFO, "error message: {}", errorMsg);
@@ -407,7 +409,7 @@ void SocketPartyCommunicationAgent::openClientPortWithTls(
       params, serverAddress.c_str(), serverAddress.size());
 
   SSL* ssl = SSL_new(ctx);
-
+  SSL_CTX_free(ctx);
   if (ssl == nullptr) {
     auto errorMsg = getErrorInfo();
     XLOGF(INFO, "error message: {}", errorMsg);
