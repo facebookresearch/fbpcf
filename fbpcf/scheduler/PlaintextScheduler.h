@@ -511,13 +511,6 @@ class PlaintextScheduler : public IArithmeticScheduler {
   /**
    * @inherit doc
    */
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
-    return {0, 0};
-  }
-
-  /**
-   * @inherit doc
-   */
   std::pair<uint64_t, uint64_t> getWireStatistics() const override {
     return wireKeeper_->getWireStatistics();
   }

@@ -115,12 +115,6 @@ class ShuffleBasedCompactorBenchmark : public engine::util::NetworkedBenchmark {
         util::MpcAdapters<uint32_t, 1>::openToParty(compactifiedValue, 0);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    auto schedulerTraffic =
-        scheduler::SchedulerKeeper<0>::getTrafficStatistics();
-    return schedulerTraffic;
-  }
-
   std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
   std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>

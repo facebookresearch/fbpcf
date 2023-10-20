@@ -39,10 +39,6 @@ class NetworkedBenchmark {
       counters["init_time_usec"] =
           std::chrono::duration_cast<std::chrono::microseconds>(end - start)
               .count();
-
-      auto [sent, received] = getTrafficStatistics();
-      initTransmittedBytes = sent + received;
-      counters["init_transmitted_bytes"] = initTransmittedBytes;
     }
 
     auto senderTask = std::async([this]() { runSender(); });
@@ -50,11 +46,6 @@ class NetworkedBenchmark {
 
     senderTask.get();
     receiverTask.get();
-
-    BENCHMARK_SUSPEND {
-      auto [sent, received] = getTrafficStatistics();
-      counters["transmitted_bytes"] = sent + received - initTransmittedBytes;
-    }
   }
 
  protected:
@@ -65,8 +56,6 @@ class NetworkedBenchmark {
 
   virtual void runSender() = 0;
   virtual void runReceiver() = 0;
-
-  virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() = 0;
 };
 
 } // namespace fbpcf::engine::util

@@ -112,20 +112,6 @@ class NetworkPlaintextScheduler final : public PlaintextScheduler {
   /**
    * @inherit doc
    */
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
-    uint64_t sent = 0;
-    uint64_t received = 0;
-    for (auto& item : agentMap_) {
-      auto traffic = item.second->getTrafficStatistics();
-      sent += traffic.first;
-      received += traffic.second;
-    }
-    return {sent, received};
-  }
-
-  /**
-   * @inherit doc
-   */
   size_t getBatchSize(
       IScheduler::WireId<IScheduler::Boolean> id) const override;
 

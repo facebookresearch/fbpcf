@@ -130,10 +130,6 @@ class SchedulerBenchmark : public engine::util::NetworkedBenchmark {
     runMethod(receiver_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
-  }
-
   virtual std::unique_ptr<IScheduler> getScheduler(
       int myId,
       engine::communication::IPartyCommunicationAgentFactory&

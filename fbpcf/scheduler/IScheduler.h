@@ -349,11 +349,6 @@ class IScheduler {
       std::shared_ptr<std::vector<uint32_t>> unbatchingStrategy) = 0;
 
   //======== Below are miscellaneous APIs: ========
-  /**
-   * Get the total amount of traffic transmitted.
-   * @return a pair of (sent, received) data in bytes.
-   */
-  virtual std::pair<uint64_t, uint64_t> getTrafficStatistics() const = 0;
 
   /**
    * Get amount of boolean gates executed. non-free gate count is the single
@@ -439,7 +434,7 @@ class SchedulerKeeper {
   }
 
   static std::pair<uint64_t, uint64_t> getTrafficStatistics() {
-    return scheduler_->getTrafficStatistics();
+    return {0, 0};
   }
 
   static std::pair<uint64_t, uint64_t> getGateStatistics() {

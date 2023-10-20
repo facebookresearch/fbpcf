@@ -664,14 +664,6 @@ std::vector<IScheduler::WireId<IScheduler::Boolean>> EagerScheduler::unbatching(
   return rst;
 }
 
-std::pair<uint64_t, uint64_t> EagerScheduler::getTrafficStatistics() const {
-  if (engine_) {
-    return engine_->getTrafficStatistics();
-  } else {
-    return engineTrafficStatisticsBuffer_;
-  }
-}
-
 size_t EagerScheduler::getBatchSize(
     IScheduler::WireId<IScheduler::Boolean> id) const {
   return wireKeeper_->getBatchSize(id);

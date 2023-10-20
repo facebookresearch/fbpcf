@@ -74,10 +74,6 @@ class DifferenceCalculatorBenchmark : public engine::util::NetworkedBenchmark {
         input1_.subtrahendShares);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return scheduler::SchedulerKeeper<0>::getTrafficStatistics();
-  }
-
  private:
   size_t batchSize_ = 16384;
 
@@ -138,10 +134,6 @@ class ObliviousDeltaCalculatorBenchmark
   void runReceiver() override {
     receiver_->calculateDelta(
         input1_.delta0Shares, input1_.delta1Shares, input1_.alphaShares);
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return scheduler::SchedulerKeeper<0>::getTrafficStatistics();
   }
 
  private:
@@ -219,10 +211,6 @@ class SinglePointArrayGeneratorBenchmark
     receiver_->generateSinglePointArrays(party1Input_, length_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return scheduler::SchedulerKeeper<0>::getTrafficStatistics();
-  }
-
  private:
   size_t length_ = 16384;
 
@@ -281,15 +269,6 @@ class BaseWriteOnlyOramBenchmark : public engine::util::NetworkedBenchmark {
 
   void runReceiver() override {
     runMethod(receiver_, input1_);
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    auto schedulerTraffic =
-        scheduler::SchedulerKeeper<0>::getTrafficStatistics();
-    auto oramTraffic = sender_->getTrafficStatistics();
-    return {
-        schedulerTraffic.first + oramTraffic.first,
-        schedulerTraffic.second + oramTraffic.second};
   }
 
   virtual std::unique_ptr<IWriteOnlyOramFactory<uint32_t>> getOramFactory(

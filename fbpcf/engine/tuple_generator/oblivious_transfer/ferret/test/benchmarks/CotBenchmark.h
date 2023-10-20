@@ -83,10 +83,6 @@ class SinglePointCotBenchmark final : public util::NetworkedBenchmark {
     receiver_->receiverExtend(std::move(baseOTReceive_));
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return agent0_->getTrafficStatistics();
-  }
-
  private:
   std::unique_ptr<communication::IPartyCommunicationAgent> agent0_;
   std::unique_ptr<communication::IPartyCommunicationAgent> agent1_;
@@ -134,10 +130,6 @@ class RegularErrorMultiPointCotBenchmark final
 
   void runReceiver() override {
     receiver_->receiverExtend(std::move(baseOTReceive_));
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return agent0_->getTrafficStatistics();
   }
 
  private:
@@ -192,10 +184,6 @@ class RcotExtenderBenchmark final : public util::NetworkedBenchmark {
 
   void runReceiver() override {
     receiver_->receiverExtendRcot(std::move(baseOTReceive_));
-  }
-
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
   }
 
  private:
