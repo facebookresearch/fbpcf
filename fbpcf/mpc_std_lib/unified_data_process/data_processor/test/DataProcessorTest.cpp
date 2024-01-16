@@ -188,7 +188,7 @@ void testUdpEncryptionAndDecryptionObjects(
                       plaintextDataInShards,
                   size_t dataWidth,
                   size_t outputSize,
-                  const std::vector<uint64_t>& indexes,
+                  const std::vector<uint64_t>& indexes_2,
                   const std::vector<size_t>& sizes) {
     udpEnc->prepareToProcessMyData(dataWidth);
     size_t myDataIndexOffset = 0;
@@ -199,7 +199,7 @@ void testUdpEncryptionAndDecryptionObjects(
       myDataIndexOffset += plaintextDataInShards.at(i).size();
       udpEnc->processMyData(plaintextDataInShards.at(i), u64indexes);
     };
-    udpEnc->prepareToProcessPeerData(dataWidth, indexes);
+    udpEnc->prepareToProcessPeerData(dataWidth, indexes_2);
     for (size_t i = 0; i < sizes.size(); i++) {
       udpEnc->processPeerData(sizes.at(i));
     }
@@ -244,12 +244,12 @@ void testUdpEncryptionAndDecryptionObjects(
   auto task1 = [](std::unique_ptr<UdpEncryption> udpEnc,
                   std::unique_ptr<UdpDecryption<1>> udpDec0,
                   std::unique_ptr<UdpDecryption<3>> udpDec1,
-                  const std::vector<uint64_t>& indexes,
+                  const std::vector<uint64_t>& indexes_2,
                   const std::vector<size_t>& sizes,
                   const std::vector<std::vector<std::vector<unsigned char>>>&
                       plaintextDataInShards,
                   size_t dataWidth) {
-    udpEnc->prepareToProcessPeerData(dataWidth, indexes);
+    udpEnc->prepareToProcessPeerData(dataWidth, indexes_2);
     for (size_t i = 0; i < sizes.size(); i++) {
       udpEnc->processPeerData(sizes.at(i));
     }
