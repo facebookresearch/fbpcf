@@ -15,7 +15,7 @@ namespace fbpcf {
 template <class InputDataType, class OutputDataType>
 class IMpcGame {
  public:
-  virtual ~IMpcGame(){};
+  virtual ~IMpcGame() {}
 
   OutputDataType perfPlay(const InputDataType& inputData) {
     auto decorator = fbpcf::perf::decorate(
