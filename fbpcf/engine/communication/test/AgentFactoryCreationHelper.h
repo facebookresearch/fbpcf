@@ -117,6 +117,6 @@ getSocketAgentFactoryPair(
   getSocketFactoriesForMultipleParties(2, tlsInfo, factories);
 
   return {std::move(factories.at(0)), std::move(factories.at(1))};
-};
+}
 
 } // namespace fbpcf::engine::communication
