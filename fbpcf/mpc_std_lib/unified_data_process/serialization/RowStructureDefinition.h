@@ -158,7 +158,6 @@ class RowStructureDefinition : public IRowStructureDefinition<schedulerId> {
              columnDefinition : *columnDefinitions_.get()) {
       const IColumnDefinition<schedulerId>* columnPointer =
           columnDefinition.get();
-      auto columnType = columnDefinition->getColumnType();
 
       if (columnDefinition->getColumnType() ==
           IColumnDefinition<
