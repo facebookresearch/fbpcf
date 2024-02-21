@@ -58,6 +58,7 @@ class BatchCompositeGate final : public ICompositeGate {
               engine.computeBatchFreeAND(
                   leftValues, wireKeeper_.getBatchBooleanValue(rights_[i])));
         }
+        break;
       }
 
       case GateType::NonFreeAnd: {
