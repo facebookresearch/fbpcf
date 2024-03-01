@@ -6,7 +6,7 @@
  */
 
 #include "../EditDistanceCalculator.h" // @manual
-#include <folly/json.h>
+#include <folly/json/json.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include "../EditDistanceInputReader.h" // @manual
