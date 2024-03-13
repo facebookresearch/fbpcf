@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <folly/json.h>
+#include <folly/json/json.h>
 
 #include <gflags/gflags.h>
 #include "fbpcf/scheduler/LazySchedulerFactory.h"

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <folly/dynamic.h>
+#include <folly/json/dynamic.h>
 #include <folly/logging/xlog.h>
 #include <string>
 #include <unordered_map>

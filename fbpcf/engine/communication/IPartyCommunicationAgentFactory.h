@@ -8,7 +8,7 @@
 #pragma once
 #include <memory>
 
-#include <folly/dynamic.h>
+#include <folly/json/dynamic.h>
 #include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/util/MetricCollector.h"
 
