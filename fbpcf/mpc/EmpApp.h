@@ -39,7 +39,7 @@ class EmpApp {
         useTls_{false},
         tlsDir_{""} {}
 
-  virtual ~EmpApp(){};
+  virtual ~EmpApp() {}
 
   virtual void run() {
     auto io = std::make_unique<emp::NetIO>(
@@ -51,7 +51,7 @@ class EmpApp {
     auto output = game.perfPlay(inputData);
 
     putOutputData(output);
-  };
+  }
 
  protected:
   virtual InputDataType getInputData() = 0;
