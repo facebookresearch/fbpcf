@@ -19,7 +19,7 @@
 
 namespace fbpcf::frontend {
 
-const bool unsafe = true;
+// const bool unsafe = true;
 const uint32_t batchSize = 1000;
 
 template <class Game0, class Game1>
