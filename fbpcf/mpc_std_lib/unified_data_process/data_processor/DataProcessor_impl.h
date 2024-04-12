@@ -23,7 +23,6 @@ typename IDataProcessor<schedulerId>::SecString
 DataProcessor<schedulerId>::processMyData(
     const std::vector<std::vector<unsigned char>>& plaintextData,
     size_t outputSize) {
-  size_t dataSize = plaintextData.size();
   size_t dataWidth = plaintextData.at(0).size();
   std::vector<uint64_t> indexes(plaintextData.size());
   // generate 0 to n-1 vector
