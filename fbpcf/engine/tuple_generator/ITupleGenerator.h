@@ -62,7 +62,8 @@ class TuplesMetricRecorder final : public fbpcf::util::IMetricRecorder {
         "boolean_tuples_unused",
         tuplesGenerated_.load() - tuplesConsumed_.load())(
         "composite_tuples_requested",
-        compositeTuplesWithoutExpansionRequested_.load() + compositeTuplesRequiringExpansionRequested_.load())(
+        compositeTuplesWithoutExpansionRequested_.load() +
+            compositeTuplesRequiringExpansionRequested_.load())(
         "composite_tuples_without_expansion_requested",
         compositeTuplesWithoutExpansionRequested_.load())(
         "composite_tuples_requiring_expansion_requested",

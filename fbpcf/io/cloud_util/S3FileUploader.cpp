@@ -46,9 +46,8 @@ void S3FileUploader::init() {
   }
 }
 int S3FileUploader::upload(std::vector<char>& buf) {
-  XLOG(INFO) << "Start uploading part:"
-             << "Part number: " << partNumber_ << "\nBucket: " << bucket_
-             << "\nKey: " << key_;
+  XLOG(INFO) << "Start uploading part:" << "Part number: " << partNumber_
+             << "\nBucket: " << bucket_ << "\nKey: " << key_;
   Aws::S3::Model::UploadPartRequest request;
   request.SetBucket(bucket_);
   request.SetKey(key_);
