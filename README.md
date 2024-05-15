@@ -24,7 +24,7 @@ MPC applications typically need to access local data that is stored in the cloud
 ## Examples
 
 ### Example: The Billionaire Game
-As an example of how you might use the PCF v2.0 APIs, we have included an example implementation of the classic [Billionaire](fbpcf/test/billionaire_problem) game.  You can run the game in two terminals representing two players.  Each player will randomly return an integer from 0 to 1000000000 to represent the amount of money they have.  The game will compare the two integers and determine who is richer.
+As an example of how you might use the PCF v2.0 APIs, we have included an example implementation of the classic [Billionaire](example/billionaire_problem/BillionaireProblemGame.h) game.  You can run the game in two terminals representing two players.  Each player will randomly return an integer from 0 to 1000000000 to represent the amount of money they have.  The game will compare the two integers and determine who is richer.
 
 Instructions on how to run the exmaple:
 * Build the code and get the executable. Suppose the executable is `billionaire`.
