@@ -30,7 +30,7 @@ class ParseError : virtual public std::exception {
  public:
   explicit ParseError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
@@ -65,7 +65,7 @@ class ConstructionError : virtual public std::exception {
  public:
   explicit ConstructionError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
@@ -83,7 +83,7 @@ class RuntimeTypeError : virtual public std::exception {
  public:
   explicit RuntimeTypeError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
@@ -102,7 +102,7 @@ class SchemaTraceError : virtual public std::exception {
  public:
   explicit SchemaTraceError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
@@ -119,7 +119,7 @@ class NotImplementedError : virtual public std::exception {
  public:
   explicit NotImplementedError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
@@ -135,7 +135,7 @@ class NotSupportedError : virtual public std::exception {
  public:
   explicit NotSupportedError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
@@ -153,7 +153,7 @@ class InvalidAccessError : virtual public std::exception {
  public:
   explicit InvalidAccessError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
