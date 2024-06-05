@@ -169,7 +169,7 @@ class ConnectionError : virtual public std::exception {
  public:
   explicit ConnectionError(std::string msg) : msg_{msg} {}
 
-  const char* what() const throw() override {
+  const char* what() const noexcept override {
     return msg_.c_str();
   }
 
