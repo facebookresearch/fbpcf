@@ -1,3 +1,8 @@
+![Maintenance Mode](https://img.shields.io/badge/maintenance%20mode-%E2%9C%94%EF%B8%8F-red)
+**THIS PROJECT IS CURRENTLY IN MAINTENANCE MODE. Only critical bug patches will be applied; no new features will be added.**
+
+---
+
 # PCF (Private Computation Framework)
 
 ## Project Description
