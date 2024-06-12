@@ -64,10 +64,6 @@ class BaseSecretShareEngineBenchmark : public util::NetworkedBenchmark {
     runMethod(receiver_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
-  }
-
   virtual void runMethod(std::unique_ptr<ISecretShareEngine>& engine) = 0;
 
   size_t batchSize_ = 1000;

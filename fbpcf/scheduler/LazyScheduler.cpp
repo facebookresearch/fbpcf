@@ -570,14 +570,6 @@ void LazyScheduler::decreaseReferenceCountBatch(
   wireKeeper_->decreaseBatchReferenceCount(id);
 }
 
-std::pair<uint64_t, uint64_t> LazyScheduler::getTrafficStatistics() const {
-  if (engine_) {
-    return engine_->getTrafficStatistics();
-  } else {
-    return engineTrafficStatisticsBuffer_;
-  }
-}
-
 // band a number of batches into one batch.
 IScheduler::WireId<IScheduler::Boolean> LazyScheduler::batchingUp(
     std::vector<WireId<Boolean>> src) {

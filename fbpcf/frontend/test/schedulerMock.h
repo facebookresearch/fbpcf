@@ -339,10 +339,6 @@ class schedulerMock final : public scheduler::IScheduler {
 
   MOCK_METHOD0(deleteEngine, void());
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() const override {
-    return {0, 0};
-  }
-
   std::pair<uint64_t, uint64_t> getWireStatistics() const override {
     return {0, 0};
   }

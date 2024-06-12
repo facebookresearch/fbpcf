@@ -512,11 +512,6 @@ class LazyScheduler final : public IArithmeticScheduler {
   /**
    * @inherit doc
    */
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() const override;
-
-  /**
-   * @inherit doc
-   */
   std::pair<uint64_t, uint64_t> getWireStatistics() const override {
     return wireKeeper_->getWireStatistics();
   }

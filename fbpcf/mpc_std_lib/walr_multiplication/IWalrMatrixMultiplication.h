@@ -61,19 +61,7 @@ class IWalrMatrixMultiplication {
   std::vector<double> matrixVectorMultiplication(
       const std::vector<std::vector<double>>& features,
       const frontend::Bit<true, schedulerId, true>& labels) {
-    // Initialize engine traffic recording
-    auto initEngineTraffic =
-        scheduler::SchedulerKeeper<schedulerId>::getTrafficStatistics();
-
     auto rst = matrixVectorMultiplicationImpl(features, labels);
-
-    // Calculate engine traffic
-    auto finalEngineTraffic =
-        scheduler::SchedulerKeeper<schedulerId>::getTrafficStatistics();
-    engineTraffic_.first += finalEngineTraffic.first - initEngineTraffic.first;
-    engineTraffic_.second +=
-        finalEngineTraffic.second - initEngineTraffic.second;
-
     return rst;
   }
 
@@ -85,18 +73,7 @@ class IWalrMatrixMultiplication {
   void matrixVectorMultiplication(
       const frontend::Bit<true, schedulerId, true>& labels,
       const std::vector<double>& dpNoise) {
-    // Initialize engine traffic recording
-    auto initEngineTraffic =
-        scheduler::SchedulerKeeper<schedulerId>::getTrafficStatistics();
-
     matrixVectorMultiplicationImpl(labels, dpNoise);
-
-    // Calculate engine traffic
-    auto finalEngineTraffic =
-        scheduler::SchedulerKeeper<schedulerId>::getTrafficStatistics();
-    engineTraffic_.first += finalEngineTraffic.first - initEngineTraffic.first;
-    engineTraffic_.second +=
-        finalEngineTraffic.second - initEngineTraffic.second;
   }
 
   /**

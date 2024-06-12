@@ -91,10 +91,6 @@ class WalrMatrixMultiplicationBenchmark
     labelOwner_->matrixVectorMultiplication(secLabel1, dpNoise_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return featureOwner_->getTrafficStatistics();
-  }
-
   std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>
       agentFactory0_;
   std::unique_ptr<engine::communication::IPartyCommunicationAgentFactory>

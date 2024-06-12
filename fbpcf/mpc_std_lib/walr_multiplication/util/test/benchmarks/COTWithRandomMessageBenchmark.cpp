@@ -82,10 +82,6 @@ class COTWithRandomMessageBenchmark : public engine::util::NetworkedBenchmark {
     receiver_->receive(choice_);
   }
 
-  std::pair<uint64_t, uint64_t> getTrafficStatistics() override {
-    return sender_->getTrafficStatistics();
-  }
-
   virtual std::unique_ptr<engine::tuple_generator::oblivious_transfer::
                               IRandomCorrelatedObliviousTransferFactory>
   getRcotFactory() = 0;
