@@ -18,7 +18,7 @@
 #include <thread>
 #include <vector>
 
-#include <folly/dynamic.h>
+#include <folly/json/dynamic.h>
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"

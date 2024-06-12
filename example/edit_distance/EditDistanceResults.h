@@ -9,7 +9,7 @@
 
 #include "./MPCTypes.h" // @manual
 #include "fbpcf/exception/exceptions.h"
-#include "folly/dynamic.h"
+#include "folly/json/dynamic.h"
 
 namespace fbpcf::edit_distance {
 struct EditDistanceResults {
