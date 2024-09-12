@@ -139,9 +139,9 @@ std::string EditDistanceCalculator<schedulerId>::toJson() const {
   std::vector<std::string> receiverMessageShares =
       receiverMessages_.extractAsciiStringShare().getValue();
   output["editDistanceShares"] =
-      folly::dynamic(editDistanceShares.begin(), editDistanceShares.end());
-  output["receiverMessageShares"] = folly::dynamic::array(
-      receiverMessageShares.begin(), receiverMessageShares.end());
+      folly::dynamic::array_range(editDistanceShares);
+  output["receiverMessageShares"] =
+      folly::dynamic::array_range(receiverMessageShares);
   return folly::toJson(output);
 }
 } // namespace fbpcf::edit_distance
