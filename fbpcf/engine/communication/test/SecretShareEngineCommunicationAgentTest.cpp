@@ -13,7 +13,6 @@
 #include <random>
 #include <thread>
 #include <vector>
-#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/test/SecretShareEngineCommunicationAgentTestHelper.h"
 
 namespace fbpcf::engine::communication {

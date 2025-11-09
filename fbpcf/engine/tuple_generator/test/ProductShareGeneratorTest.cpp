@@ -7,7 +7,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <sys/types.h>
 #include <cstdint>
 #include <functional>
 #include <future>
@@ -16,7 +15,6 @@
 #include <thread>
 
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
-#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/tuple_generator/DummyProductShareGenerator.h"
 #include "fbpcf/engine/tuple_generator/DummyProductShareGeneratorFactory.h"
@@ -24,7 +22,6 @@
 #include "fbpcf/engine/tuple_generator/ProductShareGenerator.h"
 #include "fbpcf/engine/tuple_generator/ProductShareGeneratorFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/DummyBidirectionObliviousTransferFactory.h"
-#include "fbpcf/engine/tuple_generator/oblivious_transfer/EmpShRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ExtenderBasedRandomCorrelatedObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransferFactory.h"
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotHelper.h"

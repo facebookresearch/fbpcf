@@ -9,7 +9,6 @@
 #include <folly/Format.h>
 #include <folly/json.h>
 #include <gtest/gtest.h>
-#include <fstream>
 #include "../EditDistanceResults.h" // @manual
 #include "../MPCTypes.h" // @manual
 #include "./Constants.h" // @manual

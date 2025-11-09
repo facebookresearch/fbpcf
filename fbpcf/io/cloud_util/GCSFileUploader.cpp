@@ -9,7 +9,6 @@
 
 #include <folly/logging/xlog.h>
 
-#include "fbpcf/exception/GcpException.h"
 #include "fbpcf/gcp/GCSUtil.h"
 
 namespace fbpcf::cloudio {

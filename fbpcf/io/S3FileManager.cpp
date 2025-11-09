@@ -16,7 +16,6 @@
 #include <aws/s3/model/PutObjectRequest.h> // @manual
 #include <string>
 
-#include "LocalFileManager.h"
 #include "S3InputStream.h"
 #include "fbpcf/aws/S3Util.h"
 #include "fbpcf/exception/AwsException.h"

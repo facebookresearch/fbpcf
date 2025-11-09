@@ -7,7 +7,6 @@
 
 #include "fbpcf/gcp/GCSUtil.h"
 
-#include <stdexcept>
 #include <string>
 
 #include <gtest/gtest.h>

@@ -21,7 +21,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <folly/Format.h>
-#include <folly/String.h>
 #include <folly/Uri.h>
 #include <re2/re2.h>
 

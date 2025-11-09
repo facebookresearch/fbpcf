@@ -7,13 +7,11 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <regex.h>
 #include <cstdint>
 #include <functional>
 #include <future>
 #include <memory>
 #include <random>
-#include <stdexcept>
 #include <thread>
 #include <utility>
 #include <vector>
@@ -21,9 +19,7 @@
 #include "fbpcf/engine/DummySecretShareEngine.h"
 #include "fbpcf/engine/DummySecretShareEngineFactory.h"
 #include "fbpcf/engine/ISecretShareEngine.h"
-#include "fbpcf/engine/SecretShareEngine.h"
 #include "fbpcf/engine/SecretShareEngineFactory.h"
-#include "fbpcf/engine/communication/IPartyCommunicationAgent.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/util/MetricCollector.h"
 

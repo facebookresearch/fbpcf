@@ -20,7 +20,6 @@
 
 #include <folly/dynamic.h>
 #include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
-#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentHost.h"
 #include "fbpcf/engine/communication/SocketPartyCommunicationAgentFactory.h"
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/communication/test/SocketInTestHelper.h"

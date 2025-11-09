@@ -8,17 +8,12 @@
 #include "fbpcf/scheduler/LazyScheduler.h"
 
 #include <cstdint>
-#include <exception>
 #include <map>
-#include <stdexcept>
-#include <string>
 
 #include <fbpcf/scheduler/gate_keeper/GateKeeper.h>
 #include <fbpcf/scheduler/gate_keeper/INormalGate.h>
-#include <sys/types.h>
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/gate_keeper/IGate.h"
-#include "fbpcf/scheduler/gate_keeper/INormalGate.h"
 
 namespace fbpcf::scheduler {
 

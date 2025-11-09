@@ -6,10 +6,8 @@
  */
 
 #include <fmt/format.h>
-#include <sys/types.h>
 #include <cstddef>
 #include <cstdint>
-#include <exception>
 #include <iterator>
 #include <memory>
 #include <stdexcept>

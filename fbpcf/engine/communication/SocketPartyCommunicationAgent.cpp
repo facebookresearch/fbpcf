@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <string.h>
@@ -24,7 +23,6 @@
 #include <stdexcept>
 #include <thread>
 
-#include <folly/String.h>
 #include "folly/logging/xlog.h"
 
 namespace fbpcf::engine::communication {

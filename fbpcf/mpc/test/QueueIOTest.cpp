@@ -8,7 +8,6 @@
 #include <array>
 #include <memory>
 #include <queue>
-#include <vector>
 
 #include <gtest/gtest.h>
 

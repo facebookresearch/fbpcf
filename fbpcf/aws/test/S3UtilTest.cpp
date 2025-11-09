@@ -7,7 +7,6 @@
 
 #include "fbpcf/aws/S3Util.h"
 
-#include <stdexcept>
 #include <string>
 
 #include <gtest/gtest.h>

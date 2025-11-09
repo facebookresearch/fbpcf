@@ -11,7 +11,6 @@
 #include <sstream>
 
 #include "./Validator.h" // @manual
-#include "fbpcf/exception/exceptions.h"
 #include "fbpcf/io/api/FileIOWrappers.h"
 
 namespace fbpcf::edit_distance {

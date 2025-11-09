@@ -19,12 +19,9 @@
 #include "fbpcf/scheduler/IScheduler.h"
 #include "fbpcf/scheduler/PlaintextScheduler.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
-#include "fbpcf/scheduler/WireKeeper.h"
 #include "fbpcf/test/TestHelper.h"
 
 #include "fbpcf/engine/SecretShareEngineFactory.h"
-#include "fbpcf/engine/communication/InMemoryPartyCommunicationAgentFactory.h"
-#include "fbpcf/scheduler/EagerScheduler.h"
 
 namespace fbpcf::billionaire_problem {
 

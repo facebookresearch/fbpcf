@@ -8,8 +8,6 @@
 #include "fbpcf/scheduler/WireKeeper.h"
 #include <folly/logging/xlog.h>
 #include <cstdint>
-#include <exception>
-#include <stdexcept>
 #include <string>
 #include "fbpcf/scheduler/IScheduler.h"
 

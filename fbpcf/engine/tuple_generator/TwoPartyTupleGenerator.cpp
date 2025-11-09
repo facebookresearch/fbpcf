@@ -6,7 +6,6 @@
  */
 
 #include "fbpcf/engine/tuple_generator/TwoPartyTupleGenerator.h"
-#include <stdexcept>
 #include "fbpcf/engine/util/AesPrg.h"
 #include "fbpcf/engine/util/util.h"
 
