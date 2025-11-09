@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <folly/json.h>
+#include <folly/json/json.h>
 #include <stdexcept>
 #include "./EditDistanceCalculator.h" // @manual
-#include "folly/dynamic.h"
+#include "folly/json/dynamic.h"
 #include "folly/logging/xlog.h"
 
 namespace fbpcf::edit_distance {

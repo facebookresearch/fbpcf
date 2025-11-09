@@ -7,7 +7,7 @@
 
 #include "../EditDistanceApp.h" // @manual
 #include <folly/Format.h>
-#include <folly/json.h>
+#include <folly/json/json.h>
 #include <gtest/gtest.h>
 #include <fstream>
 #include "../EditDistanceResults.h" // @manual
