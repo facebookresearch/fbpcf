@@ -8,7 +8,6 @@
 #include <emmintrin.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <immintrin.h>
 #include <future>
 #include <memory>
 #include <random>

@@ -7,7 +7,6 @@
 
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/RcotBasedBidirectionObliviousTransfer.h"
 #include <emmintrin.h>
-#include <smmintrin.h>
 #include <future>
 #include <thread>
 #include <vector>

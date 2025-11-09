@@ -7,7 +7,6 @@
 
 #include <assert.h>
 #include <emmintrin.h>
-#include <string.h>
 #include <algorithm>
 #include <random>
 #include "fbpcf/engine/util/util.h"

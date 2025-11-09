@@ -7,7 +7,6 @@
 
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/IknpShRandomCorrelatedObliviousTransfer.h"
 #include <emmintrin.h>
-#include <sys/types.h>
 #include <stdexcept>
 #include "fbpcf/engine/util/util.h"
 

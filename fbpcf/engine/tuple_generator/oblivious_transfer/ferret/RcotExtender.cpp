@@ -12,8 +12,6 @@
 #include <iterator>
 #include <locale>
 #include <memory>
-#include <stdexcept>
-#include <string>
 
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/RcotExtender.h"
 #include "fbpcf/engine/util/util.h"

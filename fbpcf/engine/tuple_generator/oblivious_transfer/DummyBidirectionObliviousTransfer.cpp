@@ -6,7 +6,6 @@
  */
 
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/DummyBidirectionObliviousTransfer.h"
-#include <sys/types.h>
 #include <cstdint>
 
 namespace fbpcf::engine::tuple_generator::oblivious_transfer::insecure {

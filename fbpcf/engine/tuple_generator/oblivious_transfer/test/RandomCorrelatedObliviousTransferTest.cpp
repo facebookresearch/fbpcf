@@ -9,7 +9,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <smmintrin.h>
-#include <xmmintrin.h>
 #include <future>
 #include <memory>
 #include <random>

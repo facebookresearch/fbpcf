@@ -8,7 +8,6 @@
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/ferret/DummySinglePointCot.h"
 #include <assert.h>
 #include <emmintrin.h>
-#include <string.h>
 #include <algorithm>
 #include <cstddef>
 #include <random>

@@ -6,7 +6,6 @@
  */
 
 #include <emmintrin.h>
-#include <smmintrin.h>
 
 #include "fbpcf/engine/tuple_generator/oblivious_transfer/EmpShRandomCorrelatedObliviousTransfer.h"
 #include "fbpcf/engine/util/EmpNetworkAdapter.h"
