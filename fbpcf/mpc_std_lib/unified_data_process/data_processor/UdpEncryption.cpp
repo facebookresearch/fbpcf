@@ -8,8 +8,6 @@
 #include "fbpcf/mpc_std_lib/unified_data_process/data_processor/UdpEncryption.h"
 #include <stdexcept>
 #include <string>
-#include "fbpcf/primitive/mac/S2v.h"
-#include "fbpcf/primitive/mac/S2vFactory.h"
 
 namespace fbpcf::mpc_std_lib::unified_data_process::data_processor {
 

@@ -11,7 +11,6 @@
 #include <future>
 #include <memory>
 #include <random>
-#include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/util/AesPrgFactory.h"
@@ -20,7 +19,6 @@
 #include "fbpcf/mpc_std_lib/shuffler/NonShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/shuffler/PermuteBasedShufflerFactory.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
-#include "fbpcf/mpc_std_lib/util/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
 

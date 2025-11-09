@@ -8,8 +8,6 @@
 #include <emmintrin.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <smmintrin.h>
-#include <xmmintrin.h>
 #include <cstddef>
 #include <functional>
 #include <future>

@@ -13,7 +13,6 @@
 #include <future>
 #include <memory>
 #include <random>
-#include <unordered_map>
 
 #define AES_CIRCUIT_TEST_FRIENDS                                     \
   friend class AesCircuitSBoxTestSuite;                              \
@@ -33,7 +32,6 @@
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuit.h"
 #include "fbpcf/mpc_std_lib/aes_circuit/IAesCircuitCtr.h"
 #include "fbpcf/mpc_std_lib/util/test/util.h"
-#include "fbpcf/mpc_std_lib/util/util.h"
 #include "fbpcf/scheduler/SchedulerHelper.h"
 #include "fbpcf/test/TestHelper.h"
 

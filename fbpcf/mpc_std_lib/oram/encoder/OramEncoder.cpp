@@ -6,7 +6,6 @@
  */
 
 #include "fbpcf/mpc_std_lib/oram/encoder/OramEncoder.h"
-#include <stdexcept>
 
 namespace fbpcf::mpc_std_lib::oram {
 

@@ -7,8 +7,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <smmintrin.h>
-#include <sys/types.h>
 #include <cmath>
 #include <cstddef>
 #include <functional>
@@ -18,14 +16,12 @@
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_std_lib/oram/DummyObliviousDeltaCalculatorFactory.h"
-#include "fbpcf/mpc_std_lib/oram/DummySinglePointArrayGenerator.h"
 #include "fbpcf/mpc_std_lib/oram/DummySinglePointArrayGeneratorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/ISinglePointArrayGenerator.h"
 #include "fbpcf/mpc_std_lib/oram/ISinglePointArrayGeneratorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/ObliviousDeltaCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/SinglePointArrayGeneratorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/test/util.h"
-#include "fbpcf/mpc_std_lib/util/util.h"
 
 namespace fbpcf::mpc_std_lib::oram {
 

@@ -8,7 +8,6 @@
 #include <fbpcf/mpc_std_lib/walr_multiplication/util/NumberMapper.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <sys/types.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdint>

@@ -13,7 +13,6 @@
 #include "fbpcf/engine/util/test/benchmarks/BenchmarkHelper.h"
 #include "fbpcf/engine/util/test/benchmarks/NetworkedBenchmark.h"
 #include "fbpcf/mpc_std_lib/compactor/DummyCompactor.h"
-#include "fbpcf/mpc_std_lib/compactor/DummyCompactorFactory.h"
 #include "fbpcf/mpc_std_lib/compactor/ICompactor.h"
 #include "fbpcf/mpc_std_lib/compactor/ICompactorFactory.h"
 #include "fbpcf/mpc_std_lib/compactor/ShuffleBasedCompactor.h"

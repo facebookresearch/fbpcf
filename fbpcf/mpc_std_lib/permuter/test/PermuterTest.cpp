@@ -11,7 +11,6 @@
 #include <future>
 #include <memory>
 #include <random>
-#include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/mpc_std_lib/permuter/AsWaksmanPermuter.h"

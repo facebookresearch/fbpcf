@@ -23,7 +23,6 @@
 #include "fbpcf/mpc_std_lib/oram/DummyDifferenceCalculator.h"
 #include "fbpcf/mpc_std_lib/oram/DummyDifferenceCalculatorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/DummyObliviousDeltaCalculatorFactory.h"
-#include "fbpcf/mpc_std_lib/oram/DummySinglePointArrayGenerator.h"
 #include "fbpcf/mpc_std_lib/oram/DummySinglePointArrayGeneratorFactory.h"
 #include "fbpcf/mpc_std_lib/oram/LinearOramFactory.h"
 #include "fbpcf/mpc_std_lib/oram/ObliviousDeltaCalculatorFactory.h"

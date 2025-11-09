@@ -5,10 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <smmintrin.h>
-
-#include "fbpcf/engine/util/util.h"
 #include "fbpcf/mpc_std_lib/oram/DummyObliviousDeltaCalculator.h"
+#include "fbpcf/engine/util/util.h"
 
 namespace fbpcf::mpc_std_lib::oram::insecure {
 std::tuple<std::vector<__m128i>, std::vector<bool>, std::vector<bool>>

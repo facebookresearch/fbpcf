@@ -7,7 +7,6 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <sys/types.h>
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
@@ -32,7 +31,6 @@
 #include "fbpcf/mpc_std_lib/walr_multiplication/DummyMatrixMultiplicationFactory.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplication.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/IWalrMatrixMultiplicationFactory.h"
-#include "fbpcf/mpc_std_lib/walr_multiplication/OTBasedMatrixMultiplication.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/OTBasedMatrixMultiplicationFactory.h"
 #include "fbpcf/mpc_std_lib/walr_multiplication/util/COTWithRandomMessageFactory.h"
 

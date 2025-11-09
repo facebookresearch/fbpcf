@@ -13,7 +13,6 @@
 #include <future>
 #include <memory>
 #include <random>
-#include <unordered_map>
 
 #include "fbpcf/engine/communication/test/AgentFactoryCreationHelper.h"
 #include "fbpcf/engine/util/AesPrgFactory.h"
